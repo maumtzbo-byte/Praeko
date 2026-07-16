@@ -1,0 +1,138 @@
+import { Check } from "lucide-react";
+
+const plans = [
+  {
+    name: "Básico",
+    price: 99,
+    tagline: "Más imagen, video semilla diaria",
+    featured: false,
+    features: [
+      "8 videos/mes · 10s fijos, con audio",
+      "22 imágenes o carruseles/mes",
+      "Generación con Kling 3.0 Pro",
+      "1 red social (Instagram)",
+      "Sin subtítulos quemados",
+    ],
+  },
+  {
+    name: "Pro",
+    price: 199,
+    tagline: "Equilibrio 50/50 para publicación diaria",
+    featured: true,
+    features: [
+      "15 videos/mes · duración variable (promedio 15s, tope 25s)",
+      "15 imágenes o carruseles/mes",
+      "Generación con Kling 3.0 Pro + subtítulos quemados",
+      "3 redes sociales (Instagram, Facebook, TikTok)",
+      "Horario optimizado con datos reales + dashboard de analíticas",
+    ],
+  },
+  {
+    name: "Max",
+    price: 399,
+    tagline: "Máximo rendimiento audiovisual",
+    featured: false,
+    features: [
+      "22 videos/mes · duración variable (promedio 20s, tope 30s)",
+      "8 imágenes o carruseles/mes",
+      "Generación con Seedance 2.0 Standard 720p + subtítulos",
+      "3 redes sociales (Instagram, Facebook, TikTok)",
+      "Prioridad en cola, soporte dedicado, descargas sin marca de agua",
+    ],
+  },
+];
+
+export default function PricingSection() {
+  return (
+    <section id="precios" className="relative py-28">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto mb-16 max-w-2xl text-center">
+          <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">
+            PLANES
+          </p>
+          <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+            Un plan para cada etapa de tu negocio
+          </h2>
+          <p className="mt-4 text-zinc-600">
+            Precios en USD, con límites claros de generación al mes — sin
+            sorpresas en tu margen.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {plans.map((plan) => (
+            <div
+              key={plan.name}
+              className={`relative flex flex-col rounded-3xl border p-8 ${
+                plan.featured
+                  ? "border-zinc-900 bg-zinc-950 text-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] md:-translate-y-3"
+                  : "border-[var(--hairline)] bg-white/60 text-zinc-950"
+              }`}
+            >
+              {plan.featured && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold tracking-wide text-zinc-900 shadow">
+                  MÁS POPULAR
+                </span>
+              )}
+
+              <h3 className="text-lg font-semibold">{plan.name}</h3>
+              <p
+                className={`mt-1 text-sm ${
+                  plan.featured ? "text-zinc-400" : "text-zinc-500"
+                }`}
+              >
+                {plan.tagline}
+              </p>
+
+              <div className="mt-6 flex items-baseline gap-1">
+                <span className="text-4xl font-semibold tracking-tight">
+                  ${plan.price}
+                </span>
+                <span
+                  className={`text-sm ${
+                    plan.featured ? "text-zinc-400" : "text-zinc-500"
+                  }`}
+                >
+                  USD/mes
+                </span>
+              </div>
+
+              <ul className="mt-8 flex flex-1 flex-col gap-3">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2 text-sm">
+                    <Check
+                      className={`mt-0.5 h-4 w-4 shrink-0 ${
+                        plan.featured ? "text-zinc-300" : "text-zinc-500"
+                      }`}
+                    />
+                    <span
+                      className={plan.featured ? "text-zinc-300" : "text-zinc-600"}
+                    >
+                      {feature}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href="#"
+                className={`mt-8 rounded-full px-5 py-2.5 text-center text-sm font-medium transition-transform hover:scale-[1.02] ${
+                  plan.featured
+                    ? "bg-white text-zinc-950"
+                    : "bg-zinc-950 text-white"
+                }`}
+              >
+                Elegir {plan.name}
+              </a>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-8 text-center text-xs text-zinc-500">
+          Equivalente informativo en MXN al tipo de cambio del día. Suscripción
+          recurrente vía Stripe, cancela cuando quieras.
+        </p>
+      </div>
+    </section>
+  );
+}

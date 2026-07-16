@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f4f6;
+  --foreground: #16161a;
+  --chrome-1: #ffffff;
+  --chrome-2: #c8cad0;
+  --chrome-3: #8b8d94;
+  --chrome-4: #45464c;
+  --hairline: rgba(20, 20, 24, 0.1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  border-color: var(--hairline);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Chrome / liquid-metal text: a moving mirrored gradient clipped to text. */
+.chrome-text {
+  background: linear-gradient(
+    115deg,
+    #1c1c20 0%,
+    #55565d 20%,
+    #0f0f12 38%,
+    #6a6c74 52%,
+    #16171a 68%,
+    #4a4b52 84%,
+    #1c1c20 100%
+  );
+  background-size: 260% 260%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: chrome-sheen 9s ease-in-out infinite;
+}
+
+@keyframes chrome-sheen {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Soft liquid-metal blobs used as ambient background shapes. */
+.liquid-blob {
+  position: absolute;
+  border-radius: 40% 60% 65% 35% / 45% 40% 60% 55%;
+  filter: blur(2px);
+  animation: liquid-morph 18s ease-in-out infinite;
+  mix-blend-mode: luminosity;
+}
+
+@keyframes liquid-morph {
+  0%,
+  100% {
+    border-radius: 40% 60% 65% 35% / 45% 40% 60% 55%;
+    transform: rotate(0deg) scale(1);
+  }
+  33% {
+    border-radius: 55% 45% 40% 60% / 60% 35% 65% 40%;
+    transform: rotate(8deg) scale(1.05);
+  }
+  66% {
+    border-radius: 35% 65% 55% 45% / 40% 60% 40% 60%;
+    transform: rotate(-6deg) scale(0.97);
+  }
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+.float-slow {
+  animation: float-y 7s ease-in-out infinite;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+::selection {
+  background: var(--foreground);
+  color: var(--background);
+}

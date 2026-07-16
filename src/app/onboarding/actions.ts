@@ -43,7 +43,7 @@ export async function saveBusinessInfo(
   const v = parsed.data;
 
   try {
-    const { supabase, user } = await requireUser();
+    const { supabase } = await requireUser();
 
     const businessRow = {
       name: v.name,
@@ -67,20 +67,27 @@ export async function saveBusinessInfo(
       return { success: true, data: { businessId } };
     }
 
-    const { data: created, error: createError } = await supabase
-      .from("businesses")
-      .insert({ ...businessRow, onboarding_step: 2 })
-      .select("id")
-      .single();
+    // Creates the business and its owner membership atomically on the DB
+    // side (see 0006_create_business_rpc.sql) — a plain client-side
+    // insert().select() would fail RLS because the RETURNING row is
+    // checked against businesses_select, which requires membership that
+    // doesn't exist yet at that point.
+    const { data: created, error: createError } = await supabase.rpc(
+      "create_business_for_current_user",
+      {
+        p_name: businessRow.name,
+        p_description: businessRow.description,
+        p_industry: businessRow.industry,
+        p_country: businessRow.country,
+        p_city: businessRow.city,
+        p_primary_language: businessRow.primary_language,
+        p_website_url: businessRow.website_url,
+        p_phone: businessRow.phone,
+        p_contact_email: businessRow.contact_email,
+      },
+    );
     if (createError || !created) {
       return { success: false, error: createError?.message ?? "No se pudo crear el negocio." };
-    }
-
-    const { error: memberError } = await supabase
-      .from("business_members")
-      .insert({ business_id: created.id, user_id: user.id, role: "owner" });
-    if (memberError) {
-      return { success: false, error: memberError.message };
     }
 
     return { success: true, data: { businessId: created.id } };

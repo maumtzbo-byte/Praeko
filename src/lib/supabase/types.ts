@@ -506,6 +506,20 @@ export type Database = {
         Args: { target_business_id: string }
         Returns: boolean
       }
+      create_business_for_current_user: {
+        Args: {
+          p_name: string
+          p_description: string | null
+          p_industry: string
+          p_country: string
+          p_city: string
+          p_primary_language: string
+          p_website_url: string | null
+          p_phone: string | null
+          p_contact_email: string | null
+        }
+        Returns: Database["public"]["Tables"]["businesses"]["Row"]
+      }
     }
     Enums: {
       brand_asset_type: "logo" | "photo" | "video" | "template_reference"

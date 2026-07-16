@@ -1,14 +1,25 @@
-import { Sparkles } from "lucide-react";
-import { ComingSoonPage } from "@/components/dashboard/coming-soon-page";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { GenerateContentPanel } from "@/components/content/generate-content-panel";
+import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
+import { createClient } from "@/lib/supabase/server";
 
-export default function GenerarContenidoPage() {
+export default async function GenerarContenidoPage() {
+  const { business } = await getCurrentBusiness();
+  const supabase = await createClient();
+
+  const { data: calendarItems } = await supabase
+    .from("content_calendar")
+    .select("*")
+    .eq("business_id", business.id)
+    .order("scheduled_date", { ascending: true });
+
   return (
-    <ComingSoonPage
-      icon={Sparkles}
-      title="Generar contenido"
-      description="Crea imágenes y videos con tus agentes de IA."
-      emptyTitle="Todavía no hay generación activa"
-      emptyDescription="En cuanto conectemos los proveedores de generación (Claude, Kling, Seedance), aquí vas a poder pedirle a Praeko una pieza nueva en segundos."
-    />
+    <div>
+      <PageHeader
+        title="Generar contenido"
+        description="Tus agentes de estrategia y guionista proponen el contenido de los próximos días."
+      />
+      <GenerateContentPanel businessId={business.id} initialItems={calendarItems ?? []} />
+    </div>
   );
 }

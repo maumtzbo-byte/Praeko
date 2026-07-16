@@ -4,8 +4,10 @@ SaaS de marketing con agentes de IA para negocios pequeños en México. Ver
 `docs/PHASE_1_PLAN.md` para la arquitectura completa de la Fase 1.
 
 Ya construido: landing page, autenticación completa, onboarding de 7 pasos,
-dashboard con navegación y Configuración. Pendiente de API keys: generación
-de contenido (Claude, fal.ai), pagos (Stripe) y redes sociales (Fase 2).
+dashboard con navegación y Configuración, y el agente de estrategia + guionista
+(Claude) que genera el plan de contenido en `/dashboard/generar-contenido`
+(necesita `ANTHROPIC_API_KEY`). Pendiente de API keys: generación visual
+(fal.ai), pagos (Stripe) y redes sociales (Fase 2).
 
 ## Desarrollo
 

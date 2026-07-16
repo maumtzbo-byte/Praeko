@@ -5,6 +5,26 @@ decisiones de arquitectura que el spec original pide explicar antes de
 construir cada pieza. Revísalo y corrígeme el rumbo donde no sea lo que
 quieres — nada de esto es difícil de cambiar todavía.
 
+## 0. Estado actual (actualizado)
+
+Hay un proyecto real de Supabase provisionado (`Praeko`, región us-east-2) con
+el esquema completo aplicado, incluyendo RLS. Sobre esa base ya está
+construido de punta a punta:
+
+- Autenticación completa (registro, login, verificación de correo,
+  recuperación/cambio de contraseña, sesión persistente, cerrar sesión).
+- Onboarding de 7 pasos con guardado progresivo real en Supabase (resumable
+  si el usuario cierra la pestaña a la mitad).
+- Dashboard con navegación completa, página principal con estados vacíos
+  reales, y Configuración con 9 pestañas para editar todo lo capturado en
+  onboarding.
+
+Nota importante: este sandbox de desarrollo tiene bloqueado por política de
+red el acceso saliente a `*.supabase.co`, así que el flujo no se pudo probar
+en vivo (signup real, login real) dentro de esta sesión — sí se verificó con
+type-check, build de producción, lint, y una vista previa visual con datos
+simulados. Pruébalo tú una vez desplegado (Vercel) o corriendo local.
+
 ## 1. Qué ya existe en este repo
 
 - **Landing page** (`src/app/page.tsx` + `src/components/marketing/*`):
@@ -13,11 +33,24 @@ quieres — nada de esto es difícil de cambiar todavía.
   depender de un HDR externo), fondos con blobs de metal líquido en CSS,
   secciones de los 8 agentes, "cómo funciona", precios (Básico/Pro/Max con
   las cifras exactas del spec) y footer.
-- **Esquema de base de datos** (`supabase/migrations/0001_init.sql`): modelo
-  multi-tenant completo con RLS desde la creación de cada tabla (ver §2).
-- **Andamiaje de backend** (clientes de Supabase, interfaz de proveedor de
-  generación, cliente de Claude, tipos de contenido, lógica de presupuesto
-  de duración de video) — todo como stubs que lanzan un error claro de
+- **Autenticación** (`src/app/(auth)/*`, `src/app/auth/*`, `middleware.ts`):
+  registro, login, recuperación/restablecimiento de contraseña, verificación
+  de correo con reenvío, logout, y refresco de sesión en cada request.
+- **Onboarding** (`src/app/onboarding/*`, `src/components/onboarding/*`): 7
+  pasos (negocio, marca, redes, objetivos, competencia, productos, IA) con
+  barra de progreso, guardado por paso, y opción de continuar después.
+- **Dashboard** (`src/app/dashboard/*`, `src/components/dashboard/*`):
+  navegación completa (13 secciones), página principal con métricas reales
+  (en cero para una cuenta nueva) y estados vacíos diseñados, más
+  Configuración con 9 pestañas que reutilizan los mismos componentes del
+  onboarding.
+- **Esquema de base de datos** (`supabase/migrations/0001-0005*.sql`): modelo
+  multi-tenant completo con RLS desde la creación de cada tabla (ver §2),
+  ampliado con todos los campos del onboarding, bucket de Storage para
+  activos de marca, y preferencias de notificación.
+- **Andamiaje de backend** (interfaz de proveedor de generación, cliente de
+  Claude, tipos de contenido, lógica de presupuesto de duración de video) —
+  todo como stubs que lanzan un error claro de
   "falta API key" hasta que conectes las credenciales reales. Ningún stub
   esconde lógica de negocio a medias: son puntos de entrada explícitos, no
   implementaciones parciales.

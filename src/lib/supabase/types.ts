@@ -1,7 +1,674 @@
-/**
- * Placeholder until a real Supabase project exists. Once it's provisioned,
- * regenerate this file from supabase/migrations with:
- *   supabase gen types typescript --local > src/lib/supabase/types.ts
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Database = any;
+// Generated from the live Praeko Supabase project (hpjcgitivizvrzeihoxi).
+// Regenerate after any migration with:
+//   supabase gen types typescript --project-id hpjcgitivizvrzeihoxi > src/lib/supabase/types.ts
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      brand_assets: {
+        Row: {
+          asset_type: Database["public"]["Enums"]["brand_asset_type"]
+          business_id: string
+          created_at: string
+          id: string
+          liked: boolean
+          metadata: Json
+          storage_path: string
+        }
+        Insert: {
+          asset_type: Database["public"]["Enums"]["brand_asset_type"]
+          business_id: string
+          created_at?: string
+          id?: string
+          liked?: boolean
+          metadata?: Json
+          storage_path: string
+        }
+        Update: {
+          asset_type?: Database["public"]["Enums"]["brand_asset_type"]
+          business_id?: string
+          created_at?: string
+          id?: string
+          liked?: boolean
+          metadata?: Json
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_assets_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brand_profiles: {
+        Row: {
+          additional_info: string | null
+          address: string | null
+          admired_companies: string[]
+          ai_forbidden_topics: string | null
+          ai_forbidden_words: string[]
+          ai_response_style: string | null
+          average_ticket: string | null
+          brand_tone: string | null
+          brand_values: string[]
+          business_hours: Json
+          business_id: string
+          color_palette: string[] | null
+          created_at: string
+          faqs: Json
+          frequent_promotions: string | null
+          goals: string[]
+          goals_other: string | null
+          liked_content_examples: string[] | null
+          main_competitors: string[]
+          main_products: string[]
+          mission: string | null
+          other_social_links: Json
+          personality: string | null
+          preferred_fonts: string[] | null
+          product_categories: string[]
+          questionnaire: Json
+          sells_description: string | null
+          services_offered: string | null
+          social_links: Json
+          style_references: string[]
+          target_audience: string | null
+          updated_at: string
+        }
+        Insert: {
+          additional_info?: string | null
+          address?: string | null
+          admired_companies?: string[]
+          ai_forbidden_topics?: string | null
+          ai_forbidden_words?: string[]
+          ai_response_style?: string | null
+          average_ticket?: string | null
+          brand_tone?: string | null
+          brand_values?: string[]
+          business_hours?: Json
+          business_id: string
+          color_palette?: string[] | null
+          created_at?: string
+          faqs?: Json
+          frequent_promotions?: string | null
+          goals?: string[]
+          goals_other?: string | null
+          liked_content_examples?: string[] | null
+          main_competitors?: string[]
+          main_products?: string[]
+          mission?: string | null
+          other_social_links?: Json
+          personality?: string | null
+          preferred_fonts?: string[] | null
+          product_categories?: string[]
+          questionnaire?: Json
+          sells_description?: string | null
+          services_offered?: string | null
+          social_links?: Json
+          style_references?: string[]
+          target_audience?: string | null
+          updated_at?: string
+        }
+        Update: {
+          additional_info?: string | null
+          address?: string | null
+          admired_companies?: string[]
+          ai_forbidden_topics?: string | null
+          ai_forbidden_words?: string[]
+          ai_response_style?: string | null
+          average_ticket?: string | null
+          brand_tone?: string | null
+          brand_values?: string[]
+          business_hours?: Json
+          business_id?: string
+          color_palette?: string[] | null
+          created_at?: string
+          faqs?: Json
+          frequent_promotions?: string | null
+          goals?: string[]
+          goals_other?: string | null
+          liked_content_examples?: string[] | null
+          main_competitors?: string[]
+          main_products?: string[]
+          mission?: string | null
+          other_social_links?: Json
+          personality?: string | null
+          preferred_fonts?: string[] | null
+          product_categories?: string[]
+          questionnaire?: Json
+          sells_description?: string | null
+          services_offered?: string | null
+          social_links?: Json
+          style_references?: string[]
+          target_audience?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_profiles_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_members: {
+        Row: {
+          business_id: string
+          created_at: string
+          role: Database["public"]["Enums"]["business_role"]
+          user_id: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          role?: Database["public"]["Enums"]["business_role"]
+          user_id: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          role?: Database["public"]["Enums"]["business_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_members_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      businesses: {
+        Row: {
+          city: string | null
+          contact_email: string | null
+          country: string | null
+          created_at: string
+          description: string | null
+          id: string
+          industry: string | null
+          name: string
+          notification_preferences: Json
+          onboarding_completed_at: string | null
+          onboarding_step: number
+          phone: string | null
+          primary_language: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          city?: string | null
+          contact_email?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          industry?: string | null
+          name: string
+          notification_preferences?: Json
+          onboarding_completed_at?: string | null
+          onboarding_step?: number
+          phone?: string | null
+          primary_language?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          city?: string | null
+          contact_email?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          industry?: string | null
+          name?: string
+          notification_preferences?: Json
+          onboarding_completed_at?: string | null
+          onboarding_step?: number
+          phone?: string | null
+          primary_language?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      content_calendar: {
+        Row: {
+          business_id: string
+          content_kind: Database["public"]["Enums"]["content_kind"]
+          created_at: string
+          format: Database["public"]["Enums"]["content_format"]
+          id: string
+          recommended_publish_time: string | null
+          scheduled_date: string
+          script: string | null
+          status: Database["public"]["Enums"]["content_status"]
+          target_duration_seconds: number | null
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          content_kind: Database["public"]["Enums"]["content_kind"]
+          created_at?: string
+          format: Database["public"]["Enums"]["content_format"]
+          id?: string
+          recommended_publish_time?: string | null
+          scheduled_date: string
+          script?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          target_duration_seconds?: number | null
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          content_kind?: Database["public"]["Enums"]["content_kind"]
+          created_at?: string
+          format?: Database["public"]["Enums"]["content_format"]
+          id?: string
+          recommended_publish_time?: string | null
+          scheduled_date?: string
+          script?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          target_duration_seconds?: number | null
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_calendar_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      generations: {
+        Row: {
+          business_id: string
+          content_calendar_id: string | null
+          content_kind: Database["public"]["Enums"]["content_kind"]
+          cost_usd: number
+          created_at: string
+          duration_seconds: number
+          id: string
+          provider: string
+          quality_review_result:
+            | Database["public"]["Enums"]["quality_review_result"]
+            | null
+          storage_path: string | null
+        }
+        Insert: {
+          business_id: string
+          content_calendar_id?: string | null
+          content_kind: Database["public"]["Enums"]["content_kind"]
+          cost_usd?: number
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          provider: string
+          quality_review_result?:
+            | Database["public"]["Enums"]["quality_review_result"]
+            | null
+          storage_path?: string | null
+        }
+        Update: {
+          business_id?: string
+          content_calendar_id?: string | null
+          content_kind?: Database["public"]["Enums"]["content_kind"]
+          cost_usd?: number
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          provider?: string
+          quality_review_result?:
+            | Database["public"]["Enums"]["quality_review_result"]
+            | null
+          storage_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generations_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generations_content_calendar_id_fkey"
+            columns: ["content_calendar_id"]
+            isOneToOne: false
+            referencedRelation: "content_calendar"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          burns_subtitles: boolean
+          display_name: string
+          has_analytics_dashboard: boolean
+          has_optimized_schedule: boolean
+          has_priority_queue: boolean
+          has_watermark_free_downloads: boolean
+          images_per_month: number
+          key: Database["public"]["Enums"]["plan_key"]
+          price_usd_cents: number
+          social_network_limit: number
+          video_avg_seconds: number
+          video_max_seconds: number
+          video_provider: string
+          videos_per_month: number
+        }
+        Insert: {
+          burns_subtitles?: boolean
+          display_name: string
+          has_analytics_dashboard?: boolean
+          has_optimized_schedule?: boolean
+          has_priority_queue?: boolean
+          has_watermark_free_downloads?: boolean
+          images_per_month: number
+          key: Database["public"]["Enums"]["plan_key"]
+          price_usd_cents: number
+          social_network_limit: number
+          video_avg_seconds: number
+          video_max_seconds: number
+          video_provider: string
+          videos_per_month: number
+        }
+        Update: {
+          burns_subtitles?: boolean
+          display_name?: string
+          has_analytics_dashboard?: boolean
+          has_optimized_schedule?: boolean
+          has_priority_queue?: boolean
+          has_watermark_free_downloads?: boolean
+          images_per_month?: number
+          key?: Database["public"]["Enums"]["plan_key"]
+          price_usd_cents?: number
+          social_network_limit?: number
+          video_avg_seconds?: number
+          video_max_seconds?: number
+          video_provider?: string
+          videos_per_month?: number
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          business_id: string
+          created_at: string
+          current_period_end: string | null
+          id: string
+          plan_key: Database["public"]["Enums"]["plan_key"]
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan_key: Database["public"]["Enums"]["plan_key"]
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan_key?: Database["public"]["Enums"]["plan_key"]
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_plan_key_fkey"
+            columns: ["plan_key"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      usage_counters: {
+        Row: {
+          business_id: string
+          images_used: number
+          period_month: string
+          video_seconds_used: number
+          videos_used: number
+        }
+        Insert: {
+          business_id: string
+          images_used?: number
+          period_month: string
+          video_seconds_used?: number
+          videos_used?: number
+        }
+        Update: {
+          business_id?: string
+          images_used?: number
+          period_month?: string
+          video_seconds_used?: number
+          videos_used?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_counters_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      is_business_member: {
+        Args: { target_business_id: string }
+        Returns: boolean
+      }
+    }
+    Enums: {
+      brand_asset_type: "logo" | "photo" | "video" | "template_reference"
+      business_role: "owner" | "editor"
+      content_format: "reel" | "carrusel" | "imagen_unica" | "promocion"
+      content_kind: "imagen" | "video"
+      content_status:
+        | "pendiente"
+        | "generada"
+        | "en_revision"
+        | "publicada"
+        | "fallida"
+      plan_key: "basico" | "pro" | "max"
+      quality_review_result:
+        | "aprobado"
+        | "necesita_revision_humana"
+        | "rechazado"
+      subscription_status: "active" | "past_due" | "canceled" | "incomplete"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      brand_asset_type: ["logo", "photo", "video", "template_reference"],
+      business_role: ["owner", "editor"],
+      content_format: ["reel", "carrusel", "imagen_unica", "promocion"],
+      content_kind: ["imagen", "video"],
+      content_status: [
+        "pendiente",
+        "generada",
+        "en_revision",
+        "publicada",
+        "fallida",
+      ],
+      plan_key: ["basico", "pro", "max"],
+      quality_review_result: [
+        "aprobado",
+        "necesita_revision_humana",
+        "rechazado",
+      ],
+      subscription_status: ["active", "past_due", "canceled", "incomplete"],
+    },
+  },
+} as const

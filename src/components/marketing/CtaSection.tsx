@@ -1,3 +1,4 @@
+import Link from "next/link";
 import LiquidMetalBackground from "./LiquidMetalBackground";
 
 export default function CtaSection() {
@@ -12,12 +13,12 @@ export default function CtaSection() {
           Onboarding de 10 minutos. El primer calendario de contenido de tu
           negocio, listo el mismo día.
         </p>
-        <a
-          href="#precios"
+        <Link
+          href="/registro"
           className="rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-transform hover:scale-[1.03]"
         >
           Empieza gratis
-        </a>
+        </Link>
       </div>
     </section>
   );

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Check } from "lucide-react";
 
 const plans = [
@@ -114,8 +115,8 @@ export default function PricingSection() {
                 ))}
               </ul>
 
-              <a
-                href="#"
+              <Link
+                href={`/registro?plan=${plan.name.toLowerCase()}`}
                 className={`mt-8 rounded-full px-5 py-2.5 text-center text-sm font-medium transition-transform hover:scale-[1.02] ${
                   plan.featured
                     ? "bg-white text-zinc-950"
@@ -123,7 +124,7 @@ export default function PricingSection() {
                 }`}
               >
                 Elegir {plan.name}
-              </a>
+              </Link>
             </div>
           ))}
         </div>

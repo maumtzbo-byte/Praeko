@@ -227,12 +227,24 @@ create policy "businesses_select" on businesses for select
 create policy "businesses_update" on businesses for update
   using (is_business_member(id));
 create policy "businesses_insert" on businesses for insert
+  to authenticated
   with check (true);
 
 create policy "business_members_select" on business_members for select
   using (is_business_member(business_id));
+-- A user may only self-insert as a member of a business that has no members
+-- yet — i.e. claiming the orphan row they just created in onboarding step 1.
+-- Once a business has an owner, nobody else can grant themselves membership
+-- through this policy; that has to go through an existing member's action.
 create policy "business_members_insert" on business_members for insert
-  with check (is_business_member(business_id) or user_id = auth.uid());
+  to authenticated
+  with check (
+    user_id = auth.uid()
+    and not exists (
+      select 1 from business_members existing
+      where existing.business_id = business_members.business_id
+    )
+  );
 
 create policy "subscriptions_select" on subscriptions for select
   using (is_business_member(business_id));

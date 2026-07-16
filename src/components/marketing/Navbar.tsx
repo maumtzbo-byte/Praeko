@@ -35,18 +35,18 @@ export default function Navbar() {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
-          <a
-            href="#"
+          <Link
+            href="/login"
             className="text-sm font-medium text-zinc-700 hover:text-zinc-950"
           >
             Iniciar sesión
-          </a>
-          <a
-            href="#precios"
+          </Link>
+          <Link
+            href="/registro"
             className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-transform hover:scale-[1.03]"
           >
             Empieza gratis
-          </a>
+          </Link>
         </div>
 
         <button
@@ -70,16 +70,16 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
-          <a href="#" className="text-sm text-zinc-700">
+          <Link href="/login" className="text-sm text-zinc-700" onClick={() => setOpen(false)}>
             Iniciar sesión
-          </a>
-          <a
-            href="#precios"
+          </Link>
+          <Link
+            href="/registro"
             onClick={() => setOpen(false)}
             className="rounded-full bg-zinc-950 px-4 py-2 text-center text-sm font-medium text-white"
           >
             Empieza gratis
-          </a>
+          </Link>
         </div>
       )}
     </header>

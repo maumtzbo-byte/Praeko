@@ -10,7 +10,7 @@ const LiquidMetalOrb = dynamic(() => import("@/components/three/LiquidMetalOrb")
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-[92vh] items-center overflow-hidden pt-24">
+    <section className="relative flex flex-col items-center overflow-hidden pb-16 pt-28 md:min-h-[92vh] md:justify-center md:pb-14">
       <LiquidMetalBackground />
 
       <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-8 px-6 md:grid-cols-[1fr_minmax(280px,420px)_1fr]">
@@ -42,8 +42,8 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="absolute inset-x-0 bottom-14 flex flex-col items-center gap-5 px-6 text-center">
-        <p className="text-sm font-medium tracking-[0.35em] text-zinc-600">
+      <div className="relative mt-14 flex flex-col items-center gap-5 px-6 text-center md:mt-20">
+        <p className="max-w-xs text-xs font-medium tracking-[0.25em] text-zinc-600 sm:max-w-none sm:text-sm sm:tracking-[0.35em]">
           ESTRATEGIA&nbsp;&nbsp;·&nbsp;&nbsp;CONTENIDO&nbsp;&nbsp;·&nbsp;&nbsp;RESULTADOS
         </p>
         <span className="rounded-full border border-zinc-300/80 bg-white/40 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-zinc-600 backdrop-blur-sm">

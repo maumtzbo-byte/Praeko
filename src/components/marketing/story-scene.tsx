@@ -64,7 +64,7 @@ const PANEL_POSITIONS: [number, number, number][] = [
 const CAMERA_SHOTS: ShotPoint[] = [
   { position: [0, 0, 4.2], lookAt: [0, 0, 0], fov: 32 },
   { position: [3.6, 0.6, 3.4], lookAt: [3.6, 0.1, -0.6], fov: 30 },
-  { position: [7.2, 0.15, 4.6], lookAt: [7.2, 0.4, 0.4], fov: 27 },
+  { position: [7.2, 0.1, 5.0], lookAt: [7.2, 0.15, 0.4], fov: 28 },
   { position: [10.8, 0.8, 3.6], lookAt: [10.8, 0.15, -0.5], fov: 29 },
   { position: [14.4, -0.4, 3.0], lookAt: [14.4, -0.1, 0.3], fov: 34 },
   { position: [18, 0.2, 4.8], lookAt: [18, 0, 0], fov: 27 },

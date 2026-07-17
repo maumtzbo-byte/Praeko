@@ -242,9 +242,16 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
     let touchStartY: number | null = null;
     const MIN_SWIPE_PX = 24;
 
+    // Derived from the section's own measured height, not window.innerHeight —
+    // the section's CSS height uses plain `vh` (static: fixed to the largest
+    // viewport), but mobile Safari's window.innerHeight is dynamic and
+    // shrinks/grows as its address bar and toolbar show or hide. Mixing the
+    // two meant a beat's computed pixel position could drift away from where
+    // the (static-vh-based) content actually sat, landing scroll animations
+    // short/long of the real boundary — the mid-transition "stuck" cards.
     const sectionTop = () => section.getBoundingClientRect().top + window.scrollY;
-    const beatPx = () => (window.innerHeight * CONTENT_VH_PER_BEAT) / 100;
-    const totalHeightPx = () => (window.innerHeight * totalHeightVh) / 100;
+    const totalHeightPx = () => section.getBoundingClientRect().height;
+    const beatPx = () => (totalHeightPx() * CONTENT_VH_PER_BEAT) / totalHeightVh;
     const isInsideSection = () => {
       const rect = section.getBoundingClientRect();
       return rect.top <= 0 && rect.bottom > 0;
@@ -374,7 +381,15 @@ export default function ScrollStory() {
           <Particle key={i} progress={progress} {...p} />
         ))}
 
-        <StoryScene progress={progress} />
+        {/* Hard safety margin, independent of camera/viewport math: no matter
+            how a real device's viewport quirks shift the 3D framing, the
+            scene can never visually reach the caption above or the icon
+            row below — it just fades out first. Mobile reserves more of the
+            frame since the caption text takes up proportionally more room
+            on a small screen. */}
+        <div className="pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,transparent_0%,black_25%,black_86%,transparent_100%)] sm:[mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_92%,transparent_100%)]">
+          <StoryScene progress={progress} />
+        </div>
 
         <p className="pointer-events-none absolute top-20 text-xs font-semibold tracking-[0.3em] text-zinc-500 sm:top-24">
           EL CICLO DIARIO

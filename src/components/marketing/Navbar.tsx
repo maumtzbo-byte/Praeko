@@ -5,8 +5,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
 const links = [
-  { href: "#agentes", label: "Agentes" },
-  { href: "#como-funciona", label: "Cómo funciona" },
+  { href: "#agentes", label: "Cómo funciona" },
   { href: "#precios", label: "Precios" },
 ];
 

@@ -17,11 +17,27 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import type { Tables } from "@/lib/supabase/types";
 
 function firstNameFromEmail(email: string | undefined) {
   if (!email) return "";
   return email.split("@")[0];
 }
+
+const ACTIVITY_VERBS: Record<Tables<"content_calendar">["status"], string> = {
+  pendiente: "Se generó un guion para",
+  generada: "Se generó la pieza",
+  en_revision: "Está en revisión:",
+  publicada: "Se publicó",
+  fallida: "Falló la generación de",
+};
+
+const activityDateFormatter = new Intl.DateTimeFormat("es-MX", {
+  day: "numeric",
+  month: "short",
+  hour: "numeric",
+  minute: "2-digit",
+});
 
 const QUICK_ACTIONS = [
   { href: "/dashboard/generar-contenido", label: "Generar contenido", icon: Sparkles },
@@ -48,6 +64,7 @@ export default async function DashboardHomePage() {
     { count: videosCount },
     { count: imagesCount },
     { count: scheduledCount },
+    { data: recentActivity },
   ] = await Promise.all([
     supabase.from("subscriptions").select("*").eq("business_id", business.id).maybeSingle(),
     supabase
@@ -71,6 +88,12 @@ export default async function DashboardHomePage() {
       .select("id", { count: "exact", head: true })
       .eq("business_id", business.id)
       .in("status", ["pendiente", "generada"]),
+    supabase
+      .from("content_calendar")
+      .select("id, topic, status, content_kind, created_at")
+      .eq("business_id", business.id)
+      .order("created_at", { ascending: false })
+      .limit(6),
   ]);
 
   const displayName = (user?.user_metadata?.full_name as string | undefined) || firstNameFromEmail(user?.email);
@@ -166,11 +189,35 @@ export default async function DashboardHomePage() {
               <Activity className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
-              <EmptyState
-                icon={Activity}
-                title="Sin actividad todavía"
-                description="Aquí vas a ver cada generación, publicación y revisión de calidad en cuanto empiece a correr tu ciclo diario."
-              />
+              {recentActivity && recentActivity.length > 0 ? (
+                <div className="flex flex-col divide-y divide-zinc-100">
+                  {recentActivity.map((item) => {
+                    const Icon = item.content_kind === "video" ? Clapperboard : ImageIcon;
+                    return (
+                      <div key={item.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
+                          <Icon className="h-4 w-4 text-zinc-600" strokeWidth={1.75} />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm text-zinc-700">
+                            {ACTIVITY_VERBS[item.status]}{" "}
+                            <span className="font-medium text-zinc-900">&ldquo;{item.topic}&rdquo;</span>
+                          </p>
+                          <p className="text-xs text-zinc-400">
+                            {activityDateFormatter.format(new Date(item.created_at))}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <EmptyState
+                  icon={Activity}
+                  title="Sin actividad todavía"
+                  description="Aquí vas a ver cada generación, publicación y revisión de calidad en cuanto empiece a correr tu ciclo diario."
+                />
+              )}
             </CardContent>
           </Card>
         </div>

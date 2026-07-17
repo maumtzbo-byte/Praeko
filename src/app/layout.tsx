@@ -13,10 +13,39 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://praekomarketingsaas.vercel.app";
+const SITE_TITLE = "Praeko — Marketing con Inteligencia";
+const SITE_DESCRIPTION =
+  "Praeko es el SaaS de marketing con agentes de IA que crea contenido, publica y mide resultados por ti. Estrategia, contenido y resultados en un solo lugar.";
+
 export const metadata: Metadata = {
-  title: "Praeko — Marketing con Inteligencia",
-  description:
-    "Praeko es el SaaS de marketing con agentes de IA que crea contenido, publica y mide resultados por ti. Estrategia, contenido y resultados en un solo lugar.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_TITLE,
+    template: "%s — Praeko",
+  },
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "marketing con IA",
+    "agentes de IA",
+    "marketing para negocios pequeños",
+    "generación de contenido con IA",
+    "SaaS de marketing México",
+  ],
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    locale: "es_MX",
+    url: SITE_URL,
+    siteName: "Praeko",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

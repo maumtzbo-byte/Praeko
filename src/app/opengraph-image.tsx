@@ -1,7 +1,11 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { ImageResponse } from "next/og";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+const logoDataUrl = `data:image/png;base64,${readFileSync(join(process.cwd(), "public/brand/p-logo.png")).toString("base64")}`;
 
 export default function OpengraphImage() {
   return new ImageResponse(
@@ -69,42 +73,21 @@ export default function OpengraphImage() {
 
           <div
             style={{
-              position: "relative",
               display: "flex",
-              width: 210,
-              height: 210,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "42% 58% 63% 37% / 48% 42% 58% 52%",
-              backgroundImage:
-                "linear-gradient(150deg, #ffffff 0%, #ffffff 12%, #c8cad0 42%, #8b8d94 68%, #45464c 92%)",
-              boxShadow: "0 35px 80px rgba(22,22,26,0.22), inset 0 -14px 30px rgba(22,22,26,0.25)",
+              width: 260,
+              height: 260,
+              borderRadius: 48,
+              overflow: "hidden",
+              boxShadow: "0 30px 60px rgba(22,22,26,0.2)",
             }}
           >
-            <div
-              style={{
-                position: "absolute",
-                top: 24,
-                left: 30,
-                width: 90,
-                height: 60,
-                display: "flex",
-                borderRadius: "50%",
-                backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 70%)",
-              }}
+            <img
+              src={logoDataUrl}
+              alt="Praeko"
+              width={260}
+              height={260}
+              style={{ display: "flex", objectFit: "cover" }}
             />
-            <span
-              style={{
-                display: "flex",
-                fontSize: 118,
-                fontWeight: 700,
-                backgroundImage: "linear-gradient(180deg, #ffffff 0%, #e4e4e8 35%, #45464c 100%)",
-                backgroundClip: "text",
-                color: "transparent",
-              }}
-            >
-              P
-            </span>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", textAlign: "left" }}>

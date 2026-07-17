@@ -5,39 +5,46 @@ import { Environment, Lightformer, MeshDistortMaterial } from "@react-three/drei
 import { Bloom, EffectComposer, Noise } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import { Suspense, useRef } from "react";
-import type { Mesh, MeshPhysicalMaterial } from "three";
+import type { Mesh, MeshPhysicalMaterial, PerspectiveCamera } from "three";
 import type { MotionValue } from "framer-motion";
 
 type DistortMaterialHandle = MeshPhysicalMaterial & { distort: number };
 
-interface DriftPoint {
+type DriftPoint = {
   x: number;
   y: number;
   scale: number;
-}
+};
+
+type ShotPoint = {
+  distance: number;
+  fov: number;
+};
 
 /** Linear interpolation across evenly-spaced control points, read fresh every r3f frame. */
-function lerpDrift(points: DriftPoint[], t: number): DriftPoint {
+function lerpPoints<T extends object>(points: T[], t: number): T {
   const clamped = Math.min(Math.max(t, 0), 1);
   const segment = 1 / (points.length - 1);
   const idx = Math.min(Math.floor(clamped / segment), points.length - 2);
   const localT = (clamped - idx * segment) / segment;
-  const a = points[idx];
-  const b = points[idx + 1];
-  return {
-    x: a.x + (b.x - a.x) * localT,
-    y: a.y + (b.y - a.y) * localT,
-    scale: a.scale + (b.scale - a.scale) * localT,
-  };
+  const a = points[idx] as Record<string, number>;
+  const b = points[idx + 1] as Record<string, number>;
+  const result: Record<string, number> = {};
+  for (const key of Object.keys(a)) {
+    result[key] = a[key] + (b[key] - a[key]) * localT;
+  }
+  return result as T;
 }
 
 function Orb({
   progress,
   driftPoints,
+  shotPoints,
   cameraDistance,
 }: {
   progress?: MotionValue<number>;
   driftPoints?: DriftPoint[];
+  shotPoints?: ShotPoint[];
   cameraDistance: number;
 }) {
   const mesh = useRef<Mesh>(null);
@@ -53,7 +60,7 @@ function Orb({
     if (!mesh.current) return;
     const t = state.clock.getElapsedTime();
     const storyProgress = progress ? progress.get() : 0;
-    const drift = progress && driftPoints ? lerpDrift(driftPoints, storyProgress) : { x: 0, y: 0, scale: 1 };
+    const drift = progress && driftPoints ? lerpPoints(driftPoints, storyProgress) : { x: 0, y: 0, scale: 1 };
 
     smoothPointer.current.x += (state.pointer.x - smoothPointer.current.x) * 0.04;
     smoothPointer.current.y += (state.pointer.y - smoothPointer.current.y) * 0.04;
@@ -68,7 +75,21 @@ function Orb({
     // the scene read as a space with depth rather than a flat rendered sticker.
     state.camera.position.x = smoothPointer.current.x * 0.22;
     state.camera.position.y = smoothPointer.current.y * 0.13;
-    state.camera.position.z = cameraDistance - (progress ? storyProgress * 0.5 : 0);
+
+    if (progress && shotPoints) {
+      // Per-beat "shots" — distance and field of view both interpolated, so
+      // each beat reads as its own directed camera setup (wide establishing,
+      // tight macro, pulled-back reveal) instead of one fixed framing.
+      const shot = lerpPoints(shotPoints, storyProgress);
+      state.camera.position.z = shot.distance;
+      if ("fov" in state.camera) {
+        const camera = state.camera as PerspectiveCamera;
+        camera.fov = shot.fov;
+        camera.updateProjectionMatrix();
+      }
+    } else {
+      state.camera.position.z = cameraDistance - (progress ? storyProgress * 0.5 : 0);
+    }
     state.camera.lookAt(0, 0, 0);
 
     // Narrative arc: the metal is more turbulent at the start of the story
@@ -104,6 +125,7 @@ export default function LiquidMetalOrb({
   className,
   progress,
   driftPoints,
+  shotPoints,
   fov = 40,
   cameraDistance = 5,
   cinematic = false,
@@ -113,6 +135,8 @@ export default function LiquidMetalOrb({
   /** Optional 0..1 scroll progress — when given with `driftPoints`, the orb drifts/scales along the story instead of just idling. */
   progress?: MotionValue<number>;
   driftPoints?: DriftPoint[];
+  /** Optional per-beat camera distance/fov control points — when given with `progress`, overrides the fixed dolly with distinct per-beat "shots". */
+  shotPoints?: ShotPoint[];
   /** Camera field of view in degrees. Defaults to the original Hero framing. */
   fov?: number;
   /** Camera distance from the orb. Defaults to the original Hero framing. */
@@ -143,7 +167,7 @@ export default function LiquidMetalOrb({
         <Suspense fallback={null}>
           <ambientLight intensity={0.9} />
           <directionalLight position={[2, 3, 4]} intensity={1.2} />
-          <Orb progress={progress} driftPoints={driftPoints} cameraDistance={cameraDistance} />
+          <Orb progress={progress} driftPoints={driftPoints} shotPoints={shotPoints} cameraDistance={cameraDistance} />
           {/* Procedural studio lighting rig — no external HDR fetch required. */}
           <Environment resolution={256}>
             <Lightformer

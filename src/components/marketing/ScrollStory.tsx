@@ -1,17 +1,19 @@
 "use client";
 
 import { useRef } from "react";
+import dynamic from "next/dynamic";
 import {
   motion,
   useReducedMotion,
   useScroll,
-  useSpring,
   useTransform,
   easeInOut,
   type MotionValue,
 } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { Building2, CalendarClock, PenLine, ShieldCheck, Send, BarChart3 } from "lucide-react";
+
+const LiquidMetalOrb = dynamic(() => import("@/components/three/LiquidMetalOrb"), { ssr: false });
 
 interface Beat {
   icon: LucideIcon;
@@ -62,14 +64,21 @@ const BEATS: Beat[] = [
   },
 ];
 
-// Ambient glow drift: one control point per beat, interpolated smoothly.
-const GLOW_DRIFT = [
-  { x: -120, y: -60, scale: 1 },
-  { x: 130, y: 30, scale: 1.1 },
-  { x: -70, y: 120, scale: 0.95 },
-  { x: 110, y: -110, scale: 1.05 },
-  { x: -140, y: 20, scale: 1.12 },
-  { x: 60, y: 80, scale: 1 },
+// Orb drift, in small three.js world units — one control point per beat.
+const ORB_DRIFT = [
+  { x: -0.5, y: -0.2, scale: 1 },
+  { x: 0.55, y: 0.15, scale: 1.12 },
+  { x: -0.3, y: 0.45, scale: 0.92 },
+  { x: 0.45, y: -0.4, scale: 1.08 },
+  { x: -0.55, y: 0.1, scale: 1.15 },
+  { x: 0.25, y: 0.3, scale: 1 },
+];
+
+// Small blurred accents drifting at a different rate than the orb, for depth.
+const PARTICLES = [
+  { size: 14, opacity: 0.5, from: { x: -260, y: -160 }, to: { x: 220, y: 140 } },
+  { size: 9, opacity: 0.4, from: { x: 240, y: -120 }, to: { x: -200, y: 180 } },
+  { size: 11, opacity: 0.35, from: { x: -160, y: 200 }, to: { x: 180, y: -180 } },
 ];
 
 /** Builds the [start,fadeIn,fadeOut,end] progress breakpoints for beat `index` of `total`. */
@@ -104,20 +113,19 @@ function BeatContent({
   const input = beatInputRange(index, total, 0.32);
   const opacity = useTransform(progress, input, beatOutputRange(index, total, 0, 1, 0), { ease: easeInOut });
   const y = useTransform(progress, input, beatOutputRange(index, total, 20, 0, -20), { ease: easeInOut });
-  const Icon = beat.icon;
 
   return (
-    <motion.div style={{ opacity, y }} className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-zinc-300 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_8px_24px_rgba(0,0,0,0.12)]">
-        <Icon className="h-7 w-7 text-zinc-700" strokeWidth={1.5} />
-      </div>
-      <p className="mb-3 font-mono text-xs tracking-[0.3em] text-zinc-400">
+    <motion.div
+      style={{ opacity, y }}
+      className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
+    >
+      <p className="mb-4 font-mono text-xs tracking-[0.3em] text-zinc-400">
         {beat.step} / {String(total).padStart(2, "0")}
       </p>
-      <h3 className="max-w-lg text-balance text-2xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+      <h3 className="chrome-text max-w-lg text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
         {beat.title}
       </h3>
-      <p className="mt-4 max-w-md text-balance text-sm text-zinc-600 sm:text-base">{beat.description}</p>
+      <p className="mt-5 max-w-md text-balance text-sm text-zinc-600 sm:text-base">{beat.description}</p>
     </motion.div>
   );
 }
@@ -131,6 +139,40 @@ function ProgressDot({ progress, index, total }: { progress: MotionValue<number>
     { ease: easeInOut },
   );
   return <motion.span className="h-1 w-6 rounded-full" style={{ backgroundColor }} />;
+}
+
+function Particle({
+  progress,
+  size,
+  opacity,
+  from,
+  to,
+}: {
+  progress: MotionValue<number>;
+  size: number;
+  opacity: number;
+  from: { x: number; y: number };
+  to: { x: number; y: number };
+}) {
+  const xRaw = useTransform(progress, [0, 1], [from.x, to.x]);
+  const yRaw = useTransform(progress, [0, 1], [from.y, to.y]);
+  const x = useTransform(xRaw, (v) => `calc(-50% + ${v}px)`);
+  const y = useTransform(yRaw, (v) => `calc(-50% + ${v}px)`);
+
+  return (
+    <motion.span
+      aria-hidden="true"
+      className="pointer-events-none absolute left-1/2 top-1/2 rounded-full blur-md"
+      style={{
+        width: size,
+        height: size,
+        opacity,
+        background: "radial-gradient(circle, #ffffff 0%, #8b8d94 70%, transparent 100%)",
+        x,
+        y,
+      }}
+    />
+  );
 }
 
 function StaticFallback() {
@@ -178,20 +220,12 @@ export default function ScrollStory() {
   // release buffer at the end is "dead" scroll space, not another beat.
   // No spring here: text needs to track the scrollbar exactly, or a fast
   // flick-scroll makes it look like the story is lagging behind the finger.
+  // The orb reads this same MotionValue directly inside its own render loop
+  // (see LiquidMetalOrb), so its drift stays in perfect sync with the text too.
   const progress = useTransform(scrollYProgress, [0, contentFraction], [0, 1], { clamp: true });
   // Fades the whole panel out during the release buffer, so it's already
   // invisible by the time the sticky container's edge would otherwise clip it.
   const panelOpacity = useTransform(scrollYProgress, [contentFraction, 1], [1, 0], { clamp: true });
-
-  // The ambient glow is purely decorative, so a little spring lag reads as
-  // an organic, liquid trail instead of a delay.
-  const glowProgress = useSpring(progress, { stiffness: 120, damping: 18, mass: 0.4 });
-  const stops = GLOW_DRIFT.map((_, i) => i / (GLOW_DRIFT.length - 1));
-  const glowXRaw = useTransform(glowProgress, stops, GLOW_DRIFT.map((p) => p.x));
-  const glowYRaw = useTransform(glowProgress, stops, GLOW_DRIFT.map((p) => p.y));
-  const glowScale = useTransform(glowProgress, stops, GLOW_DRIFT.map((p) => p.scale));
-  const glowX = useTransform(glowXRaw, (v) => `calc(-50% + ${v}px)`);
-  const glowY = useTransform(glowYRaw, (v) => `calc(-50% + ${v}px)`);
 
   if (reducedMotion) {
     return <StaticFallback />;
@@ -208,17 +242,25 @@ export default function ScrollStory() {
         style={{ opacity: panelOpacity }}
         className="sticky top-0 flex h-dvh items-center justify-center overflow-hidden"
       >
-        <motion.div
+        {/* Subtle ambient light bounce behind the orb — depth, not the main subject. */}
+        <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 h-[34rem] w-[34rem] rounded-full opacity-70 blur-3xl"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-3xl"
           style={{
-            background:
-              "radial-gradient(circle at 35% 35%, #ffffff 0%, #d6d8dd 30%, #8a8c93 60%, #45464c 100%)",
-            x: glowX,
-            y: glowY,
-            scale: glowScale,
+            background: "radial-gradient(circle, #ffffff 0%, #c8cad0 45%, transparent 75%)",
           }}
         />
+
+        {PARTICLES.map((p, i) => (
+          <Particle key={i} progress={progress} {...p} />
+        ))}
+
+        <LiquidMetalOrb
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 opacity-50 blur-[2px] sm:h-[36rem] sm:w-[36rem]"
+          progress={progress}
+          driftPoints={ORB_DRIFT}
+        />
+
         <p className="pointer-events-none absolute top-24 text-xs font-semibold tracking-[0.3em] text-zinc-500">
           EL CICLO DIARIO
         </p>

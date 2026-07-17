@@ -81,7 +81,10 @@ export async function saveBusinessInfo(
         p_country: businessRow.country,
         p_city: businessRow.city,
         p_primary_language: businessRow.primary_language,
-        p_website_url: businessRow.website_url,
+        // Supabase's generated Args type doesn't reflect that this text
+        // param accepts null at runtime (the RPC's businesses.website_url
+        // column is nullable) — cast to match the overly strict codegen type.
+        p_website_url: businessRow.website_url as string,
         p_phone: businessRow.phone,
         p_contact_email: businessRow.contact_email,
       },

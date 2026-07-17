@@ -8,43 +8,58 @@ import { generateContentPlan } from "@/app/dashboard/generar-contenido/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Alert } from "@/components/ui/alert";
 import { EmptyState } from "@/components/dashboard/empty-state";
+import { FORMAT_LABELS, STATUS_VARIANTS, STATUS_LABELS, formatScheduledDate } from "@/lib/content/labels";
 import type { Tables } from "@/lib/supabase/types";
 
 type ContentCalendarRow = Tables<"content_calendar">;
 
-const FORMAT_LABELS: Record<ContentCalendarRow["format"], string> = {
-  reel: "Reel",
-  carrusel: "Carrusel",
-  imagen_unica: "Imagen única",
-  promocion: "Promoción",
-};
+/** Generation costs real money (Claude API), so this asks for confirmation before spending. */
+function GenerateAction({ businessId, onGenerated }: { businessId: string; onGenerated: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
-const STATUS_VARIANTS: Record<ContentCalendarRow["status"], "neutral" | "success" | "warning" | "danger"> = {
-  pendiente: "neutral",
-  generada: "success",
-  en_revision: "warning",
-  publicada: "success",
-  fallida: "danger",
-};
+  async function handleConfirm() {
+    setGenerating(true);
+    try {
+      const res = await generateContentPlan(businessId);
+      if (!res.success) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(
+        `Se generaron ${res.data.created} piezas de contenido. Te quedan ${res.data.runsRemainingToday} generaciones hoy.`,
+      );
+      setConfirming(false);
+      onGenerated();
+    } finally {
+      setGenerating(false);
+    }
+  }
 
-const STATUS_LABELS: Record<ContentCalendarRow["status"], string> = {
-  pendiente: "Pendiente",
-  generada: "Generada",
-  en_revision: "En revisión",
-  publicada: "Publicada",
-  fallida: "Fallida",
-};
+  if (confirming) {
+    return (
+      <Alert variant="info" className="flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <span>Esto va a usar tu API key de Claude (cuesta unos centavos de dólar). ¿Generar de todas formas?</span>
+        <div className="flex shrink-0 gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setConfirming(false)} disabled={generating}>
+            Cancelar
+          </Button>
+          <Button size="sm" onClick={handleConfirm} loading={generating}>
+            Confirmar generación
+          </Button>
+        </div>
+      </Alert>
+    );
+  }
 
-const dateFormatter = new Intl.DateTimeFormat("es-MX", {
-  weekday: "short",
-  day: "numeric",
-  month: "short",
-});
-
-function formatScheduledDate(isoDate: string) {
-  // Force UTC parsing so the calendar date shown matches what's stored (no local-timezone shift).
-  return dateFormatter.format(new Date(`${isoDate}T00:00:00Z`));
+  return (
+    <Button onClick={() => setConfirming(true)}>
+      <Sparkles className="h-4 w-4" />
+      Generar plan de 7 días
+    </Button>
+  );
 }
 
 export function GenerateContentPanel({
@@ -55,29 +70,7 @@ export function GenerateContentPanel({
   initialItems: ContentCalendarRow[];
 }) {
   const router = useRouter();
-  const [generating, setGenerating] = useState(false);
-
-  async function handleGenerate() {
-    setGenerating(true);
-    try {
-      const res = await generateContentPlan(businessId);
-      if (!res.success) {
-        toast.error(res.error);
-        return;
-      }
-      toast.success(`Se generaron ${res.data.created} piezas de contenido.`);
-      router.refresh();
-    } finally {
-      setGenerating(false);
-    }
-  }
-
-  const generateButton = (
-    <Button onClick={handleGenerate} loading={generating}>
-      <Sparkles className="h-4 w-4" />
-      Generar plan de 7 días
-    </Button>
-  );
+  const generateAction = <GenerateAction businessId={businessId} onGenerated={() => router.refresh()} />;
 
   if (initialItems.length === 0) {
     return (
@@ -85,14 +78,14 @@ export function GenerateContentPanel({
         icon={Sparkles}
         title="Todavía no hay contenido generado"
         description="Pídele a tus agentes de IA de estrategia y guionista que propongan los próximos 7 días de contenido para tu negocio."
-        action={generateButton}
+        action={generateAction}
       />
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">{generateButton}</div>
+      <div className="flex justify-end">{generateAction}</div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {initialItems.map((item) => {
           const Icon = item.content_kind === "video" ? Clapperboard : ImageIcon;

@@ -1,14 +1,22 @@
-import { CalendarDays } from "lucide-react";
-import { ComingSoonPage } from "@/components/dashboard/coming-soon-page";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { CalendarView } from "@/components/calendar/calendar-view";
+import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
+import { createClient } from "@/lib/supabase/server";
 
-export default function CalendarioPage() {
+export default async function CalendarioPage() {
+  const { business } = await getCurrentBusiness();
+  const supabase = await createClient();
+
+  const { data: calendarItems } = await supabase
+    .from("content_calendar")
+    .select("*")
+    .eq("business_id", business.id)
+    .order("scheduled_date", { ascending: true });
+
   return (
-    <ComingSoonPage
-      icon={CalendarDays}
-      title="Calendario"
-      description="El calendario de contenido mensual que arma tu agente de estrategia."
-      emptyTitle="Aún no hay un calendario generado"
-      emptyDescription="Cuando termines de conectar tu plan, Praeko va a proponerte qué publicar cada día del mes — tema, formato y guion incluidos."
-    />
+    <div>
+      <PageHeader title="Calendario" description="Todo tu contenido organizado por fecha." />
+      <CalendarView initialItems={calendarItems ?? []} />
+    </div>
   );
 }

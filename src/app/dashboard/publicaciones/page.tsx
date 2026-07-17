@@ -1,14 +1,22 @@
-import { Send } from "lucide-react";
-import { ComingSoonPage } from "@/components/dashboard/coming-soon-page";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { PublicationsList } from "@/components/content/publications-list";
+import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
+import { createClient } from "@/lib/supabase/server";
 
-export default function PublicacionesPage() {
+export default async function PublicacionesPage() {
+  const { business } = await getCurrentBusiness();
+  const supabase = await createClient();
+
+  const { data: calendarItems } = await supabase
+    .from("content_calendar")
+    .select("*")
+    .eq("business_id", business.id)
+    .order("scheduled_date", { ascending: true });
+
   return (
-    <ComingSoonPage
-      icon={Send}
-      title="Publicaciones programadas"
-      description="Qué está a punto de publicarse y cuándo."
-      emptyTitle="No hay publicaciones programadas"
-      emptyDescription="En cuanto conectes una red social y tengas contenido aprobado, vas a ver aquí cada pieza con su horario de publicación."
-    />
+    <div>
+      <PageHeader title="Publicaciones programadas" description="Qué está a punto de publicarse y cuándo." />
+      <PublicationsList initialItems={calendarItems ?? []} />
+    </div>
   );
 }

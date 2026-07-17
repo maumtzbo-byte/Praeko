@@ -11,6 +11,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -303,6 +305,35 @@ export type Database = {
           },
         ]
       }
+      content_generation_runs: {
+        Row: {
+          business_id: string
+          created_at: string
+          days_requested: number
+          id: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          days_requested: number
+          id?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          days_requested?: number
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_generation_runs_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generations: {
         Row: {
           business_id: string
@@ -502,23 +533,45 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_business_for_current_user: {
+        Args: {
+          p_city: string
+          p_contact_email: string
+          p_country: string
+          p_description: string
+          p_industry: string
+          p_name: string
+          p_phone: string
+          p_primary_language: string
+          p_website_url: string
+        }
+        Returns: {
+          city: string | null
+          contact_email: string | null
+          country: string | null
+          created_at: string
+          description: string | null
+          id: string
+          industry: string | null
+          name: string
+          notification_preferences: Json
+          onboarding_completed_at: string | null
+          onboarding_step: number
+          phone: string | null
+          primary_language: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "businesses"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       is_business_member: {
         Args: { target_business_id: string }
         Returns: boolean
-      }
-      create_business_for_current_user: {
-        Args: {
-          p_name: string
-          p_description: string | null
-          p_industry: string
-          p_country: string
-          p_city: string
-          p_primary_language: string
-          p_website_url: string | null
-          p_phone: string | null
-          p_contact_email: string | null
-        }
-        Returns: Database["public"]["Tables"]["businesses"]["Row"]
       }
     }
     Enums: {

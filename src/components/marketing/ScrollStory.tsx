@@ -213,7 +213,13 @@ function StaticFallback() {
 // room in its container and visibly gets squeezed against the bottom edge.
 const CONTENT_VH_PER_BEAT = 85;
 const RELEASE_BUFFER_VH = 60;
-const ADVANCE_DURATION_MS = 550;
+const ADVANCE_DURATION_MS = 650;
+// A small buffer beyond the animation's own duration — without it, a new
+// gesture's wall-clock cooldown check can clear a few milliseconds before
+// the previous animation's own rAF loop gets its final tick (rAF timing
+// and the cooldown's performance.now() check don't share a clock exactly),
+// letting two animations briefly overlap.
+const COOLDOWN_MS = ADVANCE_DURATION_MS + 60;
 
 /** Turns every wheel/touch gesture inside the section into exactly one
  * beat-advance, no matter how large the gesture's delta is — CSS
@@ -243,9 +249,17 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
       const rect = section.getBoundingClientRect();
       return rect.top <= 0 && rect.bottom > 0;
     };
-    const isCoolingDown = () => performance.now() - lastAdvanceAt < ADVANCE_DURATION_MS;
+    const isCoolingDown = () => performance.now() - lastAdvanceAt < COOLDOWN_MS;
 
     function animateTo(targetY: number) {
+      // Cancel any animation still in flight first — without this, a new
+      // gesture starting while the previous one's last frame hasn't fired
+      // yet leaves two rAF loops writing scroll position on alternating
+      // frames, which is exactly what left the card stuck mid-transition.
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       const startY = window.scrollY;
       const delta = targetY - startY;
       if (Math.abs(delta) < 1) return;

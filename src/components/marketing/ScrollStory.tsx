@@ -13,21 +13,15 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Building2, CalendarClock, PenLine, ShieldCheck, Send, BarChart3 } from "lucide-react";
 
-const LiquidMetalOrb = dynamic(() => import("@/components/three/LiquidMetalOrb"), { ssr: false });
-
-type Side = "left" | "right" | "center";
+const StoryScene = dynamic(() => import("./story-scene"), { ssr: false });
 
 interface Beat {
   icon: LucideIcon;
   step: string;
   title: string;
   description: string;
-  side: Side;
 }
 
-// Each beat is directed as its own shot: text alternates left/right so the
-// orb reads as sharing the frame with it, not sitting under it — the last
-// beat breaks the rhythm back to center, on purpose, as the "arrival" shot.
 const BEATS: Beat[] = [
   {
     icon: Building2,
@@ -35,14 +29,12 @@ const BEATS: Beat[] = [
     title: "Entendemos tu negocio",
     description:
       "Un cuestionario corto y unas fotos bastan para que la IA aprenda tu marca — tono, público y servicios.",
-    side: "left",
   },
   {
     icon: CalendarClock,
     step: "02",
     title: "Planeamos cada día",
     description: "Decidimos qué publicar, en qué formato y a qué hora, respetando el presupuesto de tu plan.",
-    side: "right",
   },
   {
     icon: PenLine,
@@ -50,14 +42,12 @@ const BEATS: Beat[] = [
     title: "Escribimos y creamos",
     description:
       "Cada guion suena como tu marca. Cada pieza se genera en imagen o video real, con audio y subtítulos si tu plan lo incluye.",
-    side: "left",
   },
   {
     icon: ShieldCheck,
     step: "04",
     title: "Revisamos antes de publicar",
     description: "Si algo no calza con tu marca, se detiene para tu revisión — nunca se publica algo a medias.",
-    side: "right",
   },
   {
     icon: Send,
@@ -65,51 +55,13 @@ const BEATS: Beat[] = [
     title: "Publicamos y respondemos",
     description:
       "Sale en el horario que mejor funciona, y respondemos preguntas de compra — precio, horario, disponibilidad.",
-    side: "left",
   },
   {
     icon: BarChart3,
     step: "06",
     title: "Medimos resultados",
     description: "Alcance y engagement, mes contra mes, traducidos a lenguaje de negocio.",
-    side: "center",
   },
-];
-
-// Per-beat camera "shots" — distance + field of view. Wide/establishing to
-// open, tight to close in on the work, wide again to pull back and reveal.
-const SHOTS = [
-  { distance: 8.5, fov: 26 }, // 01 — wide establishing
-  { distance: 6.8, fov: 32 }, // 02 — medium
-  { distance: 4.8, fov: 30 }, // 03 — macro / close on the work
-  { distance: 6.4, fov: 33 }, // 04 — medium, a checkpoint pause
-  { distance: 5.6, fov: 38 }, // 05 — medium, energetic
-  { distance: 9, fov: 26 }, // 06 — wide, pulled back reveal
-];
-
-// Orb drift, in small three.js world units — one control point per beat,
-// biased toward the side opposite the text so both share the frame instead
-// of competing for the center. Scale is small for far shots, near 1 for
-// close/medium ones (the camera dolly in SHOTS already does most of the
-// "bigger/closer" work). Kept inside the frustum for each shot's own
-// distance/fov, with `edgeFade` on the orb as a safety net regardless.
-const ORB_DRIFT = [
-  { x: 0.5, y: -0.14, scale: 0.82 },
-  { x: -0.48, y: 0.12, scale: 1.05 },
-  { x: 0.14, y: 0.04, scale: 1.0 },
-  { x: -0.4, y: -0.1, scale: 1.05 },
-  { x: 0.42, y: 0.14, scale: 1.1 },
-  { x: 0, y: 0.02, scale: 0.92 },
-];
-
-// Small blurred accents drifting at a different rate than the orb, for depth —
-// like dust catching studio light, echoing the reference's atmospheric feel.
-const PARTICLES = [
-  { size: 14, opacity: 0.5, from: { x: -260, y: -160 }, to: { x: 220, y: 140 } },
-  { size: 9, opacity: 0.4, from: { x: 240, y: -120 }, to: { x: -200, y: 180 } },
-  { size: 11, opacity: 0.35, from: { x: -160, y: 200 }, to: { x: 180, y: -180 } },
-  { size: 6, opacity: 0.3, from: { x: 60, y: -260 }, to: { x: -120, y: 220 } },
-  { size: 7, opacity: 0.28, from: { x: -320, y: 40 }, to: { x: 260, y: -60 } },
 ];
 
 /** Builds the [start,fadeIn,fadeOut,end] progress breakpoints for beat `index` of `total`. */
@@ -130,13 +82,7 @@ function beatOutputRange<T>(index: number, total: number, enter: T, hold: T, exi
   return [enter, hold, hold, exit];
 }
 
-const SIDE_CLASSES: Record<Side, string> = {
-  left: "sm:items-start sm:text-left",
-  right: "sm:items-end sm:text-right",
-  center: "sm:items-center sm:text-center",
-};
-
-function BeatContent({
+function BeatCaption({
   beat,
   progress,
   index,
@@ -149,32 +95,24 @@ function BeatContent({
 }) {
   const input = beatInputRange(index, total, 0.32);
   const opacity = useTransform(progress, input, beatOutputRange(index, total, 0, 1, 0), { ease: easeInOut });
-  const scale = useTransform(progress, input, beatOutputRange(index, total, 0.94, 1, 0.97), { ease: easeInOut });
-  const blurPx = useTransform(progress, input, beatOutputRange(index, total, 7, 0, 4), { ease: easeInOut });
-  const filter = useTransform(blurPx, (v) => `blur(${v}px)`);
-  // Left-anchored text slides in from the left, right-anchored from the
-  // right — a "focus pull" toward its own side rather than a generic fade.
-  const slide = beat.side === "right" ? -1 : 1;
-  const x = useTransform(progress, input, beatOutputRange(index, total, 70 * slide, 0, -40 * slide), {
-    ease: easeInOut,
-  });
+  const y = useTransform(progress, input, beatOutputRange(index, total, 14, 0, -10), { ease: easeInOut });
 
   return (
     <motion.div
-      style={{ opacity, scale, filter, x }}
-      className={`absolute inset-0 flex flex-col items-center justify-center px-6 text-center sm:px-16 lg:px-24 ${SIDE_CLASSES[beat.side]}`}
+      style={{ opacity, y }}
+      className="pointer-events-none absolute inset-x-0 top-36 flex flex-col items-center px-6 text-center sm:top-40"
     >
       <div className="relative">
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 select-none whitespace-nowrap text-[9rem] font-bold leading-none text-zinc-950 opacity-[0.05] sm:text-[15rem]"
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 select-none whitespace-nowrap text-[6rem] font-bold leading-none text-zinc-950 opacity-[0.05] sm:text-[8rem]"
         >
           {beat.step}
         </span>
-        <h3 className="chrome-text relative max-w-lg text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
+        <h3 className="chrome-text relative max-w-md text-balance text-2xl font-semibold tracking-tight sm:text-4xl">
           {beat.title}
         </h3>
-        <p className="relative mt-5 max-w-md text-balance text-sm text-zinc-600 sm:text-base">{beat.description}</p>
+        <p className="relative mt-3 max-w-sm text-balance text-sm text-zinc-600 sm:text-base">{beat.description}</p>
       </div>
     </motion.div>
   );
@@ -191,43 +129,9 @@ function ProgressDot({ progress, index, total }: { progress: MotionValue<number>
   return <motion.span className="h-1 w-6 rounded-full" style={{ backgroundColor }} />;
 }
 
-function Particle({
-  progress,
-  size,
-  opacity,
-  from,
-  to,
-}: {
-  progress: MotionValue<number>;
-  size: number;
-  opacity: number;
-  from: { x: number; y: number };
-  to: { x: number; y: number };
-}) {
-  const xRaw = useTransform(progress, [0, 1], [from.x, to.x]);
-  const yRaw = useTransform(progress, [0, 1], [from.y, to.y]);
-  const x = useTransform(xRaw, (v) => `calc(-50% + ${v}px)`);
-  const y = useTransform(yRaw, (v) => `calc(-50% + ${v}px)`);
-
-  return (
-    <motion.span
-      aria-hidden="true"
-      className="pointer-events-none absolute left-1/2 top-1/2 rounded-full blur-md"
-      style={{
-        width: size,
-        height: size,
-        opacity,
-        background: "radial-gradient(circle, #ffffff 0%, #8b8d94 70%, transparent 100%)",
-        x,
-        y,
-      }}
-    />
-  );
-}
-
 /** A brief, translucent metallic sweep across each beat boundary — a scene
- * cut, not a fade — kept as a DOM layer (not WebGL) so it can never mix with
- * the orb canvas's own alpha compositing. */
+ * cut, not a fade — kept as a DOM layer so it never mixes with the 3D
+ * canvas's own alpha compositing. */
 function BeatWipe({ progress, boundaryFraction }: { progress: MotionValue<number>; boundaryFraction: number }) {
   const halfWidth = 0.05;
   const input = [boundaryFraction - halfWidth, boundaryFraction, boundaryFraction + halfWidth];
@@ -294,10 +198,10 @@ export default function ScrollStory() {
   });
   // Rescale so beat 0..1 progress covers only the content portion — the
   // release buffer at the end is "dead" scroll space, not another beat.
-  // No spring here: text needs to track the scrollbar exactly, or a fast
-  // flick-scroll makes it look like the story is lagging behind the finger.
-  // The orb reads this same MotionValue directly inside its own render loop
-  // (see LiquidMetalOrb), so its drift stays in perfect sync with the text too.
+  // No spring here: everything needs to track the scrollbar exactly, or a
+  // fast flick-scroll makes the story look like it's lagging behind the
+  // finger. The 3D camera reads this same MotionValue directly inside its
+  // own render loop (see StoryScene), so it stays in perfect sync too.
   const progress = useTransform(scrollYProgress, [0, contentFraction], [0, 1], { clamp: true });
   // Fades the whole panel out during the release buffer, so it's already
   // invisible by the time the sticky container's edge would otherwise clip it.
@@ -320,36 +224,14 @@ export default function ScrollStory() {
         style={{ opacity: panelOpacity }}
         className="sticky top-0 flex h-dvh items-center justify-center overflow-hidden"
       >
-        {/* Subtle ambient light bounce behind the orb — depth, not the main subject. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-3xl sm:h-[50rem] sm:w-[50rem]"
-          style={{
-            background: "radial-gradient(circle, #ffffff 0%, #c8cad0 45%, transparent 75%)",
-          }}
-        />
+        <StoryScene progress={progress} />
 
-        {PARTICLES.map((p, i) => (
-          <Particle key={i} progress={progress} {...p} />
-        ))}
-
-        <LiquidMetalOrb
-          className="pointer-events-none absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 opacity-85 sm:h-[44rem] sm:w-[44rem]"
-          progress={progress}
-          driftPoints={ORB_DRIFT}
-          shotPoints={SHOTS}
-          fov={SHOTS[0].fov}
-          cameraDistance={SHOTS[0].distance}
-          cinematic
-          edgeFade
-        />
-
-        <p className="pointer-events-none absolute top-24 text-xs font-semibold tracking-[0.3em] text-zinc-500">
+        <p className="pointer-events-none absolute top-20 text-xs font-semibold tracking-[0.3em] text-zinc-500 sm:top-24">
           EL CICLO DIARIO
         </p>
 
         {BEATS.map((beat, i) => (
-          <BeatContent key={beat.step} beat={beat} progress={progress} index={i} total={BEATS.length} />
+          <BeatCaption key={beat.step} beat={beat} progress={progress} index={i} total={BEATS.length} />
         ))}
 
         {boundaries.map((f, i) => (

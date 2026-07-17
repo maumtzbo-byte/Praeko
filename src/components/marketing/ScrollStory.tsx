@@ -65,13 +65,15 @@ const BEATS: Beat[] = [
 ];
 
 // Orb drift, in small three.js world units — one control point per beat.
+// Kept well inside the camera frustum (see LiquidMetalOrb's cameraDistance/fov
+// for this instance) so the sphere never reaches the canvas's own edge.
 const ORB_DRIFT = [
-  { x: -0.5, y: -0.2, scale: 1 },
-  { x: 0.55, y: 0.15, scale: 1.12 },
-  { x: -0.3, y: 0.45, scale: 0.92 },
-  { x: 0.45, y: -0.4, scale: 1.08 },
-  { x: -0.55, y: 0.1, scale: 1.15 },
-  { x: 0.25, y: 0.3, scale: 1 },
+  { x: -0.26, y: -0.1, scale: 0.98 },
+  { x: 0.28, y: 0.08, scale: 1.08 },
+  { x: -0.16, y: 0.22, scale: 0.94 },
+  { x: 0.22, y: -0.2, scale: 1.06 },
+  { x: -0.28, y: 0.05, scale: 1.1 },
+  { x: 0.12, y: 0.15, scale: 1 },
 ];
 
 // Small blurred accents drifting at a different rate than the orb, for depth.
@@ -245,7 +247,7 @@ export default function ScrollStory() {
         {/* Subtle ambient light bounce behind the orb — depth, not the main subject. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-3xl"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-3xl sm:h-[50rem] sm:w-[50rem]"
           style={{
             background: "radial-gradient(circle, #ffffff 0%, #c8cad0 45%, transparent 75%)",
           }}
@@ -256,9 +258,13 @@ export default function ScrollStory() {
         ))}
 
         <LiquidMetalOrb
-          className="pointer-events-none absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 opacity-50 blur-[2px] sm:h-[36rem] sm:w-[36rem]"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 opacity-85 sm:h-[44rem] sm:w-[44rem]"
           progress={progress}
           driftPoints={ORB_DRIFT}
+          fov={34}
+          cameraDistance={6.4}
+          cinematic
+          edgeFade
         />
 
         <p className="pointer-events-none absolute top-24 text-xs font-semibold tracking-[0.3em] text-zinc-500">

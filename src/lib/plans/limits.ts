@@ -17,6 +17,8 @@ export interface PlanLimits {
   /** Hard per-video ceiling — never exceed this even for a single piece. */
   videoMaxSeconds: number;
   videoProvider: "kling-3.0-pro" | "seedance-2.0-standard-720p";
+  /** Claude model used by the strategy/script content-generation agent for this plan. */
+  contentModel: "claude-sonnet-5" | "claude-opus-4-8";
   burnsSubtitles: boolean;
   socialNetworkLimit: number;
   hasOptimizedSchedule: boolean;
@@ -35,6 +37,7 @@ export const PLAN_LIMITS: Record<PlanKey, PlanLimits> = {
     videoAvgSeconds: 10,
     videoMaxSeconds: 10,
     videoProvider: "kling-3.0-pro",
+    contentModel: "claude-sonnet-5",
     burnsSubtitles: false,
     socialNetworkLimit: 1,
     hasOptimizedSchedule: false,
@@ -51,6 +54,7 @@ export const PLAN_LIMITS: Record<PlanKey, PlanLimits> = {
     videoAvgSeconds: 15,
     videoMaxSeconds: 25,
     videoProvider: "kling-3.0-pro",
+    contentModel: "claude-opus-4-8",
     burnsSubtitles: true,
     socialNetworkLimit: 3,
     hasOptimizedSchedule: true,
@@ -67,6 +71,7 @@ export const PLAN_LIMITS: Record<PlanKey, PlanLimits> = {
     videoAvgSeconds: 20,
     videoMaxSeconds: 30,
     videoProvider: "seedance-2.0-standard-720p",
+    contentModel: "claude-opus-4-8",
     burnsSubtitles: true,
     socialNetworkLimit: 3,
     hasOptimizedSchedule: true,

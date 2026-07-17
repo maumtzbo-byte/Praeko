@@ -158,7 +158,7 @@ export async function generateMonthlyStrategy(input: StrategyAgentInput): Promis
   const client = getClaudeClient();
 
   const message = await client.messages.create({
-    model: "claude-opus-4-8",
+    model: input.plan.contentModel,
     max_tokens: 8000,
     system: buildSystemPrompt(),
     messages: [{ role: "user", content: buildUserPrompt(input) }],

@@ -5,8 +5,10 @@ import { Environment, Lightformer, MeshDistortMaterial } from "@react-three/drei
 import { Bloom, EffectComposer, Noise } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import { Suspense, useRef } from "react";
-import type { Mesh } from "three";
+import type { Mesh, MeshPhysicalMaterial } from "three";
 import type { MotionValue } from "framer-motion";
+
+type DistortMaterialHandle = MeshPhysicalMaterial & { distort: number };
 
 interface DriftPoint {
   x: number;
@@ -39,6 +41,9 @@ function Orb({
   cameraDistance: number;
 }) {
   const mesh = useRef<Mesh>(null);
+  // Typed as the base three.js class — drei's own distort-material subclass
+  // isn't exported, so `.distort` is accessed via a narrowing cast below.
+  const material = useRef<MeshPhysicalMaterial>(null);
   // Smoothed (lerped) cursor position — reading state.pointer directly here
   // instead of a mesh-only onPointerMove means the whole canvas area drives
   // parallax, not just hovering the sphere's own surface.
@@ -47,7 +52,8 @@ function Orb({
   useFrame((state) => {
     if (!mesh.current) return;
     const t = state.clock.getElapsedTime();
-    const drift = progress && driftPoints ? lerpDrift(driftPoints, progress.get()) : { x: 0, y: 0, scale: 1 };
+    const storyProgress = progress ? progress.get() : 0;
+    const drift = progress && driftPoints ? lerpDrift(driftPoints, storyProgress) : { x: 0, y: 0, scale: 1 };
 
     smoothPointer.current.x += (state.pointer.x - smoothPointer.current.x) * 0.04;
     smoothPointer.current.y += (state.pointer.y - smoothPointer.current.y) * 0.04;
@@ -62,14 +68,25 @@ function Orb({
     // the scene read as a space with depth rather than a flat rendered sticker.
     state.camera.position.x = smoothPointer.current.x * 0.22;
     state.camera.position.y = smoothPointer.current.y * 0.13;
-    state.camera.position.z = cameraDistance - (progress ? progress.get() * 0.5 : 0);
+    state.camera.position.z = cameraDistance - (progress ? storyProgress * 0.5 : 0);
     state.camera.lookAt(0, 0, 0);
+
+    // Narrative arc: the metal is more turbulent at the start of the story
+    // and settles into a calmer, glossier surface by the final beat — chaos
+    // of daily work resolving into clarity, echoed in the material itself.
+    if (progress && material.current) {
+      (material.current as DistortMaterialHandle).distort = 0.36 - storyProgress * 0.2;
+      material.current.roughness = 0.2 - storyProgress * 0.1;
+    }
   });
 
   return (
     <mesh ref={mesh}>
       <icosahedronGeometry args={[1.6, 32]} />
       <MeshDistortMaterial
+        ref={(instance) => {
+          material.current = instance;
+        }}
         color="#f0f1f3"
         roughness={0.14}
         metalness={0.9}

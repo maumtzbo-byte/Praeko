@@ -76,11 +76,14 @@ const ORB_DRIFT = [
   { x: 0.12, y: 0.15, scale: 1 },
 ];
 
-// Small blurred accents drifting at a different rate than the orb, for depth.
+// Small blurred accents drifting at a different rate than the orb, for depth —
+// like dust catching studio light, echoing the reference's atmospheric feel.
 const PARTICLES = [
   { size: 14, opacity: 0.5, from: { x: -260, y: -160 }, to: { x: 220, y: 140 } },
   { size: 9, opacity: 0.4, from: { x: 240, y: -120 }, to: { x: -200, y: 180 } },
   { size: 11, opacity: 0.35, from: { x: -160, y: 200 }, to: { x: 180, y: -180 } },
+  { size: 6, opacity: 0.3, from: { x: 60, y: -260 }, to: { x: -120, y: 220 } },
+  { size: 7, opacity: 0.28, from: { x: -320, y: 40 }, to: { x: 260, y: -60 } },
 ];
 
 /** Builds the [start,fadeIn,fadeOut,end] progress breakpoints for beat `index` of `total`. */
@@ -280,6 +283,13 @@ export default function ScrollStory() {
             <ProgressDot key={i} progress={progress} index={i} total={BEATS.length} />
           ))}
         </div>
+
+        {/* Cinematic framing — a whisper-soft corner darkening, not a mood killer. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "radial-gradient(ellipse at center, transparent 55%, rgba(9,9,11,0.05) 100%)" }}
+        />
       </motion.div>
     </section>
   );

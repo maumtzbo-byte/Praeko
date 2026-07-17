@@ -77,13 +77,22 @@ export async function generateContentPlan(
         days,
       });
     } catch (err) {
+      console.error("generateMonthlyStrategy failed", err);
       const message = err instanceof Error ? err.message : "No se pudo generar el plan.";
       return { success: false, error: message };
     }
 
     // Record the run right after the paid Claude call succeeds — the money
     // is spent at this point regardless of whether the upsert below fails.
-    await supabase.from("content_generation_runs").insert({ business_id: businessId, days_requested: days });
+    const { error: runLogError } = await supabase
+      .from("content_generation_runs")
+      .insert({ business_id: businessId, days_requested: days });
+    if (runLogError) {
+      // Don't fail the request over this — the content was already generated
+      // and paid for — but log it: a silent failure here breaks the daily
+      // rate limit's count.
+      console.error("Failed to log content_generation_runs", runLogError);
+    }
 
     const rows = strategy.days.map((d) => ({
       business_id: businessId,
@@ -106,7 +115,8 @@ export async function generateContentPlan(
 
     const runsRemainingToday = Math.max(0, MAX_GENERATION_RUNS_PER_DAY - ((runsToday ?? 0) + 1));
     return { success: true, data: { created: inserted?.length ?? 0, runsRemainingToday } };
-  } catch {
+  } catch (err) {
+    console.error("generateContentPlan failed", err);
     return { success: false, error: "No se pudo generar el plan. Intenta de nuevo." };
   }
 }

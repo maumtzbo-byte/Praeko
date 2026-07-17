@@ -94,7 +94,8 @@ export async function saveBusinessInfo(
     }
 
     return { success: true, data: { businessId: created.id } };
-  } catch {
+  } catch (err) {
+    console.error("saveBusinessInfo failed", err);
     return { success: false, error: "No se pudo guardar. Intenta de nuevo." };
   }
 }

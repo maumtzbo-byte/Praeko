@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import {
   motion,
@@ -118,15 +118,23 @@ function BeatCaption({
   );
 }
 
-function ProgressDot({ progress, index, total }: { progress: MotionValue<number>; index: number; total: number }) {
+/** A compact icon badge per beat — the whole 6-step pipeline stays visible
+ * at a glance underneath the story, not just an abstract progress bar.
+ * Reuses each beat's own icon (previously only shown in the reduced-motion
+ * fallback), so it's one small addition rather than a whole new element. */
+function ProgressDot({ beat, progress, index, total }: { beat: Beat; progress: MotionValue<number>; index: number; total: number }) {
   const input = beatInputRange(index, total, 0.15);
-  const backgroundColor = useTransform(
-    progress,
-    input,
-    beatOutputRange(index, total, "#d4d4d8", "#18181b", "#d4d4d8"),
-    { ease: easeInOut },
+  const scale = useTransform(progress, input, beatOutputRange(index, total, 1, 1.15, 1), { ease: easeInOut });
+  const opacity = useTransform(progress, input, beatOutputRange(index, total, 0.45, 1, 0.45), { ease: easeInOut });
+  const Icon = beat.icon;
+  return (
+    <motion.div
+      style={{ scale, opacity }}
+      className="flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] ring-1 ring-[var(--hairline)]"
+    >
+      <Icon className="h-3.5 w-3.5 text-zinc-700" strokeWidth={1.75} />
+    </motion.div>
   );
-  return <motion.span className="h-1 w-6 rounded-full" style={{ backgroundColor }} />;
 }
 
 /** Small blurred accents drifting slowly across the whole story, for depth —
@@ -205,6 +213,103 @@ function StaticFallback() {
 // room in its container and visibly gets squeezed against the bottom edge.
 const CONTENT_VH_PER_BEAT = 85;
 const RELEASE_BUFFER_VH = 60;
+const ADVANCE_DURATION_MS = 550;
+
+/** Turns every wheel/touch gesture inside the section into exactly one
+ * beat-advance, no matter how large the gesture's delta is — CSS
+ * scroll-snap alone doesn't guarantee this (tested: a single large wheel
+ * delta can settle several snap points away instead of stopping at the
+ * next one). Outside the section's range, native scrolling is untouched. */
+function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>, totalBeats: number, totalHeightVh: number, disabled: boolean) {
+  useEffect(() => {
+    if (disabled) return;
+    const section = containerRef.current;
+    if (!section) return;
+
+    // Wall-clock cooldown, not tied to requestAnimationFrame completing —
+    // on an irregular/slow frame rate (throttled tabs, low-end devices) a
+    // rAF-driven "locked until animation finishes" flag can clear far
+    // earlier or later than intended, letting a rapid burst of wheel events
+    // sneak through. A plain timestamp comparison is immune to that.
+    let lastAdvanceAt = 0;
+    let rafId: number | null = null;
+    let touchStartY: number | null = null;
+    const MIN_SWIPE_PX = 24;
+
+    const sectionTop = () => section.getBoundingClientRect().top + window.scrollY;
+    const beatPx = () => (window.innerHeight * CONTENT_VH_PER_BEAT) / 100;
+    const totalHeightPx = () => (window.innerHeight * totalHeightVh) / 100;
+    const isInsideSection = () => {
+      const rect = section.getBoundingClientRect();
+      return rect.top <= 0 && rect.bottom > 0;
+    };
+    const isCoolingDown = () => performance.now() - lastAdvanceAt < ADVANCE_DURATION_MS;
+
+    function animateTo(targetY: number) {
+      const startY = window.scrollY;
+      const delta = targetY - startY;
+      if (Math.abs(delta) < 1) return;
+      const startTime = performance.now();
+      function tick(now: number) {
+        const t = Math.min((now - startTime) / ADVANCE_DURATION_MS, 1);
+        window.scrollTo(0, startY + delta * easeInOut(t));
+        rafId = t < 1 ? requestAnimationFrame(tick) : null;
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+
+    // Returns true if the gesture was consumed (i.e. should be prevented).
+    function handleGesture(direction: 1 | -1): boolean {
+      const top = sectionTop();
+      const bPx = beatPx();
+      const currentStop = Math.round((window.scrollY - top) / bPx);
+      const clamped = Math.min(Math.max(currentStop, 0), totalBeats);
+      if (clamped <= 0 && direction < 0) return false; // exit upward to native (Hero)
+      if (clamped >= totalBeats && direction > 0) return false; // exit downward to native (Pricing)
+      const targetY = Math.max(top, Math.min(top + (clamped + direction) * bPx, top + totalHeightPx()));
+      lastAdvanceAt = performance.now();
+      animateTo(targetY);
+      return true;
+    }
+
+    function onWheel(e: WheelEvent) {
+      if (!isInsideSection()) return;
+      if (isCoolingDown()) {
+        e.preventDefault();
+        return;
+      }
+      if (handleGesture(e.deltaY > 0 ? 1 : -1)) e.preventDefault();
+    }
+
+    function onTouchStart(e: TouchEvent) {
+      touchStartY = isInsideSection() ? (e.touches[0]?.clientY ?? null) : null;
+    }
+    function onTouchMove(e: TouchEvent) {
+      if (touchStartY === null || !isInsideSection()) return;
+      e.preventDefault();
+    }
+    function onTouchEnd(e: TouchEvent) {
+      if (touchStartY === null) return;
+      const endY = e.changedTouches[0]?.clientY ?? touchStartY;
+      const delta = touchStartY - endY;
+      touchStartY = null;
+      if (Math.abs(delta) < MIN_SWIPE_PX || isCoolingDown()) return;
+      handleGesture(delta > 0 ? 1 : -1);
+    }
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, [containerRef, totalBeats, totalHeightVh, disabled]);
+}
 
 export default function ScrollStory() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -225,6 +330,7 @@ export default function ScrollStory() {
   // Fades the whole panel out during the release buffer, so it's already
   // invisible by the time the sticky container's edge would otherwise clip it.
   const panelOpacity = useTransform(scrollYProgress, [contentFraction, 1], [1, 0], { clamp: true });
+  useOneBeatPerGesture(containerRef, BEATS.length, contentVh + RELEASE_BUFFER_VH, reducedMotion ?? false);
 
   if (reducedMotion) {
     return <StaticFallback />;
@@ -264,9 +370,11 @@ export default function ScrollStory() {
           <BeatCaption key={beat.step} beat={beat} progress={progress} index={i} total={BEATS.length} />
         ))}
 
-        <div className="pointer-events-none absolute bottom-12 flex gap-1.5">
-          {BEATS.map((_, i) => (
-            <ProgressDot key={i} progress={progress} index={i} total={BEATS.length} />
+        <div className="pointer-events-none absolute bottom-10 flex items-center gap-2.5">
+          {/* Subtle connecting line — reads as one pipeline, not six loose dots. */}
+          <div aria-hidden="true" className="absolute left-3.5 right-3.5 h-px bg-[var(--hairline)]" />
+          {BEATS.map((beat, i) => (
+            <ProgressDot key={i} beat={beat} progress={progress} index={i} total={BEATS.length} />
           ))}
         </div>
 

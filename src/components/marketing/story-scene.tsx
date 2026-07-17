@@ -4,7 +4,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { Suspense, type ReactNode } from "react";
 import type { PerspectiveCamera } from "three";
-import { motion, useTransform, type MotionValue } from "framer-motion";
+import { motion, useTransform, easeInOut, type MotionValue } from "framer-motion";
 import { BrandMockup, CalendarMockup, VideoMockup, ReviewMockup, ChatMockup, AnalyticsMockup } from "./story-mockups";
 
 interface ShotPoint {
@@ -17,15 +17,18 @@ function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
-/** Piecewise-linear interpolation across arbitrary (possibly repeated,
- * for hold plateaus) breakpoints — see `buildShotSchedule` below. */
+/** Piecewise interpolation across arbitrary (possibly repeated, for hold
+ * plateaus) breakpoints — see `buildShotSchedule` below. Eased rather than
+ * linear, so the camera ramps up to speed and settles instead of snapping
+ * instantly from "still" to "moving" at each transition boundary — that
+ * sudden velocity change is what read as a mechanical page-cut. */
 function lerpShot(points: ShotPoint[], breakpoints: number[], t: number): ShotPoint {
   const clamped = Math.min(Math.max(t, breakpoints[0]), breakpoints[breakpoints.length - 1]);
   let idx = 0;
   while (idx < breakpoints.length - 2 && clamped > breakpoints[idx + 1]) idx++;
   const segStart = breakpoints[idx];
   const segEnd = breakpoints[idx + 1];
-  const localT = (clamped - segStart) / (segEnd - segStart);
+  const localT = easeInOut((clamped - segStart) / (segEnd - segStart));
   const a = points[idx];
   const b = points[idx + 1];
   return {
@@ -72,7 +75,7 @@ const CAMERA_SHOTS: ShotPoint[] = [
 // build a hold-then-transition schedule matching beatInputRange's own fade
 // windows exactly: the camera sits still at shot i for the whole beat, and
 // only moves during the narrow crossfade zone shared with the text.
-const CAMERA_FADE_FRACTION = 0.32;
+const CAMERA_FADE_FRACTION = 0.36;
 function buildShotSchedule(shots: ShotPoint[], fadeFraction: number) {
   const total = shots.length;
   const segment = 1 / total;
@@ -135,8 +138,12 @@ function PanelFrame({
       : index === total - 1
         ? [start, start + fade, end, end]
         : [start, start + fade, end - fade, end];
-  const output = index === 0 ? [1, 1, 1, 0] : index === total - 1 ? [0, 1, 1, 1] : [0, 1, 1, 0];
-  const opacity = useTransform(progress, input, output);
+  // Off-beat panels stay dimly visible instead of vanishing — glimpsed
+  // "gallery" screens around the active one, so the space never reads as
+  // empty and the camera flight feels like moving through a real room.
+  const dim = 0.14;
+  const output = index === 0 ? [1, 1, 1, dim] : index === total - 1 ? [dim, 1, 1, 1] : [dim, 1, 1, dim];
+  const opacity = useTransform(progress, input, output, { ease: easeInOut });
 
   return (
     <Html transform center position={position} scale={scale} pointerEvents="none">
@@ -202,7 +209,7 @@ export default function StoryScene({ progress }: { progress: MotionValue<number>
     <div className="pointer-events-none absolute inset-0">
       <Canvas
         dpr={[1, 2]}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: false, alpha: true }}
         camera={{ position: CAMERA_SHOTS[0].position, fov: CAMERA_SHOTS[0].fov }}
       >
         <Suspense fallback={null}>

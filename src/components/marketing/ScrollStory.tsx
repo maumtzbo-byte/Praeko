@@ -129,28 +129,47 @@ function ProgressDot({ progress, index, total }: { progress: MotionValue<number>
   return <motion.span className="h-1 w-6 rounded-full" style={{ backgroundColor }} />;
 }
 
-/** A brief, translucent metallic sweep across each beat boundary — a scene
- * cut, not a fade — kept as a DOM layer so it never mixes with the 3D
- * canvas's own alpha compositing. */
-function BeatWipe({ progress, boundaryFraction }: { progress: MotionValue<number>; boundaryFraction: number }) {
-  const halfWidth = 0.05;
-  const input = [boundaryFraction - halfWidth, boundaryFraction, boundaryFraction + halfWidth];
-  // Baseline shifted by -50% so the resting position stays centered on
-  // `left-1/2` without needing a competing CSS translate utility.
-  const x = useTransform(progress, input, ["-190%", "-50%", "90%"], { ease: easeInOut, clamp: true });
-  const opacity = useTransform(progress, input, [0, 0.4, 0], { ease: easeInOut, clamp: true });
+/** Small blurred accents drifting slowly across the whole story, for depth —
+ * like dust catching studio light. Keeps the space from reading as empty
+ * during the long holds between beat transitions. */
+const PARTICLES = [
+  { size: 14, opacity: 0.45, from: { x: -320, y: -180 }, to: { x: 300, y: 160 } },
+  { size: 9, opacity: 0.35, from: { x: 280, y: -140 }, to: { x: -260, y: 200 } },
+  { size: 11, opacity: 0.3, from: { x: -200, y: 220 }, to: { x: 220, y: -200 } },
+  { size: 7, opacity: 0.28, from: { x: 80, y: -280 }, to: { x: -140, y: 240 } },
+  { size: 8, opacity: 0.25, from: { x: -360, y: 60 }, to: { x: 320, y: -80 } },
+];
+
+function Particle({
+  progress,
+  size,
+  opacity,
+  from,
+  to,
+}: {
+  progress: MotionValue<number>;
+  size: number;
+  opacity: number;
+  from: { x: number; y: number };
+  to: { x: number; y: number };
+}) {
+  const xRaw = useTransform(progress, [0, 1], [from.x, to.x]);
+  const yRaw = useTransform(progress, [0, 1], [from.y, to.y]);
+  const x = useTransform(xRaw, (v) => `calc(-50% + ${v}px)`);
+  const y = useTransform(yRaw, (v) => `calc(-50% + ${v}px)`);
 
   return (
-    <motion.div
+    <motion.span
       aria-hidden="true"
+      className="pointer-events-none absolute left-1/2 top-1/2 rounded-full blur-md"
       style={{
-        x,
-        skewX: -12,
+        width: size,
+        height: size,
         opacity,
-        background:
-          "linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.9) 38%, rgba(20,20,24,0.3) 50%, rgba(255,255,255,0.9) 62%, transparent 100%)",
+        background: "radial-gradient(circle, #ffffff 0%, #8b8d94 70%, transparent 100%)",
+        x,
+        y,
       }}
-      className="pointer-events-none absolute inset-y-[-15%] left-1/2 w-[36vw]"
     />
   );
 }
@@ -211,8 +230,6 @@ export default function ScrollStory() {
     return <StaticFallback />;
   }
 
-  const boundaries = Array.from({ length: BEATS.length - 1 }, (_, i) => (i + 1) / BEATS.length);
-
   return (
     <section
       id="agentes"
@@ -224,6 +241,19 @@ export default function ScrollStory() {
         style={{ opacity: panelOpacity }}
         className="sticky top-0 flex h-dvh items-center justify-center overflow-hidden"
       >
+        {/* Ambient light bounce — keeps the space from reading as empty gray void. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[42rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-3xl sm:h-[54rem] sm:w-[54rem]"
+          style={{
+            background: "radial-gradient(circle, #ffffff 0%, #c8cad0 45%, transparent 75%)",
+          }}
+        />
+
+        {PARTICLES.map((p, i) => (
+          <Particle key={i} progress={progress} {...p} />
+        ))}
+
         <StoryScene progress={progress} />
 
         <p className="pointer-events-none absolute top-20 text-xs font-semibold tracking-[0.3em] text-zinc-500 sm:top-24">
@@ -232,10 +262,6 @@ export default function ScrollStory() {
 
         {BEATS.map((beat, i) => (
           <BeatCaption key={beat.step} beat={beat} progress={progress} index={i} total={BEATS.length} />
-        ))}
-
-        {boundaries.map((f, i) => (
-          <BeatWipe key={i} progress={progress} boundaryFraction={f} />
         ))}
 
         <div className="pointer-events-none absolute bottom-12 flex gap-1.5">

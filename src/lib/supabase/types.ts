@@ -572,6 +572,32 @@ export type Database = {
           },
         ]
       }
+      support_chat_messages: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_chat_messages_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       usage_counters: {
         Row: {
           business_id: string

@@ -342,9 +342,25 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
       const bPx = beatPx();
       const currentStop = Math.round((window.scrollY - top) / bPx);
       const clamped = Math.min(Math.max(currentStop, 0), totalBeats);
-      if (clamped <= 0 && direction < 0) return false; // exit upward to native (Hero)
-      if (clamped >= totalBeats && direction > 0) return false; // exit downward to native (Pricing)
-      const targetY = Math.max(top, Math.min(top + (clamped + direction) * bPx, top + totalHeightPx()));
+      let targetY: number;
+      if (clamped <= 0 && direction < 0) {
+        // Exit upward into Hero. Used to just return false here and let
+        // native scrolling carry the gesture the rest of the way — but
+        // touch-action: none (needed elsewhere to stop iOS's momentum
+        // scroll from fighting the quantizer) blocks ALL native touch
+        // scrolling inside the section, including this hand-off. A swipe
+        // at the very first beat did nothing as a result. Drive the exit
+        // ourselves instead of relying on a pass-through that no longer
+        // exists once outside content is reached.
+        targetY = top - bPx;
+      } else if (clamped >= totalBeats && direction > 0) {
+        // Exit downward into Pricing — same reasoning: land exactly on the
+        // section's bottom edge, where isInsideSection() naturally goes
+        // false and native scrolling takes back over from there.
+        targetY = top + totalHeightPx();
+      } else {
+        targetY = Math.max(top, Math.min(top + (clamped + direction) * bPx, top + totalHeightPx()));
+      }
       lastAdvanceAt = performance.now();
       animateTo(targetY);
       return true;

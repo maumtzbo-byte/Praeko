@@ -445,6 +445,82 @@ export type Database = {
         }
         Relationships: []
       }
+      social_connection_tokens: {
+        Row: {
+          access_token: string
+          connection_id: string
+          expires_at: string | null
+          refresh_token: string | null
+        }
+        Insert: {
+          access_token: string
+          connection_id: string
+          expires_at?: string | null
+          refresh_token?: string | null
+        }
+        Update: {
+          access_token?: string
+          connection_id?: string
+          expires_at?: string | null
+          refresh_token?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_connection_tokens_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: true
+            referencedRelation: "social_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_connections: {
+        Row: {
+          business_id: string
+          connected_by: string | null
+          created_at: string
+          external_account_avatar_url: string | null
+          external_account_id: string
+          external_account_name: string
+          id: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          status: Database["public"]["Enums"]["social_connection_status"]
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          connected_by?: string | null
+          created_at?: string
+          external_account_avatar_url?: string | null
+          external_account_id: string
+          external_account_name: string
+          id?: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          status?: Database["public"]["Enums"]["social_connection_status"]
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          connected_by?: string | null
+          created_at?: string
+          external_account_avatar_url?: string | null
+          external_account_id?: string
+          external_account_name?: string
+          id?: string
+          platform?: Database["public"]["Enums"]["social_platform"]
+          status?: Database["public"]["Enums"]["social_connection_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_connections_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           business_id: string
@@ -590,6 +666,8 @@ export type Database = {
         | "aprobado"
         | "necesita_revision_humana"
         | "rechazado"
+      social_connection_status: "active" | "error"
+      social_platform: "instagram" | "facebook" | "tiktok"
       subscription_status: "active" | "past_due" | "canceled" | "incomplete"
     }
     CompositeTypes: {
@@ -735,6 +813,8 @@ export const Constants = {
         "necesita_revision_humana",
         "rechazado",
       ],
+      social_connection_status: ["active", "error"],
+      social_platform: ["instagram", "facebook", "tiktok"],
       subscription_status: ["active", "past_due", "canceled", "incomplete"],
     },
   },

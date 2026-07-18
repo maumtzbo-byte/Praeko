@@ -75,6 +75,15 @@ const CAMERA_SHOTS: ShotPoint[] = [
 // build a hold-then-transition schedule matching beatInputRange's own fade
 // windows exactly: the camera sits still at shot i for the whole beat, and
 // only moves during the narrow crossfade zone shared with the text.
+//
+// The scroll quantizer (ScrollStory's useOneBeatPerGesture) always rests
+// exactly on a beat's own start boundary (index/total) — so each shot's
+// transition-in has to *complete* by that boundary, not straddle it. A
+// symmetric [boundary-fade, boundary+fade] zone used to leave the camera
+// still 50% blended between two shots exactly at the resting point, which
+// is what made panels land clipped/off-center at rest regardless of how
+// the scroll gesture behaved. Shifting the whole zone to end exactly at
+// the boundary (still fade*2 wide, just earlier) fixes that at the source.
 const CAMERA_FADE_FRACTION = 0.36;
 function buildShotSchedule(shots: ShotPoint[], fadeFraction: number) {
   const total = shots.length;
@@ -84,7 +93,7 @@ function buildShotSchedule(shots: ShotPoint[], fadeFraction: number) {
   const values: ShotPoint[] = [shots[0]];
   for (let i = 0; i < total - 1; i++) {
     const boundary = (i + 1) * segment;
-    breakpoints.push(boundary - fade, boundary + fade);
+    breakpoints.push(boundary - 2 * fade, boundary);
     values.push(shots[i], shots[i + 1]);
   }
   breakpoints.push(1);
@@ -132,12 +141,14 @@ function PanelFrame({
   const start = index * segment;
   const end = start + segment;
   const fade = segment * 0.3;
+  // Same fix as beatInputRange in ScrollStory.tsx: the entry fade has to
+  // complete by `start` (where the scroll quantizer rests), not begin there.
   const input =
     index === 0
       ? [start, start, end - fade, end]
       : index === total - 1
-        ? [start, start + fade, end, end]
-        : [start, start + fade, end - fade, end];
+        ? [start - fade, start, end, end]
+        : [start - fade, start, end - fade, end];
   // Off-beat panels stay dimly visible instead of vanishing — glimpsed
   // "gallery" screens around the active one, so the space never reads as
   // empty and the camera flight feels like moving through a real room.

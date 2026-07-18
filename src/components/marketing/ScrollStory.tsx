@@ -64,15 +64,20 @@ const BEATS: Beat[] = [
   },
 ];
 
-/** Builds the [start,fadeIn,fadeOut,end] progress breakpoints for beat `index` of `total`. */
+/** Builds the [fadeIn, start, fadeOut, end] progress breakpoints for beat `index` of `total`.
+ * The scroll quantizer (see useOneBeatPerGesture below) always rests exactly on a beat's own
+ * `start` boundary (index/total) — so the fade-in has to complete *by* start, not begin there.
+ * Beat i's own hold window therefore lives entirely inside [start, end], borrowing its entry
+ * ramp from the tail end of beat i-1's window; that's also why beat 0 needs no entry ramp of
+ * its own (there's no beat -1 to borrow room from) and holds from progress 0 immediately. */
 function beatInputRange(index: number, total: number, fadeFraction: number): number[] {
   const segment = 1 / total;
   const start = index * segment;
   const end = start + segment;
   const fade = segment * fadeFraction;
   if (index === 0) return [start, start, end - fade, end];
-  if (index === total - 1) return [start, start + fade, end, end];
-  return [start, start + fade, end - fade, end];
+  if (index === total - 1) return [start - fade, start, end, end];
+  return [start - fade, start, end - fade, end];
 }
 
 /** Builds the matching output values, holding at the edges for the first/last beat. */
@@ -239,8 +244,10 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
     // sneak through. A plain timestamp comparison is immune to that.
     let lastAdvanceAt = 0;
     let rafId: number | null = null;
+    let settleTimeoutId: number | null = null;
     let touchStartY: number | null = null;
     const MIN_SWIPE_PX = 24;
+    const SETTLE_EPSILON_PX = 2;
 
     // Derived from the section's own measured height, not window.innerHeight —
     // the section's CSS height uses plain `vh` (static: fixed to the largest
@@ -251,12 +258,50 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
     // short/long of the real boundary — the mid-transition "stuck" cards.
     const sectionTop = () => section.getBoundingClientRect().top + window.scrollY;
     const totalHeightPx = () => section.getBoundingClientRect().height;
-    const beatPx = () => (totalHeightPx() * CONTENT_VH_PER_BEAT) / totalHeightVh;
+    // `progress` (the MotionValue driving both the camera rig and the
+    // caption fades) comes from Framer's scrollYProgress, whose scroll
+    // range is (sectionHeight - viewportHeight) — not sectionHeight itself,
+    // since the sticky panel only scrolls through one viewport's worth less
+    // than the section's total height. Sizing beatPx off the raw section
+    // height alone (no viewport subtraction) made every quantized stop land
+    // a fixed ~3-4% of a beat past its intended boundary — squarely inside
+    // the camera/caption crossfade zone instead of the fully-held shot. That
+    // put every card in a permanently half-transitioned state at rest,
+    // regardless of how the gesture that got there behaved: on a narrow
+    // viewport the mispositioned camera clips the panel out of frame; on a
+    // wide viewport the same offset is present but less visually obvious.
+    // This is why "stuck" reproduced deterministically, not just after
+    // strong scrolls.
+    const beatPx = () => ((totalHeightPx() - window.innerHeight) * CONTENT_VH_PER_BEAT) / totalHeightVh;
     const isInsideSection = () => {
       const rect = section.getBoundingClientRect();
       return rect.top <= 0 && rect.bottom > 0;
     };
     const isCoolingDown = () => performance.now() - lastAdvanceAt < COOLDOWN_MS;
+
+    // Absolute guarantee, independent of *why* something might nudge the
+    // page after the animation finishes (iOS Safari's native momentum
+    // scroll in particular isn't always fully stoppable via preventDefault
+    // once a swipe gesture has already started — touch-action: none on the
+    // section is the primary fix for that, this is the backstop). Re-checks
+    // the resting position twice after the animation completes and snaps it
+    // back onto the exact target if anything moved it off — so the card can
+    // never end up sitting between two beats, regardless of the cause.
+    function scheduleSettleCheck(targetY: number) {
+      if (settleTimeoutId !== null) {
+        clearTimeout(settleTimeoutId);
+        settleTimeoutId = null;
+      }
+      let checksLeft = 2;
+      function check() {
+        if (Math.abs(window.scrollY - targetY) > SETTLE_EPSILON_PX) {
+          window.scrollTo(0, targetY);
+        }
+        checksLeft--;
+        settleTimeoutId = checksLeft > 0 ? window.setTimeout(check, 200) : null;
+      }
+      settleTimeoutId = window.setTimeout(check, 180);
+    }
 
     function animateTo(targetY: number) {
       // Cancel any animation still in flight first — without this, a new
@@ -267,6 +312,13 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
         cancelAnimationFrame(rafId);
         rafId = null;
       }
+      // Also cancel any pending settle-check from a previous gesture — it
+      // would otherwise fire mid-way through this new animation and snap
+      // the page back to the *previous* target instead of this one.
+      if (settleTimeoutId !== null) {
+        clearTimeout(settleTimeoutId);
+        settleTimeoutId = null;
+      }
       const startY = window.scrollY;
       const delta = targetY - startY;
       if (Math.abs(delta) < 1) return;
@@ -274,7 +326,12 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
       function tick(now: number) {
         const t = Math.min((now - startTime) / ADVANCE_DURATION_MS, 1);
         window.scrollTo(0, startY + delta * easeInOut(t));
-        rafId = t < 1 ? requestAnimationFrame(tick) : null;
+        if (t < 1) {
+          rafId = requestAnimationFrame(tick);
+        } else {
+          rafId = null;
+          scheduleSettleCheck(targetY);
+        }
       }
       rafId = requestAnimationFrame(tick);
     }
@@ -328,6 +385,7 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchend", onTouchEnd);
       if (rafId !== null) cancelAnimationFrame(rafId);
+      if (settleTimeoutId !== null) clearTimeout(settleTimeoutId);
     };
   }, [containerRef, totalBeats, totalHeightVh, disabled]);
 }
@@ -361,7 +419,7 @@ export default function ScrollStory() {
     <section
       id="agentes"
       ref={containerRef}
-      className="relative"
+      className="relative touch-none"
       style={{ height: `${contentVh + RELEASE_BUFFER_VH}vh` }}
     >
       <motion.div

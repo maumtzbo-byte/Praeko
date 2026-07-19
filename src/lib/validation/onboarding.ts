@@ -4,11 +4,16 @@ export const businessInfoSchema = z.object({
   name: z.string().trim().min(2, "Ingresa el nombre de tu negocio."),
   description: z.string().trim().min(1, "Cuéntanos brevemente qué hace tu negocio."),
   industry: z.string().trim().min(1, "Selecciona tu giro o industria."),
-  country: z.string().trim().min(1, "Ingresa tu país."),
+  // country/primaryLanguage/phone: collected during the compact onboarding
+  // flow with sensible defaults rather than asked directly — still real,
+  // editable fields in Configuración, just not required to reach the
+  // dashboard. Kept required only where the AI genuinely needs them on
+  // day one.
+  country: z.string().trim().default(""),
   city: z.string().trim().min(1, "Ingresa tu ciudad."),
-  primaryLanguage: z.string().trim().min(1, "Selecciona el idioma principal."),
+  primaryLanguage: z.string().trim().default(""),
   websiteUrl: z.union([z.literal(""), z.string().trim().url("URL inválida.")]),
-  phone: z.string().trim().min(1, "Ingresa un teléfono de contacto."),
+  phone: z.string().trim().default(""),
   contactEmail: z.string().trim().email("Correo inválido."),
 });
 export type BusinessInfoInput = z.infer<typeof businessInfoSchema>;
@@ -18,7 +23,9 @@ export const brandInfoSchema = z.object({
   preferredFonts: z.array(z.string()).default([]),
   brandTone: z.string().trim().min(1, "Describe el tono de comunicación."),
   brandValues: z.array(z.string()).default([]),
-  mission: z.string().trim().min(1, "Cuéntanos la misión de tu marca."),
+  // mission: enriches quality over time but isn't needed to generate a
+  // first piece of content — deferred to Configuración, not asked upfront.
+  mission: z.string().trim().default(""),
   targetAudience: z.string().trim().min(1, "Describe tu público objetivo."),
 });
 export type BrandInfoInput = z.infer<typeof brandInfoSchema>;
@@ -70,14 +77,14 @@ export const aiInfoSchema = z.object({
 });
 export type AiInfoInput = z.infer<typeof aiInfoSchema>;
 
+// Trimmed from 7 steps to 3: Competencia, Productos a detalle, e Info
+// avanzada para la IA ya no son obligatorias para llegar al dashboard —
+// siguen existiendo exactamente igual, pero se completan después desde
+// Configuración, cuando el negocio ya está usando la app.
 export const ONBOARDING_STEPS = [
-  { step: 1, key: "negocio", title: "Información del negocio" },
-  { step: 2, key: "marca", title: "Marca" },
-  { step: 3, key: "redes", title: "Redes sociales" },
-  { step: 4, key: "objetivos", title: "Objetivos" },
-  { step: 5, key: "competencia", title: "Competencia" },
-  { step: 6, key: "productos", title: "Productos o servicios" },
-  { step: 7, key: "ia", title: "Información para la IA" },
+  { step: 1, key: "negocio", title: "Tu negocio" },
+  { step: 2, key: "marca", title: "Marca y tono" },
+  { step: 3, key: "objetivos", title: "Objetivos y redes" },
 ] as const;
 
 export const TOTAL_ONBOARDING_STEPS = ONBOARDING_STEPS.length;

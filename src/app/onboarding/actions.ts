@@ -233,6 +233,25 @@ export async function saveProducts(
   return { success: true, data: undefined };
 }
 
+/** Marks onboarding done — called once the 3-step compact flow finishes.
+ * saveAiInfoAndComplete below also sets this same flag when the (now
+ * optional, Configuración-only) AI info step is saved later; setting it
+ * twice is harmless. */
+export async function completeOnboarding(businessId: string): Promise<ActionResult> {
+  try {
+    const { supabase } = await requireUser();
+    const { error } = await supabase
+      .from("businesses")
+      .update({ onboarding_step: 4, onboarding_completed_at: new Date().toISOString() })
+      .eq("id", businessId);
+    if (error) return { success: false, error: error.message };
+    return { success: true, data: undefined };
+  } catch (err) {
+    console.error("completeOnboarding failed", err);
+    return { success: false, error: "No se pudo completar el registro. Intenta de nuevo." };
+  }
+}
+
 export async function saveAiInfoAndComplete(
   businessId: string,
   input: AiInfoInput,

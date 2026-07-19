@@ -12,11 +12,20 @@ type ActionResult<T = undefined> =
 // runaway spend from repeated clicks or a bug, independent of any plan.
 const MAX_GENERATION_RUNS_PER_DAY = 5;
 
+export interface GeneratedContentPreview {
+  scheduledDate: string;
+  contentKind: string;
+  topic: string;
+  script: string;
+}
+
 /** Generates the next `days` of content for a business and saves them to content_calendar. */
 export async function generateContentPlan(
   businessId: string,
   days = 7,
-): Promise<ActionResult<{ created: number; runsRemainingToday: number }>> {
+): Promise<
+  ActionResult<{ created: number; runsRemainingToday: number; preview: GeneratedContentPreview[] }>
+> {
   try {
     const supabase = await createClient();
     const {
@@ -114,7 +123,13 @@ export async function generateContentPlan(
     if (error) return { success: false, error: error.message };
 
     const runsRemainingToday = Math.max(0, MAX_GENERATION_RUNS_PER_DAY - ((runsToday ?? 0) + 1));
-    return { success: true, data: { created: inserted?.length ?? 0, runsRemainingToday } };
+    const preview = strategy.days.map((d) => ({
+      scheduledDate: d.date,
+      contentKind: d.contentKind,
+      topic: d.topic,
+      script: d.script,
+    }));
+    return { success: true, data: { created: inserted?.length ?? 0, runsRemainingToday, preview } };
   } catch (err) {
     console.error("generateContentPlan failed", err);
     return { success: false, error: "No se pudo generar el plan. Intenta de nuevo." };

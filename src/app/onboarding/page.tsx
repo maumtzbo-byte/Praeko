@@ -65,8 +65,6 @@ export default async function OnboardingPage() {
     label: string;
     url: string;
   }[];
-  const faqs = (brandProfile?.faqs ?? []) as { question: string; answer: string }[];
-  const businessHours = (brandProfile?.business_hours ?? {}) as { general?: string };
 
   const initial: OnboardingWizardInitialData = {
     businessId: business?.id ?? null,
@@ -103,28 +101,6 @@ export default async function OnboardingPage() {
     objetivos: {
       goals: brandProfile?.goals ?? [],
       goalsOther: brandProfile?.goals_other ?? "",
-    },
-    competencia: {
-      mainCompetitors: brandProfile?.main_competitors ?? [],
-      admiredCompanies: brandProfile?.admired_companies ?? [],
-      styleReferences: brandProfile?.style_references ?? [],
-    },
-    productos: {
-      sellsDescription: brandProfile?.sells_description ?? "",
-      productCategories: brandProfile?.product_categories ?? [],
-      mainProducts: brandProfile?.main_products ?? [],
-      averageTicket: brandProfile?.average_ticket ?? "",
-      frequentPromotions: brandProfile?.frequent_promotions ?? "",
-    },
-    ia: {
-      personality: brandProfile?.personality ?? "",
-      aiForbiddenTopics: brandProfile?.ai_forbidden_topics ?? "",
-      aiForbiddenWords: brandProfile?.ai_forbidden_words ?? [],
-      aiResponseStyle: brandProfile?.ai_response_style ?? "",
-      faqs,
-      businessHours: businessHours.general ?? "",
-      address: brandProfile?.address ?? "",
-      additionalInfo: brandProfile?.additional_info ?? "",
     },
   };
 

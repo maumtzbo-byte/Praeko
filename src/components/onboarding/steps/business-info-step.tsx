@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { FieldError } from "@/components/ui/field-error";
+import { OptionCard } from "@/components/ui/option-card";
 
 export function BusinessInfoStep({
   value,
@@ -34,16 +35,20 @@ export function BusinessInfoStep({
         <FieldError message={errors.description} />
       </div>
 
-      <div>
-        <Label required>Industria o giro</Label>
-        <Select value={value.industry} onChange={(e) => onChange({ industry: e.target.value })} invalid={!!errors.industry}>
-          <option value="">Selecciona una opción</option>
-          {INDUSTRY_OPTIONS.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
+      <div className="sm:col-span-2">
+        <Label required>¿A qué te dedicas?</Label>
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+          {INDUSTRY_OPTIONS.map(({ value: opt, label, icon: Icon }) => (
+            <OptionCard
+              key={opt}
+              selected={value.industry === opt}
+              onClick={() => onChange({ industry: opt })}
+              icon={<Icon className="h-4 w-4" strokeWidth={1.5} />}
+              label={label}
+              className="p-3"
+            />
           ))}
-        </Select>
+        </div>
         <FieldError message={errors.industry} />
       </div>
 

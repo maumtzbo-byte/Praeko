@@ -9,38 +9,22 @@ import {
   brandInfoSchema,
   socialLinksSchema,
   goalsSchema,
-  competitionSchema,
-  productsSchema,
-  aiInfoSchema,
   TOTAL_ONBOARDING_STEPS,
   type BusinessInfoInput,
   type BrandInfoInput,
   type SocialLinksInput,
   type GoalsInput,
-  type CompetitionInput,
-  type ProductsInput,
-  type AiInfoInput,
 } from "@/lib/validation/onboarding";
-import {
-  saveBusinessInfo,
-  saveBrandInfo,
-  saveSocialLinks,
-  saveGoals,
-  saveCompetition,
-  saveProducts,
-  saveAiInfoAndComplete,
-} from "@/app/onboarding/actions";
+import { saveBusinessInfo, saveBrandInfo, saveSocialLinks, saveGoals, completeOnboarding } from "@/app/onboarding/actions";
 import { flattenZodErrors } from "@/lib/validation/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StepperProgress } from "./stepper-progress";
-import { BusinessInfoStep } from "./steps/business-info-step";
-import { BrandInfoStep } from "./steps/brand-info-step";
-import { SocialLinksStep } from "./steps/social-links-step";
+import { OnboardingBusinessStep } from "./steps/onboarding-business-step";
+import { OnboardingBrandStep } from "./steps/onboarding-brand-step";
 import { GoalsStep } from "./steps/goals-step";
-import { CompetitionStep } from "./steps/competition-step";
-import { ProductsStep } from "./steps/products-step";
-import { AiInfoStep } from "./steps/ai-info-step";
+import { SocialLinksStep } from "./steps/social-links-step";
+import { OnboardingReveal } from "./onboarding-reveal";
 
 export interface OnboardingWizardInitialData {
   businessId: string | null;
@@ -49,9 +33,6 @@ export interface OnboardingWizardInitialData {
   marca: BrandInfoInput;
   redes: SocialLinksInput;
   objetivos: GoalsInput;
-  competencia: CompetitionInput;
-  productos: ProductsInput;
-  ia: AiInfoInput;
   logoUrl: string | null;
 }
 
@@ -59,16 +40,21 @@ export function OnboardingWizard({ initial }: { initial: OnboardingWizardInitial
   const router = useRouter();
   const [businessId, setBusinessId] = useState(initial.businessId);
   const [step, setStep] = useState(Math.min(Math.max(initial.step, 1), TOTAL_ONBOARDING_STEPS));
+  const [phase, setPhase] = useState<"form" | "reveal">("form");
   const [saving, setSaving] = useState(false);
   const [logoUrl, setLogoUrl] = useState(initial.logoUrl);
 
-  const [negocio, setNegocio] = useState(initial.negocio);
+  // País/idioma se guardan con un valor por defecto sensato en vez de
+  // preguntarse — siguen siendo campos reales y editables en Configuración,
+  // solo dejaron de bloquear el registro.
+  const [negocio, setNegocio] = useState<BusinessInfoInput>({
+    ...initial.negocio,
+    country: initial.negocio.country || "México",
+    primaryLanguage: initial.negocio.primaryLanguage || "Español",
+  });
   const [marca, setMarca] = useState(initial.marca);
   const [redes, setRedes] = useState(initial.redes);
   const [objetivos, setObjetivos] = useState(initial.objetivos);
-  const [competencia, setCompetencia] = useState(initial.competencia);
-  const [productos, setProductos] = useState(initial.productos);
-  const [ia, setIa] = useState(initial.ia);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -109,67 +95,31 @@ export function OnboardingWizard({ initial }: { initial: OnboardingWizardInitial
       }
       return true;
     }
+
     if (step === 3) {
-      const parsed = socialLinksSchema.safeParse(redes);
-      if (!parsed.success) {
-        setErrors(flattenZodErrors(parsed.error));
+      const parsedGoals = goalsSchema.safeParse(objetivos);
+      if (!parsedGoals.success) {
+        setErrors(flattenZodErrors(parsedGoals.error));
         return false;
       }
-      const res = await saveSocialLinks(businessId, redes);
-      if (!res.success) {
-        toast.error(res.error);
+      // Redes sociales no tiene campos obligatorios — safeParse aquí solo
+      // normaliza los defaults, nunca debería fallar.
+      const parsedSocial = socialLinksSchema.safeParse(redes);
+      if (!parsedSocial.success) return false;
+
+      const goalsRes = await saveGoals(businessId, objetivos);
+      if (!goalsRes.success) {
+        toast.error(goalsRes.error);
         return false;
       }
-      return true;
-    }
-    if (step === 4) {
-      const parsed = goalsSchema.safeParse(objetivos);
-      if (!parsed.success) {
-        setErrors(flattenZodErrors(parsed.error));
+      const socialRes = await saveSocialLinks(businessId, redes);
+      if (!socialRes.success) {
+        toast.error(socialRes.error);
         return false;
       }
-      const res = await saveGoals(businessId, objetivos);
-      if (!res.success) {
-        toast.error(res.error);
-        return false;
-      }
-      return true;
-    }
-    if (step === 5) {
-      const parsed = competitionSchema.safeParse(competencia);
-      if (!parsed.success) {
-        setErrors(flattenZodErrors(parsed.error));
-        return false;
-      }
-      const res = await saveCompetition(businessId, competencia);
-      if (!res.success) {
-        toast.error(res.error);
-        return false;
-      }
-      return true;
-    }
-    if (step === 6) {
-      const parsed = productsSchema.safeParse(productos);
-      if (!parsed.success) {
-        setErrors(flattenZodErrors(parsed.error));
-        return false;
-      }
-      const res = await saveProducts(businessId, productos);
-      if (!res.success) {
-        toast.error(res.error);
-        return false;
-      }
-      return true;
-    }
-    if (step === 7) {
-      const parsed = aiInfoSchema.safeParse(ia);
-      if (!parsed.success) {
-        setErrors(flattenZodErrors(parsed.error));
-        return false;
-      }
-      const res = await saveAiInfoAndComplete(businessId, ia);
-      if (!res.success) {
-        toast.error(res.error);
+      const completeRes = await completeOnboarding(businessId);
+      if (!completeRes.success) {
+        toast.error(completeRes.error);
         return false;
       }
       return true;
@@ -185,9 +135,7 @@ export function OnboardingWizard({ initial }: { initial: OnboardingWizardInitial
       if (!ok) return;
 
       if (step === TOTAL_ONBOARDING_STEPS) {
-        toast.success("¡Todo listo! Bienvenido a Praeko.");
-        router.push("/dashboard");
-        router.refresh();
+        setPhase("reveal");
         return;
       }
 
@@ -208,35 +156,43 @@ export function OnboardingWizard({ initial }: { initial: OnboardingWizardInitial
     }
   }
 
+  if (phase === "reveal" && businessId) {
+    return (
+      <OnboardingReveal
+        businessId={businessId}
+        onFinish={() => {
+          router.push("/dashboard");
+          router.refresh();
+        }}
+      />
+    );
+  }
+
   return (
     <Card className="w-full max-w-2xl">
       <CardHeader>
         <StepperProgress currentStep={step} />
-        <CardTitle className="text-xl">
+        <CardTitle className="font-[family-name:var(--font-display)] text-xl">
           {step === 1 && "Cuéntanos de tu negocio"}
           {step === 2 && "Tu marca"}
-          {step === 3 && "Redes sociales"}
-          {step === 4 && "¿Cuáles son tus objetivos?"}
-          {step === 5 && "Tu competencia"}
-          {step === 6 && "Productos o servicios"}
-          {step === 7 && "Información para la IA"}
+          {step === 3 && "Objetivos y redes"}
         </CardTitle>
         <CardDescription>
-          {step === 1 && "Lo básico para que Praeko entienda tu negocio."}
-          {step === 2 && "Así es como tu marca se ve y se comunica."}
-          {step === 3 && "Conecta tus redes para que Praeko sepa dónde publicar."}
-          {step === 4 && "Selecciona todos los que apliquen."}
-          {step === 5 && "Nos ayuda a diferenciarte en el contenido."}
-          {step === 6 && "Lo que ofreces, para que la IA lo represente bien."}
-          {step === 7 && "Reglas claras para que la IA nunca se salga de tono."}
+          {step === 1 && "Lo esencial para que Praeko entienda tu negocio."}
+          {step === 2 && "Así debe sonar tu marca en todo lo que publiquemos."}
+          {step === 3 && "Qué quieres lograr, y dónde vas a publicar."}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {step === 1 && (
-          <BusinessInfoStep value={negocio} onChange={(p) => setNegocio((v) => ({ ...v, ...p }))} errors={errors} />
+          <OnboardingBusinessStep
+            value={negocio}
+            onChange={(p) => setNegocio((v) => ({ ...v, ...p }))}
+            errors={errors}
+          />
         )}
         {step === 2 && (
-          <BrandInfoStep
+          <OnboardingBrandStep
             businessId={businessId}
             value={marca}
             onChange={(p) => setMarca((v) => ({ ...v, ...p }))}
@@ -245,17 +201,15 @@ export function OnboardingWizard({ initial }: { initial: OnboardingWizardInitial
             onLogoUploaded={setLogoUrl}
           />
         )}
-        {step === 3 && <SocialLinksStep value={redes} onChange={(p) => setRedes((v) => ({ ...v, ...p }))} />}
-        {step === 4 && (
-          <GoalsStep value={objetivos} onChange={(p) => setObjetivos((v) => ({ ...v, ...p }))} errors={errors} />
+        {step === 3 && (
+          <div className="flex flex-col gap-8">
+            <GoalsStep value={objetivos} onChange={(p) => setObjetivos((v) => ({ ...v, ...p }))} errors={errors} />
+            <div className="border-t border-zinc-100 pt-6">
+              <p className="mb-4 text-sm font-medium text-zinc-500">Redes sociales (opcional)</p>
+              <SocialLinksStep value={redes} onChange={(p) => setRedes((v) => ({ ...v, ...p }))} />
+            </div>
+          </div>
         )}
-        {step === 5 && (
-          <CompetitionStep value={competencia} onChange={(p) => setCompetencia((v) => ({ ...v, ...p }))} />
-        )}
-        {step === 6 && (
-          <ProductsStep value={productos} onChange={(p) => setProductos((v) => ({ ...v, ...p }))} errors={errors} />
-        )}
-        {step === 7 && <AiInfoStep value={ia} onChange={(p) => setIa((v) => ({ ...v, ...p }))} errors={errors} />}
 
         <div className="mt-8 flex flex-col gap-3 border-t border-zinc-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <Button
@@ -269,15 +223,17 @@ export function OnboardingWizard({ initial }: { initial: OnboardingWizardInitial
           </Button>
 
           <div className="order-1 flex flex-col gap-2 sm:order-2 sm:flex-row sm:items-center">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleSaveForLater}
-              loading={saving}
-              className="whitespace-nowrap"
-            >
-              Guardar para después
-            </Button>
+            {step < TOTAL_ONBOARDING_STEPS && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleSaveForLater}
+                loading={saving}
+                className="whitespace-nowrap"
+              >
+                Guardar para después
+              </Button>
+            )}
             <Button type="button" onClick={handleContinue} loading={saving}>
               {step === TOTAL_ONBOARDING_STEPS ? "Finalizar" : "Continuar"}
               {step !== TOTAL_ONBOARDING_STEPS && <ArrowRight className="h-4 w-4" />}

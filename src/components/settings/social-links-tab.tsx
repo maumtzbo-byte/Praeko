@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
 import { socialLinksSchema, type SocialLinksInput } from "@/lib/validation/onboarding";
 import { saveSocialLinks } from "@/app/onboarding/actions";
@@ -18,16 +20,23 @@ export function SocialLinksTab({ businessId, initial }: { businessId: string; in
     const res = await saveSocialLinks(businessId, value);
     setSaving(false);
     if (!res.success) return toast.error(res.error);
-    toast.success("Redes sociales actualizadas.");
+    toast.success("Menciones actualizadas.");
   }
 
   return (
     <SettingsSection
-      title="Redes sociales"
-      description="Dónde vas a publicar tu contenido."
+      title="Menciones y enlaces"
+      description="Tus @usuarios y perfiles — la IA los menciona en el contenido que escribe. Esto no publica nada por sí solo."
       saving={saving}
       onSave={handleSave}
     >
+      <Link
+        href="/dashboard/redes-sociales"
+        className="flex items-center gap-1.5 self-start text-sm text-zinc-500 underline decoration-zinc-300 underline-offset-2 hover:text-zinc-700"
+      >
+        ¿Buscas publicar automático? Conecta tus cuentas en Redes sociales
+        <ArrowUpRight className="h-3.5 w-3.5" />
+      </Link>
       <SocialLinksStep value={value} onChange={(p) => setValue((v) => ({ ...v, ...p }))} />
     </SettingsSection>
   );

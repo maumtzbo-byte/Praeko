@@ -17,6 +17,8 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { Tables } from "@/lib/supabase/types";
 
 function firstNameFromEmail(email: string | undefined) {
@@ -65,6 +67,7 @@ export default async function DashboardHomePage() {
     { count: imagesCount },
     { count: scheduledCount },
     { data: recentActivity },
+    { count: connectionsCount },
   ] = await Promise.all([
     supabase.from("subscriptions").select("*").eq("business_id", business.id).maybeSingle(),
     supabase
@@ -94,7 +97,13 @@ export default async function DashboardHomePage() {
       .eq("business_id", business.id)
       .order("created_at", { ascending: false })
       .limit(6),
+    supabase
+      .from("social_connections")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", business.id),
   ]);
+
+  const hasNoConnections = (connectionsCount ?? 0) === 0;
 
   const displayName = (user?.user_metadata?.full_name as string | undefined) || firstNameFromEmail(user?.email);
   const videosUsed = usage?.videos_used ?? 0;
@@ -102,7 +111,7 @@ export default async function DashboardHomePage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
+      <div className="animate-fade-in-up">
         <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold tracking-tight text-zinc-950">
           Hola{displayName ? `, ${displayName}` : ""} 👋
         </h1>
@@ -111,7 +120,7 @@ export default async function DashboardHomePage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="animate-fade-in-up stagger-1 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-white/70 sm:col-span-2">
           <CardContent className="flex flex-col gap-3 p-5">
             <div className="flex items-center justify-between">
@@ -128,10 +137,10 @@ export default async function DashboardHomePage() {
                 </Badge>
               </div>
             ) : (
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-zinc-500">Sin plan activo todavía.</p>
-                <Link href="/dashboard/plan" className="text-sm font-medium text-zinc-900 underline">
-                  Elegir plan
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-zinc-500">Elige tu plan para empezar a generar contenido.</p>
+                <Link href="/dashboard/plan" className="shrink-0">
+                  <Button size="sm">Elegir plan</Button>
                 </Link>
               </div>
             )}
@@ -152,7 +161,7 @@ export default async function DashboardHomePage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="animate-fade-in-up stagger-2 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card>
             <CardHeader className="flex-row items-center justify-between">
@@ -183,7 +192,7 @@ export default async function DashboardHomePage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card>
             <CardHeader className="flex-row items-center justify-between">
@@ -229,16 +238,27 @@ export default async function DashboardHomePage() {
             <CardTitle>Accesos rápidos</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-2">
-            {QUICK_ACTIONS.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex flex-col items-start gap-2 rounded-xl border border-zinc-200 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.25)]"
-              >
-                <Icon className="h-4 w-4 text-zinc-600" strokeWidth={1.75} />
-                <span className="text-xs font-medium text-zinc-700">{label}</span>
-              </Link>
-            ))}
+            {QUICK_ACTIONS.map(({ href, label, icon: Icon }) => {
+              const isPrimary = href === "/dashboard/redes-sociales" && hasNoConnections;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    "flex flex-col items-start gap-2 rounded-xl border p-3 text-left transition-all hover:-translate-y-0.5",
+                    isPrimary
+                      ? "border-zinc-950 bg-zinc-950 text-white shadow-[0_8px_20px_-12px_rgba(0,0,0,0.4)] hover:bg-zinc-800"
+                      : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.25)]",
+                  )}
+                >
+                  <Icon className={cn("h-4 w-4", isPrimary ? "text-white" : "text-zinc-600")} strokeWidth={1.75} />
+                  <span className={cn("text-xs font-medium", isPrimary ? "text-white" : "text-zinc-700")}>
+                    {label}
+                  </span>
+                  {isPrimary && <span className="text-[10px] font-medium text-zinc-400">Empieza aquí</span>}
+                </Link>
+              );
+            })}
           </CardContent>
         </Card>
       </div>

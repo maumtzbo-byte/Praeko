@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type {
   BusinessInfoInput,
   BrandInfoInput,
@@ -24,9 +25,9 @@ import { NotificationsTab } from "./notifications-tab";
 
 const TABS = [
   { key: "general", label: "Datos generales" },
-  { key: "marca", label: "Branding" },
+  { key: "marca", label: "Marca" },
   { key: "objetivos", label: "Objetivos" },
-  { key: "redes", label: "Redes sociales" },
+  { key: "redes", label: "Menciones y enlaces" },
   { key: "competencia", label: "Competencia" },
   { key: "productos", label: "Productos" },
   { key: "ia", label: "Info. para la IA" },
@@ -55,7 +56,7 @@ export function SettingsTabs({ initial, defaultTab }: { initial: SettingsInitial
 
   return (
     <div className="flex flex-col gap-6 lg:flex-row">
-      <nav className="flex gap-1 overflow-x-auto pb-2 lg:w-56 lg:flex-none lg:flex-col lg:overflow-visible lg:pb-0">
+      <nav className="flex gap-1 overflow-x-auto pb-2 [mask-image:linear-gradient(to_right,black_88%,transparent_100%)] lg:w-56 lg:flex-none lg:flex-col lg:overflow-visible lg:pb-0 lg:[mask-image:none]">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -71,19 +72,31 @@ export function SettingsTabs({ initial, defaultTab }: { initial: SettingsInitial
       </nav>
 
       <div className="flex-1">
-        {tab === "general" && <BusinessInfoTab businessId={initial.businessId} initial={initial.general} />}
-        {tab === "marca" && (
-          <BrandInfoTab businessId={initial.businessId} initial={initial.marca} initialLogoUrl={initial.logoUrl} />
-        )}
-        {tab === "objetivos" && <GoalsTab businessId={initial.businessId} initial={initial.objetivos} />}
-        {tab === "redes" && <SocialLinksTab businessId={initial.businessId} initial={initial.redes} />}
-        {tab === "competencia" && <CompetitionTab businessId={initial.businessId} initial={initial.competencia} />}
-        {tab === "productos" && <ProductsTab businessId={initial.businessId} initial={initial.productos} />}
-        {tab === "ia" && <AiInfoTab businessId={initial.businessId} initial={initial.ia} />}
-        {tab === "seguridad" && <SecurityTab />}
-        {tab === "notificaciones" && (
-          <NotificationsTab businessId={initial.businessId} initial={initial.notificaciones} />
-        )}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+          >
+            {tab === "general" && <BusinessInfoTab businessId={initial.businessId} initial={initial.general} />}
+            {tab === "marca" && (
+              <BrandInfoTab businessId={initial.businessId} initial={initial.marca} initialLogoUrl={initial.logoUrl} />
+            )}
+            {tab === "objetivos" && <GoalsTab businessId={initial.businessId} initial={initial.objetivos} />}
+            {tab === "redes" && <SocialLinksTab businessId={initial.businessId} initial={initial.redes} />}
+            {tab === "competencia" && (
+              <CompetitionTab businessId={initial.businessId} initial={initial.competencia} />
+            )}
+            {tab === "productos" && <ProductsTab businessId={initial.businessId} initial={initial.productos} />}
+            {tab === "ia" && <AiInfoTab businessId={initial.businessId} initial={initial.ia} />}
+            {tab === "seguridad" && <SecurityTab />}
+            {tab === "notificaciones" && (
+              <NotificationsTab businessId={initial.businessId} initial={initial.notificaciones} />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

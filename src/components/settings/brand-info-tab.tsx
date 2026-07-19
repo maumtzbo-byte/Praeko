@@ -33,11 +33,11 @@ export function BrandInfoTab({
     const res = await saveBrandInfo(businessId, value);
     setSaving(false);
     if (!res.success) return toast.error(res.error);
-    toast.success("Branding actualizado.");
+    toast.success("Marca actualizada.");
   }
 
   return (
-    <SettingsSection title="Branding" description="Cómo se ve y se comunica tu marca." saving={saving} onSave={handleSave}>
+    <SettingsSection title="Marca" description="Cómo se ve y se comunica tu marca." saving={saving} onSave={handleSave}>
       <BrandInfoStep
         businessId={businessId}
         value={value}

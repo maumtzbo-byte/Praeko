@@ -149,6 +149,35 @@ body {
   animation-delay: -2.25s;
 }
 
+/* Staggered entrance for dashboard sections on first paint — applied via
+   .stagger-N (see below) so a server component can use it with no client
+   JS needed. Runs once, `both` keeps the pre-animation state until its
+   delay elapses so nothing flashes at full opacity before its turn. */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out both;
+}
+
+.stagger-1 {
+  animation-delay: 0.05s;
+}
+.stagger-2 {
+  animation-delay: 0.12s;
+}
+.stagger-3 {
+  animation-delay: 0.19s;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .marquee-track {
     animation: none;
@@ -157,6 +186,9 @@ body {
     overflow-x: auto;
   }
   .card-float {
+    animation: none;
+  }
+  .animate-fade-in-up {
     animation: none;
   }
 }

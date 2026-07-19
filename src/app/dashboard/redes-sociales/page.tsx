@@ -55,7 +55,7 @@ export default async function RedesSocialesPage({
     <div>
       <PageHeader
         title="Redes sociales"
-        description={`Conectadas ${connectedCount} de ${limit} redes según tu plan.`}
+        description={`Conectadas ${connectedCount} de ${limit} redes según tu plan. Esto autoriza a Praeko a publicar por ti — para editar tus @usuarios visibles, ve a Configuración.`}
       />
 
       {error && (

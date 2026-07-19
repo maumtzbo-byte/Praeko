@@ -1,11 +1,11 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { Environment, Lightformer, MeshDistortMaterial } from "@react-three/drei";
 import { Bloom, EffectComposer, Noise } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
-import { Suspense, useRef } from "react";
-import type { Mesh, MeshPhysicalMaterial, PerspectiveCamera } from "three";
+import { Suspense, useEffect, useRef } from "react";
+import { Vector3, type BufferGeometry, type Mesh, type MeshPhysicalMaterial, type PerspectiveCamera } from "three";
 import type { MotionValue } from "framer-motion";
 
 type DistortMaterialHandle = MeshPhysicalMaterial & { distort: number };
@@ -20,6 +20,15 @@ type ShotPoint = {
   distance: number;
   fov: number;
 };
+
+// A fixed-size ring buffer of touch "ripples" — each one a point on the
+// sphere's surface (in object space, normalized to a unit direction) plus
+// the timestamp it was spawned. Dragging keeps overwriting the oldest slot
+// with a fresh one, which is what makes a trail follow the finger/cursor
+// instead of just a single point reacting.
+const RIPPLE_SLOTS = 12;
+const RIPPLE_DURATION_S = 0.9;
+const RIPPLE_THROTTLE_S = 0.045;
 
 /** Linear interpolation across evenly-spaced control points, read fresh every r3f frame. */
 function lerpPoints<T extends object>(points: T[], t: number): T {
@@ -50,6 +59,7 @@ function Orb({
   interactive?: boolean;
 }) {
   const mesh = useRef<Mesh>(null);
+  const geometry = useRef<BufferGeometry>(null);
   // Typed as the base three.js class — drei's own distort-material subclass
   // isn't exported, so `.distort` is accessed via a narrowing cast below.
   const material = useRef<MeshPhysicalMaterial>(null);
@@ -57,14 +67,63 @@ function Orb({
   // instead of a mesh-only onPointerMove means the whole canvas area drives
   // parallax, not just hovering the sphere's own surface.
   const smoothPointer = useRef({ x: 0, y: 0 });
-  // Click/tap "impact" — a timestamp + hit direction, read as a decaying
-  // damped wobble each frame. It's purely additive on top of the orb's
-  // normal position/rotation formulas below, so it always springs back to
-  // exactly where it would have been anyway — the orb never actually moves.
-  const impact = useRef({ start: -Infinity, dx: 0, dy: 0 });
-  // Mirrors the clock so the pointer handler (outside useFrame) can stamp
-  // an impact using the same time base `t` reads below.
+
+  // The undisplaced sphere, captured once — every frame's ripple pass reads
+  // from this and writes into the live position attribute, so ripples never
+  // accumulate into a permanent deformation. Without a pristine copy to
+  // rebuild from each frame, overlapping ripples would compound instead of
+  // decaying, and the surface would never truly return to resting shape.
+  const restPositions = useRef<Float32Array | null>(null);
+  const ripples = useRef(
+    Array.from({ length: RIPPLE_SLOTS }, () => ({ point: new Vector3(), start: -Infinity })),
+  );
+  const nextRippleSlot = useRef(0);
+  const isDragging = useRef(false);
+  const lastRippleAt = useRef(-Infinity);
+  const hadActiveRipple = useRef(false);
+  // Mirrors the clock so pointer handlers (outside useFrame) can stamp a
+  // ripple using the same time base `t` reads below.
   const clockRef = useRef(0);
+
+  useEffect(() => {
+    if (!interactive || !geometry.current) return;
+    const position = geometry.current.attributes.position;
+    restPositions.current = Float32Array.from(position.array as Float32Array);
+  }, [interactive]);
+
+  function spawnRipple(localPoint: Vector3) {
+    const slot = ripples.current[nextRippleSlot.current];
+    slot.point.copy(localPoint).normalize();
+    slot.start = clockRef.current;
+    nextRippleSlot.current = (nextRippleSlot.current + 1) % RIPPLE_SLOTS;
+    lastRippleAt.current = clockRef.current;
+  }
+
+  function handlePointerDown(event: ThreeEvent<PointerEvent>) {
+    if (!interactive || !mesh.current) return;
+    event.stopPropagation();
+    isDragging.current = true;
+    spawnRipple(mesh.current.worldToLocal(event.point.clone()));
+  }
+
+  function handlePointerMove(event: ThreeEvent<PointerEvent>) {
+    if (!interactive || !isDragging.current || !mesh.current) return;
+    if (clockRef.current - lastRippleAt.current < RIPPLE_THROTTLE_S) return;
+    spawnRipple(mesh.current.worldToLocal(event.point.clone()));
+  }
+
+  useEffect(() => {
+    if (!interactive) return;
+    const stopDragging = () => {
+      isDragging.current = false;
+    };
+    window.addEventListener("pointerup", stopDragging);
+    window.addEventListener("pointercancel", stopDragging);
+    return () => {
+      window.removeEventListener("pointerup", stopDragging);
+      window.removeEventListener("pointercancel", stopDragging);
+    };
+  }, [interactive]);
 
   useFrame((state) => {
     if (!mesh.current) return;
@@ -76,17 +135,11 @@ function Orb({
     smoothPointer.current.x += (state.pointer.x - smoothPointer.current.x) * 0.04;
     smoothPointer.current.y += (state.pointer.y - smoothPointer.current.y) * 0.04;
 
-    const impactAge = t - impact.current.start;
-    // Damped sine: sharp initial kick that rings down to ~0 within a second.
-    const wobble = impactAge >= 0 && impactAge < 1.1 ? Math.sin(impactAge * 22) * Math.exp(-impactAge * 5.5) : 0;
-
-    mesh.current.rotation.x =
-      Math.sin(t * 0.15) * 0.3 + smoothPointer.current.y * 0.25 + wobble * impact.current.dy * 0.5;
-    mesh.current.rotation.y =
-      t * 0.12 + smoothPointer.current.x * 0.25 + drift.x * 0.4 - wobble * impact.current.dx * 0.5;
+    mesh.current.rotation.x = Math.sin(t * 0.15) * 0.3 + smoothPointer.current.y * 0.25;
+    mesh.current.rotation.y = t * 0.12 + smoothPointer.current.x * 0.25 + drift.x * 0.4;
     mesh.current.position.y = Math.sin(t * 0.6) * 0.15 + drift.y;
     mesh.current.position.x = drift.x;
-    mesh.current.scale.setScalar(drift.scale * (1 + wobble * 0.1));
+    mesh.current.scale.setScalar(drift.scale);
 
     // Camera parallax + a gentle scroll-driven dolly-in — this is what makes
     // the scene read as a space with depth rather than a flat rendered sticker.
@@ -114,32 +167,76 @@ function Orb({
     // of daily work resolving into clarity, echoed in the material itself.
     if (material.current) {
       const baseDistort = progress ? 0.36 - storyProgress * 0.2 : 0.3;
-      (material.current as DistortMaterialHandle).distort = baseDistort + Math.abs(wobble) * 0.45;
+      (material.current as DistortMaterialHandle).distort = baseDistort;
       if (progress) material.current.roughness = 0.2 - storyProgress * 0.1;
+    }
+
+    // Touch ripple: displaces the mesh's own vertex positions (fed straight
+    // into MeshDistortMaterial's shader as its base shape, so its ambient
+    // noise wobble layers on top for free) in a falloff around each active
+    // ripple point — a real, localized bump where you touched, not a
+    // whole-object reaction. Skipped entirely while idle, so resting
+    // performance is untouched.
+    if (interactive && geometry.current && restPositions.current) {
+      const rest = restPositions.current;
+      const active = ripples.current.filter((r) => {
+        const age = t - r.start;
+        return age >= 0 && age < RIPPLE_DURATION_S;
+      });
+      if (active.length > 0) {
+        const position = geometry.current.attributes.position;
+        const count = position.count;
+        for (let i = 0; i < count; i++) {
+          const ox = rest[i * 3];
+          const oy = rest[i * 3 + 1];
+          const oz = rest[i * 3 + 2];
+          const len = Math.hypot(ox, oy, oz) || 1;
+          const nx = ox / len;
+          const ny = oy / len;
+          const nz = oz / len;
+          let bump = 0;
+          for (const r of active) {
+            const age = t - r.start;
+            const dx = nx - r.point.x;
+            const dy = ny - r.point.y;
+            const dz = nz - r.point.z;
+            const falloff = Math.exp(-(dx * dx + dy * dy + dz * dz) * 5.5);
+            const envelope = Math.sin(age * 16) * Math.exp(-age * 4.5);
+            bump += falloff * envelope * 0.32;
+          }
+          position.setXYZ(i, ox + nx * bump, oy + ny * bump, oz + nz * bump);
+        }
+        // Deliberately not calling computeVertexNormals() here: this
+        // geometry (like all Polyhedron-based Three.js geometries) is
+        // non-indexed — each triangle owns its own unmerged corners — so
+        // recomputing normals from face adjacency degrades to flat
+        // per-triangle shading with no vertices to average across, instead
+        // of the smooth analytic normals (normalize(position), already
+        // correct for a near-sphere) the geometry ships with. Leaving the
+        // original normals in place, slightly "wrong" at the very peak of
+        // a bump, reads far smoother than that faceting did.
+        position.needsUpdate = true;
+        hadActiveRipple.current = true;
+      } else if (hadActiveRipple.current) {
+        // Every ripple has fully decayed — snap back to the pristine sphere
+        // exactly, so no fractional floating-point residue lingers.
+        const position = geometry.current.attributes.position;
+        (position.array as Float32Array).set(rest);
+        position.needsUpdate = true;
+        hadActiveRipple.current = false;
+      }
     }
   });
 
   return (
     <mesh
       ref={mesh}
-      onPointerDown={
-        interactive
-          ? (event) => {
-              event.stopPropagation();
-              if (!mesh.current) return;
-              const local = mesh.current.worldToLocal(event.point.clone());
-              impact.current = {
-                start: clockRef.current,
-                dx: local.x / 1.6,
-                dy: local.y / 1.6,
-              };
-            }
-          : undefined
-      }
+      onPointerDown={interactive ? handlePointerDown : undefined}
+      onPointerMove={interactive ? handlePointerMove : undefined}
       onPointerOver={interactive ? () => (document.body.style.cursor = "pointer") : undefined}
       onPointerOut={interactive ? () => (document.body.style.cursor = "auto") : undefined}
     >
-      <icosahedronGeometry args={[1.6, 32]} />
+      <icosahedronGeometry ref={geometry} args={[1.6, 32]} />
       <MeshDistortMaterial
         ref={(instance) => {
           material.current = instance;

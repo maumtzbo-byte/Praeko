@@ -16,20 +16,22 @@ const PLACEHOLDER_REVIEWS = [
 ];
 
 function ReviewCard({ industry, quote, index }: { industry: string; quote: string; index: number }) {
-  // Alternating tilt makes the row read as a loose stack of physical cards
-  // rather than a flat strip — each one "settles" flat and lifts on hover.
-  const tilt = index % 2 === 0 ? "-rotate-1" : "rotate-1";
+  // The float animation lives on this wrapper, alternating phase per card
+  // (see .card-float-offset) so neighbors are always at opposite points of
+  // the bob — one riding up while the other dips. Kept off the card itself
+  // so the hover shadow below never fights the animated transform.
+  const floatClass = index % 2 === 0 ? "shrink-0 card-float" : "shrink-0 card-float card-float-offset";
   return (
-    <div
-      className={`flex w-80 shrink-0 flex-col gap-3 rounded-3xl border border-[var(--hairline)] bg-white p-6 shadow-[0_2px_4px_rgba(0,0,0,0.06),0_24px_45px_-22px_rgba(0,0,0,0.35)] transition-all duration-300 ${tilt} hover:z-10 hover:-translate-y-2 hover:scale-[1.04] hover:rotate-0 hover:shadow-[0_8px_16px_rgba(0,0,0,0.08),0_32px_60px_-20px_rgba(0,0,0,0.4)]`}
-    >
-      <div className="flex gap-0.5 text-amber-400">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Star key={i} className="h-3.5 w-3.5 fill-current" />
-        ))}
+    <div className={floatClass}>
+      <div className="flex w-72 shrink-0 flex-col gap-3 rounded-3xl border border-[var(--hairline)] bg-white p-6 shadow-[0_2px_4px_rgba(0,0,0,0.06),0_24px_45px_-22px_rgba(0,0,0,0.35)] transition-shadow duration-300 hover:shadow-[0_8px_16px_rgba(0,0,0,0.1),0_32px_60px_-20px_rgba(0,0,0,0.45)] sm:w-80">
+        <div className="flex gap-0.5 text-amber-400">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star key={i} className="h-3.5 w-3.5 fill-current" />
+          ))}
+        </div>
+        <p className="text-sm leading-relaxed text-zinc-700">&ldquo;{quote}&rdquo;</p>
+        <p className="text-xs font-medium tracking-wide text-zinc-500">Negocio de {industry.toLowerCase()}</p>
       </div>
-      <p className="text-sm leading-relaxed text-zinc-700">&ldquo;{quote}&rdquo;</p>
-      <p className="text-xs font-medium tracking-wide text-zinc-500">Negocio de {industry.toLowerCase()}</p>
     </div>
   );
 }

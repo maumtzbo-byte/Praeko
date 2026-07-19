@@ -126,12 +126,38 @@ body {
   animation-play-state: paused;
 }
 
+/* Review cards bob gently up and down, each one out of phase with its
+   neighbor (via animation-delay: half a cycle) so there's always one
+   riding higher than the one beside it — reads as loosely floating,
+   not tilted. Runs on its own wrapper so it never fights a hover-driven
+   transform on the card underneath. */
+@keyframes card-float {
+  0%,
+  100% {
+    transform: translateY(-8px);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+.card-float {
+  animation: card-float 4.5s ease-in-out infinite;
+}
+
+.card-float-offset {
+  animation-delay: -2.25s;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .marquee-track {
     animation: none;
   }
   .marquee-viewport {
     overflow-x: auto;
+  }
+  .card-float {
+    animation: none;
   }
 }
 

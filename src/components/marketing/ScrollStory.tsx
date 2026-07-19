@@ -277,6 +277,19 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
       const rect = section.getBoundingClientRect();
       return rect.top <= 0 && rect.bottom > 0;
     };
+    // A mistrusted measurement (e.g. a mobile browser mid-animation on its
+    // own address bar, momentarily reporting a section height at or below
+    // the viewport height) used to still get hijacked: bPx could come out
+    // as ~0, NaN, or negative, and every gesture from then on computed a
+    // target equal to wherever the page already was — silently swallowed
+    // by preventDefault below with zero visible movement, in *both*
+    // directions, which reads as "scroll is completely stuck". Bailing out
+    // here instead lets the browser's native scroll handle that gesture,
+    // so the worst case is one un-hijacked gesture, never a dead end.
+    const canHijack = () => {
+      const bPx = beatPx();
+      return Number.isFinite(bPx) && bPx > 1;
+    };
     const isCoolingDown = () => performance.now() - lastAdvanceAt < COOLDOWN_MS;
 
     // Absolute guarantee, independent of *why* something might nudge the
@@ -321,7 +334,7 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
       }
       const startY = window.scrollY;
       const delta = targetY - startY;
-      if (Math.abs(delta) < 1) return;
+      if (Math.abs(delta) < 1) return false;
       const startTime = performance.now();
       function tick(now: number) {
         const t = Math.min((now - startTime) / ADVANCE_DURATION_MS, 1);
@@ -334,10 +347,16 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
         }
       }
       rafId = requestAnimationFrame(tick);
+      return true;
     }
 
-    // Returns true if the gesture was consumed (i.e. should be prevented).
+    // Returns true if the gesture actually moved the page (i.e. should be
+    // prevented from also triggering native scroll). Returning false — for
+    // untrustworthy geometry, or a target that's already where the page is
+    // — leaves the gesture's default behavior alone instead of swallowing
+    // it with nothing to show for it.
     function handleGesture(direction: 1 | -1): boolean {
+      if (!canHijack()) return false;
       const top = sectionTop();
       const bPx = beatPx();
       const currentStop = Math.round((window.scrollY - top) / bPx);
@@ -361,22 +380,22 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
       } else {
         targetY = Math.max(top, Math.min(top + (clamped + direction) * bPx, top + totalHeightPx()));
       }
-      lastAdvanceAt = performance.now();
-      animateTo(targetY);
-      return true;
+      const moved = animateTo(targetY);
+      if (moved) lastAdvanceAt = performance.now();
+      return moved;
     }
 
     function onWheel(e: WheelEvent) {
       if (!isInsideSection()) return;
       if (isCoolingDown()) {
-        e.preventDefault();
+        if (canHijack()) e.preventDefault();
         return;
       }
       if (handleGesture(e.deltaY > 0 ? 1 : -1)) e.preventDefault();
     }
 
     function onTouchStart(e: TouchEvent) {
-      touchStartY = isInsideSection() ? (e.touches[0]?.clientY ?? null) : null;
+      touchStartY = isInsideSection() && canHijack() ? (e.touches[0]?.clientY ?? null) : null;
     }
     function onTouchMove(e: TouchEvent) {
       if (touchStartY === null || !isInsideSection()) return;

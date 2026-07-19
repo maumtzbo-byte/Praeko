@@ -43,6 +43,20 @@ const SHOWCASE_ITEMS: {
   { label: "Servicios profesionales", format: "Video", icon: Users, tint: "from-slate-50 to-zinc-200" },
 ];
 
+// One entry per card, hand-tuned — deliberately not a repeating i%3
+// formula, since that just reproduces a subtler grid (every card in the
+// same column reads identically). Real clutter needs each card to differ
+// from its immediate neighbors too.
+const MOBILE_SCATTER = [
+  { rotate: "rotate-[-7deg]", offset: "mt-0" },
+  { rotate: "rotate-[5deg]", offset: "mt-8" },
+  { rotate: "rotate-[-3deg]", offset: "mt-2" },
+  { rotate: "rotate-[6deg]", offset: "mt-1" },
+  { rotate: "rotate-[-5deg]", offset: "mt-7" },
+  { rotate: "rotate-[4deg]", offset: "mt-3" },
+  { rotate: "rotate-[-6deg]", offset: "mt-5" },
+];
+
 function PreviewCard({
   item,
   className = "w-48 shrink-0",
@@ -128,17 +142,16 @@ export default function ContentShowcase() {
         </ul>
 
         {/* Mobile: no hover surface, so show every card at once, small
-            enough that all 7 read at a glance without scrolling — floating
-            and off-grid on purpose (alternating float phase + tilt +
-            vertical offset per column) rather than a neat aligned row, so
-            it reads as scattered examples instead of a rigid list. */}
-        <div className="mt-10 grid grid-cols-3 gap-x-3 gap-y-6 px-1 sm:hidden">
+            enough that all 7 read at a glance without scrolling — each one
+            gets its own hand-picked tilt + vertical offset (not a formula
+            that repeats per column) so it reads as scattered examples
+            tossed down, not a grid with a slight wobble. */}
+        <div className="mt-10 grid grid-cols-3 gap-x-3 gap-y-10 px-1 sm:hidden">
           {SHOWCASE_ITEMS.map((item, i) => {
             const floatClass = i % 2 === 0 ? "card-float" : "card-float card-float-offset";
-            const tilt = i % 3 === 0 ? "-rotate-3" : i % 3 === 1 ? "rotate-2" : "-rotate-1";
-            const offset = i % 3 === 1 ? "mt-4" : i % 3 === 2 ? "mt-2" : "";
+            const { rotate, offset } = MOBILE_SCATTER[i % MOBILE_SCATTER.length];
             return (
-              <div key={item.label} className={`${floatClass} ${tilt} ${offset}`}>
+              <div key={item.label} className={`${floatClass} ${rotate} ${offset}`}>
                 <PreviewCard item={item} className="w-full" compact />
               </div>
             );

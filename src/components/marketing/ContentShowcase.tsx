@@ -43,19 +43,21 @@ const SHOWCASE_ITEMS: {
   { label: "Servicios profesionales", format: "Video", icon: Users, tint: "from-slate-50 to-zinc-200" },
 ];
 
-// One entry per card, hand-tuned — deliberately not a repeating i%3
-// formula, since that just reproduces a subtler grid (every card in the
-// same column reads identically). Real clutter needs each card to differ
-// from its immediate neighbors too.
+// Free (absolute) positions, hand-placed like pieces on a mood board —
+// no row/column structure to read, unlike a grid with offsets, which
+// still lines up into recognizable rows no matter how much you tilt or
+// nudge each cell. Pixel values tuned against a ~360-390px phone width;
+// verified not to overflow at 375px in QA.
 const MOBILE_SCATTER = [
-  { rotate: "rotate-[-7deg]", offset: "mt-0" },
-  { rotate: "rotate-[5deg]", offset: "mt-8" },
-  { rotate: "rotate-[-3deg]", offset: "mt-2" },
-  { rotate: "rotate-[6deg]", offset: "mt-1" },
-  { rotate: "rotate-[-5deg]", offset: "mt-7" },
-  { rotate: "rotate-[4deg]", offset: "mt-3" },
-  { rotate: "rotate-[-6deg]", offset: "mt-5" },
+  { left: 2, top: 20, rotate: "-rotate-[6deg]" },
+  { left: 120, top: 65, rotate: "rotate-[4deg]" },
+  { left: 228, top: 0, rotate: "-rotate-[3deg]" },
+  { left: 6, top: 230, rotate: "rotate-[5deg]" },
+  { left: 122, top: 280, rotate: "-rotate-[4deg]" },
+  { left: 226, top: 205, rotate: "rotate-[3deg]" },
+  { left: 66, top: 435, rotate: "-rotate-[5deg]" },
 ];
+const MOBILE_SCATTER_HEIGHT = 600;
 
 function PreviewCard({
   item,
@@ -141,18 +143,27 @@ export default function ContentShowcase() {
           ))}
         </ul>
 
-        {/* Mobile: no hover surface, so show every card at once, small
-            enough that all 7 read at a glance without scrolling — each one
-            gets its own hand-picked tilt + vertical offset (not a formula
-            that repeats per column) so it reads as scattered examples
-            tossed down, not a grid with a slight wobble. */}
-        <div className="mt-10 grid grid-cols-3 gap-x-3 gap-y-10 px-1 sm:hidden">
+        {/* Mobile: no hover surface, so show every card at once, freely
+            positioned like a mood board instead of a grid — a grid with
+            per-cell tilt/offset still reads as rows once you squint, since
+            every card keeps its column. Rotation lives on this outer,
+            un-animated wrapper; the float animation lives on the inner
+            wrapper below. Both set `transform`, so on one element the
+            animation would just overwrite the static rotate every frame —
+            splitting them across parent/child lets both apply at once. */}
+        <div className="relative mt-10 sm:hidden" style={{ height: MOBILE_SCATTER_HEIGHT }}>
           {SHOWCASE_ITEMS.map((item, i) => {
             const floatClass = i % 2 === 0 ? "card-float" : "card-float card-float-offset";
-            const { rotate, offset } = MOBILE_SCATTER[i % MOBILE_SCATTER.length];
+            const { left, top, rotate } = MOBILE_SCATTER[i % MOBILE_SCATTER.length];
             return (
-              <div key={item.label} className={`${floatClass} ${rotate} ${offset}`}>
-                <PreviewCard item={item} className="w-full" compact />
+              <div
+                key={item.label}
+                className={`absolute w-[100px] ${rotate}`}
+                style={{ left, top }}
+              >
+                <div className={floatClass}>
+                  <PreviewCard item={item} className="w-full" compact />
+                </div>
               </div>
             );
           })}

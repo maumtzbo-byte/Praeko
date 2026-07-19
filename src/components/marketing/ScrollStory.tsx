@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   motion,
-  useReducedMotion,
   useScroll,
   useTransform,
   easeInOut,
@@ -427,7 +426,19 @@ function useOneBeatPerGesture(containerRef: React.RefObject<HTMLElement | null>,
 
 export default function ScrollStory() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const reducedMotion = useReducedMotion();
+  // Starts false — same on server and client, so the first client render
+  // matches the server-rendered markup exactly — and only switches to the
+  // static fallback after mount, once matchMedia can actually be read.
+  // framer-motion's own useReducedMotion() returns non-null during SSR in
+  // a way that disagreed with its own first client render here, which was
+  // producing a real hydration mismatch (server and client rendering two
+  // different branches of the `if (reducedMotion)` below).
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate post-mount read of a client-only API (matchMedia), not derivable during render.
+    if (reduced) setReducedMotion(true);
+  }, []);
   const contentVh = BEATS.length * CONTENT_VH_PER_BEAT;
   const contentFraction = contentVh / (contentVh + RELEASE_BUFFER_VH);
   const { scrollYProgress } = useScroll({
@@ -444,7 +455,7 @@ export default function ScrollStory() {
   // Fades the whole panel out during the release buffer, so it's already
   // invisible by the time the sticky container's edge would otherwise clip it.
   const panelOpacity = useTransform(scrollYProgress, [contentFraction, 1], [1, 0], { clamp: true });
-  useOneBeatPerGesture(containerRef, BEATS.length, contentVh + RELEASE_BUFFER_VH, reducedMotion ?? false);
+  useOneBeatPerGesture(containerRef, BEATS.length, contentVh + RELEASE_BUFFER_VH, reducedMotion);
 
   if (reducedMotion) {
     return <StaticFallback />;

@@ -8,6 +8,8 @@ import {
   Scissors,
   Building2,
   Store,
+  HeartPulse,
+  Users,
   Play,
   Image as ImageIcon,
   Images,
@@ -37,6 +39,8 @@ const SHOWCASE_ITEMS: {
   { label: "Belleza y estética", format: "Imagen", icon: Scissors, tint: "from-pink-50 to-zinc-200" },
   { label: "Inmobiliarias", format: "Video", icon: Building2, tint: "from-emerald-50 to-zinc-200" },
   { label: "Retail y tiendas", format: "Carrusel", icon: Store, tint: "from-amber-50 to-zinc-200" },
+  { label: "Salud y bienestar", format: "Imagen", icon: HeartPulse, tint: "from-rose-50 to-zinc-200" },
+  { label: "Servicios profesionales", format: "Video", icon: Users, tint: "from-slate-50 to-zinc-200" },
 ];
 
 function PreviewCard({
@@ -117,12 +121,12 @@ export default function ContentShowcase() {
             and off-grid on purpose (alternating float phase + tilt +
             vertical offset per column) rather than a neat aligned row, so
             it reads as scattered examples instead of a rigid list. */}
-        <div className="mt-14 grid grid-cols-2 gap-x-4 gap-y-16 px-2 sm:hidden">
+        <div className="mt-14 grid grid-cols-2 gap-x-4 gap-y-12 px-2 sm:hidden">
           {SHOWCASE_ITEMS.map((item, i) => {
             const isLast = i === SHOWCASE_ITEMS.length - 1 && SHOWCASE_ITEMS.length % 2 !== 0;
             const floatClass = i % 2 === 0 ? "card-float" : "card-float card-float-offset";
             const tilt = i % 2 === 0 ? "-rotate-3" : "rotate-2";
-            const offset = i % 2 === 0 ? "" : "mt-12";
+            const offset = i % 2 === 0 ? "" : "mt-10";
             return (
               <div
                 key={item.label}

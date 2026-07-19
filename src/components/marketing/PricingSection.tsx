@@ -60,49 +60,49 @@ export default function PricingSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative flex flex-col rounded-3xl border p-8 transition-all duration-300 ${
+              className={`relative flex flex-col rounded-xl border p-2.5 transition-all duration-300 sm:rounded-2xl sm:p-5 md:rounded-3xl md:p-8 ${
                 plan.featured
-                  ? "border-zinc-900 bg-zinc-950 text-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] md:-translate-y-3 hover:-translate-y-1.5 md:hover:-translate-y-4 hover:shadow-[0_28px_70px_-15px_rgba(0,0,0,0.5)]"
+                  ? "border-zinc-900 bg-zinc-950 text-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] sm:-translate-y-2 sm:hover:-translate-y-3 md:-translate-y-3 md:hover:-translate-y-4 hover:shadow-[0_28px_70px_-15px_rgba(0,0,0,0.5)]"
                   : "border-[var(--hairline)] bg-white/60 text-zinc-950 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_36px_-22px_rgba(0,0,0,0.18)] hover:-translate-y-1.5 hover:shadow-[0_28px_54px_-20px_rgba(0,0,0,0.22)]"
               }`}
             >
               {plan.featured && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold tracking-wide text-zinc-900 shadow">
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white px-1.5 py-0.5 text-[7px] font-semibold tracking-wide text-zinc-900 shadow sm:-top-3 sm:px-3 sm:py-1 sm:text-[11px]">
                   MÁS POPULAR
                 </span>
               )}
 
-              <h3 className="text-lg font-semibold">{plan.name}</h3>
+              <h3 className="text-xs font-semibold sm:text-base md:text-lg">{plan.name}</h3>
               <p
-                className={`mt-1 text-sm ${
+                className={`mt-1 hidden text-sm sm:block ${
                   plan.featured ? "text-zinc-400" : "text-zinc-500"
                 }`}
               >
                 {plan.tagline}
               </p>
 
-              <div className="mt-6 flex items-baseline gap-1">
-                <span className="text-4xl font-semibold tracking-tight">
+              <div className="mt-2 flex items-baseline gap-0.5 sm:mt-6 sm:gap-1">
+                <span className="text-base font-semibold tracking-tight sm:text-2xl md:text-4xl">
                   ${plan.price}
                 </span>
                 <span
-                  className={`text-sm ${
+                  className={`text-[9px] sm:text-sm ${
                     plan.featured ? "text-zinc-400" : "text-zinc-500"
                   }`}
                 >
-                  USD/mes
+                  /mes
                 </span>
               </div>
 
-              <ul className="mt-8 flex flex-1 flex-col gap-3">
+              <ul className="mt-3 flex flex-1 flex-col gap-1.5 sm:mt-8 sm:gap-3">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2 text-sm">
+                  <li key={feature} className="flex items-start gap-1 text-[9px] leading-tight sm:gap-2 sm:text-sm sm:leading-normal">
                     <Check
-                      className={`mt-0.5 h-4 w-4 shrink-0 ${
+                      className={`mt-0.5 h-2.5 w-2.5 shrink-0 sm:h-4 sm:w-4 ${
                         plan.featured ? "text-zinc-300" : "text-zinc-500"
                       }`}
                     />
@@ -117,13 +117,13 @@ export default function PricingSection() {
 
               <Link
                 href={`/registro?plan=${plan.name.toLowerCase()}`}
-                className={`mt-8 rounded-full px-5 py-2.5 text-center text-sm font-medium transition-transform hover:scale-[1.02] ${
+                className={`mt-3 rounded-full px-2 py-1.5 text-center text-[10px] font-medium transition-transform hover:scale-[1.02] sm:mt-8 sm:px-5 sm:py-2.5 sm:text-sm ${
                   plan.featured
                     ? "bg-white text-zinc-950"
                     : "bg-zinc-950 text-white"
                 }`}
               >
-                Elegir {plan.name}
+                Elegir
               </Link>
             </div>
           ))}

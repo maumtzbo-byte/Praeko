@@ -48,8 +48,12 @@ const SHOWCASE_ITEMS: {
 // gets dropped — tuned to read as a loose trail, not a solid smear.
 const SPAWN_DISTANCE = 70;
 const MAX_TRAIL = 5;
-const CARD_HALF_WIDTH = 64; // half of PreviewCard's w-32 (128px)
-const CARD_HALF_HEIGHT = 82; // approx half of a compact card's rendered height
+// Cards render smaller on mobile (w-20) than sm:+ (w-32) — these clamp
+// values track that per breakpoint so cards still land fully on-screen.
+const CARD_HALF_WIDTH_MOBILE = 40; // half of w-20 (80px)
+const CARD_HALF_HEIGHT_MOBILE = 56; // approx half of a compact card at that width
+const CARD_HALF_WIDTH_DESKTOP = 64; // half of w-32 (128px)
+const CARD_HALF_HEIGHT_DESKTOP = 82; // approx half of a compact card at that width
 
 function PreviewCard({
   item,
@@ -116,8 +120,11 @@ export default function ContentShowcase() {
     }
     lastSpawnRef.current = { x: rawX, y: rawY };
 
-    const x = Math.min(Math.max(rawX, CARD_HALF_WIDTH), Math.max(rect.width - CARD_HALF_WIDTH, CARD_HALF_WIDTH));
-    const y = Math.min(Math.max(rawY, CARD_HALF_HEIGHT), Math.max(rect.height - CARD_HALF_HEIGHT, CARD_HALF_HEIGHT));
+    const isMobile = window.innerWidth < 640;
+    const halfWidth = isMobile ? CARD_HALF_WIDTH_MOBILE : CARD_HALF_WIDTH_DESKTOP;
+    const halfHeight = isMobile ? CARD_HALF_HEIGHT_MOBILE : CARD_HALF_HEIGHT_DESKTOP;
+    const x = Math.min(Math.max(rawX, halfWidth), Math.max(rect.width - halfWidth, halfWidth));
+    const y = Math.min(Math.max(rawY, halfHeight), Math.max(rect.height - halfHeight, halfHeight));
     const itemIndex = nextItemRef.current % SHOWCASE_ITEMS.length;
     nextItemRef.current += 1;
     const rotate = (Math.random() - 0.5) * 16;
@@ -199,7 +206,7 @@ export default function ContentShowcase() {
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ type: "spring", stiffness: 300, damping: 24 }}
               >
-                <PreviewCard item={SHOWCASE_ITEMS[card.itemIndex]} className="w-32" compact />
+                <PreviewCard item={SHOWCASE_ITEMS[card.itemIndex]} className="w-20 sm:w-32" compact />
               </motion.div>
             ))}
           </AnimatePresence>

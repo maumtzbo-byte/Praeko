@@ -46,25 +46,35 @@ const SHOWCASE_ITEMS: {
 function PreviewCard({
   item,
   className = "w-48 shrink-0",
+  compact = false,
 }: {
   item: (typeof SHOWCASE_ITEMS)[number];
   className?: string;
+  compact?: boolean;
 }) {
   const Icon = item.icon;
   const FormatIcon = FORMAT_ICON[item.format];
   return (
     <div
-      className={`overflow-hidden rounded-3xl border border-[var(--hairline)] bg-white shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_24px_48px_-24px_rgba(0,0,0,0.4)] ${className}`}
+      className={`overflow-hidden rounded-2xl border border-[var(--hairline)] bg-white shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_16px_32px_-20px_rgba(0,0,0,0.4)] ${className}`}
     >
-      <div className={`relative flex aspect-[4/5] items-center justify-center bg-gradient-to-br ${item.tint}`}>
-        <Icon className="h-9 w-9 text-zinc-700/60" strokeWidth={1.25} />
-        <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/70 backdrop-blur-sm">
-          <FormatIcon className="h-3.5 w-3.5 text-zinc-700" strokeWidth={1.75} />
+      <div className={`relative flex aspect-square items-center justify-center bg-gradient-to-br ${item.tint}`}>
+        <Icon className={compact ? "h-5 w-5 text-zinc-700/60" : "h-9 w-9 text-zinc-700/60"} strokeWidth={1.25} />
+        <span
+          className={
+            compact
+              ? "absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white/70 backdrop-blur-sm"
+              : "absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/70 backdrop-blur-sm"
+          }
+        >
+          <FormatIcon className={compact ? "h-2 w-2 text-zinc-700" : "h-3.5 w-3.5 text-zinc-700"} strokeWidth={1.75} />
         </span>
       </div>
-      <div className="p-3">
-        <p className="text-xs font-medium text-zinc-600">{item.label}</p>
-        <p className="text-[11px] text-zinc-400">{item.format}</p>
+      <div className={compact ? "p-1.5" : "p-3"}>
+        <p className={compact ? "text-[9px] font-medium leading-tight text-zinc-600" : "text-xs font-medium text-zinc-600"}>
+          {item.label}
+        </p>
+        {!compact && <p className="text-[11px] text-zinc-400">{item.format}</p>}
       </div>
     </div>
   );
@@ -117,22 +127,19 @@ export default function ContentShowcase() {
           ))}
         </ul>
 
-        {/* Mobile: no hover surface, so show every card at once — floating
+        {/* Mobile: no hover surface, so show every card at once, small
+            enough that all 7 read at a glance without scrolling — floating
             and off-grid on purpose (alternating float phase + tilt +
             vertical offset per column) rather than a neat aligned row, so
             it reads as scattered examples instead of a rigid list. */}
-        <div className="mt-14 grid grid-cols-2 gap-x-4 gap-y-12 px-2 sm:hidden">
+        <div className="mt-10 grid grid-cols-3 gap-x-3 gap-y-6 px-1 sm:hidden">
           {SHOWCASE_ITEMS.map((item, i) => {
-            const isLast = i === SHOWCASE_ITEMS.length - 1 && SHOWCASE_ITEMS.length % 2 !== 0;
             const floatClass = i % 2 === 0 ? "card-float" : "card-float card-float-offset";
-            const tilt = i % 2 === 0 ? "-rotate-3" : "rotate-2";
-            const offset = i % 2 === 0 ? "" : "mt-10";
+            const tilt = i % 3 === 0 ? "-rotate-3" : i % 3 === 1 ? "rotate-2" : "-rotate-1";
+            const offset = i % 3 === 1 ? "mt-4" : i % 3 === 2 ? "mt-2" : "";
             return (
-              <div
-                key={item.label}
-                className={`${floatClass} ${tilt} ${offset} ${isLast ? "col-span-2 mx-auto w-[60%]" : ""}`}
-              >
-                <PreviewCard item={item} className="w-full" />
+              <div key={item.label} className={`${floatClass} ${tilt} ${offset}`}>
+                <PreviewCard item={item} className="w-full" compact />
               </div>
             );
           })}

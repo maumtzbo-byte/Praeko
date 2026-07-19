@@ -39,11 +39,19 @@ const SHOWCASE_ITEMS: {
   { label: "Retail y tiendas", format: "Carrusel", icon: Store, tint: "from-amber-50 to-zinc-200" },
 ];
 
-function PreviewCard({ item }: { item: (typeof SHOWCASE_ITEMS)[number] }) {
+function PreviewCard({
+  item,
+  className = "w-48 shrink-0",
+}: {
+  item: (typeof SHOWCASE_ITEMS)[number];
+  className?: string;
+}) {
   const Icon = item.icon;
   const FormatIcon = FORMAT_ICON[item.format];
   return (
-    <div className="w-48 shrink-0 overflow-hidden rounded-3xl border border-[var(--hairline)] bg-white shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_24px_48px_-24px_rgba(0,0,0,0.4)]">
+    <div
+      className={`overflow-hidden rounded-3xl border border-[var(--hairline)] bg-white shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_24px_48px_-24px_rgba(0,0,0,0.4)] ${className}`}
+    >
       <div className={`relative flex aspect-[4/5] items-center justify-center bg-gradient-to-br ${item.tint}`}>
         <Icon className="h-9 w-9 text-zinc-700/60" strokeWidth={1.25} />
         <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/70 backdrop-blur-sm">
@@ -105,13 +113,25 @@ export default function ContentShowcase() {
           ))}
         </ul>
 
-        {/* Mobile: no hover surface, so just show every card. */}
-        <div className="mt-10 flex snap-x gap-4 overflow-x-auto pb-2 sm:hidden">
-          {SHOWCASE_ITEMS.map((item) => (
-            <div key={item.label} className="snap-start">
-              <PreviewCard item={item} />
-            </div>
-          ))}
+        {/* Mobile: no hover surface, so show every card at once — floating
+            and off-grid on purpose (alternating float phase + tilt +
+            vertical offset per column) rather than a neat aligned row, so
+            it reads as scattered examples instead of a rigid list. */}
+        <div className="mt-14 grid grid-cols-2 gap-x-4 gap-y-16 px-2 sm:hidden">
+          {SHOWCASE_ITEMS.map((item, i) => {
+            const isLast = i === SHOWCASE_ITEMS.length - 1 && SHOWCASE_ITEMS.length % 2 !== 0;
+            const floatClass = i % 2 === 0 ? "card-float" : "card-float card-float-offset";
+            const tilt = i % 2 === 0 ? "-rotate-3" : "rotate-2";
+            const offset = i % 2 === 0 ? "" : "mt-12";
+            return (
+              <div
+                key={item.label}
+                className={`${floatClass} ${tilt} ${offset} ${isLast ? "col-span-2 mx-auto w-[60%]" : ""}`}
+              >
+                <PreviewCard item={item} className="w-full" />
+              </div>
+            );
+          })}
         </div>
       </div>
 

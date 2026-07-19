@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type ComponentType } from "react";
-import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   UtensilsCrossed,
   Dumbbell,
@@ -43,6 +43,14 @@ const SHOWCASE_ITEMS: {
   { label: "Servicios profesionales", format: "Video", icon: Users, tint: "from-slate-50 to-zinc-200" },
 ];
 
+// How far (px) the pointer has to travel inside the zone before the next
+// card spawns, and how many cards stay stacked at once before the oldest
+// gets dropped — tuned to read as a loose trail, not a solid smear.
+const SPAWN_DISTANCE = 70;
+const MAX_TRAIL = 5;
+const CARD_HALF_WIDTH = 64; // half of PreviewCard's w-32 (128px)
+const CARD_HALF_HEIGHT = 82; // approx half of a compact card's rendered height
+
 function PreviewCard({
   item,
   className = "w-48 shrink-0",
@@ -80,89 +88,70 @@ function PreviewCard({
   );
 }
 
+type TrailCard = { id: number; itemIndex: number; x: number; y: number; rotate: number };
+
 export default function ContentShowcase() {
-  const [hovered, setHovered] = useState<number | null>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { damping: 26, stiffness: 260, mass: 0.6 });
-  const springY = useSpring(mouseY, { damping: 26, stiffness: 260, mass: 0.6 });
-  // Tracks an in-progress touch gesture on the list — not React state,
-  // since it's read/written every touchmove and shouldn't trigger renders.
-  const dragRef = useRef<{ x: number; y: number; moved: boolean; wasOpen: boolean } | null>(null);
+  const [trail, setTrail] = useState<TrailCard[]>([]);
+  const zoneRef = useRef<HTMLDivElement>(null);
+  const lastSpawnRef = useRef<{ x: number; y: number } | null>(null);
+  const nextIdRef = useRef(0);
+  const nextItemRef = useRef(0);
 
-  // Keeps the floating card fully on-screen — on a narrow phone a tap near
-  // the left/right edge or near the top of the list would otherwise push
-  // the centered, upward-offset card partly off the viewport.
-  function setPreviewPosition(clientX: number, clientY: number, instant = false) {
-    const halfCardWidth = 96; // PreviewCard default width (w-48) / 2
-    const cardHeight = 248; // approx image (aspect-square, 192px) + text block
-    const margin = 16;
-    const nx = Math.min(Math.max(clientX, halfCardWidth + margin), window.innerWidth - halfCardWidth - margin);
-    const ny = Math.min(Math.max(clientY, cardHeight + margin), window.innerHeight - margin);
-    mouseX.set(nx);
-    mouseY.set(ny);
-    if (instant) {
-      // A fresh touch is a discrete point, not a moving cursor, so there's
-      // nothing to spring-trail yet — jump straight to the touch point
-      // instead of easing in from wherever it last was.
-      springX.jump(nx);
-      springY.jump(ny);
+  // Spawns a card at a point inside the zone, throttled by distance so it
+  // reads as a trail (one card every so many pixels of travel) instead of
+  // a solid smear of cards on every pointer event. Cycles through every
+  // business category in order as the trail grows, rather than repeating
+  // one at random, so moving around the zone for a bit surfaces all of them.
+  function spawnCardAt(clientX: number, clientY: number) {
+    const zone = zoneRef.current;
+    if (!zone) return;
+    const rect = zone.getBoundingClientRect();
+    const rawX = clientX - rect.left;
+    const rawY = clientY - rect.top;
+
+    if (lastSpawnRef.current) {
+      const dx = rawX - lastSpawnRef.current.x;
+      const dy = rawY - lastSpawnRef.current.y;
+      if (Math.hypot(dx, dy) < SPAWN_DISTANCE) return;
     }
+    lastSpawnRef.current = { x: rawX, y: rawY };
+
+    const x = Math.min(Math.max(rawX, CARD_HALF_WIDTH), Math.max(rect.width - CARD_HALF_WIDTH, CARD_HALF_WIDTH));
+    const y = Math.min(Math.max(rawY, CARD_HALF_HEIGHT), Math.max(rect.height - CARD_HALF_HEIGHT, CARD_HALF_HEIGHT));
+    const itemIndex = nextItemRef.current % SHOWCASE_ITEMS.length;
+    nextItemRef.current += 1;
+    const rotate = (Math.random() - 0.5) * 16;
+    const id = nextIdRef.current++;
+
+    setTrail((prev) => {
+      const next = [...prev, { id, itemIndex, x, y, rotate }];
+      return next.length > MAX_TRAIL ? next.slice(next.length - MAX_TRAIL) : next;
+    });
   }
 
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    setPreviewPosition(e.clientX, e.clientY);
+  function clearTrail() {
+    setTrail([]);
+    lastSpawnRef.current = null;
   }
 
-  function itemIndexAtPoint(clientX: number, clientY: number): number | null {
-    const el = document.elementFromPoint(clientX, clientY);
-    const li = el instanceof Element ? el.closest("li[data-index]") : null;
-    if (!li) return null;
-    const idx = Number(li.getAttribute("data-index"));
-    return Number.isNaN(idx) ? null : idx;
+  // Mouse: plain hover drives this, no button needed, matching "mueve el
+  // cursor." Touch: pointermove only fires between pointerdown and
+  // pointerup/cancel, so the exact same handler doubles as "arrastra el
+  // dedo" for free — no pointerType branching needed for movement itself.
+  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    spawnCardAt(e.clientX, e.clientY);
   }
 
-  // Touch has no hover, so dragging a finger across the list stands in for
-  // it — same floating preview, live-following the finger and swapping
-  // between items as it crosses them, same as the reference clip. A plain
-  // tap (no real movement) instead toggles the preview open/closed, so a
-  // quick touch still works like the rest of the site.
-  function handleListPointerDown(e: React.PointerEvent<HTMLUListElement>) {
+  // Touch has no hover to spawn the first card, so also spawn one right on
+  // touchdown — a plain tap still shows something, not just a drag.
+  function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     if (e.pointerType !== "touch") return;
-    const idx = itemIndexAtPoint(e.clientX, e.clientY);
-    if (idx === null) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    dragRef.current = { x: e.clientX, y: e.clientY, moved: false, wasOpen: hovered === idx };
-    setPreviewPosition(e.clientX, e.clientY, true);
-    setHovered(idx);
-  }
-
-  function handleListPointerMove(e: React.PointerEvent<HTMLUListElement>) {
-    if (e.pointerType !== "touch" || !dragRef.current) return;
-    const drag = dragRef.current;
-    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 10) {
-      drag.moved = true;
-    }
-    if (drag.moved) {
-      setPreviewPosition(e.clientX, e.clientY);
-      setHovered(itemIndexAtPoint(e.clientX, e.clientY));
-    }
-  }
-
-  function handleListPointerEnd(e: React.PointerEvent<HTMLUListElement>) {
-    if (e.pointerType !== "touch" || !dragRef.current) return;
-    const { moved, wasOpen } = dragRef.current;
-    if (moved || wasOpen) {
-      // Dragging reveals only while the finger moves, like the reference
-      // clip — lift and it's gone. A tap on an already-open item is a
-      // close toggle. A tap on a closed item is left open (see below).
-      setHovered(null);
-    }
-    dragRef.current = null;
+    spawnCardAt(e.clientX, e.clientY);
   }
 
   return (
-    <section className="relative py-24" onMouseMove={handleMouseMove}>
+    <section className="relative py-24">
       <div className="mx-auto max-w-3xl px-6">
         <div className="text-center">
           <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">EJEMPLOS</p>
@@ -170,54 +159,52 @@ export default function ContentShowcase() {
             Contenido pensado para tu tipo de negocio
           </h2>
           <p className="mt-4 text-zinc-600">
-            Toca o arrastra el dedo (o pasa el cursor) sobre cada uno para ver el formato que le toca.
+            <span className="hidden sm:inline">Mueve el cursor sobre el recuadro para ver los formatos que generamos.</span>
+            <span className="sm:hidden">Desliza el dedo sobre el recuadro para ver los formatos que generamos.</span>
           </p>
         </div>
 
-        <ul
-          className="mt-12 touch-none"
-          onPointerDown={handleListPointerDown}
-          onPointerMove={handleListPointerMove}
-          onPointerUp={handleListPointerEnd}
-          onPointerCancel={handleListPointerEnd}
+        <div
+          ref={zoneRef}
+          className="relative mt-10 h-[300px] touch-none select-none overflow-hidden rounded-3xl border border-[var(--hairline)] bg-white/40 sm:h-[360px]"
+          onPointerMove={handlePointerMove}
+          onPointerDown={handlePointerDown}
+          onPointerUp={clearTrail}
+          onPointerLeave={clearTrail}
+          onPointerCancel={clearTrail}
         >
-          {SHOWCASE_ITEMS.map((item, i) => (
-            <li
-              key={item.label}
-              data-index={i}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-              className="flex cursor-default items-center justify-between border-b border-[var(--hairline)] py-5 transition-colors first:border-t sm:py-6"
-            >
-              <span
-                className={`text-xl font-medium tracking-tight transition-colors sm:text-2xl ${
-                  hovered === i ? "text-zinc-950" : "text-zinc-400"
-                }`}
+          <AnimatePresence>
+            {trail.length === 0 && (
+              <motion.p
+                key="hint"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-zinc-400"
               >
-                {item.label}
-              </span>
-              <span className="text-sm text-zinc-400">{item.format}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+                <span className="hidden sm:inline">Mueve el cursor por aquí →</span>
+                <span className="sm:hidden">Desliza el dedo por aquí →</span>
+              </motion.p>
+            )}
+          </AnimatePresence>
 
-      <AnimatePresence>
-        {hovered !== null && (
-          <motion.div
-            className="pointer-events-none fixed left-0 top-0 z-50"
-            style={{ x: springX, y: springY }}
-            initial={{ opacity: 0, scale: 0.85, rotate: -3 }}
-            animate={{ opacity: 1, scale: 1, rotate: -3 }}
-            exit={{ opacity: 0, scale: 0.85 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="-translate-x-1/2 -translate-y-[130%]">
-              <PreviewCard item={SHOWCASE_ITEMS[hovered]} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          <AnimatePresence>
+            {trail.map((card, i) => (
+              <motion.div
+                key={card.id}
+                className="pointer-events-none absolute"
+                style={{ left: card.x, top: card.y, zIndex: i }}
+                initial={{ opacity: 0, scale: 0.6, x: "-50%", y: "-50%", rotate: card.rotate }}
+                animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%", rotate: card.rotate }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ type: "spring", stiffness: 300, damping: 24 }}
+              >
+                <PreviewCard item={SHOWCASE_ITEMS[card.itemIndex]} className="w-32" compact />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </div>
     </section>
   );
 }

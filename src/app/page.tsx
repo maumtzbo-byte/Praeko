@@ -6,10 +6,12 @@ import SocialProof from "@/components/marketing/SocialProof";
 import PricingSection from "@/components/marketing/PricingSection";
 import CtaSection from "@/components/marketing/CtaSection";
 import Footer from "@/components/marketing/Footer";
+import IntroReveal from "@/components/marketing/IntroReveal";
 
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col">
+      <IntroReveal />
       <Navbar />
       <main className="flex flex-1 flex-col">
         <Hero />

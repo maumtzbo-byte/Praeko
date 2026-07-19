@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 
 const links = [
@@ -11,6 +11,27 @@ const links = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [active, setActive] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sections = links
+      .map((link) => document.querySelector(link.href))
+      .filter((el): el is Element => el !== null);
+    if (sections.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActive(`#${entry.target.id}`);
+          }
+        }
+      },
+      { rootMargin: "-45% 0px -45% 0px", threshold: 0 },
+    );
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--hairline)] bg-[var(--background)]/70 backdrop-blur-md">
@@ -26,7 +47,11 @@ export default function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="text-sm text-zinc-600 transition-colors hover:text-zinc-950"
+              className={`relative text-sm transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-px after:bg-zinc-950 after:transition-all after:duration-300 ${
+                active === link.href
+                  ? "font-medium text-zinc-950 after:w-full"
+                  : "text-zinc-600 after:w-0 hover:text-zinc-950"
+              }`}
             >
               {link.label}
             </a>

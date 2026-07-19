@@ -15,9 +15,14 @@ const PLACEHOLDER_REVIEWS = [
   { industry: "Servicios profesionales", quote: "Nuestras redes ya se ven tan serias como el resto del negocio." },
 ];
 
-function ReviewCard({ industry, quote }: { industry: string; quote: string }) {
+function ReviewCard({ industry, quote, index }: { industry: string; quote: string; index: number }) {
+  // Alternating tilt makes the row read as a loose stack of physical cards
+  // rather than a flat strip — each one "settles" flat and lifts on hover.
+  const tilt = index % 2 === 0 ? "-rotate-1" : "rotate-1";
   return (
-    <div className="flex w-80 shrink-0 flex-col gap-3 rounded-3xl border border-[var(--hairline)] bg-white/70 p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_28px_-16px_rgba(0,0,0,0.18)]">
+    <div
+      className={`flex w-80 shrink-0 flex-col gap-3 rounded-3xl border border-[var(--hairline)] bg-white p-6 shadow-[0_2px_4px_rgba(0,0,0,0.06),0_24px_45px_-22px_rgba(0,0,0,0.35)] transition-all duration-300 ${tilt} hover:z-10 hover:-translate-y-2 hover:scale-[1.04] hover:rotate-0 hover:shadow-[0_8px_16px_rgba(0,0,0,0.08),0_32px_60px_-20px_rgba(0,0,0,0.4)]`}
+    >
       <div className="flex gap-0.5 text-amber-400">
         {Array.from({ length: 5 }).map((_, i) => (
           <Star key={i} className="h-3.5 w-3.5 fill-current" />
@@ -41,10 +46,10 @@ export default function SocialProof() {
         </h2>
       </div>
 
-      <div className="marquee-viewport mt-10 [mask-image:linear-gradient(to_right,transparent_0%,black_8%,black_92%,transparent_100%)]">
+      <div className="marquee-viewport mt-10 py-4 [mask-image:linear-gradient(to_right,transparent_0%,black_8%,black_92%,transparent_100%)]">
         <div className="marquee-track flex w-max gap-5 px-6">
           {cards.map((review, i) => (
-            <ReviewCard key={i} industry={review.industry} quote={review.quote} />
+            <ReviewCard key={i} industry={review.industry} quote={review.quote} index={i} />
           ))}
         </div>
       </div>

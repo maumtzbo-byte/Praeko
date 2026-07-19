@@ -41,11 +41,13 @@ function Orb({
   driftPoints,
   shotPoints,
   cameraDistance,
+  interactive,
 }: {
   progress?: MotionValue<number>;
   driftPoints?: DriftPoint[];
   shotPoints?: ShotPoint[];
   cameraDistance: number;
+  interactive?: boolean;
 }) {
   const mesh = useRef<Mesh>(null);
   // Typed as the base three.js class — drei's own distort-material subclass
@@ -55,21 +57,36 @@ function Orb({
   // instead of a mesh-only onPointerMove means the whole canvas area drives
   // parallax, not just hovering the sphere's own surface.
   const smoothPointer = useRef({ x: 0, y: 0 });
+  // Click/tap "impact" — a timestamp + hit direction, read as a decaying
+  // damped wobble each frame. It's purely additive on top of the orb's
+  // normal position/rotation formulas below, so it always springs back to
+  // exactly where it would have been anyway — the orb never actually moves.
+  const impact = useRef({ start: -Infinity, dx: 0, dy: 0 });
+  // Mirrors the clock so the pointer handler (outside useFrame) can stamp
+  // an impact using the same time base `t` reads below.
+  const clockRef = useRef(0);
 
   useFrame((state) => {
     if (!mesh.current) return;
     const t = state.clock.getElapsedTime();
+    clockRef.current = t;
     const storyProgress = progress ? progress.get() : 0;
     const drift = progress && driftPoints ? lerpPoints(driftPoints, storyProgress) : { x: 0, y: 0, scale: 1 };
 
     smoothPointer.current.x += (state.pointer.x - smoothPointer.current.x) * 0.04;
     smoothPointer.current.y += (state.pointer.y - smoothPointer.current.y) * 0.04;
 
-    mesh.current.rotation.x = Math.sin(t * 0.15) * 0.3 + smoothPointer.current.y * 0.25;
-    mesh.current.rotation.y = t * 0.12 + smoothPointer.current.x * 0.25 + drift.x * 0.4;
+    const impactAge = t - impact.current.start;
+    // Damped sine: sharp initial kick that rings down to ~0 within a second.
+    const wobble = impactAge >= 0 && impactAge < 1.1 ? Math.sin(impactAge * 22) * Math.exp(-impactAge * 5.5) : 0;
+
+    mesh.current.rotation.x =
+      Math.sin(t * 0.15) * 0.3 + smoothPointer.current.y * 0.25 + wobble * impact.current.dy * 0.5;
+    mesh.current.rotation.y =
+      t * 0.12 + smoothPointer.current.x * 0.25 + drift.x * 0.4 - wobble * impact.current.dx * 0.5;
     mesh.current.position.y = Math.sin(t * 0.6) * 0.15 + drift.y;
     mesh.current.position.x = drift.x;
-    mesh.current.scale.setScalar(drift.scale);
+    mesh.current.scale.setScalar(drift.scale * (1 + wobble * 0.1));
 
     // Camera parallax + a gentle scroll-driven dolly-in — this is what makes
     // the scene read as a space with depth rather than a flat rendered sticker.
@@ -95,14 +112,33 @@ function Orb({
     // Narrative arc: the metal is more turbulent at the start of the story
     // and settles into a calmer, glossier surface by the final beat — chaos
     // of daily work resolving into clarity, echoed in the material itself.
-    if (progress && material.current) {
-      (material.current as DistortMaterialHandle).distort = 0.36 - storyProgress * 0.2;
-      material.current.roughness = 0.2 - storyProgress * 0.1;
+    if (material.current) {
+      const baseDistort = progress ? 0.36 - storyProgress * 0.2 : 0.3;
+      (material.current as DistortMaterialHandle).distort = baseDistort + Math.abs(wobble) * 0.45;
+      if (progress) material.current.roughness = 0.2 - storyProgress * 0.1;
     }
   });
 
   return (
-    <mesh ref={mesh}>
+    <mesh
+      ref={mesh}
+      onPointerDown={
+        interactive
+          ? (event) => {
+              event.stopPropagation();
+              if (!mesh.current) return;
+              const local = mesh.current.worldToLocal(event.point.clone());
+              impact.current = {
+                start: clockRef.current,
+                dx: local.x / 1.6,
+                dy: local.y / 1.6,
+              };
+            }
+          : undefined
+      }
+      onPointerOver={interactive ? () => (document.body.style.cursor = "pointer") : undefined}
+      onPointerOut={interactive ? () => (document.body.style.cursor = "auto") : undefined}
+    >
       <icosahedronGeometry args={[1.6, 32]} />
       <MeshDistortMaterial
         ref={(instance) => {
@@ -130,6 +166,7 @@ export default function LiquidMetalOrb({
   cameraDistance = 5,
   cinematic = false,
   edgeFade = false,
+  interactive = false,
 }: {
   className?: string;
   /** Optional 0..1 scroll progress — when given with `driftPoints`, the orb drifts/scales along the story instead of just idling. */
@@ -145,6 +182,8 @@ export default function LiquidMetalOrb({
   cinematic?: boolean;
   /** Fades the canvas to transparent well before its own box edge via a CSS radial mask, so a fixed-size container never shows a hard clip line. */
   edgeFade?: boolean;
+  /** Lets clicking/tapping the orb trigger a decaying impact wobble — off by default since ScrollStory's beats drive pointer events for scroll-hijacking instead. */
+  interactive?: boolean;
 }) {
   return (
     <div
@@ -167,7 +206,13 @@ export default function LiquidMetalOrb({
         <Suspense fallback={null}>
           <ambientLight intensity={0.9} />
           <directionalLight position={[2, 3, 4]} intensity={1.2} />
-          <Orb progress={progress} driftPoints={driftPoints} shotPoints={shotPoints} cameraDistance={cameraDistance} />
+          <Orb
+            progress={progress}
+            driftPoints={driftPoints}
+            shotPoints={shotPoints}
+            cameraDistance={cameraDistance}
+            interactive={interactive}
+          />
           {/* Procedural studio lighting rig — no external HDR fetch required. */}
           <Environment resolution={256}>
             <Lightformer

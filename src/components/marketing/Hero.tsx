@@ -25,7 +25,7 @@ export default function Hero() {
         </div>
 
         <div className="relative order-1 aspect-square w-full max-w-[420px] justify-self-center md:order-2">
-          <LiquidMetalOrb className="absolute inset-0" />
+          <LiquidMetalOrb className="absolute inset-0" interactive />
         </div>
 
         <div

@@ -64,10 +64,10 @@ export default function PricingSection() {
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative flex flex-col rounded-3xl border p-8 ${
+              className={`relative flex flex-col rounded-3xl border p-8 transition-all duration-300 ${
                 plan.featured
-                  ? "border-zinc-900 bg-zinc-950 text-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] md:-translate-y-3"
-                  : "border-[var(--hairline)] bg-white/60 text-zinc-950 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_36px_-22px_rgba(0,0,0,0.18)]"
+                  ? "border-zinc-900 bg-zinc-950 text-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] md:-translate-y-3 hover:-translate-y-1.5 md:hover:-translate-y-4 hover:shadow-[0_28px_70px_-15px_rgba(0,0,0,0.5)]"
+                  : "border-[var(--hairline)] bg-white/60 text-zinc-950 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_36px_-22px_rgba(0,0,0,0.18)] hover:-translate-y-1.5 hover:shadow-[0_28px_54px_-20px_rgba(0,0,0,0.22)]"
               }`}
             >
               {plan.featured && (

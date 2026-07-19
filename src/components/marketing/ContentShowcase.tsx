@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ComponentType } from "react";
+import { useRef, useState, type ComponentType } from "react";
 import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
 import {
   UtensilsCrossed,
@@ -86,6 +86,9 @@ export default function ContentShowcase() {
   const mouseY = useMotionValue(0);
   const springX = useSpring(mouseX, { damping: 26, stiffness: 260, mass: 0.6 });
   const springY = useSpring(mouseY, { damping: 26, stiffness: 260, mass: 0.6 });
+  // Tracks an in-progress touch gesture on the list — not React state,
+  // since it's read/written every touchmove and shouldn't trigger renders.
+  const dragRef = useRef<{ x: number; y: number; moved: boolean; wasOpen: boolean } | null>(null);
 
   // Keeps the floating card fully on-screen — on a narrow phone a tap near
   // the left/right edge or near the top of the list would otherwise push
@@ -99,9 +102,9 @@ export default function ContentShowcase() {
     mouseX.set(nx);
     mouseY.set(ny);
     if (instant) {
-      // A tap is a single discrete point, not a moving cursor, so there's
-      // nothing to spring-trail — jump the spring straight to the tap
-      // point instead of easing in from wherever it last was.
+      // A fresh touch is a discrete point, not a moving cursor, so there's
+      // nothing to spring-trail yet — jump straight to the touch point
+      // instead of easing in from wherever it last was.
       springX.jump(nx);
       springY.jump(ny);
     }
@@ -111,26 +114,55 @@ export default function ContentShowcase() {
     setPreviewPosition(e.clientX, e.clientY);
   }
 
-  // Touch has no hover, so a tap on an item stands in for it: same list,
-  // same floating preview, positioned at the tap point instead of the
-  // cursor. Pointer events (not click) so this only fires for touch/pen —
-  // desktop keeps plain hover, with mouse clicks left alone. stopPropagation
-  // keeps the item's own tap from also triggering the "tap outside closes"
-  // handler on the wrapping div in the same event.
-  function handleItemTap(i: number, e: React.PointerEvent<HTMLLIElement>) {
-    if (e.pointerType !== "touch") return;
-    e.stopPropagation();
-    setPreviewPosition(e.clientX, e.clientY, true);
-    setHovered((prev) => (prev === i ? null : i));
+  function itemIndexAtPoint(clientX: number, clientY: number): number | null {
+    const el = document.elementFromPoint(clientX, clientY);
+    const li = el instanceof Element ? el.closest("li[data-index]") : null;
+    if (!li) return null;
+    const idx = Number(li.getAttribute("data-index"));
+    return Number.isNaN(idx) ? null : idx;
   }
 
-  function handleOutsideTap(e: React.PointerEvent<HTMLDivElement>) {
+  // Touch has no hover, so dragging a finger across the list stands in for
+  // it — same floating preview, live-following the finger and swapping
+  // between items as it crosses them, same as the reference clip. A plain
+  // tap (no real movement) instead toggles the preview open/closed, so a
+  // quick touch still works like the rest of the site.
+  function handleListPointerDown(e: React.PointerEvent<HTMLUListElement>) {
     if (e.pointerType !== "touch") return;
-    setHovered(null);
+    const idx = itemIndexAtPoint(e.clientX, e.clientY);
+    if (idx === null) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current = { x: e.clientX, y: e.clientY, moved: false, wasOpen: hovered === idx };
+    setPreviewPosition(e.clientX, e.clientY, true);
+    setHovered(idx);
+  }
+
+  function handleListPointerMove(e: React.PointerEvent<HTMLUListElement>) {
+    if (e.pointerType !== "touch" || !dragRef.current) return;
+    const drag = dragRef.current;
+    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 10) {
+      drag.moved = true;
+    }
+    if (drag.moved) {
+      setPreviewPosition(e.clientX, e.clientY);
+      setHovered(itemIndexAtPoint(e.clientX, e.clientY));
+    }
+  }
+
+  function handleListPointerEnd(e: React.PointerEvent<HTMLUListElement>) {
+    if (e.pointerType !== "touch" || !dragRef.current) return;
+    const { moved, wasOpen } = dragRef.current;
+    if (moved || wasOpen) {
+      // Dragging reveals only while the finger moves, like the reference
+      // clip — lift and it's gone. A tap on an already-open item is a
+      // close toggle. A tap on a closed item is left open (see below).
+      setHovered(null);
+    }
+    dragRef.current = null;
   }
 
   return (
-    <section className="relative py-24" onMouseMove={handleMouseMove} onPointerUp={handleOutsideTap}>
+    <section className="relative py-24" onMouseMove={handleMouseMove}>
       <div className="mx-auto max-w-3xl px-6">
         <div className="text-center">
           <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">EJEMPLOS</p>
@@ -138,17 +170,23 @@ export default function ContentShowcase() {
             Contenido pensado para tu tipo de negocio
           </h2>
           <p className="mt-4 text-zinc-600">
-            Toca o pasa el cursor sobre cada uno para ver el formato que le toca.
+            Toca o arrastra el dedo (o pasa el cursor) sobre cada uno para ver el formato que le toca.
           </p>
         </div>
 
-        <ul className="mt-12">
+        <ul
+          className="mt-12 touch-none"
+          onPointerDown={handleListPointerDown}
+          onPointerMove={handleListPointerMove}
+          onPointerUp={handleListPointerEnd}
+          onPointerCancel={handleListPointerEnd}
+        >
           {SHOWCASE_ITEMS.map((item, i) => (
             <li
               key={item.label}
+              data-index={i}
               onMouseEnter={() => setHovered(i)}
               onMouseLeave={() => setHovered(null)}
-              onPointerUp={(e) => handleItemTap(i, e)}
               className="flex cursor-default items-center justify-between border-b border-[var(--hairline)] py-5 transition-colors first:border-t sm:py-6"
             >
               <span

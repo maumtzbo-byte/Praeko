@@ -13,7 +13,7 @@ export default async function AyudaPage() {
       <div className="flex flex-col gap-4">
         <Card>
           <CardHeader>
-            <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100">
+            <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">
               <Mail className="h-5 w-5 text-zinc-600" strokeWidth={1.5} />
             </span>
             <CardTitle>Escríbenos por correo</CardTitle>
@@ -27,7 +27,7 @@ export default async function AyudaPage() {
         </Card>
         <Card>
           <CardHeader>
-            <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100">
+            <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">
               <MessageCircle className="h-5 w-5 text-zinc-600" strokeWidth={1.5} />
             </span>
             <CardTitle>Asistente de Praeko</CardTitle>

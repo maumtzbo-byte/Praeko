@@ -103,7 +103,7 @@ export default async function DashboardHomePage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-950">
+        <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold tracking-tight text-zinc-950">
           Hola{displayName ? `, ${displayName}` : ""} 👋
         </h1>
         <p className="mt-1 text-sm text-zinc-500">
@@ -116,7 +116,9 @@ export default async function DashboardHomePage() {
           <CardContent className="flex flex-col gap-3 p-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium tracking-wide text-zinc-500">ESTADO DE SUSCRIPCIÓN</span>
-              <Gem className="h-4 w-4 text-zinc-500" />
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">
+                <Gem className="h-4 w-4 text-zinc-600" strokeWidth={1.75} />
+              </span>
             </div>
             {subscription ? (
               <div className="flex items-center gap-2">
@@ -195,7 +197,7 @@ export default async function DashboardHomePage() {
                     const Icon = item.content_kind === "video" ? Clapperboard : ImageIcon;
                     return (
                       <div key={item.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">
                           <Icon className="h-4 w-4 text-zinc-600" strokeWidth={1.75} />
                         </span>
                         <div className="min-w-0 flex-1">
@@ -231,7 +233,7 @@ export default async function DashboardHomePage() {
               <Link
                 key={href}
                 href={href}
-                className="flex flex-col items-start gap-2 rounded-xl border border-zinc-200 p-3 text-left transition-colors hover:border-zinc-300 hover:bg-zinc-50"
+                className="flex flex-col items-start gap-2 rounded-xl border border-zinc-200 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.25)]"
               >
                 <Icon className="h-4 w-4 text-zinc-600" strokeWidth={1.75} />
                 <span className="text-xs font-medium text-zinc-700">{label}</span>

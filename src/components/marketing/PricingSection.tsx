@@ -51,7 +51,7 @@ export default function PricingSection() {
           <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">
             PLANES
           </p>
-          <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+          <h2 className="text-balance font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
             Un plan para cada etapa de tu negocio
           </h2>
           <p className="mt-4 text-zinc-600">
@@ -67,7 +67,7 @@ export default function PricingSection() {
               className={`relative flex flex-col rounded-3xl border p-8 ${
                 plan.featured
                   ? "border-zinc-900 bg-zinc-950 text-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] md:-translate-y-3"
-                  : "border-[var(--hairline)] bg-white/60 text-zinc-950"
+                  : "border-[var(--hairline)] bg-white/60 text-zinc-950 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_36px_-22px_rgba(0,0,0,0.18)]"
               }`}
             >
               {plan.featured && (

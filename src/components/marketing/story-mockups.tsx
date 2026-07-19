@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 export function BrandMockup() {
   return (
-    <Card className="w-72 p-6 shadow-xl shadow-zinc-950/10 sm:w-80">
+    <Card className="w-72 p-6 shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_24px_48px_-24px_rgba(0,0,0,0.35)] sm:w-80">
       <div className="flex items-center gap-3">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-zinc-300 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.08)]">
           <Sparkles className="h-5 w-5 text-zinc-700" strokeWidth={1.5} />
@@ -38,7 +38,7 @@ const WEEK_DAYS = ["L", "M", "M", "J", "V", "S", "D"];
 
 export function CalendarMockup() {
   return (
-    <Card className="w-72 p-6 shadow-xl shadow-zinc-950/10 sm:w-80">
+    <Card className="w-72 p-6 shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_24px_48px_-24px_rgba(0,0,0,0.35)] sm:w-80">
       <p className="text-xs font-semibold tracking-[0.2em] text-zinc-500">ESTA SEMANA</p>
       <div className="mt-4 grid grid-cols-7 gap-1.5">
         {WEEK_DAYS.map((day, i) => {
@@ -71,7 +71,7 @@ export function CalendarMockup() {
 export function VideoMockup({ progress }: { progress: MotionValue<number> }) {
   const width = useTransform(progress, [0, 1], ["8%", "94%"]);
   return (
-    <Card className="w-56 overflow-hidden p-0 shadow-xl shadow-zinc-950/10">
+    <Card className="w-56 overflow-hidden p-0 shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_24px_48px_-24px_rgba(0,0,0,0.35)]">
       <div className="relative aspect-[9/16] w-full bg-gradient-to-br from-zinc-800 via-zinc-700 to-zinc-950">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm">
@@ -113,7 +113,7 @@ const REVIEW_ITEMS = ["Tono de marca", "Identidad visual", "Calidad final"];
 
 export function ReviewMockup({ progress }: { progress: MotionValue<number> }) {
   return (
-    <Card className="w-72 p-6 shadow-xl shadow-zinc-950/10 sm:w-80">
+    <Card className="w-72 p-6 shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_24px_48px_-24px_rgba(0,0,0,0.35)] sm:w-80">
       <div className="flex items-center gap-3">
         <div className="h-12 w-16 shrink-0 rounded-lg bg-gradient-to-br from-zinc-200 to-zinc-300" />
         <div>
@@ -134,7 +134,7 @@ export function ChatMockup({ progress }: { progress: MotionValue<number> }) {
   const replyOpacity = useTransform(progress, [0.4, 0.75], [0, 1]);
   const replyY = useTransform(progress, [0.4, 0.75], [10, 0]);
   return (
-    <Card className="w-72 p-6 shadow-xl shadow-zinc-950/10 sm:w-80">
+    <Card className="w-72 p-6 shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_24px_48px_-24px_rgba(0,0,0,0.35)] sm:w-80">
       <div className="flex flex-col gap-2.5">
         <div className="max-w-[80%] self-start rounded-2xl rounded-bl-sm bg-zinc-100 px-3.5 py-2 text-xs text-zinc-700">
           ¿Tienen envío a domicilio?
@@ -162,7 +162,7 @@ export function AnalyticsMockup({ progress }: { progress: MotionValue<number> })
   useMotionValueEvent(progress, "change", (v) => setDisplay(Math.round(v * 248)));
 
   return (
-    <Card className="w-72 p-6 shadow-xl shadow-zinc-950/10 sm:w-80">
+    <Card className="w-72 p-6 shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_24px_48px_-24px_rgba(0,0,0,0.35)] sm:w-80">
       <p className="text-xs font-semibold tracking-[0.2em] text-zinc-500">ALCANCE MENSUAL</p>
       <p className="chrome-text mt-1 text-3xl font-bold tabular-nums">+{display}%</p>
       <div className="mt-4 flex h-16 items-end gap-1.5">

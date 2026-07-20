@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Clapperboard, ImageIcon, Clock, CalendarDays } from "lucide-react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, Clapperboard, ImageIcon, Clock, CalendarDays, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -67,6 +68,14 @@ export function CalendarView({ initialItems }: { initialItems: ContentCalendarRo
         icon={CalendarDays}
         title="Todavía no hay nada en tu calendario"
         description="En cuanto generes contenido desde “Generar contenido”, vas a poder verlo organizado aquí por fecha."
+        action={
+          <Link href="/dashboard/generar-contenido">
+            <Button size="sm">
+              <Sparkles className="h-4 w-4" />
+              Generar contenido
+            </Button>
+          </Link>
+        }
       />
     );
   }

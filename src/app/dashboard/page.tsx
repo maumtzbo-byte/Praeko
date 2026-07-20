@@ -173,6 +173,16 @@ export default async function DashboardHomePage() {
                 icon={BarChart3}
                 title="Todavía no hay datos que mostrar"
                 description="Conecta tus redes sociales y publica tu primera pieza para empezar a ver alcance y engagement aquí."
+                action={
+                  hasNoConnections ? (
+                    <Link href="/dashboard/redes-sociales">
+                      <Button size="sm">
+                        <Share2 className="h-4 w-4" />
+                        Conectar redes sociales
+                      </Button>
+                    </Link>
+                  ) : undefined
+                }
               />
             </CardContent>
           </Card>

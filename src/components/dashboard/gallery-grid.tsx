@@ -89,8 +89,8 @@ export function GalleryGrid({
           uploading && "pointer-events-none opacity-70",
         )}
       >
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-100">
-          <UploadCloud className={cn("h-5 w-5 text-zinc-500", uploading && "animate-pulse")} strokeWidth={1.5} />
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">
+          <UploadCloud className={cn("h-5 w-5 text-accent", uploading && "animate-pulse")} strokeWidth={1.5} />
         </span>
         <span className="text-sm font-medium text-zinc-700">
           {uploading ? "Subiendo…" : "Sube fotos de referencia"}
@@ -106,9 +106,7 @@ export function GalleryGrid({
         />
       </label>
 
-      {photos.length === 0 ? (
-        <p className="text-center text-sm text-zinc-500">Aún no subes fotos de referencia.</p>
-      ) : (
+      {photos.length === 0 ? null : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {photos.map((photo) => (
             <div key={photo.id} className="group relative aspect-square overflow-hidden rounded-2xl bg-zinc-100">

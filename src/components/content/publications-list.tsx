@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Clapperboard, ImageIcon, Clock, Send } from "lucide-react";
+import Link from "next/link";
+import { Clapperboard, ImageIcon, Clock, Send, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { cn } from "@/lib/utils";
 import { FORMAT_LABELS, STATUS_VARIANTS, STATUS_LABELS, formatScheduledDate } from "@/lib/content/labels";
@@ -41,6 +43,14 @@ export function PublicationsList({ initialItems }: { initialItems: ContentCalend
         icon={Send}
         title="Todavía no tienes publicaciones en cola"
         description="En cuanto generes contenido, cada pieza va a aparecer aquí con su estado hasta que se publique."
+        action={
+          <Link href="/dashboard/generar-contenido">
+            <Button size="sm">
+              <Sparkles className="h-4 w-4" />
+              Generar contenido
+            </Button>
+          </Link>
+        }
       />
     );
   }

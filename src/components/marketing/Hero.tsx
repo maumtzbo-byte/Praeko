@@ -37,11 +37,19 @@ export default function Hero() {
           information: a first-time visitor couldn't tell from them what
           Praeko actually is or does. */}
       <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-6 px-6 text-center">
-        <span className="rounded-full border border-zinc-300/80 bg-white/40 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-zinc-600 backdrop-blur-sm">
+        <span className="flex items-center gap-2 rounded-full border border-zinc-300/80 bg-white/40 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-zinc-600 backdrop-blur-sm">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
+          </span>
           MARKETING CON INTELIGENCIA
         </span>
         <h1 className="text-balance font-[family-name:var(--font-display)] text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
-          Agentes de IA que crean y publican el contenido de tu negocio
+          {/* The one moving-chrome moment in the Hero — same shimmer used on
+              the marketing site's other big headlines (CtaSection,
+              PricingSection) — so the page reads as Praeko's signature
+              liquid-metal identity again, not just a generic product shot. */}
+          <span className="chrome-text">Agentes de IA</span> que crean y publican el contenido de tu negocio
         </h1>
         <p className="max-w-lg text-balance text-zinc-600 sm:text-lg">
           Videos, imágenes y carruseles listos para tus redes, todos los días

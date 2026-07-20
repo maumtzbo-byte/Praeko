@@ -44,8 +44,17 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-[var(--hairline)]">
-        <div className="mx-auto max-w-6xl px-6 py-6 text-center text-xs text-zinc-400 sm:text-left">
-          &copy; {new Date().getFullYear()} Praeko. Todos los derechos reservados.
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-6 sm:flex-row sm:justify-between">
+          <p className="text-xs text-zinc-400">&copy; {new Date().getFullYear()} Praeko. Todos los derechos reservados.</p>
+          {/* One more conversion point for whoever scrolls all the way
+              down without converting on the way — the rest of the footer
+              is informational, not a second ask. */}
+          <Link
+            href="/registro"
+            className="rounded-full bg-zinc-950 px-4 py-2 text-xs font-medium text-white transition-transform hover:scale-[1.03]"
+          >
+            Empieza gratis
+          </Link>
         </div>
       </div>
     </footer>

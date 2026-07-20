@@ -93,9 +93,15 @@ export function VideoMockup({ progress }: { progress: MotionValue<number> }) {
 }
 
 function ChecklistRow({ label, index, progress }: { label: string; index: number; progress: MotionValue<number> }) {
+  // The scroll-snap quantizer always rests exactly at a beat's own start
+  // (local progress 0) — so these can't animate from "invisible" the way a
+  // freely-scrolled reveal could, or every visitor who pauses to read the
+  // caption sees three barely-there checkmarks instead of "already
+  // reviewed". Starting near-resolved (0.92) keeps a subtle settle-in
+  // during the transition glide without the resting frame looking broken.
   const start = index * 0.28;
-  const opacity = useTransform(progress, [start, start + 0.18], [0.25, 1]);
-  const scale = useTransform(progress, [start, start + 0.18], [0.75, 1]);
+  const opacity = useTransform(progress, [start, start + 0.18], [0.92, 1]);
+  const scale = useTransform(progress, [start, start + 0.18], [0.94, 1]);
   return (
     <motion.div style={{ opacity }} className="flex items-center gap-2.5 text-xs text-zinc-600">
       <motion.span
@@ -131,8 +137,11 @@ export function ReviewMockup({ progress }: { progress: MotionValue<number> }) {
 }
 
 export function ChatMockup({ progress }: { progress: MotionValue<number> }) {
-  const replyOpacity = useTransform(progress, [0.4, 0.75], [0, 1]);
-  const replyY = useTransform(progress, [0.4, 0.75], [10, 0]);
+  // Same "always rests at local progress 0" reasoning as ChecklistRow — the
+  // reply needs to already be mostly visible at rest, or the beat's own
+  // "respondemos preguntas de compra" promise shows an unanswered question.
+  const replyOpacity = useTransform(progress, [0, 0.3], [0.8, 1]);
+  const replyY = useTransform(progress, [0, 0.3], [4, 0]);
   return (
     <Card className="w-72 p-6 shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_24px_48px_-24px_rgba(0,0,0,0.35)] sm:w-80">
       <div className="flex flex-col gap-2.5">
@@ -151,15 +160,21 @@ export function ChatMockup({ progress }: { progress: MotionValue<number> }) {
 }
 
 function AnalyticsBar({ progress, target }: { progress: MotionValue<number>; target: number }) {
-  const height = useTransform(progress, [0, 1], [target * 0.25, target]);
+  // Bars start at 88% of their target height, not 0 — the scroll-snap
+  // quantizer rests exactly at this beat's start (progress 0), so a visitor
+  // who stops to read "medimos resultados" needs to already see a real
+  // ascending chart, not five flat stubs.
+  const height = useTransform(progress, [0, 1], [target * 0.88, target]);
   return <motion.div className="flex-1 rounded-t-md bg-zinc-800" style={{ height }} />;
 }
 
 const BAR_TARGETS = [40, 64, 50, 78, 96];
 
 export function AnalyticsMockup({ progress }: { progress: MotionValue<number> }) {
-  const [display, setDisplay] = useState(0);
-  useMotionValueEvent(progress, "change", (v) => setDisplay(Math.round(v * 248)));
+  const [display, setDisplay] = useState(228);
+  // Same reasoning: ranges from an already-credible +228% at rest up to
+  // +248% during the transition, instead of animating from +0%.
+  useMotionValueEvent(progress, "change", (v) => setDisplay(Math.round(228 + v * 20)));
 
   return (
     <Card className="w-72 p-6 shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_24px_48px_-24px_rgba(0,0,0,0.35)] sm:w-80">

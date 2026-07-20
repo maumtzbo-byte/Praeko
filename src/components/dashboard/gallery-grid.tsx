@@ -131,7 +131,7 @@ export function GalleryGrid({
                 type="button"
                 onClick={() => deletePhoto(photo)}
                 aria-label="Eliminar foto"
-                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 opacity-0 shadow-sm backdrop-blur-sm transition-opacity hover:scale-105 group-hover:opacity-100"
+                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 opacity-100 shadow-sm backdrop-blur-sm transition-opacity hover:scale-105 sm:opacity-0 sm:group-hover:opacity-100"
               >
                 <Trash2 className="h-4 w-4 text-red-600" strokeWidth={1.75} />
               </button>

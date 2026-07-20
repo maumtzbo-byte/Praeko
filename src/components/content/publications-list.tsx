@@ -2,11 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Clapperboard, ImageIcon, Clock, Send, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Clapperboard, ImageIcon, Clock, Send, Sparkles, RotateCcw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/dashboard/empty-state";
+import { retryFailedContent } from "@/lib/content/actions";
 import { cn } from "@/lib/utils";
 import { FORMAT_LABELS, STATUS_VARIANTS, STATUS_LABELS, formatScheduledDate } from "@/lib/content/labels";
 import type { Tables } from "@/lib/supabase/types";
@@ -15,6 +18,30 @@ type ContentCalendarRow = Tables<"content_calendar">;
 type ContentStatus = ContentCalendarRow["status"];
 
 const STATUS_ORDER: ContentStatus[] = ["pendiente", "generada", "en_revision", "publicada", "fallida"];
+
+function RetryButton({ itemId }: { itemId: string }) {
+  const router = useRouter();
+  const [retrying, setRetrying] = useState(false);
+
+  async function handleRetry() {
+    setRetrying(true);
+    const res = await retryFailedContent(itemId);
+    if (!res.success) {
+      toast.error(res.error);
+      setRetrying(false);
+      return;
+    }
+    toast.success("Se volvió a poner en cola para generarse.");
+    router.refresh();
+  }
+
+  return (
+    <Button variant="secondary" size="sm" onClick={handleRetry} loading={retrying}>
+      <RotateCcw className="h-3.5 w-3.5" />
+      Reintentar
+    </Button>
+  );
+}
 
 export function PublicationsList({ initialItems }: { initialItems: ContentCalendarRow[] }) {
   const [filter, setFilter] = useState<ContentStatus | "todas">("todas");
@@ -90,7 +117,7 @@ export function PublicationsList({ initialItems }: { initialItems: ContentCalend
                 <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
                   <div className="flex items-center gap-3 sm:w-40 sm:shrink-0">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
-                      <Icon className="h-4 w-4 text-zinc-600" strokeWidth={1.75} />
+                      <Icon className="h-4 w-4 text-accent" strokeWidth={1.75} />
                     </span>
                     <div>
                       <p className="text-xs font-medium text-zinc-500">{formatScheduledDate(item.scheduled_date)}</p>
@@ -111,6 +138,7 @@ export function PublicationsList({ initialItems }: { initialItems: ContentCalend
                         {item.target_duration_seconds ? ` · ${item.target_duration_seconds}s` : ""}
                       </div>
                     )}
+                    {item.status === "fallida" && <RetryButton itemId={item.id} />}
                     <Badge variant={STATUS_VARIANTS[item.status]}>{STATUS_LABELS[item.status]}</Badge>
                   </div>
                 </CardContent>

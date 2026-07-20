@@ -29,7 +29,20 @@ function NavLink({
       )}
     >
       <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
-      <span className="truncate">{item.label}</span>
+      <span className="flex-1 truncate">{item.label}</span>
+      {/* Set the expectation before the click, not after — landing on a
+          "coming soon" page reads as broken; seeing the tag in the nav
+          first reads as a roadmap. */}
+      {item.comingSoon && (
+        <span
+          className={cn(
+            "shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+            active ? "bg-white/15 text-white" : "bg-zinc-100 text-zinc-500",
+          )}
+        >
+          Pronto
+        </span>
+      )}
       {/* A quiet "this needs you" signal on Mi plan — same small-dot language
           as the marketing site's live badge, not a loud red alert, since an
           unactivated plan isn't an error, just an open opportunity. */}

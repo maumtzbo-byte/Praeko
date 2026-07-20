@@ -83,7 +83,19 @@ export default async function MarcaPage() {
             {brandProfile.color_palette && brandProfile.color_palette.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {brandProfile.color_palette.map((color) => (
-                  <Badge key={color}>{color}</Badge>
+                  <Badge key={color} className="gap-1.5 pl-1.5">
+                    {/* Swatch, not just the hex/name as plain text — a
+                        color palette you can't actually see defeats the
+                        point. Falls back to an empty ring for entries that
+                        aren't a valid CSS color (e.g. "azul marino"),
+                        which is still fine since the label itself is shown. */}
+                    <span
+                      aria-hidden="true"
+                      className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
+                      style={{ backgroundColor: color }}
+                    />
+                    {color}
+                  </Badge>
                 ))}
               </div>
             ) : (

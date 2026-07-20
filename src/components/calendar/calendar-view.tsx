@@ -2,12 +2,15 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Clapperboard, ImageIcon, Clock, CalendarDays, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { ChevronLeft, ChevronRight, Clapperboard, ImageIcon, Clock, CalendarDays, Sparkles, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { FORMAT_LABELS, STATUS_VARIANTS, STATUS_LABELS } from "@/lib/content/labels";
+import { retryFailedContent } from "@/lib/content/actions";
 import { cn } from "@/lib/utils";
 import type { Tables } from "@/lib/supabase/types";
 
@@ -32,6 +35,30 @@ function buildMonthGrid(monthStart: Date): Date[] {
   const gridStart = new Date(Date.UTC(year, month, 1 - firstWeekday));
   return Array.from({ length: 42 }, (_, i) =>
     new Date(Date.UTC(gridStart.getUTCFullYear(), gridStart.getUTCMonth(), gridStart.getUTCDate() + i)),
+  );
+}
+
+function RetryButton({ itemId }: { itemId: string }) {
+  const router = useRouter();
+  const [retrying, setRetrying] = useState(false);
+
+  async function handleRetry() {
+    setRetrying(true);
+    const res = await retryFailedContent(itemId);
+    if (!res.success) {
+      toast.error(res.error);
+      setRetrying(false);
+      return;
+    }
+    toast.success("Se volvió a poner en cola para generarse.");
+    router.refresh();
+  }
+
+  return (
+    <Button variant="secondary" size="sm" onClick={handleRetry} loading={retrying}>
+      <RotateCcw className="h-3.5 w-3.5" />
+      Reintentar
+    </Button>
   );
 }
 
@@ -156,6 +183,14 @@ export function CalendarView({ initialItems }: { initialItems: ContentCalendarRo
               );
             })}
           </div>
+          <div className="mt-4 flex items-center gap-4 text-xs text-zinc-500">
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-violet-500" /> Video
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-sky-500" /> Imagen
+            </span>
+          </div>
         </CardContent>
       </Card>
 
@@ -175,7 +210,7 @@ export function CalendarView({ initialItems }: { initialItems: ContentCalendarRo
               <CardContent className="flex flex-col gap-2 p-4">
                 <div className="flex items-center justify-between">
                   <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100">
-                    <Icon className="h-3.5 w-3.5 text-zinc-600" strokeWidth={1.75} />
+                    <Icon className="h-3.5 w-3.5 text-accent" strokeWidth={1.75} />
                   </span>
                   <Badge variant={STATUS_VARIANTS[item.status]}>{STATUS_LABELS[item.status]}</Badge>
                 </div>
@@ -187,6 +222,11 @@ export function CalendarView({ initialItems }: { initialItems: ContentCalendarRo
                     <Clock className="h-3.5 w-3.5" />
                     {item.recommended_publish_time.slice(0, 5)}
                     {item.target_duration_seconds ? ` · ${item.target_duration_seconds}s` : ""}
+                  </div>
+                )}
+                {item.status === "fallida" && (
+                  <div className="mt-1">
+                    <RetryButton itemId={item.id} />
                   </div>
                 )}
               </CardContent>

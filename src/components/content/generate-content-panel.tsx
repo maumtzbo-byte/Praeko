@@ -100,7 +100,7 @@ export function GenerateContentPanel({
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100">
-                    <Icon className="h-4 w-4 text-zinc-600" strokeWidth={1.75} />
+                    <Icon className="h-4 w-4 text-accent" strokeWidth={1.75} />
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-zinc-900">{item.topic}</p>

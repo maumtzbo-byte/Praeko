@@ -243,8 +243,8 @@ export default function PricingSection() {
         <p className="mt-2 text-center text-xs text-zinc-400 sm:hidden">Desliza para ver los 3 planes →</p>
 
         <p className="mt-8 text-center text-xs text-zinc-500">
-          Equivalente informativo en MXN al tipo de cambio del día. Suscripción
-          recurrente vía Stripe, cancela cuando quieras.
+          Equivalente informativo en MXN al tipo de cambio del día. Sin contratos
+          forzosos ni letra chica — cancela cuando quieras.
         </p>
       </div>
     </section>

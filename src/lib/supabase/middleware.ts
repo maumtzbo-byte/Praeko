@@ -11,8 +11,16 @@ const PUBLIC_PATHS = [
   "/auth/callback",
 ];
 
+// Next.js's file-convention routes (opengraph-image, robots.txt, etc.) don't
+// end in an extension the middleware matcher already excludes (see
+// middleware.ts), so without this they were silently redirecting crawlers
+// and social-media unfurlers to /login instead of serving the asset —
+// breaking link previews and, worse, robots.txt/sitemap.xml for SEO.
+const CRAWLER_PATHS = ["/robots.txt", "/sitemap.xml", "/manifest.webmanifest", "/opengraph-image", "/icon.png", "/apple-icon.png"];
+
 function isPublicPath(pathname: string) {
   if (PUBLIC_PATHS.includes(pathname)) return true;
+  if (CRAWLER_PATHS.includes(pathname)) return true;
   // Static assets and Next internals never require a session.
   return pathname.startsWith("/_next") || pathname.startsWith("/favicon");
 }

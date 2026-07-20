@@ -100,6 +100,16 @@ function PricingCard({
       data-index={index}
       className={`relative w-[82%] shrink-0 snap-center sm:w-auto sm:shrink ${plan.featured ? "md:-translate-y-3" : ""}`}
     >
+      {plan.featured && (
+        // A permanent, soft glow behind the featured card only — not on
+        // hover, so it reads as "this one's lit from within" at rest, the
+        // thing that should draw the eye first on the whole pricing grid.
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -inset-4 -z-10 rounded-[2rem] opacity-60 blur-2xl"
+          style={{ background: "radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%)" }}
+        />
+      )}
       <motion.div
         ref={cardRef}
         onMouseEnter={() => setHovered(true)}
@@ -110,8 +120,10 @@ function PricingCard({
         transition={{ type: "spring", stiffness: 260, damping: 22 }}
         className={`relative flex h-full w-full flex-col rounded-2xl border p-5 transition-shadow duration-300 md:rounded-3xl md:p-8 ${
           plan.featured
-            ? `border-zinc-900 bg-zinc-950 text-white ${
-                popped ? "shadow-[0_28px_70px_-15px_rgba(0,0,0,0.5)]" : "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)]"
+            ? `border-zinc-800 bg-zinc-950 text-white ${
+                popped
+                  ? "shadow-[0_28px_70px_-15px_rgba(0,0,0,0.5),0_0_50px_-10px_rgba(31,157,117,0.45),0_0_0_1px_rgba(45,212,191,0.25)_inset]"
+                  : "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_0_0_1px_rgba(45,212,191,0.12)_inset]"
               }`
             : `border-[var(--hairline)] bg-white/60 text-zinc-950 ${
                 popped

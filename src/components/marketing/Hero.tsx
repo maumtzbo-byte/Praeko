@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useMotionValue, useSpring } from "framer-motion";
+import { Play, Heart, MessageCircle, Send } from "lucide-react";
 import AuroraBackground from "./AuroraBackground";
 
 export default function Hero() {
@@ -36,7 +37,12 @@ export default function Hero() {
           flank the orb. Those read as decorative brand copy, not
           information: a first-time visitor couldn't tell from them what
           Praeko actually is or does. */}
-      <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-6 px-6 text-center">
+      <motion.div
+        initial={{ opacity: 0, y: 14, filter: "blur(8px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="relative mx-auto flex max-w-2xl flex-col items-center gap-6 px-6 text-center"
+      >
         <span className="flex items-center gap-2 rounded-full border border-zinc-300/80 bg-white/40 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-zinc-600 backdrop-blur-sm">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
@@ -58,7 +64,7 @@ export default function Hero() {
         <div className="mt-2 flex flex-col items-center gap-3 sm:flex-row">
           <Link
             href="/registro"
-            className="rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_4px_rgba(31,157,117,0.18)]"
+            className="btn-shine rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_4px_rgba(31,157,117,0.18)]"
           >
             Empieza gratis
           </Link>
@@ -69,7 +75,7 @@ export default function Hero() {
             Cómo funciona →
           </a>
         </div>
-      </div>
+      </motion.div>
 
       {/* The product itself, not an abstract 3D shape — a real screenshot
           of the Praeko dashboard (calendario, sample data), captured from
@@ -114,27 +120,49 @@ export default function Hero() {
           />
         </motion.div>
 
+        {/* The second half of the "wow" — not another screenshot of the
+            tool, but the actual output: a Reel it published, framed as a
+            real phone so it reads as "this goes straight to Instagram,"
+            floating beside the calendar for the layered-cards depth premium
+            SaaS sites use. A static rotate on this wrapper (not the
+            calendar) is what sells "scattered, alive" instead of "two
+            rectangles stacked neatly." */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 10 }}
-          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.9, y: 10, rotate: 5 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0, rotate: 5 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6, delay: 0.35, ease: "easeOut" }}
-          className="absolute -bottom-8 -right-2 hidden w-56 sm:block md:-right-8 md:w-64"
+          className="absolute -bottom-10 -right-2 hidden w-36 sm:block md:-right-10 md:w-44"
         >
-          {/* Static entrance (opacity/scale/y) lives on the motion.div
+          {/* Static entrance (opacity/scale/y/rotate) lives on the motion.div
               above; the perpetual float bob (.card-float) lives on this
               plain child — both set `transform`, so on one element the CSS
               keyframe would silently overwrite the entrance values every
               frame once it starts looping. */}
-          <div className="card-float">
-            <div className="overflow-hidden rounded-xl border border-[var(--hairline)] bg-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)]">
-              <Image
-                src="/screenshots/content-card-preview.png"
-                alt="Pieza de contenido generada por IA, lista para publicar"
-                width={716}
-                height={428}
-                className="h-auto w-full"
+          <div className="card-float-offset card-float">
+            <div
+              className="relative overflow-hidden rounded-[1.75rem] border-[5px] border-zinc-900 bg-zinc-900 shadow-[0_30px_70px_-20px_rgba(0,0,0,0.45)]"
+              style={{ aspectRatio: "9 / 19.5" }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-accent-strong via-zinc-900 to-zinc-950" />
+              <span
+                aria-hidden="true"
+                className="absolute left-1/2 top-1.5 h-3 w-12 -translate-x-1/2 rounded-full bg-black/40"
               />
+              <span className="absolute inset-0 flex items-center justify-center">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm">
+                  <Play className="h-3.5 w-3.5 fill-white text-white" />
+                </span>
+              </span>
+              <div className="absolute bottom-14 right-1.5 flex flex-col items-center gap-2.5 text-white">
+                <Heart className="h-3.5 w-3.5 fill-white" />
+                <MessageCircle className="h-3.5 w-3.5 fill-white" />
+                <Send className="h-3.5 w-3.5 fill-white" />
+              </div>
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2.5 pb-2.5 pt-6">
+                <p className="text-[8px] font-semibold text-white">@tunegocio</p>
+                <p className="mt-0.5 text-[7px] leading-tight text-white/80">Nuevo: Frappé de temporada 🧊</p>
+              </div>
             </div>
           </div>
         </motion.div>

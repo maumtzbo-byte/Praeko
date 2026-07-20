@@ -68,7 +68,7 @@ export default function Navbar() {
             </Link>
             <Link
               href="/registro"
-              className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_3px_rgba(31,157,117,0.18)]"
+              className="btn-shine rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_3px_rgba(31,157,117,0.18)]"
             >
               Empieza gratis
             </Link>
@@ -115,7 +115,7 @@ export default function Navbar() {
           <Link
             href="/registro"
             onClick={() => setOpen(false)}
-            className="mt-2 rounded-full bg-zinc-950 px-4 py-3 text-center text-base font-medium text-white"
+            className="btn-shine mt-2 rounded-full bg-zinc-950 px-4 py-3 text-center text-base font-medium text-white"
           >
             Empieza gratis
           </Link>

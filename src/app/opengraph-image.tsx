@@ -21,11 +21,11 @@ export default function OpengraphImage() {
           justifyContent: "center",
           overflow: "hidden",
           backgroundColor: "#f4f4f6",
-          backgroundImage:
-            "radial-gradient(circle at 18% 12%, #ffffff 0%, #e4e4e8 40%, #f4f4f6 70%), radial-gradient(circle at 88% 90%, #ffffff 0%, #dcdce1 45%, #f4f4f6 75%)",
         }}
       >
-        {/* liquid-metal blobs, corners */}
+        {/* Same aurora blobs as the rest of the site (AuroraBackground,
+            IntroReveal) — real color, not the old silver-chrome gradient,
+            so a shared link actually looks like the current brand. */}
         <div
           style={{
             position: "absolute",
@@ -35,9 +35,10 @@ export default function OpengraphImage() {
             height: 620,
             display: "flex",
             borderRadius: "38% 62% 55% 45% / 45% 40% 60% 55%",
-            backgroundImage: "linear-gradient(135deg, #ffffff 0%, #d4d5da 35%, #9a9ca3 65%, #f4f4f6 100%)",
-            opacity: 0.85,
-            transform: "rotate(18deg)",
+            backgroundImage:
+              "radial-gradient(circle at 35% 30%, #eafff8 0%, #2dd4bf 30%, #1f9d75 60%, #1e1b4b 100%)",
+            opacity: 0.55,
+            filter: "blur(10px)",
           }}
         />
         <div
@@ -49,9 +50,10 @@ export default function OpengraphImage() {
             height: 680,
             display: "flex",
             borderRadius: "55% 45% 40% 60% / 60% 55% 45% 40%",
-            backgroundImage: "linear-gradient(315deg, #ffffff 0%, #c8cad0 30%, #8b8d94 60%, #f4f4f6 100%)",
-            opacity: 0.8,
-            transform: "rotate(-12deg)",
+            backgroundImage:
+              "radial-gradient(circle at 60% 40%, #eafff8 0%, #2dd4bf 30%, #3b82f6 60%, #1e1b4b 100%)",
+            opacity: 0.5,
+            filter: "blur(10px)",
           }}
         />
         <div
@@ -60,40 +62,22 @@ export default function OpengraphImage() {
             inset: 0,
             display: "flex",
             backgroundImage:
-              "radial-gradient(circle at 22% 15%, rgba(244,244,246,0) 0%, #f4f4f6 55%), radial-gradient(circle at 82% 88%, rgba(244,244,246,0) 0%, #f4f4f6 55%)",
+              "radial-gradient(circle at 22% 15%, rgba(244,244,246,0) 0%, #f4f4f6 60%), radial-gradient(circle at 82% 88%, rgba(244,244,246,0) 0%, #f4f4f6 60%)",
           }}
         />
 
         {/* content */}
-        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", gap: 90 }}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", textAlign: "right" }}>
-            <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: 6, color: "#3f3f46" }}>CREAMOS</span>
-            <span style={{ fontSize: 20, color: "#71717a", marginTop: 6 }}>contenido que conecta.</span>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              width: 260,
-              height: 260,
-              borderRadius: 48,
-              overflow: "hidden",
-              boxShadow: "0 30px 60px rgba(22,22,26,0.2)",
-            }}
-          >
-            <img
-              src={logoDataUrl}
-              alt="Praeko"
-              width={260}
-              height={260}
-              style={{ display: "flex", objectFit: "cover" }}
-            />
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", textAlign: "left" }}>
-            <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: 6, color: "#3f3f46" }}>IMPULSAMOS</span>
-            <span style={{ fontSize: 20, color: "#71717a", marginTop: 6 }}>marcas que impactan.</span>
-          </div>
+        <div
+          style={{
+            display: "flex",
+            width: 220,
+            height: 220,
+            borderRadius: 44,
+            overflow: "hidden",
+            boxShadow: "0 30px 60px rgba(22,22,26,0.2)",
+          }}
+        >
+          <img src={logoDataUrl} alt="Praeko" width={220} height={220} style={{ display: "flex", objectFit: "cover" }} />
         </div>
 
         <div
@@ -102,12 +86,15 @@ export default function OpengraphImage() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            marginTop: 56,
-            gap: 20,
+            marginTop: 44,
+            gap: 22,
           }}
         >
-          <span style={{ fontSize: 24, fontWeight: 500, letterSpacing: 8, color: "#52525b" }}>
-            ESTRATEGIA · CONTENIDO · RESULTADOS
+          <span style={{ display: "flex", fontSize: 46, fontWeight: 700, letterSpacing: -1, color: "#18181b" }}>
+            Agentes de IA para tu marketing
+          </span>
+          <span style={{ fontSize: 22, color: "#52525b" }}>
+            Videos, imágenes y publicaciones, todos los días — sin que grabes nada.
           </span>
           <div
             style={{

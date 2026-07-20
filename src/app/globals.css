@@ -79,6 +79,29 @@ body {
   animation: liquid-morph 18s ease-in-out infinite;
 }
 
+/* Diagonal light sweep on hover — the one "expensive button" flourish,
+   used only on the marketing site's primary CTA pill (not every button
+   everywhere, which would cheapen it). */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  left: -75%;
+  width: 50%;
+  background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
+  transform: skewX(-20deg);
+  transition: left 0.7s ease;
+}
+
+.btn-shine:hover::after {
+  left: 125%;
+}
+
 @keyframes liquid-morph {
   0%,
   100% {

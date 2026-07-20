@@ -6,7 +6,15 @@ import { LogOut } from "lucide-react";
 import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS, type NavItem } from "@/lib/dashboard/nav-items";
 import { cn } from "@/lib/utils";
 
-function NavLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
+function NavLink({
+  item,
+  onNavigate,
+  showAttentionDot,
+}: {
+  item: NavItem;
+  onNavigate?: () => void;
+  showAttentionDot?: boolean;
+}) {
   const pathname = usePathname();
   const active = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
   const Icon = item.icon;
@@ -22,15 +30,22 @@ function NavLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void 
     >
       <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
       <span className="truncate">{item.label}</span>
+      {/* A quiet "this needs you" signal on Mi plan — same small-dot language
+          as the marketing site's live badge, not a loud red alert, since an
+          unactivated plan isn't an error, just an open opportunity. */}
+      {showAttentionDot && !active && <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />}
+      {showAttentionDot && active && <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-white" />}
     </Link>
   );
 }
 
 export function SidebarNav({
   businessName,
+  needsPlanAttention = false,
   onNavigate,
 }: {
   businessName: string;
+  needsPlanAttention?: boolean;
   onNavigate?: () => void;
 }) {
   return (
@@ -39,7 +54,7 @@ export function SidebarNav({
         PRAEKO
       </Link>
 
-      <div className="rounded-xl bg-zinc-100 px-3 py-2.5">
+      <div className="rounded-xl border border-accent/15 bg-accent/[0.06] px-3 py-2.5">
         <p className="truncate text-sm font-medium text-zinc-800">{businessName}</p>
       </div>
 
@@ -49,7 +64,12 @@ export function SidebarNav({
         ))}
         <div className="my-2 border-t border-zinc-200" />
         {SECONDARY_NAV_ITEMS.map((item) => (
-          <NavLink key={item.href} item={item} onNavigate={onNavigate} />
+          <NavLink
+            key={item.href}
+            item={item}
+            onNavigate={onNavigate}
+            showAttentionDot={needsPlanAttention && item.href === "/dashboard/plan"}
+          />
         ))}
       </nav>
 

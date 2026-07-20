@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { CalendarClock } from "lucide-react";
-import LiquidMetalBackground from "./LiquidMetalBackground";
+import AuroraBackground from "./AuroraBackground";
 
 export default function CtaSection() {
   return (
     <section className="relative overflow-hidden py-28">
-      <LiquidMetalBackground />
+      <AuroraBackground />
       <div className="relative mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 px-6 sm:grid-cols-[1.1fr_0.9fr]">
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h2 className="chrome-text text-balance font-[family-name:var(--font-display)] text-3xl font-semibold italic tracking-tight sm:text-4xl">
+          <h2 className="aurora-text text-balance font-[family-name:var(--font-display)] text-3xl font-semibold italic tracking-tight sm:text-4xl">
             Deja que tus agentes de IA hagan el marketing
           </h2>
           <p className="max-w-md text-zinc-600">
@@ -17,7 +17,7 @@ export default function CtaSection() {
           </p>
           <Link
             href="/registro"
-            className="rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_4px_rgba(224,122,53,0.18)]"
+            className="rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_4px_rgba(31,157,117,0.18)]"
           >
             Empieza gratis
           </Link>

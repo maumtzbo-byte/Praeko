@@ -4,27 +4,30 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { hasSeenIntro, markIntroSeen } from "@/lib/marketing/intro-session";
 
-// Same silver-chrome gradients as LiquidMetalBackground, just staged as a
+// Same aurora borealis gradients as AuroraBackground, just staged as a
 // one-time entrance instead of an idle loop, echoing the reference clip's
-// liquid blob wiping in to reveal the page — but in Praeko's metal instead
-// of a flat brand color.
+// liquid blob wiping in to reveal the page — Praeko's own green-teal-violet
+// palette instead of a flat brand color or the metallic look this replaced.
 const BLOBS = [
   {
-    gradient: "radial-gradient(circle at 35% 30%, #ffffff 0%, #d6d8dd 30%, #8a8c93 55%, #55565c 70%, #3d3e44 100%)",
+    gradient:
+      "radial-gradient(circle at 35% 30%, var(--aurora-highlight) 0%, var(--aurora-mid) 28%, var(--accent) 55%, var(--accent-strong) 78%, var(--aurora-deep) 100%)",
     size: "62vmax",
     top: "50%",
     left: "50%",
     delay: 0,
   },
   {
-    gradient: "radial-gradient(circle at 60% 40%, #ffffff 0%, #cfd1d6 35%, #75767d 65%, #2c2d31 100%)",
+    gradient:
+      "radial-gradient(circle at 60% 40%, var(--aurora-highlight) 0%, var(--aurora-mid) 30%, var(--aurora-blue) 58%, var(--aurora-deep) 100%)",
     size: "46vmax",
     top: "42%",
     left: "58%",
     delay: 0.08,
   },
   {
-    gradient: "radial-gradient(circle at 40% 60%, #ffffff 0%, #d3d5da 35%, #6d6e75 70%, #232427 100%)",
+    gradient:
+      "radial-gradient(circle at 40% 60%, var(--aurora-highlight) 0%, var(--aurora-mid) 35%, var(--accent-strong) 68%, var(--aurora-deep) 100%)",
     size: "40vmax",
     top: "58%",
     left: "40%",

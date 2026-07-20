@@ -4,7 +4,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useMotionValue, useSpring } from "framer-motion";
-import LiquidMetalBackground from "./LiquidMetalBackground";
+import AuroraBackground from "./AuroraBackground";
 
 export default function Hero() {
   const frameRef = useRef<HTMLDivElement | null>(null);
@@ -29,7 +29,7 @@ export default function Hero() {
 
   return (
     <section className="relative flex flex-col items-center overflow-hidden pb-20 pt-28 md:pb-28 md:pt-36">
-      <LiquidMetalBackground />
+      <AuroraBackground />
 
       {/* Real value proposition first — what Praeko does, in plain words —
           instead of the abstract "CREAMOS / IMPULSAMOS" pair that used to
@@ -45,11 +45,11 @@ export default function Hero() {
           MARKETING CON INTELIGENCIA
         </span>
         <h1 className="text-balance font-[family-name:var(--font-display)] text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
-          {/* The one moving-chrome moment in the Hero — same shimmer used on
+          {/* The one moving-gradient moment in the Hero — same shimmer used on
               the marketing site's other big headlines (CtaSection,
               PricingSection) — so the page reads as Praeko's signature
-              liquid-metal identity again, not just a generic product shot. */}
-          <span className="chrome-text">Agentes de IA</span> que crean y publican el contenido de tu negocio
+              aurora identity again, not just a generic product shot. */}
+          <span className="aurora-text">Agentes de IA</span> que crean y publican el contenido de tu negocio
         </h1>
         <p className="max-w-lg text-balance text-zinc-600 sm:text-lg">
           Videos, imágenes y carruseles listos para tus redes, todos los días
@@ -58,7 +58,7 @@ export default function Hero() {
         <div className="mt-2 flex flex-col items-center gap-3 sm:flex-row">
           <Link
             href="/registro"
-            className="rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_4px_rgba(224,122,53,0.18)]"
+            className="rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_4px_rgba(31,157,117,0.18)]"
           >
             Empieza gratis
           </Link>
@@ -82,7 +82,7 @@ export default function Hero() {
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-10 -top-10 bottom-0 -z-10 rounded-[50%] opacity-50 blur-3xl"
-          style={{ background: "radial-gradient(ellipse at center, #ffffff 0%, #c8cad0 40%, transparent 72%)" }}
+          style={{ background: "radial-gradient(ellipse at center, #eafff8 0%, #2dd4bf 40%, transparent 72%)" }}
         />
 
         <motion.div

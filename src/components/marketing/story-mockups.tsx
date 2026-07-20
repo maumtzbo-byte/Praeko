@@ -164,7 +164,7 @@ export function AnalyticsMockup({ progress }: { progress: MotionValue<number> })
   return (
     <Card className="w-72 p-6 shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_24px_48px_-24px_rgba(0,0,0,0.35)] sm:w-80">
       <p className="text-xs font-semibold tracking-[0.2em] text-zinc-500">ALCANCE MENSUAL</p>
-      <p className="chrome-text mt-1 text-3xl font-bold tabular-nums">+{display}%</p>
+      <p className="aurora-text mt-1 text-3xl font-bold tabular-nums">+{display}%</p>
       <div className="mt-4 flex h-16 items-end gap-1.5">
         {BAR_TARGETS.map((target, i) => (
           <AnalyticsBar key={i} progress={progress} target={target} />

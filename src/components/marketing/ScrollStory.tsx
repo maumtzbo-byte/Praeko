@@ -114,7 +114,7 @@ function BeatCaption({
         >
           {beat.step}
         </span>
-        <h3 className="chrome-text relative max-w-md text-balance text-2xl font-semibold tracking-tight sm:text-4xl">
+        <h3 className="aurora-text relative max-w-md text-balance text-2xl font-semibold tracking-tight sm:text-4xl">
           {beat.title}
         </h3>
         <p className="relative mt-3 max-w-sm text-balance text-sm text-zinc-600 sm:text-base">{beat.description}</p>
@@ -134,7 +134,7 @@ function ProgressDot({ beat, progress, index, total }: { beat: Beat; progress: M
   // The beat currently "in focus" gets the accent color, same idea as an
   // active tab — the icon itself fades from neutral gray to accent and
   // back as the story scrolls past it.
-  const color = useTransform(progress, input, beatOutputRange(index, total, "#52525c", "#e07a35", "#52525c"));
+  const color = useTransform(progress, input, beatOutputRange(index, total, "#52525c", "#1f9d75", "#52525c"));
   const Icon = beat.icon;
   return (
     <motion.div
@@ -185,7 +185,7 @@ function Particle({
         width: size,
         height: size,
         opacity,
-        background: "radial-gradient(circle, #ffffff 0%, #8b8d94 70%, transparent 100%)",
+        background: "radial-gradient(circle, #eafff8 0%, #2dd4bf 70%, transparent 100%)",
         x,
         y,
       }}
@@ -489,7 +489,7 @@ export default function ScrollStory() {
           aria-hidden="true"
           className="pointer-events-none absolute left-1/2 top-1/2 h-[42rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-3xl sm:h-[54rem] sm:w-[54rem]"
           style={{
-            background: "radial-gradient(circle, #ffffff 0%, #c8cad0 45%, transparent 75%)",
+            background: "radial-gradient(circle, #eafff8 0%, #2dd4bf 45%, transparent 75%)",
           }}
         />
 

@@ -3,16 +3,17 @@
 :root {
   --background: #f4f4f6;
   --foreground: #16161a;
-  --chrome-1: #ffffff;
-  --chrome-2: #c8cad0;
-  --chrome-3: #8b8d94;
-  --chrome-4: #45464c;
   --hairline: rgba(20, 20, 24, 0.1);
-  /* The one warm note against an otherwise all-chrome/grayscale palette —
-     used sparingly (active states, the featured plan, small icon accents)
-     so it reads as a deliberate signature color, not decoration. */
-  --accent: #e07a35;
-  --accent-strong: #c1611f;
+  /* Aurora borealis palette — green through teal and blue into violet —
+     replacing the old silver-chrome (and, briefly, warm-orange) identity
+     everywhere the brand color is used: buttons, badges, icons, active
+     states, and the ambient background/text shimmer alike. */
+  --accent: #1f9d75;
+  --accent-strong: #5b3fd6;
+  --aurora-highlight: #eafff8;
+  --aurora-mid: #2dd4bf;
+  --aurora-blue: #3b82f6;
+  --aurora-deep: #1e1b4b;
 }
 
 @theme inline {
@@ -34,26 +35,28 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Chrome / liquid-metal text: a moving mirrored gradient clipped to text. */
-.chrome-text {
+/* Aurora text: a moving warm gradient clipped to text — same shimmer
+   mechanic the old metallic version used, recolored to the brand's own
+   peach/orange/umber palette instead of grayscale metal. */
+.aurora-text {
   background: linear-gradient(
     115deg,
-    #1c1c20 0%,
-    #55565d 20%,
-    #0f0f12 38%,
-    #6a6c74 52%,
-    #16171a 68%,
-    #4a4b52 84%,
-    #1c1c20 100%
+    var(--accent-strong) 0%,
+    var(--aurora-mid) 20%,
+    var(--accent) 38%,
+    var(--aurora-highlight) 52%,
+    var(--accent) 68%,
+    var(--aurora-mid) 84%,
+    var(--accent-strong) 100%
   );
   background-size: 260% 260%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: chrome-sheen 9s ease-in-out infinite;
+  animation: aurora-sheen 9s ease-in-out infinite;
 }
 
-@keyframes chrome-sheen {
+@keyframes aurora-sheen {
   0% {
     background-position: 0% 50%;
   }
@@ -65,13 +68,15 @@ body {
   }
 }
 
-/* Soft liquid-metal blobs used as ambient background shapes. */
+/* Soft aurora blobs used as ambient background shapes — real color wash
+   (not the old silver-chrome luminosity trick, which discarded any hue in
+   favor of the backdrop's), diffused with a heavy blur so it reads as a
+   glow rather than a flat shape. */
 .liquid-blob {
   position: absolute;
   border-radius: 40% 60% 65% 35% / 45% 40% 60% 55%;
-  filter: blur(2px);
+  filter: blur(56px);
   animation: liquid-morph 18s ease-in-out infinite;
-  mix-blend-mode: luminosity;
 }
 
 @keyframes liquid-morph {

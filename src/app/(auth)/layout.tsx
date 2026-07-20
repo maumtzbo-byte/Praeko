@@ -1,10 +1,10 @@
 import Link from "next/link";
-import LiquidMetalBackground from "@/components/marketing/LiquidMetalBackground";
+import AuroraBackground from "@/components/marketing/AuroraBackground";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-16">
-      <LiquidMetalBackground />
+      <AuroraBackground />
       <Link
         href="/"
         className="relative mb-8 text-lg font-semibold tracking-[0.2em] text-zinc-950"

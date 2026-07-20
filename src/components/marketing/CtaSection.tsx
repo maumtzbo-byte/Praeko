@@ -9,7 +9,7 @@ export default function CtaSection() {
       <div className="relative mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 px-6 sm:grid-cols-[1.1fr_0.9fr]">
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
           <h2 className="aurora-text text-balance font-[family-name:var(--font-display)] text-3xl font-semibold italic tracking-tight sm:text-4xl">
-            Deja que tus agentes de IA hagan el marketing
+            Dedica tu tiempo a tu negocio, no a tus redes
           </h2>
           <p className="max-w-md text-zinc-600">
             Onboarding de 10 minutos. El primer calendario de contenido de tu

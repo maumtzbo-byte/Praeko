@@ -5,44 +5,49 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 
+// Feature copy leads with what each line means for the owner reading it —
+// not the AI provider/model behind it (nobody running a cafetería cares
+// what "Kling 3.0 Pro" is) — while keeping every real number and limit
+// exactly as it is in the plans table, so nothing here overstates what the
+// plan actually includes.
 const plans = [
   {
     name: "Básico",
     price: 99,
-    tagline: "Más imagen, video semilla diaria",
+    tagline: "Para arrancar a publicar cada semana, sin complicarte",
     featured: false,
     features: [
-      "8 videos/mes · 10s fijos, con audio",
-      "22 imágenes o carruseles/mes",
-      "Generación con Kling 3.0 Pro",
-      "1 red social (Instagram)",
-      "Sin subtítulos quemados",
+      "8 videos al mes, de 10 segundos con audio, listos para subir",
+      "22 imágenes o carruseles al mes",
+      "Video generado con IA de calidad profesional",
+      "1 red social conectada (Instagram)",
+      "Sin subtítulos automáticos",
     ],
   },
   {
     name: "Pro",
     price: 199,
-    tagline: "Equilibrio 50/50 para publicación diaria",
+    tagline: "El más elegido: contenido nuevo todos los días",
     featured: true,
     features: [
-      "15 videos/mes · duración variable (promedio 15s, tope 25s)",
-      "15 imágenes o carruseles/mes",
-      "Generación con Kling 3.0 Pro + subtítulos quemados",
-      "3 redes sociales (Instagram, Facebook, TikTok)",
-      "Horario optimizado con datos reales + dashboard de analíticas",
+      "15 videos al mes, con la duración justa para cada pieza (hasta 25s)",
+      "15 imágenes o carruseles al mes",
+      "Video con calidad profesional y subtítulos automáticos incluidos",
+      "3 redes sociales conectadas (Instagram, Facebook y TikTok)",
+      "Publicamos a la hora en que tu público está más activo, con tu panel de resultados",
     ],
   },
   {
     name: "Max",
     price: 399,
-    tagline: "Máximo rendimiento audiovisual",
+    tagline: "Para negocios que quieren estar en todos lados, sin esperar",
     featured: false,
     features: [
-      "22 videos/mes · duración variable (promedio 20s, tope 30s)",
-      "8 imágenes o carruseles/mes",
-      "Generación con Seedance 2.0 Standard 720p + subtítulos",
-      "3 redes sociales (Instagram, Facebook, TikTok)",
-      "Prioridad en cola, soporte dedicado, descargas sin marca de agua",
+      "22 videos al mes, hasta 30 segundos cada uno",
+      "8 imágenes o carruseles al mes",
+      "La mejor calidad de video que ofrecemos, con subtítulos automáticos",
+      "3 redes sociales conectadas (Instagram, Facebook y TikTok)",
+      "Tu contenido se procesa primero que el de nadie más, con soporte dedicado y sin marca de agua",
     ],
   },
 ];
@@ -220,11 +225,11 @@ export default function PricingSection() {
             PLANES
           </p>
           <h2 className="text-balance font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-            Un plan para cada etapa de tu negocio
+            Elige tu plan y publica tu primer contenido hoy
           </h2>
           <p className="mt-4 text-zinc-600">
-            Precios en USD, con límites claros de generación al mes — sin
-            sorpresas en tu margen.
+            Precios en dólares, límites claros cada mes — sabes exactamente
+            cuánto vas a gastar, sin sorpresas.
           </p>
         </div>
 

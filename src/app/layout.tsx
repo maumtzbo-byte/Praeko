@@ -25,7 +25,7 @@ const fraunces = Fraunces({
 const SITE_URL = "https://praekomarketingsaas.vercel.app";
 const SITE_TITLE = "Praeko — Marketing con Inteligencia";
 const SITE_DESCRIPTION =
-  "Praeko es el SaaS de marketing con agentes de IA que crea contenido, publica y mide resultados por ti. Estrategia, contenido y resultados en un solo lugar.";
+  "Videos, imágenes y publicaciones para tus redes sociales, creados y publicados por IA todos los días — sin que grabes, edites ni programes nada. Hecho para negocios pequeños en México.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

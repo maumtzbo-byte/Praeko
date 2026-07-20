@@ -58,8 +58,8 @@ export default function Hero() {
           <span className="aurora-text">Agentes de IA</span> que crean y publican el contenido de tu negocio
         </h1>
         <p className="max-w-lg text-balance text-zinc-600 sm:text-lg">
-          Videos, imágenes y carruseles listos para tus redes, todos los días
-          — sin que grabes, edites ni programes nada.
+          Videos, imágenes y carruseles nuevos cada día, listos para tus
+          redes — sin que tú grabes, edites ni programes nada.
         </p>
         <div className="mt-2 flex flex-col items-center gap-3 sm:flex-row">
           <Link

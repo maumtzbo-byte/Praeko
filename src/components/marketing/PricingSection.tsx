@@ -75,7 +75,7 @@ export default function PricingSection() {
               }`}
             >
               {plan.featured && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white px-3 py-1 text-[11px] font-semibold tracking-wide text-zinc-900 shadow">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-[11px] font-semibold tracking-wide text-white shadow">
                   MÁS POPULAR
                 </span>
               )}
@@ -95,7 +95,7 @@ export default function PricingSection() {
                   <li key={feature} className="flex items-start gap-2 text-sm">
                     <Check
                       className={`mt-0.5 h-4 w-4 shrink-0 ${
-                        plan.featured ? "text-zinc-300" : "text-zinc-500"
+                        plan.featured ? "text-accent" : "text-zinc-500"
                       }`}
                     />
                     <span className={plan.featured ? "text-zinc-300" : "text-zinc-600"}>{feature}</span>
@@ -106,7 +106,7 @@ export default function PricingSection() {
               <Link
                 href={`/registro?plan=${plan.name.toLowerCase()}`}
                 className={`mt-8 rounded-full px-5 py-2.5 text-center text-sm font-medium transition-transform hover:scale-[1.02] ${
-                  plan.featured ? "bg-white text-zinc-950" : "bg-zinc-950 text-white"
+                  plan.featured ? "bg-accent text-white" : "bg-zinc-950 text-white"
                 }`}
               >
                 Elegir {plan.name}

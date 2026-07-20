@@ -8,11 +8,18 @@
   --chrome-3: #8b8d94;
   --chrome-4: #45464c;
   --hairline: rgba(20, 20, 24, 0.1);
+  /* The one warm note against an otherwise all-chrome/grayscale palette —
+     used sparingly (active states, the featured plan, small icon accents)
+     so it reads as a deliberate signature color, not decoration. */
+  --accent: #e07a35;
+  --accent-strong: #c1611f;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

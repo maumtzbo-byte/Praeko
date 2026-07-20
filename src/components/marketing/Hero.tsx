@@ -15,7 +15,7 @@ export default function Hero() {
 
       <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-8 px-6 md:grid-cols-[1fr_minmax(280px,420px)_1fr]">
         <div className="float-slow order-2 flex flex-col items-center gap-3 text-center md:order-1 md:items-end md:text-right">
-          <Sparkles className="h-6 w-6 text-zinc-500" strokeWidth={1.25} />
+          <Sparkles className="h-6 w-6 text-accent" strokeWidth={1.25} />
           <div>
             <p className="text-sm font-semibold tracking-[0.25em] text-zinc-800">
               CREAMOS
@@ -32,7 +32,7 @@ export default function Hero() {
           className="float-slow order-3 flex flex-col items-center gap-3 text-center md:items-start md:text-left"
           style={{ animationDelay: "-3s" }}
         >
-          <TrendingUp className="h-6 w-6 text-zinc-500" strokeWidth={1.25} />
+          <TrendingUp className="h-6 w-6 text-accent" strokeWidth={1.25} />
           <div>
             <p className="text-sm font-semibold tracking-[0.25em] text-zinc-800">
               IMPULSAMOS

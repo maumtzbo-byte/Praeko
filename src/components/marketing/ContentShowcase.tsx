@@ -48,6 +48,15 @@ const SHOWCASE_ITEMS: {
 // gets dropped — tuned to read as a loose trail, not a solid smear.
 const SPAWN_DISTANCE = 70;
 const MAX_TRAIL = 5;
+
+// Shown before anyone has touched the zone, so it never reads as an empty
+// box waiting for something to happen — two cards already gently floating
+// there, hinting at the trail without requiring the visitor to discover it
+// by accident. They fade out for good on the first real interaction.
+const IDLE_CARDS: { id: string; itemIndex: number; leftPct: number; topPct: number; rotate: number; offset: boolean }[] = [
+  { id: "idle-1", itemIndex: 0, leftPct: 32, topPct: 44, rotate: -8, offset: false },
+  { id: "idle-2", itemIndex: 3, leftPct: 68, topPct: 56, rotate: 7, offset: true },
+];
 // Cards render smaller on mobile (w-20) than sm:+ (w-32) — these clamp
 // values track that per breakpoint so cards still land fully on-screen.
 const CARD_HALF_WIDTH_MOBILE = 40; // half of w-20 (80px)
@@ -96,6 +105,7 @@ type TrailCard = { id: number; itemIndex: number; x: number; y: number; rotate: 
 
 export default function ContentShowcase() {
   const [trail, setTrail] = useState<TrailCard[]>([]);
+  const [interacted, setInteracted] = useState(false);
   const zoneRef = useRef<HTMLDivElement>(null);
   const lastSpawnRef = useRef<{ x: number; y: number } | null>(null);
   const nextIdRef = useRef(0);
@@ -109,6 +119,7 @@ export default function ContentShowcase() {
   function spawnCardAt(clientX: number, clientY: number) {
     const zone = zoneRef.current;
     if (!zone) return;
+    setInteracted(true);
     const rect = zone.getBoundingClientRect();
     const rawX = clientX - rect.left;
     const rawY = clientY - rect.top;
@@ -187,12 +198,38 @@ export default function ContentShowcase() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-zinc-400"
+                className="pointer-events-none absolute inset-x-0 bottom-5 px-6 text-center text-sm text-zinc-400"
               >
                 <span className="hidden sm:inline">Mueve el cursor por aquí →</span>
                 <span className="sm:hidden">Desliza el dedo por aquí →</span>
               </motion.p>
             )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {!interacted &&
+              IDLE_CARDS.map((card) => (
+                <motion.div
+                  key={card.id}
+                  className="pointer-events-none absolute"
+                  style={{ left: `${card.leftPct}%`, top: `${card.topPct}%` }}
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.25 } }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                >
+                  {/* Static centering + rotation on this wrapper; the
+                      perpetual float bob (.card-float) on the one below —
+                      both set `transform`, so on one element the CSS
+                      animation would silently overwrite the static rotate
+                      every frame. */}
+                  <div style={{ transform: `translate(-50%, -50%) rotate(${card.rotate}deg)` }}>
+                    <div className={card.offset ? "card-float card-float-offset" : "card-float"}>
+                      <PreviewCard item={SHOWCASE_ITEMS[card.itemIndex]} className="w-20 sm:w-32" compact />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
           </AnimatePresence>
 
           <AnimatePresence>

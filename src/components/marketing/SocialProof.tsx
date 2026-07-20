@@ -24,7 +24,7 @@ function ReviewCard({ industry, quote, index }: { industry: string; quote: strin
   return (
     <div className={floatClass}>
       <div className="flex w-72 shrink-0 flex-col gap-3 rounded-3xl border border-[var(--hairline)] bg-white p-6 shadow-[0_2px_4px_rgba(0,0,0,0.06),0_24px_45px_-22px_rgba(0,0,0,0.35)] transition-shadow duration-300 hover:shadow-[0_8px_16px_rgba(0,0,0,0.1),0_32px_60px_-20px_rgba(0,0,0,0.45)] sm:w-80">
-        <div className="flex gap-0.5 text-amber-400">
+        <div className="flex gap-0.5 text-accent">
           {Array.from({ length: 5 }).map((_, i) => (
             <Star key={i} className="h-3.5 w-3.5 fill-current" />
           ))}

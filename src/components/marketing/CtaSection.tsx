@@ -17,7 +17,7 @@ export default function CtaSection() {
           </p>
           <Link
             href="/registro"
-            className="rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-transform hover:scale-[1.03]"
+            className="rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_4px_rgba(224,122,53,0.18)]"
           >
             Empieza gratis
           </Link>
@@ -28,7 +28,7 @@ export default function CtaSection() {
             direction rather than a layout that just forgot to center. */}
         <div className="mx-auto w-full max-w-xs rounded-3xl border border-[var(--hairline)] bg-white/70 p-7 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_20px_44px_-20px_rgba(0,0,0,0.22)] backdrop-blur-sm sm:mx-0 sm:ml-auto">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-zinc-300 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.08)]">
-            <CalendarClock className="h-5 w-5 text-zinc-700" strokeWidth={1.5} />
+            <CalendarClock className="h-5 w-5 text-accent" strokeWidth={1.5} />
           </span>
           <p className="mt-5 font-[family-name:var(--font-display)] text-3xl italic tracking-tight text-zinc-950">
             10 min

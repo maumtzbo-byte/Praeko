@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { hasSeenIntro, markIntroSeen } from "@/lib/marketing/intro-session";
 
 // Same silver-chrome gradients as LiquidMetalBackground, just staged as a
 // one-time entrance instead of an idle loop, echoing the reference clip's
@@ -36,12 +37,35 @@ const INTRO_DURATION_MS = 1500;
 export default function IntroReveal() {
   // Starts visible unconditionally — same on server and client, so there's
   // no hydration mismatch — and the effect below is what cuts it short,
-  // either instantly (reduced motion) or after the intro plays out.
+  // either instantly (reduced motion / already seen this session) or after
+  // the intro plays out.
   const [visible, setVisible] = useState(true);
+  // A returning visitor within the same session shouldn't even get the
+  // 0.55s dissolve — that's still "sit through a fade for nothing new"
+  // repeated on every page. Only a genuine first-time play gets it.
+  const [exitDuration, setExitDuration] = useState(0.55);
 
   useEffect(() => {
+    // Only the first visit of a session gets the cinematic entrance —
+    // every reload/return after that would just be making a returning
+    // visitor sit through the same 1.5s again for nothing new.
+    if (hasSeenIntro()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate post-mount read of a client-only API (sessionStorage), not derivable during render.
+      setExitDuration(0);
+      setVisible(false);
+      return;
+    }
+    // Marked as seen only once the intro actually finishes (here, or on
+    // skip-click below) — not right away at mount. ScrollStory reads this
+    // same flag at its own mount, in the same initial commit as this
+    // effect; marking it immediately would make a *genuine* first visit
+    // look already-seen to ScrollStory before it ever got to play its own
+    // cinematic version.
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = setTimeout(() => setVisible(false), reducedMotion ? 0 : INTRO_DURATION_MS);
+    const timer = setTimeout(() => {
+      markIntroSeen();
+      setVisible(false);
+    }, reducedMotion ? 0 : INTRO_DURATION_MS);
     return () => clearTimeout(timer);
   }, []);
 
@@ -61,8 +85,11 @@ export default function IntroReveal() {
           aria-hidden="true"
           className="fixed inset-0 z-[1000] isolate flex items-center justify-center overflow-hidden bg-[var(--background)]"
           exit={{ opacity: 0, scale: 1.08 }}
-          transition={{ duration: 0.55, ease: "easeInOut" }}
-          onClick={() => setVisible(false)}
+          transition={{ duration: exitDuration, ease: "easeInOut" }}
+          onClick={() => {
+            markIntroSeen();
+            setVisible(false);
+          }}
         >
           {BLOBS.map((blob, i) => (
             <motion.div

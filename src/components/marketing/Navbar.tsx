@@ -47,7 +47,7 @@ export default function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className={`relative text-sm transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-px after:bg-zinc-950 after:transition-all after:duration-300 ${
+              className={`relative text-sm transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-px after:bg-accent after:transition-all after:duration-300 ${
                 active === link.href
                   ? "font-medium text-zinc-950 after:w-full"
                   : "text-zinc-600 after:w-0 hover:text-zinc-950"
@@ -67,7 +67,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/registro"
-            className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-transform hover:scale-[1.03]"
+            className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_3px_rgba(224,122,53,0.18)]"
           >
             Empieza gratis
           </Link>

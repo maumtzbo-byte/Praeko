@@ -11,6 +11,7 @@ import {
 } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { Building2, CalendarClock, PenLine, ShieldCheck, Send, BarChart3 } from "lucide-react";
+import { hasSeenIntro } from "@/lib/marketing/intro-session";
 
 const StoryScene = dynamic(() => import("./story-scene"), { ssr: false });
 
@@ -130,13 +131,19 @@ function ProgressDot({ beat, progress, index, total }: { beat: Beat; progress: M
   const input = beatInputRange(index, total, 0.15);
   const scale = useTransform(progress, input, beatOutputRange(index, total, 1, 1.15, 1), { ease: easeInOut });
   const opacity = useTransform(progress, input, beatOutputRange(index, total, 0.45, 1, 0.45), { ease: easeInOut });
+  // The beat currently "in focus" gets the accent color, same idea as an
+  // active tab — the icon itself fades from neutral gray to accent and
+  // back as the story scrolls past it.
+  const color = useTransform(progress, input, beatOutputRange(index, total, "#52525c", "#e07a35", "#52525c"));
   const Icon = beat.icon;
   return (
     <motion.div
       style={{ scale, opacity }}
       className="flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] ring-1 ring-[var(--hairline)]"
     >
-      <Icon className="h-3.5 w-3.5 text-zinc-700" strokeWidth={1.75} />
+      <motion.div style={{ color }} className="flex">
+        <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
+      </motion.div>
     </motion.div>
   );
 }
@@ -428,16 +435,21 @@ export default function ScrollStory() {
   const containerRef = useRef<HTMLDivElement>(null);
   // Starts false — same on server and client, so the first client render
   // matches the server-rendered markup exactly — and only switches to the
-  // static fallback after mount, once matchMedia can actually be read.
-  // framer-motion's own useReducedMotion() returns non-null during SSR in
-  // a way that disagreed with its own first client render here, which was
-  // producing a real hydration mismatch (server and client rendering two
-  // different branches of the `if (reducedMotion)` below).
-  const [reducedMotion, setReducedMotion] = useState(false);
+  // static fallback after mount, once matchMedia/sessionStorage can
+  // actually be read. framer-motion's own useReducedMotion() returns
+  // non-null during SSR in a way that disagreed with its own first client
+  // render here, which was producing a real hydration mismatch (server and
+  // client rendering two different branches of the `if (showStatic)` below).
+  //
+  // Also doubles as the "already seen the entrance" gate: the scroll-
+  // hijacking camera story is a one-time cinematic beat, same as
+  // IntroReveal — a returning visitor within the same session gets the
+  // static grid straight away instead of re-doing the whole sequence.
+  const [showStatic, setShowStatic] = useState(false);
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate post-mount read of a client-only API (matchMedia), not derivable during render.
-    if (reduced) setReducedMotion(true);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate post-mount read of client-only APIs (matchMedia, sessionStorage), not derivable during render.
+    if (reduced || hasSeenIntro()) setShowStatic(true);
   }, []);
   const contentVh = BEATS.length * CONTENT_VH_PER_BEAT;
   const contentFraction = contentVh / (contentVh + RELEASE_BUFFER_VH);
@@ -455,9 +467,9 @@ export default function ScrollStory() {
   // Fades the whole panel out during the release buffer, so it's already
   // invisible by the time the sticky container's edge would otherwise clip it.
   const panelOpacity = useTransform(scrollYProgress, [contentFraction, 1], [1, 0], { clamp: true });
-  useOneBeatPerGesture(containerRef, BEATS.length, contentVh + RELEASE_BUFFER_VH, reducedMotion);
+  useOneBeatPerGesture(containerRef, BEATS.length, contentVh + RELEASE_BUFFER_VH, showStatic);
 
-  if (reducedMotion) {
+  if (showStatic) {
     return <StaticFallback />;
   }
 

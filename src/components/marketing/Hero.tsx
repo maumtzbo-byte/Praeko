@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
 import { Play, Heart, MessageCircle, Send, ArrowRight } from "lucide-react";
 import AuroraBackground from "./AuroraBackground";
 
@@ -12,6 +12,65 @@ import AuroraBackground from "./AuroraBackground";
 // is purely decorative, so it's excluded from the server bundle and from
 // the initial paint entirely rather than adding to either.
 const GlassMobius = dynamic(() => import("@/components/three/GlassMobius"), { ssr: false });
+
+// The one phrase that rotates under "Tu negocio puede" — same pattern as
+// Shopify's own hero (a fixed lead-in, a swapping payoff), each option a
+// different angle on the same core promise so any one of them stands on
+// its own as a headline.
+const ROTATING_PHRASES = [
+  "crecer solo",
+  "venderse solo",
+  "publicarse solo",
+  "crecer sin ti",
+  "crecer mientras duermes",
+];
+const ROTATE_INTERVAL_MS = 2600;
+
+function RotatingHeadlineWord() {
+  const [index, setIndex] = useState(0);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate post-mount read of a client-only API (matchMedia), not derivable during render.
+    setReducedMotion(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => {
+    if (reducedMotion) return;
+    const id = setInterval(() => {
+      setIndex((i) => (i + 1) % ROTATING_PHRASES.length);
+    }, ROTATE_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [reducedMotion]);
+
+  const phrase = ROTATING_PHRASES[reducedMotion ? 0 : index];
+
+  return (
+    <span className="relative block h-[1.05em] w-full overflow-hidden">
+      {/* initial={false}: only the ROTATIONS animate — the very first
+          phrase renders straight into place instead of playing its own
+          mount transition, which sidesteps an AnimatePresence quirk where
+          that first enter animation could get stuck partway (landing on
+          the exit transform instead of resolving to visible). */}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={phrase}
+          initial={reducedMotion ? false : { y: "100%", opacity: 0 }}
+          animate={{ y: "0%", opacity: 1 }}
+          exit={reducedMotion ? undefined : { y: "-100%", opacity: 0 }}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          className="aurora-text absolute inset-0"
+        >
+          {phrase}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+}
 
 export default function Hero() {
   const frameRef = useRef<HTMLDivElement | null>(null);
@@ -120,14 +179,14 @@ export default function Hero() {
               </span>
               MARKETING CON INTELIGENCIA
             </span>
-            {/* Sized to dominate the viewport the way a big brand's hero does
-                (Shopify's own homepage headline as the reference point) —
-                the words wrap organically into a stacked block instead of
-                sitting on one modest line, which is what made the previous
-                pass still read as "template" scale even after the weight
-                was lightened. */}
-            <h1 className="mt-8 text-balance font-sans text-7xl font-light leading-[0.95] tracking-tight text-white sm:text-8xl md:text-9xl lg:text-[8.5rem]">
-              Tu negocio puede <span className="aurora-text">crecer solo</span>
+            {/* Sized and weighted to match the Shopify reference directly —
+                stacks into its own lines at this scale without needing to
+                be pushed as large as the earlier pass. The payoff line
+                rotates through a few angles on the same promise, exactly
+                like Shopify's own hero does with its swapping word. */}
+            <h1 className="mt-8 text-balance font-sans text-5xl font-light leading-[1.05] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
+              Tu negocio puede
+              <RotatingHeadlineWord />
             </h1>
             <p className="mt-8 max-w-xl text-balance text-lg font-light text-zinc-400 sm:text-xl">
               Cada mañana entras y ya hay contenido nuevo esperando en tu

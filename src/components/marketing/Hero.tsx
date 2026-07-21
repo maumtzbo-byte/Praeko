@@ -1,14 +1,55 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { Play, Heart, MessageCircle, Send } from "lucide-react";
 import AuroraBackground from "./AuroraBackground";
 
+// Client-only — WebGL/Canvas has no server-side representation, and this
+// is purely decorative, so it's excluded from the server bundle and from
+// the initial paint entirely rather than adding to either.
+const GlassMobius = dynamic(() => import("@/components/three/GlassMobius"), { ssr: false });
+
 export default function Hero() {
   const frameRef = useRef<HTMLDivElement | null>(null);
+  const objectWrapRef = useRef<HTMLDivElement | null>(null);
+  // Only renders frames while the object is actually on screen — scrolled
+  // past the Hero, the WebGL context sits idle instead of spending GPU/
+  // battery on a scene nobody can see.
+  const [objectVisible, setObjectVisible] = useState(false);
+  // Starts false (matches SSR, avoiding a hydration mismatch) and is only
+  // ever flipped true client-side. This is deliberately a mount condition,
+  // not just a CSS `hidden` class — a `display:none` div still mounts its
+  // React children, which would still pull in the ~850KB three.js/r3f/drei
+  // chunk and spin up a WebGL context on mobile even though nobody could
+  // ever see it there.
+  const [showObject, setShowObject] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 640px)");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate post-mount read of a client-only API (matchMedia), not derivable during render.
+    setShowObject(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setShowObject(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => {
+    if (!showObject) return;
+    const el = objectWrapRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setObjectVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => setObjectVisible(entry.isIntersecting), {
+      threshold: 0.05,
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [showObject]);
   const rotateX = useMotionValue(0);
   const rotateY = useMotionValue(0);
   const springRotateX = useSpring(rotateX, { stiffness: 200, damping: 26 });
@@ -31,6 +72,24 @@ export default function Hero() {
   return (
     <section className="relative flex flex-col items-center overflow-hidden pb-20 pt-28 md:pb-28 md:pt-36">
       <AuroraBackground />
+
+      {/* Praeko's own visual signature — a real, physically-rendered glass
+          object (not a CSS illusion), not another floating gradient blob or
+          particle field. A Möbius strip specifically: one continuous,
+          seamless surface, echoing the product's own loop (one input,
+          endless output). Not mounted at all below sm (see `showObject`) —
+          a second WebGL context plus its ~850KB three.js/r3f/drei chunk is
+          a real cost not worth paying on small screens where it'd also
+          just get cropped by the text stacking above it. */}
+      {showObject && (
+        <div
+          ref={objectWrapRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute right-[8%] top-16 h-[22rem] w-[22rem] md:right-[14%] md:h-[26rem] md:w-[26rem]"
+        >
+          <GlassMobius className="h-full w-full" active={objectVisible} />
+        </div>
+      )}
 
       {/* Real value proposition first — what Praeko does, in plain words —
           instead of the abstract "CREAMOS / IMPULSAMOS" pair that used to

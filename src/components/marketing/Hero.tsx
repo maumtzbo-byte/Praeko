@@ -70,7 +70,7 @@ export default function Hero() {
   }
 
   return (
-    <section className="relative flex flex-col items-center overflow-hidden pb-20 pt-28 md:pb-28 md:pt-36">
+    <section className="relative flex flex-col items-center overflow-hidden pb-14 pt-20 md:pb-20 md:pt-24">
       <AuroraBackground />
 
       {/* Praeko's own visual signature — a real, physically-rendered glass
@@ -85,7 +85,7 @@ export default function Hero() {
         <div
           ref={objectWrapRef}
           aria-hidden="true"
-          className="pointer-events-none absolute right-[8%] top-16 h-[22rem] w-[22rem] md:right-[14%] md:h-[26rem] md:w-[26rem]"
+          className="pointer-events-none absolute right-[2%] top-24 h-[16rem] w-[16rem] md:right-[6%] md:top-20 md:h-[20rem] md:w-[20rem]"
         >
           <GlassMobius className="h-full w-full" active={objectVisible} />
         </div>
@@ -100,7 +100,7 @@ export default function Hero() {
         initial={{ opacity: 0, y: 14, filter: "blur(8px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="relative mx-auto flex max-w-2xl flex-col items-center gap-6 px-6 text-center"
+        className="relative mx-auto flex max-w-2xl flex-col items-center gap-5 px-6 text-center"
       >
         <span className="flex items-center gap-2 rounded-full border border-zinc-300/80 bg-white/40 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-zinc-600 backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300">
           <span className="relative flex h-1.5 w-1.5">
@@ -143,7 +143,7 @@ export default function Hero() {
           second real screenshot (a single generated-content card) peeking
           from the corner for depth — same idea premium SaaS sites use to
           make a flat screenshot read as an object in space. */}
-      <div className="relative mx-auto mt-16 w-full max-w-5xl px-6 md:mt-20">
+      <div className="relative mx-auto mt-8 w-full max-w-6xl px-6 md:mt-10">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-10 -top-10 bottom-0 -z-10 rounded-[50%] opacity-50 blur-3xl"
@@ -185,17 +185,17 @@ export default function Hero() {
 
         {/* The second half of the "wow" — not another screenshot of the
             tool, but the actual output: a Reel it published, framed as a
-            real phone so it reads as "this goes straight to Instagram,"
-            floating beside the calendar for the layered-cards depth premium
-            SaaS sites use. A static rotate on this wrapper (not the
-            calendar) is what sells "scattered, alive" instead of "two
-            rectangles stacked neatly." */}
+            real phone so it reads as "this goes straight to Instagram." A
+            real overlap onto the dashboard's own corner (not a small card
+            peeking from outside the frame) is what makes this read as one
+            layered composition — the two devices sharing space — instead
+            of two separate rectangles that happen to sit near each other. */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 10, rotate: 5 }}
-          whileInView={{ opacity: 1, scale: 1, y: 0, rotate: 5 }}
+          initial={{ opacity: 0, scale: 0.9, y: 10, rotate: 4 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0, rotate: 4 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6, delay: 0.35, ease: "easeOut" }}
-          className="absolute -bottom-6 -right-2 w-24 sm:-bottom-10 sm:w-36 md:-right-10 md:w-44"
+          className="absolute -bottom-10 right-2 w-32 sm:-bottom-14 sm:right-4 sm:w-44 md:-bottom-16 md:right-8 md:w-56 lg:right-12 lg:w-64"
         >
           {/* Static entrance (opacity/scale/y/rotate) lives on the motion.div
               above; the perpetual float bob (.card-float) lives on this
@@ -204,27 +204,27 @@ export default function Hero() {
               frame once it starts looping. */}
           <div className="card-float-offset card-float">
             <div
-              className="relative overflow-hidden rounded-[1.75rem] border-[5px] border-zinc-900 bg-zinc-900 shadow-[0_30px_70px_-20px_rgba(0,0,0,0.45)]"
+              className="relative overflow-hidden rounded-[2rem] border-[6px] border-zinc-900 bg-zinc-900 shadow-[0_40px_90px_-25px_rgba(0,0,0,0.55)] md:rounded-[2.5rem] md:border-[8px]"
               style={{ aspectRatio: "9 / 19.5" }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-accent-strong via-zinc-900 to-zinc-950" />
               <span
                 aria-hidden="true"
-                className="absolute left-1/2 top-1.5 h-3 w-12 -translate-x-1/2 rounded-full bg-black/40"
+                className="absolute left-1/2 top-1.5 h-3 w-12 -translate-x-1/2 rounded-full bg-black/40 md:top-2 md:h-4 md:w-16"
               />
               <span className="absolute inset-0 flex items-center justify-center">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm">
-                  <Play className="h-3.5 w-3.5 fill-white text-white" />
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm md:h-12 md:w-12">
+                  <Play className="h-3.5 w-3.5 fill-white text-white md:h-5 md:w-5" />
                 </span>
               </span>
-              <div className="absolute bottom-14 right-1.5 flex flex-col items-center gap-2.5 text-white">
-                <Heart className="h-3.5 w-3.5 fill-white" />
-                <MessageCircle className="h-3.5 w-3.5 fill-white" />
-                <Send className="h-3.5 w-3.5 fill-white" />
+              <div className="absolute bottom-14 right-1.5 flex flex-col items-center gap-2.5 text-white md:bottom-20 md:right-3 md:gap-4">
+                <Heart className="h-3.5 w-3.5 fill-white md:h-5 md:w-5" />
+                <MessageCircle className="h-3.5 w-3.5 fill-white md:h-5 md:w-5" />
+                <Send className="h-3.5 w-3.5 fill-white md:h-5 md:w-5" />
               </div>
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2.5 pb-2.5 pt-6">
-                <p className="text-[8px] font-semibold text-white">@tunegocio</p>
-                <p className="mt-0.5 text-[7px] leading-tight text-white/80">Nuevo: Frappé de temporada 🧊</p>
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2.5 pb-2.5 pt-6 md:px-4 md:pb-4">
+                <p className="text-[8px] font-semibold text-white md:text-xs">@tunegocio</p>
+                <p className="mt-0.5 text-[7px] leading-tight text-white/80 md:text-[10px]">Nuevo: Frappé de temporada 🧊</p>
               </div>
             </div>
           </div>

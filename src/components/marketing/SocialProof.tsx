@@ -23,14 +23,14 @@ function ReviewCard({ industry, quote, index }: { industry: string; quote: strin
   const floatClass = index % 2 === 0 ? "shrink-0 card-float" : "shrink-0 card-float card-float-offset";
   return (
     <div className={floatClass}>
-      <div className="flex w-72 shrink-0 flex-col gap-3 rounded-3xl border border-[var(--hairline)] bg-white p-6 shadow-[0_2px_4px_rgba(0,0,0,0.06),0_24px_45px_-22px_rgba(0,0,0,0.35)] transition-shadow duration-300 hover:shadow-[0_8px_16px_rgba(0,0,0,0.1),0_32px_60px_-20px_rgba(0,0,0,0.45)] sm:w-80">
+      <div className="flex w-72 shrink-0 flex-col gap-3 rounded-3xl border border-[var(--hairline)] bg-white p-6 shadow-[0_2px_4px_rgba(0,0,0,0.06),0_24px_45px_-22px_rgba(0,0,0,0.35)] transition-shadow duration-300 hover:shadow-[0_8px_16px_rgba(0,0,0,0.1),0_32px_60px_-20px_rgba(0,0,0,0.45)] sm:w-80 dark:bg-zinc-900 dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),0_24px_45px_-22px_rgba(0,0,0,0.7)]">
         <div className="flex gap-0.5 text-accent">
           {Array.from({ length: 5 }).map((_, i) => (
             <Star key={i} className="h-3.5 w-3.5 fill-current" />
           ))}
         </div>
-        <p className="text-sm leading-relaxed text-zinc-700">&ldquo;{quote}&rdquo;</p>
-        <p className="text-xs font-medium tracking-wide text-zinc-500">Negocio de {industry.toLowerCase()}</p>
+        <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">&ldquo;{quote}&rdquo;</p>
+        <p className="text-xs font-medium tracking-wide text-zinc-500 dark:text-zinc-400">Negocio de {industry.toLowerCase()}</p>
       </div>
     </div>
   );
@@ -42,8 +42,8 @@ export default function SocialProof() {
   return (
     <section className="py-20">
       <div className="mx-auto max-w-6xl px-6">
-        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">CONFIANZA</p>
-        <h2 className="max-w-lg text-balance font-[family-name:var(--font-display)] text-2xl italic tracking-tight text-zinc-950 sm:text-3xl">
+        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">CONFIANZA</p>
+        <h2 className="max-w-lg text-balance font-[family-name:var(--font-display)] text-2xl italic tracking-tight text-zinc-950 sm:text-3xl dark:text-white">
           Hecho para negocios como el tuyo
         </h2>
       </div>

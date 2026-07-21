@@ -110,14 +110,14 @@ function BeatCaption({
       <div className="relative">
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 select-none whitespace-nowrap text-[6rem] font-bold leading-none text-zinc-950 opacity-[0.05] sm:text-[8rem]"
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 select-none whitespace-nowrap text-[6rem] font-bold leading-none text-zinc-950 opacity-[0.05] sm:text-[8rem] dark:text-white dark:opacity-[0.08]"
         >
           {beat.step}
         </span>
         <h3 className="aurora-text relative max-w-md text-balance text-2xl font-semibold tracking-tight sm:text-4xl">
           {beat.title}
         </h3>
-        <p className="relative mt-3 max-w-sm text-balance text-sm text-zinc-600 sm:text-base">{beat.description}</p>
+        <p className="relative mt-3 max-w-sm text-balance text-sm text-zinc-600 sm:text-base dark:text-zinc-400">{beat.description}</p>
       </div>
     </motion.div>
   );
@@ -134,12 +134,12 @@ function ProgressDot({ beat, progress, index, total }: { beat: Beat; progress: M
   // The beat currently "in focus" gets the accent color, same idea as an
   // active tab — the icon itself fades from neutral gray to accent and
   // back as the story scrolls past it.
-  const color = useTransform(progress, input, beatOutputRange(index, total, "#52525c", "#1f9d75", "#52525c"));
+  const color = useTransform(progress, input, beatOutputRange(index, total, "#8b8d94", "#1f9d75", "#8b8d94"));
   const Icon = beat.icon;
   return (
     <motion.div
       style={{ scale, opacity }}
-      className="flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] ring-1 ring-[var(--hairline)]"
+      className="flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.08)] ring-1 ring-[var(--hairline)] dark:bg-zinc-900"
     >
       <motion.div style={{ color }} className="flex">
         <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -198,19 +198,19 @@ function StaticFallback() {
     <section id="agentes" className="relative py-28">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">EL CICLO DIARIO</p>
-          <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+          <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">EL CICLO DIARIO</p>
+          <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
             Así trabaja Praeko por tu marca, todos los días
           </h2>
         </div>
         <div className="grid grid-cols-1 gap-px overflow-hidden rounded-3xl border border-[var(--hairline)] bg-[var(--hairline)] sm:grid-cols-2 lg:grid-cols-3">
           {BEATS.map(({ icon: Icon, step, title, description }) => (
             <div key={step} className="flex flex-col gap-4 bg-[var(--background)] p-7">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-zinc-300 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.08)]">
-                <Icon className="h-5 w-5 text-zinc-700" strokeWidth={1.5} />
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-zinc-300 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.08)] dark:from-zinc-700 dark:to-zinc-800">
+                <Icon className="h-5 w-5 text-zinc-700 dark:text-zinc-300" strokeWidth={1.5} />
               </div>
-              <h3 className="text-base font-semibold text-zinc-900">{title}</h3>
-              <p className="text-sm leading-relaxed text-zinc-600">{description}</p>
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">{title}</h3>
+              <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{description}</p>
             </div>
           ))}
         </div>
@@ -507,7 +507,7 @@ export default function ScrollStory() {
           <StoryScene progress={progress} />
         </div>
 
-        <p className="pointer-events-none absolute top-20 text-xs font-semibold tracking-[0.3em] text-zinc-500 sm:top-24">
+        <p className="pointer-events-none absolute top-20 text-xs font-semibold tracking-[0.3em] text-zinc-500 sm:top-24 dark:text-zinc-400">
           EL CICLO DIARIO
         </p>
 

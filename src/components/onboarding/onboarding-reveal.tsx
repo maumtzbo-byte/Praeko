@@ -43,48 +43,48 @@ export function OnboardingReveal({ businessId, onFinish }: { businessId: string;
   return (
     <Card className="w-full max-w-xl">
       <CardContent className="flex flex-col items-center gap-6 p-8 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] dark:from-zinc-700 dark:to-zinc-800">
           <Sparkles
-            className={`h-6 w-6 text-zinc-600 ${state === "loading" ? "animate-pulse" : ""}`}
+            className={`h-6 w-6 text-zinc-600 dark:text-zinc-400 ${state === "loading" ? "animate-pulse" : ""}`}
             strokeWidth={1.5}
           />
         </span>
 
         {state === "loading" && (
           <div>
-            <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-zinc-950">
+            <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-zinc-950 dark:text-white">
               Generando tu primer contenido…
             </h2>
-            <p className="mt-1 text-sm text-zinc-500">Tus agentes de estrategia y guionista están trabajando.</p>
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Tus agentes de estrategia y guionista están trabajando.</p>
           </div>
         )}
 
         {state === "ready" && preview && (
           <>
             <div>
-              <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-zinc-950">
+              <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-zinc-950 dark:text-white">
                 ¡Listo! Así arranca tu primer contenido
               </h2>
-              <p className="mt-1 text-sm text-zinc-500">
+              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                 El guion es real y ya está en tu calendario — el video o imagen se genera desde el dashboard.
               </p>
             </div>
-            <div className="w-full rounded-2xl border border-[var(--hairline)] bg-white/70 p-5 text-left shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_36px_-22px_rgba(0,0,0,0.18)]">
-              <p className="text-xs font-semibold tracking-[0.2em] text-zinc-500">
+            <div className="w-full rounded-2xl border border-[var(--hairline)] bg-white/70 p-5 text-left shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_36px_-22px_rgba(0,0,0,0.18)] dark:bg-zinc-900/70">
+              <p className="text-xs font-semibold tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
                 {CONTENT_KIND_LABEL[preview.contentKind] ?? preview.contentKind}
               </p>
-              <p className="mt-2 text-base font-semibold text-zinc-900">{preview.topic}</p>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-600">{preview.script}</p>
+              <p className="mt-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">{preview.topic}</p>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{preview.script}</p>
             </div>
           </>
         )}
 
         {state === "error" && (
           <div>
-            <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-zinc-950">
+            <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-zinc-950 dark:text-white">
               ¡Todo listo!
             </h2>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
               Tu cuenta ya está configurada — genera tu primer contenido desde el dashboard.
             </p>
           </div>

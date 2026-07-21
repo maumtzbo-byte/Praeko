@@ -61,7 +61,7 @@ export function SocialLinksStep({
               <button
                 type="button"
                 onClick={() => onChange({ other: value.other.filter((_, idx) => idx !== i) })}
-                className="text-zinc-400 hover:text-zinc-700"
+                className="text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300"
                 aria-label="Quitar"
               >
                 <X className="h-4 w-4" />

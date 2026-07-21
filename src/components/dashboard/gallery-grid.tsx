@@ -85,17 +85,17 @@ export function GalleryGrid({
     <div className="flex flex-col gap-6">
       <label
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-zinc-300 bg-white/50 px-6 py-10 text-center transition-colors hover:border-zinc-400",
+          "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-zinc-300 bg-white/50 px-6 py-10 text-center transition-colors hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900/50 dark:hover:border-zinc-600",
           uploading && "pointer-events-none opacity-70",
         )}
       >
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] dark:from-zinc-700 dark:to-zinc-800">
           <UploadCloud className={cn("h-5 w-5 text-accent", uploading && "animate-pulse")} strokeWidth={1.5} />
         </span>
-        <span className="text-sm font-medium text-zinc-700">
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
           {uploading ? "Subiendo…" : "Sube fotos de referencia"}
         </span>
-        <span className="text-xs text-zinc-500">PNG o JPG — puedes elegir varias a la vez</span>
+        <span className="text-xs text-zinc-500 dark:text-zinc-400">PNG o JPG — puedes elegir varias a la vez</span>
         <input
           ref={inputRef}
           type="file"
@@ -109,7 +109,7 @@ export function GalleryGrid({
       {photos.length === 0 ? null : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {photos.map((photo) => (
-            <div key={photo.id} className="group relative aspect-square overflow-hidden rounded-2xl bg-zinc-100">
+            <div key={photo.id} className="group relative aspect-square overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800">
               {photo.signedUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photo.signedUrl} alt="" className="h-full w-full object-cover" />
@@ -119,10 +119,10 @@ export function GalleryGrid({
                 type="button"
                 onClick={() => toggleLiked(photo)}
                 aria-label={photo.liked ? "Quitar de favoritos" : "Marcar como favorita"}
-                className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-transform hover:scale-105"
+                className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-transform hover:scale-105 dark:bg-zinc-900/90"
               >
                 <Star
-                  className={cn("h-4 w-4", photo.liked ? "fill-amber-400 text-amber-400" : "text-zinc-400")}
+                  className={cn("h-4 w-4", photo.liked ? "fill-amber-400 text-amber-400" : "text-zinc-400 dark:text-zinc-500")}
                   strokeWidth={1.75}
                 />
               </button>
@@ -131,9 +131,9 @@ export function GalleryGrid({
                 type="button"
                 onClick={() => deletePhoto(photo)}
                 aria-label="Eliminar foto"
-                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 opacity-100 shadow-sm backdrop-blur-sm transition-opacity hover:scale-105 sm:opacity-0 sm:group-hover:opacity-100"
+                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 opacity-100 shadow-sm backdrop-blur-sm transition-opacity hover:scale-105 sm:opacity-0 sm:group-hover:opacity-100 dark:bg-zinc-900/90"
               >
-                <Trash2 className="h-4 w-4 text-red-600" strokeWidth={1.75} />
+                <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" strokeWidth={1.75} />
               </button>
             </div>
           ))}

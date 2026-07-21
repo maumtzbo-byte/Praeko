@@ -130,10 +130,10 @@ function PricingCard({
                   ? "shadow-[0_28px_70px_-15px_rgba(0,0,0,0.5),0_0_50px_-10px_rgba(31,157,117,0.45),0_0_0_1px_rgba(45,212,191,0.25)_inset]"
                   : "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_0_0_1px_rgba(45,212,191,0.12)_inset]"
               }`
-            : `border-[var(--hairline)] bg-white/60 text-zinc-950 ${
+            : `border-[var(--hairline)] bg-white/60 text-zinc-950 dark:bg-zinc-900/60 dark:text-white ${
                 popped
-                  ? "shadow-[0_28px_54px_-20px_rgba(0,0,0,0.22)]"
-                  : "shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_36px_-22px_rgba(0,0,0,0.18)]"
+                  ? "shadow-[0_28px_54px_-20px_rgba(0,0,0,0.22)] dark:shadow-[0_28px_54px_-20px_rgba(0,0,0,0.6)]"
+                  : "shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_36px_-22px_rgba(0,0,0,0.18)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.2),0_16px_36px_-22px_rgba(0,0,0,0.5)]"
               }`
         }`}
       >
@@ -144,18 +144,18 @@ function PricingCard({
         )}
 
         <h3 className="text-base font-semibold md:text-lg">{plan.name}</h3>
-        <p className={`mt-1 text-sm ${plan.featured ? "text-zinc-400" : "text-zinc-500"}`}>{plan.tagline}</p>
+        <p className={`mt-1 text-sm ${plan.featured ? "text-zinc-400" : "text-zinc-500 dark:text-zinc-400"}`}>{plan.tagline}</p>
 
         <div className="mt-6 flex items-baseline gap-1">
           <span className="text-2xl font-semibold tracking-tight md:text-4xl">${plan.price}</span>
-          <span className={`text-sm ${plan.featured ? "text-zinc-400" : "text-zinc-500"}`}>/mes</span>
+          <span className={`text-sm ${plan.featured ? "text-zinc-400" : "text-zinc-500 dark:text-zinc-400"}`}>/mes</span>
         </div>
 
         <ul className="mt-8 flex flex-1 flex-col gap-3">
           {plan.features.map((feature) => (
             <li key={feature} className="flex items-start gap-2 text-sm">
-              <Check className={`mt-0.5 h-4 w-4 shrink-0 ${plan.featured ? "text-accent" : "text-zinc-500"}`} />
-              <span className={plan.featured ? "text-zinc-300" : "text-zinc-600"}>{feature}</span>
+              <Check className={`mt-0.5 h-4 w-4 shrink-0 ${plan.featured ? "text-accent" : "text-zinc-500 dark:text-zinc-400"}`} />
+              <span className={plan.featured ? "text-zinc-300" : "text-zinc-600 dark:text-zinc-300"}>{feature}</span>
             </li>
           ))}
         </ul>
@@ -163,7 +163,7 @@ function PricingCard({
         <Link
           href={`/registro?plan=${plan.name.toLowerCase()}`}
           className={`mt-8 rounded-full px-5 py-2.5 text-center text-sm font-medium transition-transform hover:scale-[1.02] ${
-            plan.featured ? "bg-accent text-white" : "bg-zinc-950 text-white"
+            plan.featured ? "bg-accent text-white" : "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950"
           }`}
         >
           Elegir {plan.name}
@@ -221,13 +221,13 @@ export default function PricingSection() {
     <section id="precios" className="relative py-28">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">
+          <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
             PLANES
           </p>
-          <h2 className="text-balance font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+          <h2 className="text-balance font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
             Elige tu plan y publica tu primer contenido hoy
           </h2>
-          <p className="mt-4 text-zinc-600">
+          <p className="mt-4 text-zinc-600 dark:text-zinc-400">
             Precios en dólares, límites claros cada mes — sabes exactamente
             cuánto vas a gastar, sin sorpresas.
           </p>
@@ -257,9 +257,9 @@ export default function PricingSection() {
             />
           ))}
         </div>
-        <p className="mt-2 text-center text-xs text-zinc-400 sm:hidden">Desliza para ver los 3 planes →</p>
+        <p className="mt-2 text-center text-xs text-zinc-400 sm:hidden dark:text-zinc-500">Desliza para ver los 3 planes →</p>
 
-        <p className="mt-8 text-center text-xs text-zinc-500">
+        <p className="mt-8 text-center text-xs text-zinc-500 dark:text-zinc-400">
           Equivalente informativo en MXN al tipo de cambio del día. Sin contratos
           forzosos ni letra chica — cancela cuando quieras.
         </p>

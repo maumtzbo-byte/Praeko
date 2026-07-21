@@ -84,16 +84,16 @@ export function OnboardingBrandStep({
 
       <div>
         <Label>Logo (opcional)</Label>
-        <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-[var(--hairline)] bg-white px-4 py-6 text-center shadow-[0_1px_2px_rgba(0,0,0,0.03)_inset] hover:border-zinc-300">
+        <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-[var(--hairline)] bg-white px-4 py-6 text-center shadow-[0_1px_2px_rgba(0,0,0,0.03)_inset] hover:border-zinc-300 dark:bg-zinc-900 dark:hover:border-zinc-700">
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt="Logo del negocio" className="h-14 w-14 rounded-xl object-cover" />
           ) : uploading ? (
-            <UploadCloud className="h-5 w-5 animate-pulse text-zinc-400" />
+            <UploadCloud className="h-5 w-5 animate-pulse text-zinc-400 dark:text-zinc-500" />
           ) : (
-            <ImageOff className="h-5 w-5 text-zinc-400" />
+            <ImageOff className="h-5 w-5 text-zinc-400 dark:text-zinc-500" />
           )}
-          <span className="text-sm text-zinc-500">
+          <span className="text-sm text-zinc-500 dark:text-zinc-400">
             {uploading ? "Subiendo…" : logoUrl ? "Cambiar logo" : "Sube el logo de tu negocio"}
           </span>
           <input

@@ -20,9 +20,11 @@ export function SettingsSection({
         <CardTitle>{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+      <CardContent className="flex flex-col gap-5 pb-0">
         {children}
-        <div className="flex justify-end border-t border-zinc-100 pt-5">
+        {/* Sticky, not just end-of-form — on the longer tabs (Marca, Info.
+            para la IA) the save button used to be a full scroll away. */}
+        <div className="sticky bottom-0 -mx-6 flex justify-end rounded-b-3xl border-t border-zinc-100 bg-white/90 px-6 py-5 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/90">
           <Button type="button" onClick={onSave} loading={saving}>
             Guardar cambios
           </Button>

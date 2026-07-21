@@ -25,7 +25,9 @@ function NavLink({
       onClick={onNavigate}
       className={cn(
         "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
-        active ? "bg-zinc-950 text-white" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
+        active
+          ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950"
+          : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
       )}
     >
       <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
@@ -37,7 +39,9 @@ function NavLink({
         <span
           className={cn(
             "shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
-            active ? "bg-white/15 text-white" : "bg-zinc-100 text-zinc-500",
+            active
+              ? "bg-white/15 text-white dark:bg-zinc-950/10 dark:text-zinc-950"
+              : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
           )}
         >
           Pronto
@@ -47,7 +51,7 @@ function NavLink({
           as the marketing site's live badge, not a loud red alert, since an
           unactivated plan isn't an error, just an open opportunity. */}
       {showAttentionDot && !active && <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />}
-      {showAttentionDot && active && <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-white" />}
+      {showAttentionDot && active && <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-white dark:bg-zinc-950" />}
     </Link>
   );
 }
@@ -63,19 +67,19 @@ export function SidebarNav({
 }) {
   return (
     <div className="flex h-full flex-col gap-6 overflow-y-auto px-4 py-6">
-      <Link href="/dashboard" className="px-2 text-lg font-semibold tracking-[0.2em] text-zinc-950">
+      <Link href="/dashboard" className="px-2 text-lg font-semibold tracking-[0.2em] text-zinc-950 dark:text-white">
         PRAEKO
       </Link>
 
       <div className="rounded-xl border border-accent/15 bg-accent/[0.06] px-3 py-2.5">
-        <p className="truncate text-sm font-medium text-zinc-800">{businessName}</p>
+        <p className="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">{businessName}</p>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">
         {PRIMARY_NAV_ITEMS.map((item) => (
           <NavLink key={item.href} item={item} onNavigate={onNavigate} />
         ))}
-        <div className="my-2 border-t border-zinc-200" />
+        <div className="my-2 border-t border-zinc-200 dark:border-zinc-700" />
         {SECONDARY_NAV_ITEMS.map((item) => (
           <NavLink
             key={item.href}
@@ -89,7 +93,7 @@ export function SidebarNav({
       <form action="/auth/logout" method="post">
         <button
           type="submit"
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
         >
           <LogOut className="h-[18px] w-[18px]" strokeWidth={1.75} />
           Cerrar sesión

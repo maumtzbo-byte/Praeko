@@ -68,7 +68,7 @@ export function AiInfoStep({
         </div>
         <div className="flex flex-col gap-3">
           {value.faqs.map((faq, i) => (
-            <div key={i} className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-3">
+            <div key={i} className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
               <div className="flex items-center gap-2">
                 <Input
                   value={faq.question}
@@ -78,7 +78,7 @@ export function AiInfoStep({
                 <button
                   type="button"
                   onClick={() => onChange({ faqs: value.faqs.filter((_, idx) => idx !== i) })}
-                  className="text-zinc-400 hover:text-zinc-700"
+                  className="text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300"
                   aria-label="Quitar"
                 >
                   <X className="h-4 w-4" />

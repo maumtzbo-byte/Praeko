@@ -57,6 +57,21 @@ export const metadata: Metadata = {
   },
 };
 
+// Runs before hydration (via dangerouslySetInnerHTML in <head>) so the
+// correct theme class is already on <html> for the very first paint —
+// without this, the page would flash light mode for a frame on every load
+// for anyone who'd chosen dark. Reads localStorage first, falls back to the
+// OS preference, matching the one ThemeToggle uses post-mount.
+const THEME_INIT_SCRIPT = `
+(function () {
+  try {
+    var stored = localStorage.getItem("praeko-theme");
+    var isDark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (isDark) document.documentElement.classList.add("dark");
+  } catch (e) {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -66,13 +81,20 @@ export default function RootLayout({
     <html
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
         {/* Barely-visible grain — same trick Stripe/Linear use so flat color
-            fields read as material instead of a solid CSS fill. */}
+            fields read as material instead of a solid CSS fill. Overlay
+            (not multiply) so it still shows up on a dark background —
+            multiply only ever darkens, which makes noise invisible against
+            near-black. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed inset-0 z-[999] opacity-[0.025] mix-blend-multiply"
+          className="pointer-events-none fixed inset-0 z-[999] opacity-[0.025] mix-blend-overlay"
           style={{
             backgroundImage:
               "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",

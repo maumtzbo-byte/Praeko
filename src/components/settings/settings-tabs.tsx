@@ -63,7 +63,9 @@ export function SettingsTabs({ initial, defaultTab }: { initial: SettingsInitial
             onClick={() => setTab(t.key)}
             className={cn(
               "whitespace-nowrap rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors",
-              tab === t.key ? "bg-zinc-950 text-white" : "text-zinc-600 hover:bg-zinc-100",
+              tab === t.key
+                ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950"
+                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800",
             )}
           >
             {t.label}

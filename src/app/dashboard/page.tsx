@@ -112,33 +112,33 @@ export default async function DashboardHomePage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="animate-fade-in-up">
-        <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold tracking-tight text-zinc-950">
+        <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold tracking-tight text-zinc-950 dark:text-white">
           Hola{displayName ? `, ${displayName}` : ""} 👋
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Este es el resumen de <span className="font-medium text-zinc-700">{business.name}</span>.
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          Este es el resumen de <span className="font-medium text-zinc-700 dark:text-zinc-300">{business.name}</span>.
         </p>
       </div>
 
       <div className="animate-fade-in-up stagger-1 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-white/70 sm:col-span-2">
+        <Card className="bg-white/70 dark:bg-zinc-900/70 sm:col-span-2">
           <CardContent className="flex flex-col gap-3 p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium tracking-wide text-zinc-500">ESTADO DE SUSCRIPCIÓN</span>
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">
+              <span className="text-xs font-medium tracking-wide text-zinc-500 dark:text-zinc-400">ESTADO DE SUSCRIPCIÓN</span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] dark:from-zinc-700 dark:to-zinc-800">
                 <Gem className="h-4 w-4 text-accent" strokeWidth={1.75} />
               </span>
             </div>
             {subscription ? (
               <div className="flex items-center gap-2">
-                <p className="text-xl font-semibold text-zinc-950">{subscription.plan_key}</p>
+                <p className="text-xl font-semibold text-zinc-950 dark:text-white">{subscription.plan_key}</p>
                 <Badge variant={subscription.status === "active" ? "success" : "warning"}>
                   {subscription.status}
                 </Badge>
               </div>
             ) : (
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-zinc-500">Elige tu plan para empezar a generar contenido.</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">Elige tu plan para empezar a generar contenido.</p>
                 <Link href="/dashboard/plan" className="shrink-0">
                   <Button size="sm">Elegir plan</Button>
                 </Link>
@@ -166,7 +166,7 @@ export default async function DashboardHomePage() {
           <Card>
             <CardHeader className="flex-row items-center justify-between">
               <CardTitle>Rendimiento de publicaciones</CardTitle>
-              <BarChart3 className="h-4 w-4 text-zinc-400" />
+              <BarChart3 className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
             </CardHeader>
             <CardContent>
               <EmptyState
@@ -191,11 +191,11 @@ export default async function DashboardHomePage() {
         <Card>
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>Publicaciones programadas</CardTitle>
-            <Send className="h-4 w-4 text-zinc-400" />
+            <Send className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            <p className="text-3xl font-semibold tracking-tight text-zinc-950">{scheduledCount ?? 0}</p>
-            <p className="text-sm text-zinc-500">
+            <p className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white">{scheduledCount ?? 0}</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
               {scheduledCount ? "piezas en camino." : "Aún no tienes piezas en cola."}
             </p>
           </CardContent>
@@ -207,24 +207,24 @@ export default async function DashboardHomePage() {
           <Card>
             <CardHeader className="flex-row items-center justify-between">
               <CardTitle>Actividad reciente</CardTitle>
-              <Activity className="h-4 w-4 text-zinc-400" />
+              <Activity className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
             </CardHeader>
             <CardContent>
               {recentActivity && recentActivity.length > 0 ? (
-                <div className="flex flex-col divide-y divide-zinc-100">
+                <div className="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-800">
                   {recentActivity.map((item) => {
                     const Icon = item.content_kind === "video" ? Clapperboard : ImageIcon;
                     return (
                       <div key={item.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] dark:from-zinc-700 dark:to-zinc-800">
                           <Icon className="h-4 w-4 text-accent" strokeWidth={1.75} />
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm text-zinc-700">
+                          <p className="truncate text-sm text-zinc-700 dark:text-zinc-300">
                             {ACTIVITY_VERBS[item.status]}{" "}
-                            <span className="font-medium text-zinc-900">&ldquo;{item.topic}&rdquo;</span>
+                            <span className="font-medium text-zinc-900 dark:text-zinc-100">&ldquo;{item.topic}&rdquo;</span>
                           </p>
-                          <p className="text-xs text-zinc-400">
+                          <p className="text-xs text-zinc-400 dark:text-zinc-500">
                             {activityDateFormatter.format(new Date(item.created_at))}
                           </p>
                         </div>
@@ -257,15 +257,15 @@ export default async function DashboardHomePage() {
                   className={cn(
                     "flex flex-col items-start gap-2 rounded-xl border p-3 text-left transition-all hover:-translate-y-0.5",
                     isPrimary
-                      ? "border-zinc-950 bg-zinc-950 text-white shadow-[0_8px_20px_-12px_rgba(0,0,0,0.4)] hover:bg-zinc-800"
-                      : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.25)]",
+                      ? "border-zinc-950 bg-zinc-950 text-white shadow-[0_8px_20px_-12px_rgba(0,0,0,0.4)] hover:bg-zinc-800 dark:border-white dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
+                      : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.25)] dark:border-zinc-700 dark:hover:border-zinc-600 dark:hover:bg-zinc-800",
                   )}
                 >
-                  <Icon className={cn("h-4 w-4", isPrimary ? "text-white" : "text-zinc-600")} strokeWidth={1.75} />
-                  <span className={cn("text-xs font-medium", isPrimary ? "text-white" : "text-zinc-700")}>
+                  <Icon className={cn("h-4 w-4", isPrimary ? "text-white dark:text-zinc-950" : "text-zinc-600 dark:text-zinc-400")} strokeWidth={1.75} />
+                  <span className={cn("text-xs font-medium", isPrimary ? "text-white dark:text-zinc-950" : "text-zinc-700 dark:text-zinc-300")}>
                     {label}
                   </span>
-                  {isPrimary && <span className="text-[10px] font-medium text-zinc-400">Empieza aquí</span>}
+                  {isPrimary && <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">Empieza aquí</span>}
                 </Link>
               );
             })}

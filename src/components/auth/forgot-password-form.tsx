@@ -52,7 +52,7 @@ export function ForgotPasswordForm() {
           </Alert>
           <Link
             href="/login"
-            className="mt-4 block text-center text-sm font-medium text-zinc-900 underline"
+            className="mt-4 block text-center text-sm font-medium text-zinc-900 underline dark:text-white"
           >
             Volver a iniciar sesión
           </Link>
@@ -91,7 +91,7 @@ export function ForgotPasswordForm() {
 
           <Link
             href="/login"
-            className="text-center text-sm font-medium text-zinc-500 hover:text-zinc-800"
+            className="text-center text-sm font-medium text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
           >
             Volver a iniciar sesión
           </Link>

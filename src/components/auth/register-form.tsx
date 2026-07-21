@@ -126,9 +126,9 @@ export function RegisterForm() {
             Crear cuenta
           </Button>
 
-          <p className="text-center text-sm text-zinc-500">
+          <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
             ¿Ya tienes cuenta?{" "}
-            <Link href="/login" className="font-medium text-zinc-900 underline">
+            <Link href="/login" className="font-medium text-zinc-900 underline dark:text-white">
               Inicia sesión
             </Link>
           </p>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const links = [
   { href: "#agentes", label: "Cómo funciona" },
@@ -38,7 +39,7 @@ export default function Navbar() {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--hairline)] bg-[var(--background)]/70 backdrop-blur-md">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-lg font-semibold tracking-[0.2em] text-zinc-950">
+            <span className="text-lg font-semibold tracking-[0.2em] text-zinc-950 dark:text-white">
               PRAEKO
             </span>
           </Link>
@@ -50,8 +51,8 @@ export default function Navbar() {
                 href={link.href}
                 className={`relative text-sm transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-px after:bg-accent after:transition-all after:duration-300 ${
                   active === link.href
-                    ? "font-medium text-zinc-950 after:w-full"
-                    : "text-zinc-600 after:w-0 hover:text-zinc-950"
+                    ? "font-medium text-zinc-950 after:w-full dark:text-white"
+                    : "text-zinc-600 after:w-0 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white"
                 }`}
               >
                 {link.label}
@@ -60,27 +61,31 @@ export default function Navbar() {
           </div>
 
           <div className="hidden items-center gap-3 md:flex">
+            <ThemeToggle />
             <Link
               href="/login"
-              className="text-sm font-medium text-zinc-700 hover:text-zinc-950"
+              className="text-sm font-medium text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white"
             >
               Iniciar sesión
             </Link>
             <Link
               href="/registro"
-              className="btn-shine rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_3px_rgba(31,157,117,0.18)]"
+              className="btn-shine rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_3px_rgba(31,157,117,0.18)] dark:bg-white dark:text-zinc-950"
             >
               Empieza gratis
             </Link>
           </div>
 
-          <button
-            className="md:hidden"
-            aria-label="Abrir menú"
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? <X size={22} /> : <Menu size={22} />}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <button
+              aria-label="Abrir menú"
+              onClick={() => setOpen((v) => !v)}
+              className="flex h-11 w-11 items-center justify-center text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:text-white"
+            >
+              {open ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
         </nav>
       </header>
 
@@ -99,7 +104,7 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               onClick={() => setOpen(false)}
-              className="rounded-xl px-3 py-3 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
+              className="rounded-xl px-3 py-3 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
             >
               {link.label}
             </a>
@@ -107,7 +112,7 @@ export default function Navbar() {
           <div className="my-2 border-t border-[var(--hairline)]" />
           <Link
             href="/login"
-            className="rounded-xl px-3 py-3 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
+            className="rounded-xl px-3 py-3 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
             onClick={() => setOpen(false)}
           >
             Iniciar sesión
@@ -115,7 +120,7 @@ export default function Navbar() {
           <Link
             href="/registro"
             onClick={() => setOpen(false)}
-            className="btn-shine mt-2 rounded-full bg-zinc-950 px-4 py-3 text-center text-base font-medium text-white"
+            className="btn-shine mt-2 rounded-full bg-zinc-950 px-4 py-3 text-center text-base font-medium text-white dark:bg-white dark:text-zinc-950"
           >
             Empieza gratis
           </Link>

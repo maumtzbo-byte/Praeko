@@ -4,6 +4,7 @@ import ScrollStory from "@/components/marketing/ScrollStory";
 import ContentShowcase from "@/components/marketing/ContentShowcase";
 import SocialProof from "@/components/marketing/SocialProof";
 import PricingSection from "@/components/marketing/PricingSection";
+import FaqSection from "@/components/marketing/FaqSection";
 import CtaSection from "@/components/marketing/CtaSection";
 import Footer from "@/components/marketing/Footer";
 import IntroReveal from "@/components/marketing/IntroReveal";
@@ -19,6 +20,7 @@ export default function Home() {
         <ContentShowcase />
         <SocialProof />
         <PricingSection />
+        <FaqSection />
         <CtaSection />
       </main>
       <Footer />

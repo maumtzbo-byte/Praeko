@@ -60,17 +60,17 @@ export function BrandInfoStep({
       <div>
         <Label>Logo</Label>
         <label
-          className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-zinc-300 bg-white px-4 py-8 text-center hover:border-zinc-400"
+          className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-zinc-300 bg-white px-4 py-8 text-center hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600"
         >
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt="Logo del negocio" className="h-16 w-16 rounded-xl object-cover" />
           ) : uploading ? (
-            <UploadCloud className="h-6 w-6 animate-pulse text-zinc-400" />
+            <UploadCloud className="h-6 w-6 animate-pulse text-zinc-400 dark:text-zinc-500" />
           ) : (
-            <ImageOff className="h-6 w-6 text-zinc-400" />
+            <ImageOff className="h-6 w-6 text-zinc-400 dark:text-zinc-500" />
           )}
-          <span className="text-sm text-zinc-500">
+          <span className="text-sm text-zinc-500 dark:text-zinc-400">
             {uploading ? "Subiendo…" : logoUrl ? "Cambiar logo" : "Sube el logo de tu negocio (PNG o JPG)"}
           </span>
           <input

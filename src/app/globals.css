@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
+/* Class-based dark mode — a manual toggle (see ThemeToggle), not just
+   following the OS — so `dark:` utilities key off an ancestor `.dark`
+   class instead of Tailwind's default prefers-color-scheme strategy. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f4f4f6;
   --foreground: #16161a;
   --hairline: rgba(20, 20, 24, 0.1);
+  --card: #ffffff;
   /* Aurora borealis palette — green through teal and blue into violet —
      replacing the old silver-chrome (and, briefly, warm-orange) identity
      everywhere the brand color is used: buttons, badges, icons, active
@@ -14,6 +20,19 @@
   --aurora-mid: #2dd4bf;
   --aurora-blue: #3b82f6;
   --aurora-deep: #1e1b4b;
+}
+
+/* Dark theme — same aurora hues (they already read fine on a dark ground,
+   an aurora is literally a dark-sky phenomenon), just the neutral scale
+   inverted. Kept intentionally close to zinc-950/zinc-50 rather than true
+   black/white so shadows and hairlines still read as material, not a flat
+   OLED cutout. */
+.dark {
+  --background: #0a0a0c;
+  --foreground: #f4f4f6;
+  --hairline: rgba(255, 255, 255, 0.12);
+  --card: #18181b;
+  --aurora-highlight: #d3fff2;
 }
 
 @theme inline {

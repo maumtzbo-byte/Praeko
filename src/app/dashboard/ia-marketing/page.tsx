@@ -31,11 +31,11 @@ export default async function IaMarketingPage() {
   const modelLabel = plan?.contentModel === "claude-opus-4-8" ? "Claude Opus 4.8" : "Claude Sonnet 5";
 
   const modelCard = (
-    <Card className="mb-6 bg-white/70">
+    <Card className="mb-6 bg-white/70 dark:bg-zinc-900/70">
       <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-medium tracking-wide text-zinc-500">MODELO DE IA ACTIVO</p>
-          <p className="mt-1 text-sm text-zinc-600">
+          <p className="text-xs font-medium tracking-wide text-zinc-500 dark:text-zinc-400">MODELO DE IA ACTIVO</p>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             {plan
               ? `Tu plan ${plan.displayName} genera contenido con ${modelLabel}.`
               : "Todavía no tienes un plan activo — elige uno para ver qué modelo de IA usa tu contenido."}
@@ -80,7 +80,7 @@ export default async function IaMarketingPage() {
             <CardTitle>Personalidad</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-zinc-600">{brandProfile.personality || "Sin definir todavía."}</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">{brandProfile.personality || "Sin definir todavía."}</p>
           </CardContent>
         </Card>
 
@@ -89,7 +89,7 @@ export default async function IaMarketingPage() {
             <CardTitle>Estilo de respuesta</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-zinc-600">{brandProfile.ai_response_style || "Sin definir todavía."}</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">{brandProfile.ai_response_style || "Sin definir todavía."}</p>
           </CardContent>
         </Card>
 
@@ -98,7 +98,7 @@ export default async function IaMarketingPage() {
             <CardTitle>Temas prohibidos</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-zinc-600">{brandProfile.ai_forbidden_topics || "Sin definir todavía."}</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">{brandProfile.ai_forbidden_topics || "Sin definir todavía."}</p>
           </CardContent>
         </Card>
 
@@ -116,7 +116,7 @@ export default async function IaMarketingPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-zinc-500">Sin palabras prohibidas.</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Sin palabras prohibidas.</p>
             )}
           </CardContent>
         </Card>
@@ -126,7 +126,7 @@ export default async function IaMarketingPage() {
             <CardTitle>Horario de atención</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-zinc-600">{businessHours.general || "Sin definir todavía."}</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">{businessHours.general || "Sin definir todavía."}</p>
           </CardContent>
         </Card>
 
@@ -135,7 +135,7 @@ export default async function IaMarketingPage() {
             <CardTitle>Dirección</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-zinc-600">{brandProfile.address || "Sin definir todavía."}</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">{brandProfile.address || "Sin definir todavía."}</p>
           </CardContent>
         </Card>
       </div>
@@ -147,16 +147,16 @@ export default async function IaMarketingPage() {
           </CardHeader>
           <CardContent>
             {faqs.length > 0 ? (
-              <div className="flex flex-col divide-y divide-zinc-100">
+              <div className="flex flex-col divide-y divide-zinc-100 dark:divide-zinc-800">
                 {faqs.map((faq, i) => (
                   <div key={i} className="py-3 first:pt-0 last:pb-0">
-                    <p className="text-sm font-medium text-zinc-900">{faq.question}</p>
-                    <p className="mt-1 text-sm text-zinc-600">{faq.answer}</p>
+                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{faq.question}</p>
+                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{faq.answer}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-zinc-500">Sin preguntas frecuentes definidas.</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Sin preguntas frecuentes definidas.</p>
             )}
           </CardContent>
         </Card>
@@ -169,7 +169,7 @@ export default async function IaMarketingPage() {
               <CardTitle>Información adicional</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-zinc-600">{brandProfile.additional_info}</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">{brandProfile.additional_info}</p>
             </CardContent>
           </Card>
         </div>

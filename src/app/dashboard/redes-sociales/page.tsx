@@ -58,13 +58,22 @@ export default async function RedesSocialesPage({
         description={`Conectadas ${connectedCount} de ${limit} redes según tu plan. Esto autoriza a Praeko a publicar por ti — para editar tus @usuarios visibles, ve a Configuración.`}
       />
 
+      <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[var(--hairline)] bg-white/60 px-4 py-3 text-xs text-zinc-500 dark:bg-zinc-900/60 dark:text-zinc-400">
+        <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <p>
+          La conexión usa el inicio de sesión oficial de cada red (Meta / TikTok) — nunca vemos ni
+          guardamos tu contraseña, y solo obtenemos permiso para publicar en tu nombre. Puedes
+          desconectar cualquier cuenta cuando quieras.
+        </p>
+      </div>
+
       {error && (
-        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
           {ERROR_MESSAGES[error] ?? "Ocurrió un error inesperado."}
         </div>
       )}
       {connected && (
-        <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
           {SOCIAL_PLATFORM_LABELS[connected as SocialPlatform] ?? "Cuenta"} conectada correctamente.
         </div>
       )}
@@ -80,7 +89,7 @@ export default async function RedesSocialesPage({
                 <span className={`flex h-11 w-11 items-center justify-center rounded-2xl text-white ${brandClass}`}>
                   <Icon className="h-5 w-5" />
                 </span>
-                <p className="font-semibold text-zinc-900">{SOCIAL_PLATFORM_LABELS[key]}</p>
+                <p className="font-semibold text-zinc-900 dark:text-zinc-100">{SOCIAL_PLATFORM_LABELS[key]}</p>
               </div>
 
               {connection ? (
@@ -94,11 +103,11 @@ export default async function RedesSocialesPage({
                         className="h-8 w-8 rounded-full object-cover"
                       />
                     ) : (
-                      <span className="h-8 w-8 rounded-full bg-zinc-200" />
+                      <span className="h-8 w-8 rounded-full bg-zinc-200 dark:bg-zinc-700" />
                     )}
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-zinc-800">{connection.external_account_name}</p>
-                      <p className="flex items-center gap-1 text-xs text-emerald-600">
+                      <p className="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">{connection.external_account_name}</p>
+                      <p className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
                         <CheckCircle2 className="h-3 w-3" /> Conectada
                       </p>
                     </div>
@@ -111,12 +120,12 @@ export default async function RedesSocialesPage({
                   </form>
                 </div>
               ) : !configured ? (
-                <div className="flex items-center gap-2 rounded-xl bg-zinc-100 px-3 py-2.5 text-xs text-zinc-500">
+                <div className="flex items-center gap-2 rounded-xl bg-zinc-100 px-3 py-2.5 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
                   <Lock className="h-3.5 w-3.5 shrink-0" />
                   Próximamente — falta configuración
                 </div>
               ) : atLimit ? (
-                <Link href="/dashboard/plan" className="text-xs text-zinc-500 underline hover:text-zinc-700">
+                <Link href="/dashboard/plan" className="text-xs text-zinc-500 underline hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300">
                   Alcanzaste el límite de tu plan — mejora tu plan para conectar más
                 </Link>
               ) : (

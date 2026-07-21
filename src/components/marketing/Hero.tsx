@@ -43,34 +43,34 @@ export default function Hero() {
         transition={{ duration: 0.7, ease: "easeOut" }}
         className="relative mx-auto flex max-w-2xl flex-col items-center gap-6 px-6 text-center"
       >
-        <span className="flex items-center gap-2 rounded-full border border-zinc-300/80 bg-white/40 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-zinc-600 backdrop-blur-sm">
+        <span className="flex items-center gap-2 rounded-full border border-zinc-300/80 bg-white/40 px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-zinc-600 backdrop-blur-sm dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-300">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
           </span>
           MARKETING CON INTELIGENCIA
         </span>
-        <h1 className="text-balance font-[family-name:var(--font-display)] text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl">
+        <h1 className="text-balance font-[family-name:var(--font-display)] text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl md:text-6xl dark:text-white">
           {/* The one moving-gradient moment in the Hero — same shimmer used on
               the marketing site's other big headlines (CtaSection,
               PricingSection) — so the page reads as Praeko's signature
               aurora identity again, not just a generic product shot. */}
           <span className="aurora-text">Agentes de IA</span> que crean y publican el contenido de tu negocio
         </h1>
-        <p className="max-w-lg text-balance text-zinc-600 sm:text-lg">
+        <p className="max-w-lg text-balance text-zinc-600 sm:text-lg dark:text-zinc-400">
           Videos, imágenes y carruseles nuevos cada día, listos para tus
           redes — sin que tú grabes, edites ni programes nada.
         </p>
         <div className="mt-2 flex flex-col items-center gap-3 sm:flex-row">
           <Link
             href="/registro"
-            className="btn-shine rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_4px_rgba(31,157,117,0.18)]"
+            className="btn-shine rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_4px_rgba(31,157,117,0.18)] dark:bg-white dark:text-zinc-950"
           >
             Empieza gratis
           </Link>
           <a
             href="#agentes"
-            className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-950"
+            className="text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white"
           >
             Cómo funciona →
           </a>
@@ -100,16 +100,20 @@ export default function Hero() {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="relative overflow-hidden rounded-2xl border border-[var(--hairline)] bg-white shadow-[0_50px_120px_-40px_rgba(0,0,0,0.4)] md:rounded-3xl"
+          className="relative overflow-hidden rounded-2xl border border-[var(--hairline)] bg-white shadow-[0_50px_120px_-40px_rgba(0,0,0,0.4)] md:rounded-3xl dark:shadow-[0_50px_120px_-40px_rgba(0,0,0,0.8)]"
         >
-          <div className="flex items-center gap-1.5 border-b border-[var(--hairline)] bg-zinc-50 px-4 py-3">
-            <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
-            <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
-            <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
-            <span className="ml-3 rounded-full border border-[var(--hairline)] bg-white px-3 py-1 text-[11px] text-zinc-400">
+          <div className="flex items-center gap-1.5 border-b border-[var(--hairline)] bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
+            <span className="h-2.5 w-2.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            <span className="h-2.5 w-2.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            <span className="h-2.5 w-2.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            <span className="ml-3 rounded-full border border-[var(--hairline)] bg-white px-3 py-1 text-[11px] text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500">
               app.praeko.com/calendario
             </span>
           </div>
+          {/* The screenshot itself is always the light-mode dashboard (it's a
+              real capture, not themeable) — a thin border already separates
+              it from the page, and premium sites do this too (a product
+              shot doesn't need to re-render per theme). */}
           <Image
             src="/screenshots/calendario-preview.png"
             alt="Calendario de contenido de Praeko con piezas generadas por IA, organizadas por fecha"
@@ -132,7 +136,7 @@ export default function Hero() {
           whileInView={{ opacity: 1, scale: 1, y: 0, rotate: 5 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6, delay: 0.35, ease: "easeOut" }}
-          className="absolute -bottom-10 -right-2 hidden w-36 sm:block md:-right-10 md:w-44"
+          className="absolute -bottom-6 -right-2 w-24 sm:-bottom-10 sm:w-36 md:-right-10 md:w-44"
         >
           {/* Static entrance (opacity/scale/y/rotate) lives on the motion.div
               above; the perpetual float bob (.card-float) lives on this

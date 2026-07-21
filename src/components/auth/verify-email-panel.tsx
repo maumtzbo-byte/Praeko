@@ -27,8 +27,8 @@ export function VerifyEmailPanel() {
   return (
     <Card>
       <CardHeader className="items-center text-center">
-        <span className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100">
-          <MailCheck className="h-6 w-6 text-zinc-700" strokeWidth={1.5} />
+        <span className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-800">
+          <MailCheck className="h-6 w-6 text-zinc-700 dark:text-zinc-300" strokeWidth={1.5} />
         </span>
         <CardTitle className="text-xl">Confirma tu correo</CardTitle>
         <CardDescription>

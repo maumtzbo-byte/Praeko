@@ -120,9 +120,8 @@ export default function Hero() {
               </span>
               MARKETING CON INTELIGENCIA
             </span>
-            <h1 className="mt-7 text-balance font-[family-name:var(--font-display)] text-5xl font-semibold leading-[1.05] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-[5.25rem]">
-              <span className="aurora-text">Agentes de IA</span> que crean y
-              publican el contenido de tu negocio
+            <h1 className="mt-7 text-balance font-sans text-5xl font-black leading-[1.05] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-[5.25rem]">
+              Tu negocio puede <span className="aurora-text">crecer solo</span>
             </h1>
             <p className="mt-6 max-w-xl text-balance text-lg text-zinc-400 sm:text-xl">
               Videos, imágenes y carruseles nuevos cada día, listos para tus

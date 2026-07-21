@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { cn } from "@/lib/utils";
 
 const links = [
   { href: "#agentes", label: "Cómo funciona" },
@@ -13,6 +14,21 @@ const links = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string | null>(null);
+  // The impact hero underneath is permanently dark regardless of the
+  // site's own light/dark toggle, so the translucent `bg-[var(--background)]`
+  // header — designed to blend with whatever theme is active — turned into
+  // a washed-out gray bar over it (light color, blurred over a dark
+  // backdrop). Starts true to match what SSR would show at scroll 0.
+  const [atTop, setAtTop] = useState(true);
+
+  useEffect(() => {
+    function onScroll() {
+      setAtTop(window.scrollY < 64);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     const sections = links
@@ -36,10 +52,22 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--hairline)] bg-[var(--background)]/70 backdrop-blur-md">
+      <header
+        className={cn(
+          "fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300",
+          atTop
+            ? "border-transparent bg-transparent"
+            : "border-[var(--hairline)] bg-[var(--background)]/70 backdrop-blur-md",
+        )}
+      >
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-lg font-semibold tracking-[0.2em] text-zinc-950 dark:text-white">
+            <span
+              className={cn(
+                "text-lg font-semibold tracking-[0.2em] transition-colors",
+                atTop ? "text-white" : "text-zinc-950 dark:text-white",
+              )}
+            >
               PRAEKO
             </span>
           </Link>
@@ -49,11 +77,17 @@ export default function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                className={`relative text-sm transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-px after:bg-accent after:transition-all after:duration-300 ${
-                  active === link.href
-                    ? "font-medium text-zinc-950 after:w-full dark:text-white"
-                    : "text-zinc-600 after:w-0 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white"
-                }`}
+                className={cn(
+                  "relative text-sm transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-px after:bg-accent after:transition-all after:duration-300",
+                  active === link.href ? "font-medium after:w-full" : "after:w-0",
+                  atTop
+                    ? active === link.href
+                      ? "text-white"
+                      : "text-zinc-300 hover:text-white"
+                    : active === link.href
+                      ? "text-zinc-950 dark:text-white"
+                      : "text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white",
+                )}
               >
                 {link.label}
               </a>
@@ -61,27 +95,48 @@ export default function Navbar() {
           </div>
 
           <div className="hidden items-center gap-3 md:flex">
-            <ThemeToggle />
+            <ThemeToggle
+              className={
+                atTop
+                  ? "flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-zinc-300 transition-colors hover:bg-white/10"
+                  : undefined
+              }
+            />
             <Link
               href="/login"
-              className="text-sm font-medium text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white"
+              className={cn(
+                "text-sm font-medium transition-colors",
+                atTop ? "text-zinc-300 hover:text-white" : "text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white",
+              )}
             >
               Iniciar sesión
             </Link>
             <Link
               href="/registro"
-              className="btn-shine rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_3px_rgba(31,157,117,0.18)] dark:bg-white dark:text-zinc-950"
+              className={cn(
+                "btn-shine rounded-full px-4 py-2 text-sm font-medium shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_3px_rgba(31,157,117,0.18)]",
+                atTop ? "bg-white text-zinc-950" : "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950",
+              )}
             >
               Empieza gratis
             </Link>
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            <ThemeToggle />
+            <ThemeToggle
+              className={
+                atTop
+                  ? "flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-zinc-300 transition-colors hover:bg-white/10"
+                  : undefined
+              }
+            />
             <button
               aria-label="Abrir menú"
               onClick={() => setOpen((v) => !v)}
-              className="flex h-11 w-11 items-center justify-center text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:text-white"
+              className={cn(
+                "flex h-11 w-11 items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                atTop && !open ? "text-white" : "text-zinc-950 dark:text-white",
+              )}
             >
               {open ? <X size={22} /> : <Menu size={22} />}
             </button>

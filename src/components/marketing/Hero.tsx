@@ -112,7 +112,7 @@ export default function Hero() {
           transition={{ duration: 0.7, ease: "easeOut" }}
           className="relative mx-auto w-full max-w-7xl px-6 py-28 sm:px-10 md:py-32"
         >
-          <div className="max-w-3xl">
+          <div className="max-w-4xl">
             <span className="flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-zinc-300 backdrop-blur-sm">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
@@ -120,10 +120,16 @@ export default function Hero() {
               </span>
               MARKETING CON INTELIGENCIA
             </span>
-            <h1 className="mt-7 text-balance font-sans text-5xl font-light leading-[1.08] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-[5.25rem]">
+            {/* Sized to dominate the viewport the way a big brand's hero does
+                (Shopify's own homepage headline as the reference point) —
+                the words wrap organically into a stacked block instead of
+                sitting on one modest line, which is what made the previous
+                pass still read as "template" scale even after the weight
+                was lightened. */}
+            <h1 className="mt-8 text-balance font-sans text-7xl font-light leading-[0.95] tracking-tight text-white sm:text-8xl md:text-9xl lg:text-[8.5rem]">
               Tu negocio puede <span className="aurora-text">crecer solo</span>
             </h1>
-            <p className="mt-6 max-w-xl text-balance text-lg font-light text-zinc-400 sm:text-xl">
+            <p className="mt-8 max-w-xl text-balance text-lg font-light text-zinc-400 sm:text-xl">
               Cada mañana entras y ya hay contenido nuevo esperando en tu
               calendario. Tú solo revisas y publicas.
             </p>

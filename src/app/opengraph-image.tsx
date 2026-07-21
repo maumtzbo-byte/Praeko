@@ -36,7 +36,7 @@ export default function OpengraphImage() {
             display: "flex",
             borderRadius: "38% 62% 55% 45% / 45% 40% 60% 55%",
             backgroundImage:
-              "radial-gradient(circle at 35% 30%, #eafff8 0%, #2dd4bf 30%, #1f9d75 60%, #1e1b4b 100%)",
+              "radial-gradient(circle at 35% 30%, #c9daf9 0%, #4a7fe8 30%, #2a5cdb 60%, #060a16 100%)",
             opacity: 0.55,
             filter: "blur(10px)",
           }}
@@ -51,7 +51,7 @@ export default function OpengraphImage() {
             display: "flex",
             borderRadius: "55% 45% 40% 60% / 60% 55% 45% 40%",
             backgroundImage:
-              "radial-gradient(circle at 60% 40%, #eafff8 0%, #2dd4bf 30%, #3b82f6 60%, #1e1b4b 100%)",
+              "radial-gradient(circle at 60% 40%, #c9daf9 0%, #4a7fe8 30%, #6fa0f2 60%, #060a16 100%)",
             opacity: 0.5,
             filter: "blur(10px)",
           }}

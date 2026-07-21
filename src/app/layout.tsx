@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces, Baloo_2 } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -20,6 +20,15 @@ const fraunces = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
   style: ["italic", "normal"],
+});
+
+// Bold + rounded, used only by IntroReveal's letter-by-letter wordmark —
+// its chunky terminals read closer to the P logomark's liquid-glass blob
+// than any of the site's other (much straighter) type does.
+const baloo = Baloo_2({
+  variable: "--font-baloo",
+  subsets: ["latin"],
+  weight: "800",
 });
 
 const SITE_URL = "https://praekomarketingsaas.vercel.app";
@@ -80,7 +89,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${baloo.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

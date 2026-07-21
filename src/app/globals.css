@@ -10,16 +10,16 @@
   --foreground: #16161a;
   --hairline: rgba(20, 20, 24, 0.1);
   --card: #ffffff;
-  /* Aurora borealis palette — green through teal and blue into violet —
-     replacing the old silver-chrome (and, briefly, warm-orange) identity
-     everywhere the brand color is used: buttons, badges, icons, active
-     states, and the ambient background/text shimmer alike. */
-  --accent: #1f9d75;
-  --accent-strong: #5b3fd6;
-  --aurora-highlight: #eafff8;
-  --aurora-mid: #2dd4bf;
-  --aurora-blue: #3b82f6;
-  --aurora-deep: #1e1b4b;
+  /* Single-hue sapphire identity — one deep, saturated blue instead of the
+     old aurora rainbow, matching the recolored liquid-glass P mark. One
+     ownable color everywhere the brand color is used: buttons, badges,
+     icons, active states, and the ambient background/text shimmer alike. */
+  --accent: #2a5cdb;
+  --accent-strong: #12206d;
+  --aurora-highlight: #c9daf9;
+  --aurora-mid: #4a7fe8;
+  --aurora-blue: #6fa0f2;
+  --aurora-deep: #060a16;
 }
 
 /* Dark theme — same aurora hues (they already read fine on a dark ground,
@@ -32,7 +32,7 @@
   --foreground: #f4f4f6;
   --hairline: rgba(255, 255, 255, 0.12);
   --card: #18181b;
-  --aurora-highlight: #d3fff2;
+  --aurora-highlight: #dce8ff;
 }
 
 @theme inline {

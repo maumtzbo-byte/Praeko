@@ -88,7 +88,7 @@ export default function Hero() {
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-10 -top-10 bottom-0 -z-10 rounded-[50%] opacity-50 blur-3xl"
-          style={{ background: "radial-gradient(ellipse at center, #eafff8 0%, #2dd4bf 40%, transparent 72%)" }}
+          style={{ background: "radial-gradient(ellipse at center, #c9daf9 0%, #4a7fe8 40%, transparent 72%)" }}
         />
 
         <motion.div

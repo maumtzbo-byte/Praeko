@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useMotionValue, useSpring } from "framer-motion";
-import { Play, Heart, MessageCircle, Send } from "lucide-react";
+import { Play, Heart, MessageCircle, Send, ArrowRight } from "lucide-react";
 import AuroraBackground from "./AuroraBackground";
 
 // Client-only — WebGL/Canvas has no server-side representation, and this
@@ -120,19 +120,20 @@ export default function Hero() {
               </span>
               MARKETING CON INTELIGENCIA
             </span>
-            <h1 className="mt-7 text-balance font-sans text-5xl font-black leading-[1.05] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-[5.25rem]">
+            <h1 className="mt-7 text-balance font-sans text-5xl font-light leading-[1.08] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-[5.25rem]">
               Tu negocio puede <span className="aurora-text">crecer solo</span>
             </h1>
-            <p className="mt-6 max-w-xl text-balance text-lg text-zinc-400 sm:text-xl">
-              Videos, imágenes y carruseles nuevos cada día, listos para tus
-              redes — sin que tú grabes, edites ni programes nada.
+            <p className="mt-6 max-w-xl text-balance text-lg font-light text-zinc-400 sm:text-xl">
+              Cada mañana entras y ya hay contenido nuevo esperando en tu
+              calendario. Tú solo revisas y publicas.
             </p>
             <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <Link
                 href="/registro"
-                className="btn-shine rounded-full bg-white px-8 py-4 text-base font-medium text-zinc-950 shadow-[0_1px_0_rgba(255,255,255,0.6)_inset,0_20px_50px_-15px_rgba(0,0,0,0.6)] transition-all hover:scale-[1.03]"
+                className="btn-shine group inline-flex items-center gap-2 rounded-lg bg-white px-7 py-3.5 text-[15px] font-medium tracking-tight text-zinc-950 shadow-[0_1px_0_rgba(255,255,255,0.6)_inset,0_1px_2px_rgba(0,0,0,0.9),0_20px_40px_-18px_rgba(0,0,0,0.7)] ring-1 ring-black/5 transition-all hover:shadow-[0_1px_0_rgba(255,255,255,0.6)_inset,0_1px_2px_rgba(0,0,0,0.9),0_24px_48px_-16px_rgba(0,0,0,0.75)]"
               >
                 Empieza gratis
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
               <a
                 href="#agentes"

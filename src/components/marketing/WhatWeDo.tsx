@@ -89,6 +89,20 @@ export default function WhatWeDo() {
           camera around the ring (see AgentCarousel3D/CameraRig); it
           doesn't spin the objects in place. */}
       <div className="relative mt-8 h-[26rem] w-full sm:h-[30rem]">
+        {/* A "stage" behind the scene — without this the cube/cards just
+            float on flat page background, which is what made the whole
+            thing read as unfinished even with correct geometry. Same
+            radial-glow idea the Hero uses behind its own cube, kept subtle
+            via opacity rather than baking transparency into the gradient
+            stops themselves. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 opacity-40 dark:opacity-25"
+          style={{
+            background:
+              "radial-gradient(ellipse 65% 70% at 50% 50%, var(--aurora-highlight) 0%, var(--accent) 45%, transparent 75%)",
+          }}
+        />
         <AgentCarousel3D
           className="h-full w-full"
           agents={AGENTS}

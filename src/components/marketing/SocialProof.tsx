@@ -87,17 +87,20 @@ export default function SocialProof() {
       </div>
 
       {/* Desktop/tablet: columns drifting in alternating directions behind a
-          gentle 3D tilt on the whole grid — subtle on purpose, this is a
-          trust section that needs to stay legible, not a demo showpiece.
+          real diagonal 3D tilt on the whole grid — the first version of
+          this used a barely-there 6/-4/2deg tilt that read as a plain flat
+          grid at a glance; this needs to be unmistakably diagonal, the way
+          the reference component is, while staying short of the point
+          where the outer columns' text becomes hard to read.
           Columns 0/2 climb, 1/3 descend, so neighbors are always crossing
           rather than scrolling in lockstep. */}
       <div
         className="relative mt-12 hidden h-[560px] [mask-image:linear-gradient(to_bottom,transparent_0%,black_12%,black_88%,transparent_100%)] md:block"
-        style={{ perspective: "1400px" }}
+        style={{ perspective: "1000px" }}
       >
         <div
           className="mx-auto grid max-w-6xl grid-cols-4 gap-5 px-6"
-          style={{ transform: "rotateX(6deg) rotateY(-4deg) rotateZ(2deg)", transformStyle: "preserve-3d" }}
+          style={{ transform: "rotateX(13deg) rotateY(-9deg) rotateZ(9deg)", transformStyle: "preserve-3d" }}
         >
           {columns.map((reviews, c) => (
             <MarqueeColumn key={c} reviews={reviews} duration={COLUMN_DURATIONS[c]} direction={c % 2 === 0 ? "up" : "down"} />

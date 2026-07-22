@@ -27,8 +27,8 @@ const SCATTER = [
   { x: 170, y: 250, rotate: -12 },
 ];
 
-const RING_RADIUS_X = 270;
-const RING_RADIUS_Y = 140;
+const RING_RADIUS_X = 280;
+const RING_RADIUS_Y = 190;
 const ARC_SHIFT_DEG = 55;
 const CARD_GRADIENTS = [
   "radial-gradient(120% 120% at 20% 15%, #1e6b4c 0%, #04140d 70%)",
@@ -66,12 +66,16 @@ function GalleryCard({
   const ringNow = useMemo(() => ringPoint(angleBase), [angleBase]);
   const ringShifted = useMemo(() => ringPoint(angleBase + ARC_SHIFT_DEG), [angleBase]);
 
-  const stops = [0, 0.3, 0.62, 1];
-  const x = useTransform(scrollYProgress, stops, [scatter.x, scatter.x * 0.35, ringNow.x, ringShifted.x]);
-  const y = useTransform(scrollYProgress, stops, [scatter.y, scatter.y * 0.35, ringNow.y, ringShifted.y - 70]);
-  const rotate = useTransform(scrollYProgress, stops, [scatter.rotate, scatter.rotate * 0.3, angleBase * 0.1, (angleBase + ARC_SHIFT_DEG) * 0.1]);
-  const scale = useTransform(scrollYProgress, stops, [0.55, 0.85, 1, 0.9]);
-  const borderRadius = useTransform(scrollYProgress, [0, 0.3, 1], ["46%", "22px", "22px"]);
+  // The ring (0.42) holds its exact position through 0.62 before the arc
+  // shift starts — without a hold, "converging" flows straight into
+  // "arcing away" and a normal-speed scroll never actually shows a formed
+  // ring, just a blur of cards never settling anywhere.
+  const stops = [0, 0.22, 0.42, 0.62, 1];
+  const x = useTransform(scrollYProgress, stops, [scatter.x, scatter.x * 0.4, ringNow.x, ringNow.x, ringShifted.x]);
+  const y = useTransform(scrollYProgress, stops, [scatter.y, scatter.y * 0.4, ringNow.y, ringNow.y, ringShifted.y - 70]);
+  const rotate = useTransform(scrollYProgress, stops, [scatter.rotate, scatter.rotate * 0.3, 0, 0, (angleBase + ARC_SHIFT_DEG) * 0.06]);
+  const scale = useTransform(scrollYProgress, stops, [0.55, 0.85, 1, 1, 0.92]);
+  const borderRadius = useTransform(scrollYProgress, [0, 0.22, 1], ["46%", "22px", "22px"]);
   const opacity = useTransform(scrollYProgress, [0, 0.1, 1], [0, 1, 1]);
 
   return (

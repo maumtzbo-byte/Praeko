@@ -213,6 +213,49 @@ body {
   animation-delay: -2.25s;
 }
 
+/* Vertical counterpart to .marquee-track — same doubled-children,
+   translate-exactly-50%-loops-seamlessly trick, but up/down instead of
+   sideways, for columns that drift in alternating directions. */
+.marquee-viewport-y {
+  height: 100%;
+  overflow: hidden;
+}
+
+@keyframes marquee-y-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes marquee-y-down {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.marquee-track-y-up {
+  animation-name: marquee-y-up;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.marquee-track-y-down {
+  animation-name: marquee-y-down;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.marquee-viewport-y:hover .marquee-track-y-up,
+.marquee-viewport-y:hover .marquee-track-y-down {
+  animation-play-state: paused;
+}
+
 /* Staggered entrance for dashboard sections on first paint — applied via
    .stagger-N (see below) so a server component can use it with no client
    JS needed. Runs once, `both` keeps the pre-animation state until its
@@ -254,6 +297,13 @@ body {
   }
   .animate-fade-in-up {
     animation: none;
+  }
+  .marquee-track-y-up,
+  .marquee-track-y-down {
+    animation: none;
+  }
+  .marquee-viewport-y {
+    overflow-y: auto;
   }
 }
 

@@ -1,7 +1,6 @@
-// Shared between IntroReveal and ScrollStory — both are part of the same
-// "entrance" moment, so one flag governs whether either plays its
-// cinematic version. sessionStorage (not localStorage) so it replays on a
-// genuinely new visit, not just once ever per browser.
+// Gates IntroReveal's cinematic entrance to once per session — sessionStorage
+// (not localStorage) so it replays on a genuinely new visit, not just once
+// ever per browser.
 const SEEN_KEY = "praeko_intro_seen";
 
 export function hasSeenIntro(): boolean {

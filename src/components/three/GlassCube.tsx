@@ -8,7 +8,7 @@ import type { Mesh } from "three";
 /** Praeko's hero object, take two — a solid-feeling glass cube instead of
  * the earlier Möbius strip. A cube reads as grounded and simple rather
  * than "look at this shader," which fits the pivot away from a glossy
- * chrome-and-blue signature toward the forest-green/terracotta identity —
+ * chrome-and-blue signature toward the forest-green/beige identity —
  * the same material language as the recolored P mark, just in 3D. */
 function CubeMesh({ spin }: { spin: boolean }) {
   const mesh = useRef<Mesh>(null);
@@ -70,13 +70,13 @@ export default function GlassCube({ className, active = true }: { className?: st
           <directionalLight position={[2, 3, 4]} intensity={0.9} />
           <CubeMesh spin={!reducedMotion} />
           {/* Procedural studio lighting, warm this time — sand/cream and a
-              terracotta rim light instead of blue, so the glass's own
+              beige rim light instead of blue, so the glass's own
               reflections pick up "Praeko warm" rather than a cold studio
               white, matching the highlight streak on the P mark. */}
           <Environment resolution={256}>
             <Lightformer intensity={2.4} color="#f4eee5" position={[0, 4, -6]} scale={[10, 6, 1]} />
             <Lightformer intensity={1.8} color="white" position={[0, 0, 6]} scale={[8, 8, 1]} />
-            <Lightformer intensity={1.7} color="#d06a4c" position={[-6, 1, 3]} scale={[6, 10, 1]} rotation={[0, Math.PI / 3, 0]} />
+            <Lightformer intensity={1.7} color="#c9b896" position={[-6, 1, 3]} scale={[6, 10, 1]} rotation={[0, Math.PI / 3, 0]} />
             <Lightformer intensity={1.5} color="#ece3d8" position={[6, -1, 3]} scale={[6, 10, 1]} rotation={[0, -Math.PI / 3, 0]} />
             <Lightformer intensity={1} color="white" position={[0, -5, 2]} scale={[10, 4, 1]} />
           </Environment>

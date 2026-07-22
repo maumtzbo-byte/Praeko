@@ -6,10 +6,9 @@ import { hasSeenIntro, markIntroSeen } from "@/lib/marketing/intro-session";
 
 const WORD = "PRAEKO";
 
-// Same forest-green -> terracotta -> sand sweep as the P logomark,
-// expressed as SVG stops instead of a raster LUT, so the wordmark reads as
-// the same material as the brand mark instead of a separate flat-color
-// treatment.
+// Same forest-green -> beige -> sand sweep as the P logomark, expressed as
+// SVG stops instead of a raster LUT, so the wordmark reads as the same
+// material as the brand mark instead of a separate flat-color treatment.
 function GlassDefs({ id }: { id: string }) {
   return (
     <defs>
@@ -17,7 +16,7 @@ function GlassDefs({ id }: { id: string }) {
         <stop offset="0%" stopColor="#04140d" />
         <stop offset="28%" stopColor="#0a2e23" />
         <stop offset="52%" stopColor="#1e6b4c" />
-        <stop offset="74%" stopColor="#d06a4c" />
+        <stop offset="74%" stopColor="#c9b896" />
         <stop offset="90%" stopColor="#ece3d8" />
         <stop offset="100%" stopColor="#ffffff" />
       </linearGradient>

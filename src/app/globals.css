@@ -10,21 +10,21 @@
   --foreground: #16161a;
   --hairline: rgba(20, 20, 24, 0.1);
   --card: #ffffff;
-  /* Forest green + terracotta identity — replaces the earlier single-hue
-     sapphire. Green (growth, "crecer") is the dominant, pervasive brand
-     color (buttons, badges, icons, active states); terracotta is a
-     narrower warm accent used in gradients and highlights, the way it
+  /* Forest green + beige/sand identity — replaces the earlier single-hue
+     sapphire (and a short-lived terracotta accent that read as
+     orange/coral instead of beige — corrected here). Green (growth,
+     "crecer") is the dominant, pervasive brand color (buttons, badges,
+     icons, active states); the aurora-* stops are all warm neutrals —
+     sand, tan, cream — used in gradients and highlights, the way one
      shows up as a highlight streak on the recolored P mark rather than an
-     equal, competing hue. --aurora-highlight is a warm sand/cream instead
-     of the old pale blue, carrying the "beige" half of the palette into
-     every gradient/blob that already reads from it. Var names kept as
-     "aurora-*"/"accent" for a minimal diff footprint even though the hue
-     family has changed twice now. */
+     equal, competing hue. Var names kept as "aurora-*"/"accent" for a
+     minimal diff footprint even though the hue family has changed more
+     than once now. */
   --accent: #1e6b4c;
   --accent-strong: #0a2e23;
   --aurora-highlight: #ece3d8;
-  --aurora-mid: #d06a4c;
-  --aurora-blue: #e3a987;
+  --aurora-mid: #c9b896;
+  --aurora-blue: #ddd0b8;
   --aurora-deep: #04140d;
 }
 
@@ -60,7 +60,7 @@ body {
 }
 
 /* Aurora text: a moving gradient clipped to text, sweeping through the
-   forest-green/terracotta/sand identity — a small shimmer of the same
+   forest-green/beige/sand identity — a small shimmer of the same
    "paint" the P mark and hero object are made of. */
 .aurora-text {
   background: linear-gradient(

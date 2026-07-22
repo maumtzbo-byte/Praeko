@@ -185,7 +185,7 @@ function Particle({
         width: size,
         height: size,
         opacity,
-        background: "radial-gradient(circle, #ece3d8 0%, #d06a4c 70%, transparent 100%)",
+        background: "radial-gradient(circle, #ece3d8 0%, #c9b896 70%, transparent 100%)",
         x,
         y,
       }}
@@ -489,7 +489,7 @@ export default function ScrollStory() {
           aria-hidden="true"
           className="pointer-events-none absolute left-1/2 top-1/2 h-[42rem] w-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-3xl sm:h-[54rem] sm:w-[54rem]"
           style={{
-            background: "radial-gradient(circle, #ece3d8 0%, #d06a4c 45%, transparent 75%)",
+            background: "radial-gradient(circle, #ece3d8 0%, #c9b896 45%, transparent 75%)",
           }}
         />
 

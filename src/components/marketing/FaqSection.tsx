@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { Plus } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import AuroraBackground from "./AuroraBackground";
 
 const FAQS = [
   {
@@ -37,19 +38,56 @@ const FAQS = [
   },
 ];
 
-function FaqItem({ question, answer, isOpen, onToggle }: { question: string; answer: string; isOpen: boolean; onToggle: () => void }) {
+function FaqItem({
+  question,
+  answer,
+  index,
+  isOpen,
+  onToggle,
+}: {
+  question: string;
+  answer: string;
+  index: number;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
   return (
-    <div className="rounded-2xl border border-[var(--hairline)] bg-white/60 dark:bg-zinc-900/60">
+    <div
+      className={`overflow-hidden rounded-3xl border transition-colors duration-300 ${
+        isOpen
+          ? "border-accent/25 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.06),0_24px_45px_-26px_rgba(0,0,0,0.25)] dark:bg-zinc-900 dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),0_24px_45px_-26px_rgba(0,0,0,0.55)]"
+          : "border-[var(--hairline)] bg-white/60 dark:bg-zinc-900/60"
+      }`}
+    >
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        className="flex w-full items-center justify-between gap-4 rounded-2xl px-5 py-4 text-left text-sm font-medium text-zinc-900 transition-colors hover:text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:text-zinc-100 dark:hover:text-white sm:text-base"
+        className="flex w-full items-center gap-4 px-5 py-5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:px-7"
       >
-        <span>{question}</span>
-        <ChevronDown
-          className={`h-4 w-4 shrink-0 text-zinc-500 transition-transform duration-300 dark:text-zinc-400 ${isOpen ? "rotate-180" : ""}`}
-        />
+        <span
+          className={`shrink-0 font-[family-name:var(--font-display)] text-sm tracking-tight transition-colors ${
+            isOpen ? "text-accent" : "text-zinc-400 dark:text-zinc-600"
+          }`}
+        >
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        <span
+          className={`flex-1 text-sm font-medium transition-colors sm:text-base ${
+            isOpen ? "text-zinc-950 dark:text-white" : "text-zinc-800 dark:text-zinc-200"
+          }`}
+        >
+          {question}
+        </span>
+        <span
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
+            isOpen
+              ? "rotate-45 border-accent bg-accent text-white"
+              : "border-zinc-300 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
+          }`}
+        >
+          <Plus className="h-3.5 w-3.5" strokeWidth={2} />
+        </span>
       </button>
       <AnimatePresence initial={false}>
         {isOpen && (
@@ -60,7 +98,9 @@ function FaqItem({ question, answer, isOpen, onToggle }: { question: string; ans
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <p className="px-5 pb-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{answer}</p>
+            <p className="px-5 pb-6 pl-[3.25rem] text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 sm:px-7 sm:pl-[3.75rem]">
+              {answer}
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -72,13 +112,14 @@ export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id="preguntas" className="py-28">
-      <div className="mx-auto max-w-3xl px-6">
+    <section id="preguntas" className="relative overflow-hidden py-28">
+      <AuroraBackground />
+      <div className="relative mx-auto max-w-3xl px-6">
         <div className="mb-12 text-center">
           <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
             PREGUNTAS FRECUENTES
           </p>
-          <h2 className="text-balance font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
+          <h2 className="text-balance font-[family-name:var(--font-display)] text-2xl italic tracking-tight text-zinc-950 sm:text-3xl dark:text-white">
             Antes de que te decidas
           </h2>
         </div>
@@ -89,6 +130,7 @@ export default function FaqSection() {
               key={faq.question}
               question={faq.question}
               answer={faq.answer}
+              index={index}
               isOpen={openIndex === index}
               onToggle={() => setOpenIndex(openIndex === index ? null : index)}
             />

@@ -127,8 +127,8 @@ function PricingCard({
           plan.featured
             ? `border-zinc-800 bg-zinc-950 text-white ${
                 popped
-                  ? "shadow-[0_28px_70px_-15px_rgba(0,0,0,0.5),0_0_50px_-10px_rgba(31,157,117,0.45),0_0_0_1px_rgba(45,212,191,0.25)_inset]"
-                  : "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_0_0_1px_rgba(45,212,191,0.12)_inset]"
+                  ? "shadow-[0_28px_70px_-15px_rgba(0,0,0,0.5),0_0_50px_-10px_rgba(30,107,76,0.45),0_0_0_1px_rgba(60,140,100,0.25)_inset]"
+                  : "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_0_0_1px_rgba(60,140,100,0.12)_inset]"
               }`
             : `border-[var(--hairline)] bg-white/60 text-zinc-950 dark:bg-zinc-900/60 dark:text-white ${
                 popped

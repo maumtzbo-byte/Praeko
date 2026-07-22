@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, Lightformer, MeshTransmissionMaterial, RoundedBox } from "@react-three/drei";
 import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
-import { CanvasTexture, Group, Mesh, MeshStandardMaterial, SRGBColorSpace } from "three";
+import { CanvasTexture, Group, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, SRGBColorSpace } from "three";
 
 export interface CarouselAgent {
   title: string;
@@ -198,7 +198,7 @@ function AgentCardMesh({
   currentAngleRef: { current: number };
 }) {
   const group = useRef<Group>(null);
-  const boxMatRef = useRef<MeshStandardMaterial>(null);
+  const boxMatRef = useRef<MeshPhysicalMaterial>(null);
   const textMatRef = useRef<MeshStandardMaterial>(null);
   const badgeMatRef = useRef<MeshStandardMaterial>(null);
   const iconMatRef = useRef<MeshStandardMaterial>(null);
@@ -228,15 +228,26 @@ function AgentCardMesh({
   return (
     <group position={[x, 0, z]} rotation={[0, angle, 0]}>
       <group ref={group}>
-        <RoundedBox args={[1.9, 1.2, 0.08]} radius={0.07} smoothness={4} castShadow receiveShadow>
-          {/* meshStandardMaterial (not Basic) so the card actually responds
-              to the scene's lights instead of sitting at a flat, constant
-              brightness regardless of the cube's lighting around it. */}
-          <meshStandardMaterial ref={boxMatRef} color="#f7f3ec" roughness={0.85} metalness={0} transparent />
+        <RoundedBox args={[1.9, 1.2, 0.08]} radius={0.05} smoothness={4} castShadow receiveShadow>
+          {/* meshPhysicalMaterial with a real clearcoat, not high-roughness
+              meshStandardMaterial — high roughness with zero specular is
+              literally the "clay render" recipe (flat diffuse, no
+              highlight), which is what made this read as plasticine
+              instead of a printed/laminated card. Lower roughness + a thin
+              glossy coat gives it a crisp highlight instead. */}
+          <meshPhysicalMaterial
+            ref={boxMatRef}
+            color="#f7f3ec"
+            roughness={0.4}
+            metalness={0}
+            clearcoat={0.6}
+            clearcoatRoughness={0.15}
+            transparent
+          />
         </RoundedBox>
         <mesh position={[0, 0, 0.045]}>
           <planeGeometry args={[1.78, 1.08]} />
-          <meshStandardMaterial ref={textMatRef} map={texture} transparent roughness={0.75} metalness={0} />
+          <meshStandardMaterial ref={textMatRef} map={texture} transparent roughness={0.5} metalness={0} />
         </mesh>
         {/* z=0.05, ahead of the text plane at 0.045 — the box itself is
             only 0.08 deep (faces at ±0.04), so anything at z <= 0.04 sits
@@ -244,11 +255,11 @@ function AgentCardMesh({
         <group position={[-0.72, 0.32, 0.05]}>
           <mesh castShadow>
             <circleGeometry args={[0.19, 32]} />
-            <meshStandardMaterial ref={badgeMatRef} color="#e2ede6" roughness={0.8} transparent />
+            <meshStandardMaterial ref={badgeMatRef} color="#e2ede6" roughness={0.45} metalness={0} transparent />
           </mesh>
           <mesh position={[0, 0, 0.008]}>
             <planeGeometry args={[0.24, 0.24]} />
-            <meshStandardMaterial ref={iconMatRef} map={iconTexture} transparent roughness={0.6} metalness={0} />
+            <meshStandardMaterial ref={iconMatRef} map={iconTexture} transparent roughness={0.35} metalness={0} />
           </mesh>
         </group>
       </group>

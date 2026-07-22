@@ -1,22 +1,12 @@
-import { Check, Mail } from "lucide-react";
+import { Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import RequestPlanButton from "@/components/dashboard/request-plan-button";
 import { cn } from "@/lib/utils";
-
-// There's no self-serve checkout yet (Stripe isn't wired up) — instead of a
-// dead "Próximamente" button that promises a purchase flow that doesn't
-// exist, this sends a real, prefilled request to a human who can activate
-// the plan manually. Honest about the current state, but still a concrete
-// action a visitor can take right now.
-function requestPlanEmailHref(businessName: string, planDisplayName: string, priceUsd: number) {
-  const subject = `Quiero activar el plan ${planDisplayName}`;
-  const body = `Hola,\n\nQuiero activar el plan ${planDisplayName} ($${priceUsd} USD/mes) para mi negocio "${businessName}".\n\nGracias.`;
-  return `mailto:soporte@praeko.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-}
 
 export default async function PlanPage() {
   const { business } = await getCurrentBusiness();
@@ -87,15 +77,12 @@ export default async function PlanPage() {
                     Plan activo
                   </Button>
                 ) : (
-                  <a href={requestPlanEmailHref(business.name, plan.display_name, priceUsd)}>
-                    <Button
-                      variant={isFeatured ? undefined : "secondary"}
-                      className={isFeatured ? "w-full bg-accent text-white hover:bg-accent-strong" : "w-full"}
-                    >
-                      <Mail className="h-4 w-4" />
-                      Solicitar este plan
-                    </Button>
-                  </a>
+                  <RequestPlanButton
+                    businessName={business.name}
+                    planDisplayName={plan.display_name}
+                    priceUsd={priceUsd}
+                    featured={isFeatured}
+                  />
                 )}
               </CardContent>
             </Card>

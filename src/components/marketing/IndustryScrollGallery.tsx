@@ -26,7 +26,8 @@ const RING_COUNT = 14;
 const RING_ITEMS = Array.from({ length: RING_COUNT }, (_, i) => ({ id: i, ...INDUSTRIES[i % INDUSTRIES.length] }));
 
 const RING_RADIUS = 220;
-const ARC_SHIFT_DEG = 40;
+const ROW_SPACING = 108;
+const SLIDE_DISTANCE = 640;
 const CARD_GRADIENTS = [
   "radial-gradient(120% 120% at 20% 15%, #1e6b4c 0%, #04140d 70%)",
   "radial-gradient(120% 120% at 80% 25%, #237a56 0%, #0a2e23 70%)",
@@ -39,6 +40,13 @@ const CARD_GRADIENTS = [
 function ringPoint(angleDeg: number, scale: number) {
   const rad = (angleDeg * Math.PI) / 180;
   return { x: Math.sin(rad) * RING_RADIUS * scale, y: Math.cos(rad) * RING_RADIUS * scale };
+}
+
+// Where a card sits once the ring has unraveled into a straight row,
+// ordered left-to-right by its ring index — centered on 0 so the row is
+// centered under the (by-then-gone) headline.
+function linePoint(index: number, total: number, scale: number) {
+  return (index - (total - 1) / 2) * ROW_SPACING * scale;
 }
 
 // Deterministic (not Math.random) so phase 1 is stable across renders —
@@ -54,9 +62,11 @@ function scatterFor(i: number) {
 /** One card's whole journey — scattered and tumbled (phase 1) -> converging
  * toward center (phase 2) -> settled into its slot on the ring, rotated to
  * point radially outward like a spoke so the pack of cards reads as a
- * woven wreath rather than a loose cluster (phase 3, held) -> the ring
- * keeps turning and lifts as a group, still radially aligned (phase 4) —
- * all driven off the same `scrollYProgress`. */
+ * woven wreath rather than a loose cluster (phase 3, held) -> unravels into
+ * a straight horizontal row (phase 4) -> keeps sliding along that row
+ * (phase 5) — all driven off the same `scrollYProgress`, no independent
+ * timer, so the "keeps sliding" motion is really just scrolling the last
+ * stretch of the section. */
 function GalleryCard({
   industry,
   index,
@@ -74,20 +84,28 @@ function GalleryCard({
   const scatter = useMemo(() => scatterFor(index), [index]);
   const angleBase = (index / total) * 360;
   const ringNow = useMemo(() => ringPoint(angleBase, posScale), [angleBase, posScale]);
-  const ringShifted = useMemo(() => ringPoint(angleBase + ARC_SHIFT_DEG, posScale), [angleBase, posScale]);
-  const lift = 60 * posScale;
+  const lineX = useMemo(() => linePoint(index, total, posScale), [index, total, posScale]);
 
-  // The ring (0.42) holds its exact position through 0.62 before the arc
-  // shift starts — without a hold, "converging" flows straight into
-  // "arcing away" and a normal-speed scroll never actually shows a formed
-  // ring, just a blur of cards never settling anywhere.
-  const stops = [0, 0.22, 0.42, 0.62, 1];
-  const x = useTransform(scrollYProgress, stops, [scatter.x * posScale, scatter.x * posScale * 0.4, ringNow.x, ringNow.x, ringShifted.x]);
-  const y = useTransform(scrollYProgress, stops, [scatter.y * posScale, scatter.y * posScale * 0.4, ringNow.y, ringNow.y, ringShifted.y - lift]);
+  // The ring (0.42) holds its exact position through 0.62 before unraveling
+  // into a row at 0.8, which then keeps sliding through 1 — without the
+  // hold, "converging" flows straight into "unraveling" and a normal-speed
+  // scroll never actually shows a formed ring, just cards never settling.
+  const stops = [0, 0.22, 0.42, 0.62, 0.8, 1];
+  const x = useTransform(scrollYProgress, stops, [
+    scatter.x * posScale,
+    scatter.x * posScale * 0.4,
+    ringNow.x,
+    ringNow.x,
+    lineX,
+    lineX - SLIDE_DISTANCE * posScale,
+  ]);
+  const y = useTransform(scrollYProgress, stops, [scatter.y * posScale, scatter.y * posScale * 0.4, ringNow.y, ringNow.y, 0, 0]);
   // -angleBase points each card's bottom edge (where the label sits)
-  // radially outward, away from the center text — like spokes on a wheel.
-  const rotate = useTransform(scrollYProgress, stops, [scatter.rotate, scatter.rotate * 0.3, -angleBase, -angleBase, -(angleBase + ARC_SHIFT_DEG)]);
-  const scale = useTransform(scrollYProgress, stops, [0.5, 0.8, 1, 1, 0.92]);
+  // radially outward, away from the center text, while it's part of the
+  // ring — like spokes on a wheel — then straightens out to 0 as it joins
+  // the row.
+  const rotate = useTransform(scrollYProgress, stops, [scatter.rotate, scatter.rotate * 0.3, -angleBase, -angleBase, 0, 0]);
+  const scale = useTransform(scrollYProgress, stops, [0.5, 0.8, 1, 1, 0.88, 0.88]);
   const borderRadius = useTransform(scrollYProgress, [0, 0.22, 1], ["46%", "18px", "18px"]);
   const opacity = useTransform(scrollYProgress, [0, 0.1, 1], [0, 1, 1]);
   // The card itself rotates a full 360deg around the ring (so the pack
@@ -156,6 +174,7 @@ export default function IndustryScrollGallery() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [posScale, setPosScale] = useState(1);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
+  const textOpacity = useTransform(scrollYProgress, [0.62, 0.75, 1], [1, 0, 0]);
 
   useEffect(() => {
     const reducedMql = window.matchMedia(SAFE_MATCH_MEDIA);
@@ -192,13 +211,19 @@ export default function IndustryScrollGallery() {
       <div className="sticky top-0 h-screen overflow-hidden">
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-[70vmin] w-[70vmin] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40 blur-3xl" style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)" }} />
 
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-10 text-center">
+        {/* Only makes sense while the cards are actually arranged in a ring
+            around it — fades out as the ring unravels into a row so it
+            doesn't sit awkwardly behind a straight line of cards. */}
+        <motion.div
+          className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-10 text-center"
+          style={{ opacity: textOpacity }}
+        >
           <p className="mb-1.5 text-[9px] font-semibold tracking-[0.25em] text-zinc-500 sm:mb-3 sm:text-xs sm:tracking-[0.3em]">PARA QUIÉN ES ESTO</p>
           <h2 className="max-w-[9.5rem] text-balance font-[family-name:var(--font-display)] text-sm italic leading-tight tracking-tight text-white sm:max-w-sm sm:text-2xl md:text-3xl">
             Contenido para cualquier tipo de negocio
           </h2>
           <p className="mt-1.5 text-[9px] font-semibold tracking-[0.25em] text-zinc-500 sm:mt-4 sm:text-xs sm:tracking-[0.3em]">DESLIZA</p>
-        </div>
+        </motion.div>
 
         {RING_ITEMS.map((item, i) => (
           <GalleryCard key={item.id} industry={item} index={i} total={RING_COUNT} scrollYProgress={scrollYProgress} posScale={posScale} />

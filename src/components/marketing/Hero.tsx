@@ -7,6 +7,7 @@ import Image from "next/image";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { Play, Heart, MessageCircle, Send, ArrowRight } from "lucide-react";
 import AuroraBackground from "./AuroraBackground";
+import HeroVideoWall from "./HeroVideoWall";
 
 // Client-only — WebGL/Canvas has no server-side representation, and this
 // is purely decorative, so it's excluded from the server bundle and from
@@ -139,12 +140,13 @@ export default function Hero() {
           card, this is a deliberate fixed-dark moment, not a themed
           surface, so none of its colors carry `dark:` variants. */}
       <section className="relative flex min-h-[88vh] items-center overflow-hidden bg-zinc-950 sm:min-h-[92vh]">
+        <HeroVideoWall />
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 60% 55% at 80% 42%, rgba(30,107,76,0.35) 0%, transparent 65%), radial-gradient(ellipse 50% 40% at 10% 90%, rgba(10,46,35,0.5) 0%, transparent 70%)",
+              "radial-gradient(ellipse 60% 55% at 80% 42%, rgba(30,107,76,0.35) 0%, transparent 65%), radial-gradient(ellipse 50% 40% at 10% 90%, rgba(10,46,35,0.5) 0%, transparent 70%), linear-gradient(180deg, rgba(9,9,11,0.55) 0%, rgba(9,9,11,0.25) 30%, rgba(9,9,11,0.6) 100%)",
           }}
         />
 

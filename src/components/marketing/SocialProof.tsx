@@ -97,11 +97,11 @@ export default function SocialProof() {
           Columns 0/2 climb, 1/3 descend, so neighbors are always crossing
           rather than scrolling in lockstep. */}
       <div
-        className="relative mt-12 h-[420px] [mask-image:linear-gradient(to_bottom,transparent_0%,black_12%,black_88%,transparent_100%)] sm:h-[560px]"
+        className="relative mt-12 h-[420px] overflow-hidden [mask-image:linear-gradient(to_bottom,transparent_0%,black_12%,black_88%,transparent_100%)] sm:h-[560px]"
         style={{ perspective: "1000px" }}
       >
         <div
-          className="mx-auto grid max-w-6xl grid-cols-2 gap-3 px-4 sm:grid-cols-4 sm:gap-5 sm:px-6"
+          className="mx-auto grid h-full max-w-6xl grid-cols-2 gap-3 px-4 sm:grid-cols-4 sm:gap-5 sm:px-6"
           style={{ transform: "rotateX(13deg) rotateY(-9deg) rotateZ(9deg)", transformStyle: "preserve-3d" }}
         >
           {columns.map((reviews, c) => (

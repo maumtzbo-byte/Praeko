@@ -75,7 +75,6 @@ function MarqueeColumn({
 
 export default function SocialProof() {
   const columns = Array.from({ length: COLUMN_COUNT }, (_, c) => buildColumn(c % PLACEHOLDER_REVIEWS.length));
-  const doubledRow = [...PLACEHOLDER_REVIEWS, ...PLACEHOLDER_REVIEWS];
 
   return (
     <section className="relative overflow-hidden bg-zinc-950 py-24">
@@ -86,36 +85,28 @@ export default function SocialProof() {
         </h2>
       </div>
 
-      {/* Desktop/tablet: columns drifting in alternating directions behind a
-          real diagonal 3D tilt on the whole grid — the first version of
+      {/* Columns drifting in alternating directions behind a real diagonal
+          3D tilt on the whole grid, on phones too — the first version of
           this used a barely-there 6/-4/2deg tilt that read as a plain flat
           grid at a glance; this needs to be unmistakably diagonal, the way
-          the reference component is, while staying short of the point
-          where the outer columns' text becomes hard to read.
+          the reference component is. Only 2 columns render at phone widths
+          (the outer 2 stay `hidden` — CSS display:none drops them from
+          grid layout entirely, so `grid-cols-2` correctly fills with just
+          the 2 visible ones) since 4 tilted columns has no room to breathe
+          under ~640px; sm: and up brings all 4 back.
           Columns 0/2 climb, 1/3 descend, so neighbors are always crossing
           rather than scrolling in lockstep. */}
       <div
-        className="relative mt-12 hidden h-[560px] [mask-image:linear-gradient(to_bottom,transparent_0%,black_12%,black_88%,transparent_100%)] md:block"
+        className="relative mt-12 h-[420px] [mask-image:linear-gradient(to_bottom,transparent_0%,black_12%,black_88%,transparent_100%)] sm:h-[560px]"
         style={{ perspective: "1000px" }}
       >
         <div
-          className="mx-auto grid max-w-6xl grid-cols-4 gap-5 px-6"
+          className="mx-auto grid max-w-6xl grid-cols-2 gap-3 px-4 sm:grid-cols-4 sm:gap-5 sm:px-6"
           style={{ transform: "rotateX(13deg) rotateY(-9deg) rotateZ(9deg)", transformStyle: "preserve-3d" }}
         >
           {columns.map((reviews, c) => (
-            <MarqueeColumn key={c} reviews={reviews} duration={COLUMN_DURATIONS[c]} direction={c % 2 === 0 ? "up" : "down"} />
-          ))}
-        </div>
-      </div>
-
-      {/* Mobile: a 3D column grid has no room to breathe at phone widths —
-          collapses to the same proven horizontal marquee VideoShowcase and
-          the previous version of this section already use. */}
-      <div className="marquee-viewport mt-10 py-4 [mask-image:linear-gradient(to_right,transparent_0%,black_8%,black_92%,transparent_100%)] md:hidden">
-        <div className="marquee-track flex w-max gap-5 px-6">
-          {doubledRow.map((review, i) => (
-            <div key={i} className="w-72 shrink-0">
-              <ReviewCard industry={review.industry} quote={review.quote} />
+            <div key={c} className={c === 0 || c === 3 ? "hidden sm:block" : ""}>
+              <MarqueeColumn reviews={reviews} duration={COLUMN_DURATIONS[c]} direction={c % 2 === 0 ? "up" : "down"} />
             </div>
           ))}
         </div>

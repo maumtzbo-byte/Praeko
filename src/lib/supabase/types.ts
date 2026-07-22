@@ -252,9 +252,54 @@ export type Database = {
         }
         Relationships: []
       }
+      campaigns: {
+        Row: {
+          brief: string
+          business_id: string
+          created_at: string
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          status: Database["public"]["Enums"]["campaign_status"]
+          updated_at: string
+        }
+        Insert: {
+          brief: string
+          business_id: string
+          created_at?: string
+          end_date: string
+          id?: string
+          name: string
+          start_date: string
+          status?: Database["public"]["Enums"]["campaign_status"]
+          updated_at?: string
+        }
+        Update: {
+          brief?: string
+          business_id?: string
+          created_at?: string
+          end_date?: string
+          id?: string
+          name?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["campaign_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_calendar: {
         Row: {
           business_id: string
+          campaign_id: string | null
           content_kind: Database["public"]["Enums"]["content_kind"]
           created_at: string
           format: Database["public"]["Enums"]["content_format"]
@@ -269,6 +314,7 @@ export type Database = {
         }
         Insert: {
           business_id: string
+          campaign_id?: string | null
           content_kind: Database["public"]["Enums"]["content_kind"]
           created_at?: string
           format: Database["public"]["Enums"]["content_format"]
@@ -283,6 +329,7 @@ export type Database = {
         }
         Update: {
           business_id?: string
+          campaign_id?: string | null
           content_kind?: Database["public"]["Enums"]["content_kind"]
           created_at?: string
           format?: Database["public"]["Enums"]["content_format"]
@@ -301,6 +348,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_calendar_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
         ]
@@ -679,6 +733,7 @@ export type Database = {
     Enums: {
       brand_asset_type: "logo" | "photo" | "video" | "template_reference"
       business_role: "owner" | "editor"
+      campaign_status: "activa" | "completada" | "cancelada"
       content_format: "reel" | "carrusel" | "imagen_unica" | "promocion"
       content_kind: "imagen" | "video"
       content_status:
@@ -824,6 +879,7 @@ export const Constants = {
     Enums: {
       brand_asset_type: ["logo", "photo", "video", "template_reference"],
       business_role: ["owner", "editor"],
+      campaign_status: ["activa", "completada", "cancelada"],
       content_format: ["reel", "carrusel", "imagen_unica", "promocion"],
       content_kind: ["imagen", "video"],
       content_status: [

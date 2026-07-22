@@ -154,14 +154,14 @@ function enforceVideoBudget(days: StrategyDayPlan[], plan: PlanLimits): Strategy
   });
 }
 
-export async function generateMonthlyStrategy(input: StrategyAgentInput): Promise<MonthlyStrategyPlan> {
+async function callStrategyAgent(system: string, user: string, plan: PlanLimits): Promise<MonthlyStrategyPlan> {
   const client = getClaudeClient();
 
   const message = await client.messages.create({
-    model: input.plan.contentModel,
+    model: plan.contentModel,
     max_tokens: 8000,
-    system: buildSystemPrompt(),
-    messages: [{ role: "user", content: buildUserPrompt(input) }],
+    system,
+    messages: [{ role: "user", content: user }],
     tools: [
       {
         name: PLAN_TOOL_NAME,
@@ -185,5 +185,80 @@ export async function generateMonthlyStrategy(input: StrategyAgentInput): Promis
     throw new Error("La IA no generó ningún día de contenido.");
   }
 
-  return { days: enforceVideoBudget(raw.days, input.plan) };
+  return { days: enforceVideoBudget(raw.days, plan) };
+}
+
+export async function generateMonthlyStrategy(input: StrategyAgentInput): Promise<MonthlyStrategyPlan> {
+  return callStrategyAgent(buildSystemPrompt(), buildUserPrompt(input), input.plan);
+}
+
+export interface CampaignAgentInput {
+  business: StrategyAgentInput["business"];
+  brand: StrategyAgentInput["brand"];
+  plan: PlanLimits;
+  campaign: {
+    name: string;
+    /** Free text from the owner describing what the campaign is for — "Hot Sale, 20% en toda la tienda", "Navidad, promocionar canastas navideñas", etc. */
+    brief: string;
+    /** ISO date (YYYY-MM-DD), inclusive. */
+    startDate: string;
+    /** ISO date (YYYY-MM-DD), inclusive. */
+    endDate: string;
+  };
+}
+
+function buildCampaignSystemPrompt(): string {
+  return [
+    "Eres el agente de estrategia y guionista de Praeko, una plataforma de marketing con IA para negocios pequeños en México.",
+    "Tu trabajo ahora es planear una CAMPAÑA completa: una serie de piezas conectadas entre sí que llevan a los clientes hacia una fecha o evento específico (ej. Hot Sale, Navidad, Buen Fin, aniversario, lanzamiento).",
+    "Reglas:",
+    "- Escribe siempre en español, con el tono de marca que se te da.",
+    "- Todas las piezas deben conectar explícitamente con el tema y el objetivo de la campaña — no vuelvas a contenido genérico del negocio.",
+    "- Construye un arco a lo largo de la campaña: los primeros días generan anticipación/aviso, los días intermedios refuerzan el mensaje y el valor, y los últimos días (sobre todo el último) empujan urgencia y llamada a la acción clara para cerrar.",
+    "- Genera exactamente un día de contenido por cada día del rango de fechas de la campaña — ni más ni menos.",
+    "- Los guiones de video deben incluir gancho inicial, desarrollo y cierre con llamada a la acción, listos para grabarse tal cual.",
+    "- Varía los formatos a lo largo de la campaña; no repitas el mismo formato dos días seguidos si se puede evitar.",
+    "- Respeta el proveedor de video asignado al plan del negocio al proponer el nivel de producción esperado.",
+    "Responde únicamente llamando a la herramienta proporcionada — no escribas texto fuera de la llamada.",
+  ].join("\n");
+}
+
+function buildCampaignUserPrompt(input: CampaignAgentInput): string {
+  const { business, brand, plan, campaign } = input;
+  const days = daysBetweenInclusive(campaign.startDate, campaign.endDate);
+  const lines = [
+    `Negocio: ${business.name}`,
+    business.industry ? `Giro: ${business.industry}` : null,
+    business.description ? `Descripción: ${business.description}` : null,
+    business.city || business.country
+      ? `Ubicación: ${[business.city, business.country].filter(Boolean).join(", ")}`
+      : null,
+    brand.brandTone ? `Tono de marca: ${brand.brandTone}` : null,
+    brand.mission ? `Misión: ${brand.mission}` : null,
+    brand.targetAudience ? `Público objetivo: ${brand.targetAudience}` : null,
+    brand.brandValues.length ? `Valores de marca: ${brand.brandValues.join(", ")}` : null,
+    brand.sellsDescription ? `Qué vende: ${brand.sellsDescription}` : null,
+    brand.mainProducts.length ? `Productos o servicios principales: ${brand.mainProducts.join(", ")}` : null,
+    "",
+    `Plan contratado: ${plan.displayName}`,
+    `Límite de videos al mes: ${plan.videosPerMonth} (máximo ${plan.videoMaxSeconds}s por video, proveedor ${plan.videoProvider})`,
+    `Límite de imágenes al mes: ${plan.imagesPerMonth}`,
+    "",
+    `CAMPAÑA: ${campaign.name}`,
+    `Lo que el dueño del negocio pidió para esta campaña: ${campaign.brief}`,
+    `Duración: del ${campaign.startDate} al ${campaign.endDate} (${days} días, fechas consecutivas, formato YYYY-MM-DD).`,
+    `Genera exactamente ${days} días de contenido, uno por cada fecha del rango, construyendo el arco de la campaña hacia el último día.`,
+  ].filter((line): line is string => line !== null);
+
+  return lines.join("\n");
+}
+
+function daysBetweenInclusive(startDate: string, endDate: string): number {
+  const start = new Date(`${startDate}T00:00:00Z`).getTime();
+  const end = new Date(`${endDate}T00:00:00Z`).getTime();
+  return Math.round((end - start) / 86_400_000) + 1;
+}
+
+export async function generateCampaignPlan(input: CampaignAgentInput): Promise<MonthlyStrategyPlan> {
+  return callStrategyAgent(buildCampaignSystemPrompt(), buildCampaignUserPrompt(input), input.plan);
 }

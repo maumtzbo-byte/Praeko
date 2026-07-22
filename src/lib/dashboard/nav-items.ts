@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   Sparkles,
+  Megaphone,
   CalendarDays,
   FolderOpen,
   Images,
@@ -29,6 +30,7 @@ export interface NavItem {
 export const PRIMARY_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/generar-contenido", label: "Generar contenido", icon: Sparkles },
+  { href: "/dashboard/campanas", label: "Campañas", icon: Megaphone },
   { href: "/dashboard/calendario", label: "Calendario", icon: CalendarDays },
   { href: "/dashboard/biblioteca", label: "Biblioteca multimedia", icon: FolderOpen, comingSoon: true },
   { href: "/dashboard/galeria", label: "Galería", icon: Images },

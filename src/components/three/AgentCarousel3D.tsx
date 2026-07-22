@@ -178,12 +178,13 @@ function useIconTexture(kind: IconKind) {
   }, [kind]);
 }
 
-/** One card: a solid plaque with the text texture mapped onto its front
- * face, arranged on a ring around the central cube and facing outward. A
- * continuous per-card float bob, phase-offset by index, keeps the ring
- * from feeling static. Fades toward the camera's current angle: cards
- * facing the camera are fully opaque, cards edge-on soften into a low but
- * non-zero opacity instead of collapsing into a bare sliver. */
+/** One card: a frosted-glass pane (transmission, not an opaque plaque)
+ * with the text texture mapped onto its front face, arranged on a ring
+ * around the central cube and facing outward. A continuous per-card float
+ * bob, phase-offset by index, keeps the ring from feeling static. Fades
+ * toward the camera's current angle: cards facing the camera are fully
+ * opaque, cards edge-on soften into a low but non-zero opacity instead of
+ * collapsing into a bare sliver. */
 function AgentCardMesh({
   agent,
   index,
@@ -228,20 +229,29 @@ function AgentCardMesh({
   return (
     <group position={[x, 0, z]} rotation={[0, angle, 0]}>
       <group ref={group}>
-        <RoundedBox args={[1.9, 1.2, 0.08]} radius={0.05} smoothness={4} castShadow receiveShadow>
-          {/* meshPhysicalMaterial with a real clearcoat, not high-roughness
-              meshStandardMaterial — high roughness with zero specular is
-              literally the "clay render" recipe (flat diffuse, no
-              highlight), which is what made this read as plasticine
-              instead of a printed/laminated card. Lower roughness + a thin
-              glossy coat gives it a crisp highlight instead. */}
+        {/* radius 0.02 (not 0.05+) — a defined, engineered-glass edge
+            instead of the soft "pillow" corners that read as clay no
+            matter what the surface material does. */}
+        <RoundedBox args={[1.9, 1.2, 0.08]} radius={0.02} smoothness={4} castShadow receiveShadow>
+          {/* Frosted glass, not a solid plaque — native meshPhysicalMaterial
+              transmission (not drei's MeshTransmissionMaterial, which
+              renders its own extra pass per instance; the native version
+              shares one transmission pass across every object using it,
+              so 5 of these costs nowhere near 5x). Roughness stays high
+              enough to diffuse what's behind into a soft wash rather than
+              a sharp, distracting refraction competing with the text. */}
           <meshPhysicalMaterial
             ref={boxMatRef}
             color="#f7f3ec"
-            roughness={0.4}
+            roughness={0.28}
             metalness={0}
-            clearcoat={0.6}
-            clearcoatRoughness={0.15}
+            transmission={0.5}
+            thickness={0.4}
+            ior={1.45}
+            attenuationColor="#e8dcc8"
+            attenuationDistance={0.7}
+            clearcoat={1}
+            clearcoatRoughness={0.1}
             transparent
           />
         </RoundedBox>
@@ -282,12 +292,16 @@ function CentralCube({ spin }: { spin: boolean }) {
 
   return (
     <RoundedBox ref={mesh} args={[2.15, 2.15, 2.15]} radius={0.16} smoothness={6} castShadow receiveShadow>
+      {/* Higher transmission + lower roughness than before — read as
+          "colored plastic block" at the old settings, not obviously
+          crystal. More see-through and a sharper reflection reads as
+          glass unambiguously. */}
       <MeshTransmissionMaterial
         color="#1e6b4c"
         thickness={1.3}
-        roughness={0.1}
-        transmission={0.5}
-        ior={1.45}
+        roughness={0.06}
+        transmission={0.68}
+        ior={1.5}
         attenuationColor="#0a2e23"
         attenuationDistance={0.7}
         chromaticAberration={0.02}
@@ -295,8 +309,8 @@ function CentralCube({ spin }: { spin: boolean }) {
         distortion={0}
         temporalDistortion={0}
         clearcoat={1}
-        clearcoatRoughness={0.1}
-        envMapIntensity={1.7}
+        clearcoatRoughness={0.06}
+        envMapIntensity={2}
         resolution={512}
       />
     </RoundedBox>

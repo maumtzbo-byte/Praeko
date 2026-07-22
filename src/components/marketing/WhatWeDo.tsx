@@ -1,11 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { CarouselAgent } from "@/components/three/AgentCarousel3D";
-
-const AgentCarousel3D = dynamic(() => import("@/components/three/AgentCarousel3D"), { ssr: false });
+import AgentCylinderCarousel, { type CarouselAgent } from "@/components/marketing/AgentCylinderCarousel";
 
 const AGENTS: CarouselAgent[] = [
   {
@@ -31,28 +28,14 @@ const AGENTS: CarouselAgent[] = [
 ];
 
 export default function WhatWeDo() {
-  const sectionRef = useRef<HTMLElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [carouselVisible, setCarouselVisible] = useState(false);
-
-  // Pauses the WebGL frameloop once the section scrolls off-screen.
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el || typeof IntersectionObserver === "undefined") {
-      setCarouselVisible(true);
-      return;
-    }
-    const observer = new IntersectionObserver(([entry]) => setCarouselVisible(entry.isIntersecting), { threshold: 0.05 });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   function goTo(index: number) {
     setActiveIndex(Math.max(0, Math.min(AGENTS.length - 1, index)));
   }
 
   return (
-    <section ref={sectionRef} id="agentes" className="relative overflow-hidden py-24 md:py-28">
+    <section id="agentes" className="relative overflow-hidden py-24 md:py-28">
       <div className="mx-auto max-w-6xl px-6">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -60,7 +43,7 @@ export default function WhatWeDo() {
             <h2 className="max-w-md text-balance font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
               Cinco agentes, un negocio que se publica solo
             </h2>
-            <p className="mt-3 max-w-sm text-sm text-zinc-500 dark:text-zinc-400">Arrastra para girar la cámara alrededor.</p>
+            <p className="mt-3 max-w-sm text-sm text-zinc-500 dark:text-zinc-400">Arrastra o haz clic en una tarjeta para girar el carrusel.</p>
           </div>
           <div className="hidden shrink-0 gap-2 sm:flex">
             <button
@@ -83,18 +66,13 @@ export default function WhatWeDo() {
         </div>
       </div>
 
-      {/* The whole "what we do" moment is one immersive 3D scene now — the
-          cube and every agent card are real meshes in the same canvas, not
-          HTML laid over a decorative background. Dragging orbits the
-          camera around the ring (see AgentCarousel3D/CameraRig); it
-          doesn't spin the objects in place. */}
+      {/* Cards ride a CSS 3D ring (perspective + rotateY/translateZ per
+          card), not a WebGL scene — dragging rotates the ring, clicking an
+          adjacent card jumps straight to it. */}
       <div className="relative mt-8 h-[26rem] w-full sm:h-[30rem]">
-        {/* A "stage" behind the scene — without this the cube/cards just
-            float on flat page background, which is what made the whole
-            thing read as unfinished even with correct geometry. Same
-            radial-glow idea the Hero uses behind its own cube, kept subtle
-            via opacity rather than baking transparency into the gradient
-            stops themselves. */}
+        {/* A "stage" behind the ring — without this the cards just float on
+            flat page background. Same radial-glow idea the Hero uses
+            behind its own cube, kept subtle via opacity. */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10 opacity-40 dark:opacity-25"
@@ -103,13 +81,7 @@ export default function WhatWeDo() {
               "radial-gradient(ellipse 65% 70% at 50% 50%, var(--aurora-highlight) 0%, var(--accent) 45%, transparent 75%)",
           }}
         />
-        <AgentCarousel3D
-          className="h-full w-full"
-          agents={AGENTS}
-          activeIndex={activeIndex}
-          onActiveIndexChange={goTo}
-          active={carouselVisible}
-        />
+        <AgentCylinderCarousel className="h-full w-full" agents={AGENTS} activeIndex={activeIndex} onActiveIndexChange={goTo} />
       </div>
 
       <div className="mt-6 flex justify-center gap-2">

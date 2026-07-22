@@ -198,8 +198,8 @@ export default function AgentCarousel3D({
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia(SAFE_MATCH_MEDIA).matches);
   const anglePerCard = (Math.PI * 2) / agents.length;
 
-  const currentAngleRef = useRef(-activeIndex * anglePerCard);
-  const targetAngleRef = useRef(-activeIndex * anglePerCard);
+  const currentAngleRef = useRef(activeIndex * anglePerCard);
+  const targetAngleRef = useRef(activeIndex * anglePerCard);
   const draggingRef = useRef(false);
   const dragStartX = useRef(0);
   const dragStartAngle = useRef(0);
@@ -214,8 +214,10 @@ export default function AgentCarousel3D({
 
   // External navigation (buttons/dots) moves the target; the camera eases
   // there on its own via CameraRig, same easing a drag-release uses.
+  // Matches each card's own placement angle (i * anglePerCard) exactly —
+  // that's what "facing card i" means geometrically (see AgentCardMesh).
   useEffect(() => {
-    targetAngleRef.current = -activeIndex * anglePerCard;
+    targetAngleRef.current = activeIndex * anglePerCard;
   }, [activeIndex, anglePerCard]);
 
   function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
@@ -230,15 +232,21 @@ export default function AgentCarousel3D({
     if (!draggingRef.current) return;
     const deltaX = e.clientX - dragStartX.current;
     if (Math.abs(deltaX) > 3) draggedRef.current = true;
-    currentAngleRef.current = dragStartAngle.current + deltaX * DRAG_SENSITIVITY;
+    // Negative coefficient on purpose: dragging left (negative deltaX)
+    // advances to the next card, the standard swipe-left-for-next
+    // convention — and the visible ring/camera sweep direction that goes
+    // with it is what was asked for ("scrollear a la izquierda gira a la
+    // derecha").
+    currentAngleRef.current = dragStartAngle.current - deltaX * DRAG_SENSITIVITY;
   }
 
   function handlePointerUp() {
     if (!draggingRef.current) return;
     draggingRef.current = false;
     if (!draggedRef.current) return;
-    // Snap to whichever card angle the drag ended up closest to.
-    const raw = -currentAngleRef.current / anglePerCard;
+    // Snap to whichever card angle the drag ended up closest to. Matches
+    // the positive i * anglePerCard convention targetAngleRef uses.
+    const raw = currentAngleRef.current / anglePerCard;
     const nearest = Math.max(0, Math.min(agents.length - 1, Math.round(raw)));
     onActiveIndexChange(nearest);
   }

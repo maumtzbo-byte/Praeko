@@ -87,6 +87,25 @@ body {
   }
 }
 
+/* Hero's rotating headline word — a plain CSS keyframe instead of a JS
+   animation library. Each rotation is a fresh DOM node (React remounts on
+   key change), so a CSS animation triggered by insertion is deterministic
+   in a way a JS-driven tween tied to React/effect timing was not. */
+.rotate-word-in {
+  animation: rotate-word-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes rotate-word-in {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
+
 /* Soft aurora blobs used as ambient background shapes — real color wash
    (not the old silver-chrome luminosity trick, which discarded any hue in
    favor of the backdrop's), diffused with a heavy blur so it reads as a

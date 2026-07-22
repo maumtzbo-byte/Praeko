@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
-import { AnimatePresence, motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import { Play, Heart, MessageCircle, Send, ArrowRight } from "lucide-react";
 import AuroraBackground from "./AuroraBackground";
 
@@ -50,24 +50,17 @@ function RotatingHeadlineWord() {
   const phrase = ROTATING_PHRASES[reducedMotion ? 0 : index];
 
   return (
+    // Plain CSS keyframe (.rotate-word-in in globals.css), not framer-motion
+    // — a JS-driven tween here proved flaky (opacity getting stuck
+    // mid-transition independent of the transform in testing). A CSS
+    // animation triggered by DOM insertion runs on the compositor and
+    // can't get caught in that kind of React/effect timing race; the old
+    // instance is simply gone the instant the key changes (no exit
+    // animation to coordinate), and the overflow-hidden clip hides the cut.
     <span className="relative block h-[1.05em] w-full overflow-hidden">
-      {/* initial={false}: only the ROTATIONS animate — the very first
-          phrase renders straight into place instead of playing its own
-          mount transition, which sidesteps an AnimatePresence quirk where
-          that first enter animation could get stuck partway (landing on
-          the exit transform instead of resolving to visible). */}
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={phrase}
-          initial={reducedMotion ? false : { y: "100%", opacity: 0 }}
-          animate={{ y: "0%", opacity: 1 }}
-          exit={reducedMotion ? undefined : { y: "-100%", opacity: 0 }}
-          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-          className="aurora-text absolute inset-0"
-        >
-          {phrase}
-        </motion.span>
-      </AnimatePresence>
+      <span key={phrase} className={`aurora-text absolute inset-0 ${reducedMotion ? "" : "rotate-word-in"}`}>
+        {phrase}
+      </span>
     </span>
   );
 }
@@ -172,25 +165,17 @@ export default function Hero() {
           className="relative mx-auto w-full max-w-7xl px-6 py-28 sm:px-10 md:py-32"
         >
           <div className="max-w-4xl">
-            <span className="flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-1.5 text-[11px] font-medium tracking-[0.2em] text-zinc-300 backdrop-blur-sm">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
-              </span>
-              MARKETING CON INTELIGENCIA
-            </span>
             {/* Sized and weighted to match the Shopify reference directly —
                 stacks into its own lines at this scale without needing to
                 be pushed as large as the earlier pass. The payoff line
                 rotates through a few angles on the same promise, exactly
                 like Shopify's own hero does with its swapping word. */}
-            <h1 className="mt-8 text-balance font-sans text-5xl font-light leading-[1.05] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
+            <h1 className="text-balance font-sans text-5xl font-light leading-[1.05] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
               Tu negocio puede
               <RotatingHeadlineWord />
             </h1>
             <p className="mt-8 max-w-xl text-balance text-lg font-light text-zinc-400 sm:text-xl">
-              Cada mañana entras y ya hay contenido nuevo esperando en tu
-              calendario. Tú solo revisas y publicas.
+              Contenido nuevo cada mañana. Tú solo publicas.
             </p>
             <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <Link

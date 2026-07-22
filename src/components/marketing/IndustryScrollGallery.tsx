@@ -39,9 +39,9 @@ const CARD_GRADIENTS = [
   "radial-gradient(120% 120% at 40% 40%, #1e6b4c 0%, #0a2e23 70%)",
 ];
 
-function ringPoint(angleDeg: number) {
+function ringPoint(angleDeg: number, scaleX: number, scaleY: number) {
   const rad = (angleDeg * Math.PI) / 180;
-  return { x: Math.sin(rad) * RING_RADIUS_X, y: Math.cos(rad) * RING_RADIUS_Y };
+  return { x: Math.sin(rad) * RING_RADIUS_X * scaleX, y: Math.cos(rad) * RING_RADIUS_Y * scaleY };
 }
 
 /** One card's whole journey — scattered and tumbled (phase 1) -> converging
@@ -54,25 +54,30 @@ function GalleryCard({
   index,
   total,
   scrollYProgress,
+  scaleX,
+  scaleY,
 }: {
   industry: (typeof INDUSTRIES)[number];
   index: number;
   total: number;
   scrollYProgress: MotionValue<number>;
+  scaleX: number;
+  scaleY: number;
 }) {
   const Icon = industry.icon;
   const scatter = SCATTER[index % SCATTER.length];
   const angleBase = (index / total) * 360;
-  const ringNow = useMemo(() => ringPoint(angleBase), [angleBase]);
-  const ringShifted = useMemo(() => ringPoint(angleBase + ARC_SHIFT_DEG), [angleBase]);
+  const ringNow = useMemo(() => ringPoint(angleBase, scaleX, scaleY), [angleBase, scaleX, scaleY]);
+  const ringShifted = useMemo(() => ringPoint(angleBase + ARC_SHIFT_DEG, scaleX, scaleY), [angleBase, scaleX, scaleY]);
+  const lift = 70 * scaleY;
 
   // The ring (0.42) holds its exact position through 0.62 before the arc
   // shift starts — without a hold, "converging" flows straight into
   // "arcing away" and a normal-speed scroll never actually shows a formed
   // ring, just a blur of cards never settling anywhere.
   const stops = [0, 0.22, 0.42, 0.62, 1];
-  const x = useTransform(scrollYProgress, stops, [scatter.x, scatter.x * 0.4, ringNow.x, ringNow.x, ringShifted.x]);
-  const y = useTransform(scrollYProgress, stops, [scatter.y, scatter.y * 0.4, ringNow.y, ringNow.y, ringShifted.y - 70]);
+  const x = useTransform(scrollYProgress, stops, [scatter.x * scaleX, scatter.x * scaleX * 0.4, ringNow.x, ringNow.x, ringShifted.x]);
+  const y = useTransform(scrollYProgress, stops, [scatter.y * scaleY, scatter.y * scaleY * 0.4, ringNow.y, ringNow.y, ringShifted.y - lift]);
   const rotate = useTransform(scrollYProgress, stops, [scatter.rotate, scatter.rotate * 0.3, 0, 0, (angleBase + ARC_SHIFT_DEG) * 0.06]);
   const scale = useTransform(scrollYProgress, stops, [0.55, 0.85, 1, 1, 0.92]);
   const borderRadius = useTransform(scrollYProgress, [0, 0.22, 1], ["46%", "22px", "22px"]);
@@ -124,27 +129,42 @@ function StaticIndustryGrid() {
 }
 
 const SAFE_MATCH_MEDIA = "(prefers-reduced-motion: reduce)";
-const MOBILE_MATCH_MEDIA = "(max-width: 767px)";
+
+// The ring/scatter geometry is tuned for a desktop-width viewport; on a
+// narrow phone it needs to shrink to actually fit without the cards
+// spilling past the screen edges. X shrinks more aggressively than Y — Y
+// has a higher floor so the ring stays tall enough to clear the central
+// text block instead of overlapping it.
+function computePositionScale(width: number) {
+  return {
+    x: Math.max(0.42, Math.min(1, width / 900)),
+    y: Math.max(0.85, Math.min(1, width / 500)),
+  };
+}
 
 export default function IndustryScrollGallery() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [simplified, setSimplified] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [posScale, setPosScale] = useState({ x: 1, y: 1 });
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
 
   useEffect(() => {
     const reducedMql = window.matchMedia(SAFE_MATCH_MEDIA);
-    const mobileMql = window.matchMedia(MOBILE_MATCH_MEDIA);
-    const update = () => setSimplified(reducedMql.matches || mobileMql.matches);
-    update();
-    reducedMql.addEventListener("change", update);
-    mobileMql.addEventListener("change", update);
+    const updateReduced = () => setReducedMotion(reducedMql.matches);
+    updateReduced();
+    reducedMql.addEventListener("change", updateReduced);
+
+    const updateScale = () => setPosScale(computePositionScale(window.innerWidth));
+    updateScale();
+    window.addEventListener("resize", updateScale);
+
     return () => {
-      reducedMql.removeEventListener("change", update);
-      mobileMql.removeEventListener("change", update);
+      reducedMql.removeEventListener("change", updateReduced);
+      window.removeEventListener("resize", updateScale);
     };
   }, []);
 
-  if (simplified) {
+  if (reducedMotion) {
     return (
       <section className="relative overflow-hidden bg-zinc-950 py-24">
         <div className="mx-auto mb-12 max-w-2xl px-6 text-center">
@@ -163,16 +183,24 @@ export default function IndustryScrollGallery() {
       <div className="sticky top-0 h-screen overflow-hidden">
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-[70vmin] w-[70vmin] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40 blur-3xl" style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)" }} />
 
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-          <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">PARA QUIÉN ES ESTO</p>
-          <h2 className="max-w-sm text-balance font-[family-name:var(--font-display)] text-2xl italic tracking-tight text-white sm:text-3xl">
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-10 text-center">
+          <p className="mb-2 text-[10px] font-semibold tracking-[0.3em] text-zinc-500 sm:mb-3 sm:text-xs">PARA QUIÉN ES ESTO</p>
+          <h2 className="max-w-[13rem] text-balance font-[family-name:var(--font-display)] text-lg italic tracking-tight text-white sm:max-w-sm sm:text-2xl md:text-3xl">
             Contenido para cualquier tipo de negocio
           </h2>
-          <p className="mt-4 text-xs font-semibold tracking-[0.3em] text-zinc-500">DESLIZA PARA EXPLORAR</p>
+          <p className="mt-2 text-[10px] font-semibold tracking-[0.3em] text-zinc-500 sm:mt-4 sm:text-xs">DESLIZA PARA EXPLORAR</p>
         </div>
 
         {INDUSTRIES.map((industry, i) => (
-          <GalleryCard key={industry.label} industry={industry} index={i} total={INDUSTRIES.length} scrollYProgress={scrollYProgress} />
+          <GalleryCard
+            key={industry.label}
+            industry={industry}
+            index={i}
+            total={INDUSTRIES.length}
+            scrollYProgress={scrollYProgress}
+            scaleX={posScale.x}
+            scaleY={posScale.y}
+          />
         ))}
       </div>
     </section>

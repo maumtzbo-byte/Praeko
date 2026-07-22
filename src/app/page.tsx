@@ -1,6 +1,7 @@
 import Navbar from "@/components/marketing/Navbar";
 import Hero from "@/components/marketing/Hero";
 import WhatWeDo from "@/components/marketing/WhatWeDo";
+import IndustryScrollGallery from "@/components/marketing/IndustryScrollGallery";
 import VideoShowcase from "@/components/marketing/VideoShowcase";
 import SocialProof from "@/components/marketing/SocialProof";
 import WhyWeBuilt from "@/components/marketing/WhyWeBuilt";
@@ -18,6 +19,7 @@ export default function Home() {
       <main className="flex flex-1 flex-col">
         <Hero />
         <WhatWeDo />
+        <IndustryScrollGallery />
         <VideoShowcase />
         <WhyWeBuilt />
         <SocialProof />

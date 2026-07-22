@@ -10,20 +10,30 @@ import type { Mesh } from "three";
  * than "look at this shader," which fits the pivot away from a glossy
  * chrome-and-blue signature toward the forest-green/beige identity —
  * the same material language as the recolored P mark, just in 3D. */
-function CubeMesh({ spin }: { spin: boolean }) {
+function CubeMesh({ spin, targetRotation }: { spin: boolean; targetRotation: { x: number; y: number } }) {
   const mesh = useRef<Mesh>(null);
+  // Own imperative rotation state, eased toward `targetRotation` every
+  // frame — a "camera cut" driven by whatever's swiping through cards
+  // above it, not an autonomous spin. Starts at the first target so it
+  // doesn't visibly animate in from a default pose on mount.
+  const current = useRef({ x: targetRotation.x, y: targetRotation.y });
 
   useFrame((state, delta) => {
     if (!mesh.current) return;
-    if (spin) {
-      mesh.current.rotation.y += delta * 0.12;
-      mesh.current.rotation.x = 0.55 + Math.sin(state.clock.getElapsedTime() * 0.18) * 0.08;
-    }
-    mesh.current.position.y = Math.sin(state.clock.getElapsedTime() * 0.4) * 0.08;
+    // Frame-rate-independent exponential ease — same shape regardless of
+    // delta, unlike a fixed per-frame lerp factor.
+    const ease = 1 - Math.pow(0.0025, delta);
+    current.current.x += (targetRotation.x - current.current.x) * ease;
+    current.current.y += (targetRotation.y - current.current.y) * ease;
+
+    const wobble = spin ? Math.sin(state.clock.getElapsedTime() * 0.3) * 0.035 : 0;
+    mesh.current.rotation.x = current.current.x + wobble;
+    mesh.current.rotation.y = current.current.y;
+    mesh.current.position.y = spin ? Math.sin(state.clock.getElapsedTime() * 0.4) * 0.06 : 0;
   });
 
   return (
-    <RoundedBox ref={mesh} args={[1.7, 1.7, 1.7]} radius={0.14} smoothness={6} rotation={[0.55, 0.5, 0.1]}>
+    <RoundedBox ref={mesh} args={[1.7, 1.7, 1.7]} radius={0.14} smoothness={6}>
       <MeshTransmissionMaterial
         color="#1e6b4c"
         thickness={1.1}
@@ -47,7 +57,15 @@ function CubeMesh({ spin }: { spin: boolean }) {
 
 const SAFE_MATCH_MEDIA = "(prefers-reduced-motion: reduce)";
 
-export default function GlassCube({ className, active = true }: { className?: string; active?: boolean }) {
+export default function GlassCube({
+  className,
+  active = true,
+  targetRotation = { x: 0.55, y: 0.5 },
+}: {
+  className?: string;
+  active?: boolean;
+  targetRotation?: { x: number; y: number };
+}) {
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia(SAFE_MATCH_MEDIA).matches);
 
   useEffect(() => {
@@ -68,7 +86,7 @@ export default function GlassCube({ className, active = true }: { className?: st
         <Suspense fallback={null}>
           <ambientLight intensity={0.6} />
           <directionalLight position={[2, 3, 4]} intensity={0.9} />
-          <CubeMesh spin={!reducedMotion} />
+          <CubeMesh spin={!reducedMotion} targetRotation={targetRotation} />
           {/* Procedural studio lighting, warm this time — sand/cream and a
               beige rim light instead of blue, so the glass's own
               reflections pick up "Praeko warm" rather than a cold studio

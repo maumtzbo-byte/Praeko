@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, Compass, Wand2, Send, MessageCircle, BarChart3, type LucideIcon } from "lucide-react";
+
+const GlassCube = dynamic(() => import("@/components/three/GlassCube"), { ssr: false });
 
 const AGENTS: { icon: LucideIcon; title: string; description: string }[] = [
   {
@@ -32,66 +34,120 @@ const AGENTS: { icon: LucideIcon; title: string; description: string }[] = [
   },
 ];
 
-/** One floating card — a continuous idle bob (.card-float, phase-offset per
- * card like the review cards) plus a cursor-driven tilt on top of it,
- * reusing the same rotateX/rotateY-spring recipe as the pricing cards'
- * hover pop. Two different "3D" cues stacked (bob + tilt) is what makes
- * these read as physically floating rather than just a hover effect. */
-function AgentCard({ agent, index }: { agent: (typeof AGENTS)[number]; index: number }) {
-  const cardRef = useRef<HTMLDivElement | null>(null);
-  const rotateX = useMotionValue(0);
-  const rotateY = useMotionValue(0);
-  const springRotateX = useSpring(rotateX, { stiffness: 300, damping: 28 });
-  const springRotateY = useSpring(rotateY, { stiffness: 300, damping: 28 });
+// One distinct orientation per agent — a deliberate "camera cut" to a new
+// view of the cube as the active card changes, not a random spin. Y keeps
+// climbing across the set so swiping forward always reads as continuing
+// in the same direction; X varies per card so each view is genuinely
+// different, not just "the same cube further around."
+const CUBE_ROTATIONS = [
+  { x: 0.5, y: 0.4 },
+  { x: -0.35, y: 1.35 },
+  { x: 0.65, y: 2.5 },
+  { x: -0.5, y: 3.5 },
+  { x: 0.3, y: 4.55 },
+];
 
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = cardRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const px = (e.clientX - rect.left) / rect.width - 0.5;
-    const py = (e.clientY - rect.top) / rect.height - 0.5;
-    rotateY.set(px * 10);
-    rotateX.set(-py * 10);
-  }
-
-  function handleMouseLeave() {
-    rotateX.set(0);
-    rotateY.set(0);
-  }
-
+function AgentCard({ agent, index, registerRef }: { agent: (typeof AGENTS)[number]; index: number; registerRef: (index: number, el: HTMLDivElement | null) => void }) {
   const Icon = agent.icon;
-  const floatClass = index % 2 === 0 ? "card-float" : "card-float card-float-offset";
-
   return (
-    <div className={`w-[78%] shrink-0 snap-center sm:w-[300px] ${floatClass}`}>
-      <motion.div
-        ref={cardRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{ rotateX: springRotateX, rotateY: springRotateY, transformPerspective: 900 }}
-        className="relative flex h-full flex-col gap-4 rounded-3xl border border-[var(--hairline)] bg-white p-7 shadow-[0_2px_4px_rgba(0,0,0,0.06),0_28px_50px_-24px_rgba(0,0,0,0.4)] dark:bg-zinc-900 dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),0_28px_50px_-24px_rgba(0,0,0,0.75)]"
-      >
-        <span className="text-xs font-semibold tracking-[0.25em] text-zinc-400 dark:text-zinc-600">
+    <div
+      ref={(el) => registerRef(index, el)}
+      data-index={index}
+      className="w-[82%] shrink-0 snap-center sm:w-[420px]"
+    >
+      {/* Solid, opaque white — deliberately not glassy, so it fully blocks
+          the cube behind it in its own bounds. The cube is only meant to
+          show through above/below the card, poking out like the reference
+          image, not bleeding through the card face itself. */}
+      <div className="relative flex min-h-[280px] flex-col justify-end gap-4 rounded-3xl bg-white p-8 shadow-[0_2px_4px_rgba(0,0,0,0.06),0_32px_60px_-24px_rgba(0,0,0,0.35)] dark:bg-zinc-900 dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),0_32px_60px_-24px_rgba(0,0,0,0.7)]">
+        <span className="absolute right-6 top-6 text-xs font-semibold tracking-[0.25em] text-zinc-300 dark:text-zinc-700">
           {String(index + 1).padStart(2, "0")}
         </span>
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 text-accent">
           <Icon className="h-6 w-6" strokeWidth={1.5} />
         </span>
-        <h3 className="text-lg font-semibold tracking-tight text-zinc-950 dark:text-white">{agent.title}</h3>
+        <h3 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-white">{agent.title}</h3>
         <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{agent.description}</p>
-      </motion.div>
+      </div>
     </div>
   );
 }
 
 export default function WhatWeDo() {
+  const sectionRef = useRef<HTMLElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [cubeVisible, setCubeVisible] = useState(false);
 
-  function scrollByCard(direction: 1 | -1) {
-    scrollRef.current?.scrollBy({ left: direction * 328, behavior: "smooth" });
+  function registerCardRef(index: number, el: HTMLDivElement | null) {
+    cardRefs.current[index] = el;
+  }
+
+  // Which card is centered in the swipe track drives the cube's target
+  // rotation — this is the "swipe -> camera change" link, and it works
+  // identically whether the swipe came from a touch drag, a trackpad, or
+  // the prev/next buttons (which just scroll the same track).
+  useEffect(() => {
+    const track = scrollRef.current;
+    if (!track) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        let bestIndex: number | null = null;
+        let bestRatio = 0;
+        for (const entry of entries) {
+          if (entry.intersectionRatio > bestRatio) {
+            bestRatio = entry.intersectionRatio;
+            bestIndex = Number((entry.target as HTMLElement).dataset.index);
+          }
+        }
+        if (bestIndex !== null && bestRatio > 0.5) setActiveIndex(bestIndex);
+      },
+      { root: track, threshold: [0, 0.25, 0.5, 0.75, 0.9, 1] },
+    );
+    cardRefs.current.forEach((el) => el && observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  // A snap-scroll track doesn't auto-snap on load — without this, card 1
+  // sits flush at the track's left edge instead of centered, which puts
+  // it out of alignment with the cube (fixed at the track's horizontal
+  // center) until the visitor's first swipe corrects it. Sets scrollLeft
+  // directly (rather than scrollIntoView, which was inconsistent here,
+  // likely fighting the track's own scroll-snap-type) inside a rAF so it
+  // runs after layout has actually settled.
+  useEffect(() => {
+    const track = scrollRef.current;
+    const card = cardRefs.current[0];
+    if (!track || !card) return;
+    const id = requestAnimationFrame(() => {
+      track.scrollLeft = card.offsetLeft - (track.clientWidth - card.clientWidth) / 2;
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  // Pauses the WebGL frameloop once the section scrolls off-screen —
+  // this cube is mounted on every screen size (the swipe interaction is
+  // the point on mobile too, unlike the Hero's lg-only decorative one),
+  // so keeping it from rendering while invisible actually matters here.
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setCubeVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => setCubeVisible(entry.isIntersecting), { threshold: 0.05 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  function scrollToIndex(index: number) {
+    const clamped = Math.max(0, Math.min(AGENTS.length - 1, index));
+    cardRefs.current[clamped]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }
 
   return (
-    <section id="agentes" className="relative py-24 md:py-28">
+    <section ref={sectionRef} id="agentes" className="relative overflow-hidden py-24 md:py-28">
       <div className="mx-auto max-w-6xl px-6">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -100,12 +156,10 @@ export default function WhatWeDo() {
               Cinco agentes, un negocio que se publica solo
             </h2>
           </div>
-          {/* Desktop-only nav — mobile already gets a native, more direct
-              swipe via the snap-scroll track itself. */}
           <div className="hidden shrink-0 gap-2 sm:flex">
             <button
               type="button"
-              onClick={() => scrollByCard(-1)}
+              onClick={() => scrollToIndex(activeIndex - 1)}
               aria-label="Agente anterior"
               className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--hairline)] text-zinc-500 transition-colors hover:border-accent hover:text-accent dark:text-zinc-400"
             >
@@ -113,7 +167,7 @@ export default function WhatWeDo() {
             </button>
             <button
               type="button"
-              onClick={() => scrollByCard(1)}
+              onClick={() => scrollToIndex(activeIndex + 1)}
               aria-label="Siguiente agente"
               className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--hairline)] text-zinc-500 transition-colors hover:border-accent hover:text-accent dark:text-zinc-400"
             >
@@ -123,16 +177,52 @@ export default function WhatWeDo() {
         </div>
       </div>
 
-      <div
-        ref={scrollRef}
-        className="mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto px-6 py-4 [scrollbar-width:none] sm:mx-auto sm:max-w-6xl [&::-webkit-scrollbar]:hidden"
-      >
+      <div className="relative mt-12">
+        {/* One shared cube, not one per card — absolutely centered over
+            the track so it stays put while cards scroll past underneath
+            it, its top/bottom corners poking out above and below whichever
+            card is currently centered (the card itself, being opaque,
+            blocks the cube everywhere else). */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-1/2 z-0 flex -translate-y-1/2 justify-center"
+        >
+          <GlassCube
+            className="h-[22rem] w-[22rem] sm:h-[26rem] sm:w-[26rem]"
+            active={cubeVisible}
+            targetRotation={CUBE_ROTATIONS[activeIndex]}
+          />
+        </div>
+
+        <div
+          ref={scrollRef}
+          className="relative z-10 flex snap-x snap-mandatory gap-5 overflow-x-auto py-4 [scrollbar-width:none] sm:mx-auto sm:max-w-6xl [&::-webkit-scrollbar]:hidden"
+        >
+          {/* Leading/trailing spacers, sized to half the gap between a card
+              and the track's own width — without these, there's no room to
+              scroll card 1 (or the last card) into a truly centered
+              position, so the browser just clamps scrollLeft back to 0/max
+              and they're stuck flush against the edge instead. */}
+          <div aria-hidden="true" className="w-[9%] shrink-0 sm:w-[calc(50%-210px)]" />
+          {AGENTS.map((agent, i) => (
+            <AgentCard key={agent.title} agent={agent} index={i} registerRef={registerCardRef} />
+          ))}
+          <div aria-hidden="true" className="w-[9%] shrink-0 sm:w-[calc(50%-210px)]" />
+        </div>
+      </div>
+
+      {/* Progress dots — a lighter-weight "which one am I on" cue than
+          the number badge alone, and doubles as direct navigation. */}
+      <div className="mt-6 flex justify-center gap-2">
         {AGENTS.map((agent, i) => (
-          <AgentCard key={agent.title} agent={agent} index={i} />
+          <button
+            key={agent.title}
+            type="button"
+            onClick={() => scrollToIndex(i)}
+            aria-label={`Ir a ${agent.title}`}
+            className={`h-1.5 rounded-full transition-all ${i === activeIndex ? "w-6 bg-accent" : "w-1.5 bg-zinc-300 dark:bg-zinc-700"}`}
+          />
         ))}
-        {/* Trailing spacer so the last card can snap fully into view past
-            the container's own right padding on mobile. */}
-        <div aria-hidden="true" className="w-px shrink-0 sm:hidden" />
       </div>
     </section>
   );

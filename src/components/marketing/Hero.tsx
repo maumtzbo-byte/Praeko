@@ -11,7 +11,7 @@ import AuroraBackground from "./AuroraBackground";
 // Client-only — WebGL/Canvas has no server-side representation, and this
 // is purely decorative, so it's excluded from the server bundle and from
 // the initial paint entirely rather than adding to either.
-const GlassMobius = dynamic(() => import("@/components/three/GlassMobius"), { ssr: false });
+const GlassCube = dynamic(() => import("@/components/three/GlassCube"), { ssr: false });
 
 // The one phrase that rotates under "Tu negocio puede" — same pattern as
 // Shopify's own hero (a fixed lead-in, a swapping payoff), each option a
@@ -52,14 +52,20 @@ function RotatingHeadlineWord() {
   return (
     // Plain CSS keyframe (.rotate-word-in in globals.css), not framer-motion
     // — a JS-driven tween here proved flaky (opacity getting stuck
-    // mid-transition independent of the transform in testing). A CSS
-    // animation triggered by DOM insertion runs on the compositor and
-    // can't get caught in that kind of React/effect timing race; the old
+    // mid-transition independent of the transform in testing). The old
     // instance is simply gone the instant the key changes (no exit
     // animation to coordinate), and the overflow-hidden clip hides the cut.
+    //
+    // The transform/opacity animation lives on this OUTER plain span, not
+    // on the gradient-clipped text itself — animating transform directly
+    // on a `background-clip: text` element is a known Chromium repaint
+    // hazard (the clipped paint can go missing mid-animation, confirmed
+    // happening intermittently in testing here). Keeping the animated box
+    // and the background-clip:text box as two separate elements sidesteps
+    // it entirely.
     <span className="relative block h-[1.05em] w-full overflow-hidden">
-      <span key={phrase} className={`aurora-text absolute inset-0 ${reducedMotion ? "" : "rotate-word-in"}`}>
-        {phrase}
+      <span key={phrase} className={`absolute inset-0 ${reducedMotion ? "" : "rotate-word-in"}`}>
+        <span className="aurora-text">{phrase}</span>
       </span>
     </span>
   );
@@ -138,7 +144,7 @@ export default function Hero() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 60% 55% at 80% 42%, rgba(42,92,219,0.4) 0%, transparent 65%), radial-gradient(ellipse 50% 40% at 10% 90%, rgba(18,32,109,0.5) 0%, transparent 70%)",
+              "radial-gradient(ellipse 60% 55% at 80% 42%, rgba(30,107,76,0.35) 0%, transparent 65%), radial-gradient(ellipse 50% 40% at 10% 90%, rgba(10,46,35,0.5) 0%, transparent 70%)",
           }}
         />
 
@@ -154,7 +160,7 @@ export default function Hero() {
             aria-hidden="true"
             className="pointer-events-none absolute -right-24 top-1/2 h-[32rem] w-[32rem] -translate-y-1/2 xl:-right-16 xl:h-[40rem] xl:w-[40rem]"
           >
-            <GlassMobius className="h-full w-full" active={objectVisible} />
+            <GlassCube className="h-full w-full" active={objectVisible} />
           </div>
         )}
 
@@ -208,7 +214,7 @@ export default function Hero() {
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-x-10 -top-10 bottom-0 -z-10 rounded-[50%] opacity-50 blur-3xl"
-            style={{ background: "radial-gradient(ellipse at center, #c9daf9 0%, #4a7fe8 40%, transparent 72%)" }}
+            style={{ background: "radial-gradient(ellipse at center, #ece3d8 0%, #d06a4c 40%, transparent 72%)" }}
           />
 
           <motion.div

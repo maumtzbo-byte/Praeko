@@ -6,19 +6,19 @@ import { hasSeenIntro, markIntroSeen } from "@/lib/marketing/intro-session";
 
 const WORD = "PRAEKO";
 
-// Same sapphire sweep as the P logomark (dark navy -> vivid blue -> pale
-// highlight), expressed as SVG stops instead of a raster LUT, so the
-// wordmark reads as the same material as the brand mark instead of a
-// separate flat-color treatment.
+// Same forest-green -> terracotta -> sand sweep as the P logomark,
+// expressed as SVG stops instead of a raster LUT, so the wordmark reads as
+// the same material as the brand mark instead of a separate flat-color
+// treatment.
 function GlassDefs({ id }: { id: string }) {
   return (
     <defs>
       <linearGradient id={`${id}-fill`} x1="10%" y1="95%" x2="85%" y2="5%">
-        <stop offset="0%" stopColor="#03060f" />
-        <stop offset="28%" stopColor="#0c2082" />
-        <stop offset="52%" stopColor="#2a5cdb" />
-        <stop offset="74%" stopColor="#5f9bef" />
-        <stop offset="90%" stopColor="#bfd6fb" />
+        <stop offset="0%" stopColor="#04140d" />
+        <stop offset="28%" stopColor="#0a2e23" />
+        <stop offset="52%" stopColor="#1e6b4c" />
+        <stop offset="74%" stopColor="#d06a4c" />
+        <stop offset="90%" stopColor="#ece3d8" />
         <stop offset="100%" stopColor="#ffffff" />
       </linearGradient>
       <linearGradient id={`${id}-sheen`} x1="8%" y1="92%" x2="52%" y2="10%">
@@ -32,7 +32,7 @@ function GlassDefs({ id }: { id: string }) {
 
 /** One letter of the wordmark — a faint ghost silhouette sits underneath
  * permanently (so the full word's shape reads immediately), and a
- * sapphire-glass fill wipes upward through a clip-path as this letter's
+ * forest-glass fill wipes upward through a clip-path as this letter's
  * slice of the overall load-progress value fills, one letter at a time. */
 function Letter({ char, index, progress }: { char: string; index: number; progress: MotionValue<number> }) {
   const total = WORD.length;

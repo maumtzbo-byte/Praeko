@@ -10,29 +10,34 @@
   --foreground: #16161a;
   --hairline: rgba(20, 20, 24, 0.1);
   --card: #ffffff;
-  /* Single-hue sapphire identity — one deep, saturated blue instead of the
-     old aurora rainbow, matching the recolored liquid-glass P mark. One
-     ownable color everywhere the brand color is used: buttons, badges,
-     icons, active states, and the ambient background/text shimmer alike. */
-  --accent: #2a5cdb;
-  --accent-strong: #12206d;
-  --aurora-highlight: #c9daf9;
-  --aurora-mid: #4a7fe8;
-  --aurora-blue: #6fa0f2;
-  --aurora-deep: #060a16;
+  /* Forest green + terracotta identity — replaces the earlier single-hue
+     sapphire. Green (growth, "crecer") is the dominant, pervasive brand
+     color (buttons, badges, icons, active states); terracotta is a
+     narrower warm accent used in gradients and highlights, the way it
+     shows up as a highlight streak on the recolored P mark rather than an
+     equal, competing hue. --aurora-highlight is a warm sand/cream instead
+     of the old pale blue, carrying the "beige" half of the palette into
+     every gradient/blob that already reads from it. Var names kept as
+     "aurora-*"/"accent" for a minimal diff footprint even though the hue
+     family has changed twice now. */
+  --accent: #1e6b4c;
+  --accent-strong: #0a2e23;
+  --aurora-highlight: #ece3d8;
+  --aurora-mid: #d06a4c;
+  --aurora-blue: #e3a987;
+  --aurora-deep: #04140d;
 }
 
-/* Dark theme — same aurora hues (they already read fine on a dark ground,
-   an aurora is literally a dark-sky phenomenon), just the neutral scale
-   inverted. Kept intentionally close to zinc-950/zinc-50 rather than true
-   black/white so shadows and hairlines still read as material, not a flat
-   OLED cutout. */
+/* Dark theme — same warm hues (a deep forest ground reads fine as a dark
+   backdrop), just the neutral scale inverted. Kept intentionally close to
+   zinc-950/zinc-50 rather than true black/white so shadows and hairlines
+   still read as material, not a flat OLED cutout. */
 .dark {
   --background: #0a0a0c;
   --foreground: #f4f4f6;
   --hairline: rgba(255, 255, 255, 0.12);
   --card: #18181b;
-  --aurora-highlight: #dce8ff;
+  --aurora-highlight: #f4eee5;
 }
 
 @theme inline {
@@ -54,9 +59,9 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Aurora text: a moving warm gradient clipped to text — same shimmer
-   mechanic the old metallic version used, recolored to the brand's own
-   peach/orange/umber palette instead of grayscale metal. */
+/* Aurora text: a moving gradient clipped to text, sweeping through the
+   forest-green/terracotta/sand identity — a small shimmer of the same
+   "paint" the P mark and hero object are made of. */
 .aurora-text {
   background: linear-gradient(
     115deg,

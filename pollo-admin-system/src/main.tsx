@@ -6,6 +6,7 @@ import './index.css'
 import { AuthProvider } from '@/context/AuthContext'
 import { Toaster } from '@/components/ui/sonner'
 import { AppRoutes } from '@/routes/AppRoutes'
+import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,13 +20,15 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-          <Toaster />
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthProvider>
+            <AppRoutes />
+            <Toaster />
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>,
 )

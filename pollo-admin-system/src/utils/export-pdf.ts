@@ -10,7 +10,7 @@ export function exportReportesPDF(
   const doc = new jsPDF()
 
   doc.setFontSize(16)
-  doc.text('Pollo Admin System', 14, 18)
+  doc.text('Pimpollo', 14, 18)
   doc.setFontSize(11)
   doc.setTextColor(100)
   doc.text(meta.titulo, 14, 25)

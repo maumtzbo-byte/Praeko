@@ -19,7 +19,7 @@ export function HelpDialog() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>¿Cómo funciona Pollo Admin?</DialogTitle>
+            <DialogTitle>¿Cómo funciona Pimpollo?</DialogTitle>
             <DialogDescription>Guía rápida para no perderte.</DialogDescription>
           </DialogHeader>
           <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto pr-1">

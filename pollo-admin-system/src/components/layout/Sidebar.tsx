@@ -38,7 +38,7 @@ export function SidebarBrand() {
     <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-5">
       <img src="/mascota.png" alt="Pimpollo" className="h-9 w-9 shrink-0 object-contain" />
       <div className="leading-tight">
-        <p className="text-sm font-semibold tracking-tight">Pollo Admin</p>
+        <p className="text-sm font-semibold tracking-tight">Pimpollo</p>
         <p className="text-[11px] text-muted-foreground">Panel multi-sucursal</p>
       </div>
     </div>

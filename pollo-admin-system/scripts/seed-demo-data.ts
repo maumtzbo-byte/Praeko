@@ -88,7 +88,7 @@ async function ensureUsuario(params: {
 }
 
 async function main() {
-  console.log('Sembrando datos demo de Pollo Admin System…\n')
+  console.log('Sembrando datos demo de Pimpollo…\n')
 
   const { data: roles, error: rolesError } = await supabase.from('roles').select('id, clave')
   if (rolesError || !roles?.length) {

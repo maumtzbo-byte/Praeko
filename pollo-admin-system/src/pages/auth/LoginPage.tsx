@@ -53,7 +53,7 @@ export function LoginPage() {
       <div className="glass relative w-full max-w-sm rounded-2xl border border-border p-8 shadow-xl">
         <div className="mb-8 flex flex-col items-center text-center">
           <img src="/mascota.png" alt="Pimpollo" className="mb-3 h-16 w-16 object-contain" />
-          <h1 className="text-lg font-semibold tracking-tight">Pollo Admin System</h1>
+          <h1 className="text-lg font-semibold tracking-tight">Pimpollo</h1>
           <p className="mt-1 text-sm text-muted-foreground">Panel de administración multi-sucursal</p>
         </div>
 

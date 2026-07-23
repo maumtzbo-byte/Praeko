@@ -52,8 +52,10 @@ export function LoginPage() {
 
       <div className="glass relative w-full max-w-sm rounded-2xl border border-border p-8 shadow-xl">
         <div className="mb-8 flex flex-col items-center text-center">
-          <img src="/mascota.png" alt="Pimpollo" className="mb-3 h-16 w-16 object-contain" />
-          <h1 className="text-lg font-semibold tracking-tight">Pimpollo</h1>
+          <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-primary/15 shadow-inner ring-4 ring-primary/10">
+            <img src="/mascota.png" alt="Pimpollo" className="h-20 w-20 object-contain drop-shadow-sm" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">Pimpollo</h1>
           <p className="mt-1 text-sm text-muted-foreground">Panel de administración multi-sucursal</p>
         </div>
 
@@ -66,7 +68,7 @@ export function LoginPage() {
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="tucorreo@pollo.com"
+                placeholder="tucorreo@pimpollo.com"
                 className="pl-9"
                 {...register('email')}
               />

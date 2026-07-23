@@ -35,10 +35,12 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
 export function SidebarBrand() {
   return (
-    <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-5">
-      <img src="/mascota.png" alt="Pimpollo" className="h-9 w-9 shrink-0 object-contain" />
+    <div className="flex h-14 items-center gap-2.5 border-b border-sidebar-border px-5">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15">
+        <img src="/mascota.png" alt="Pimpollo" className="h-8 w-8 object-contain" />
+      </div>
       <div className="leading-tight">
-        <p className="text-sm font-semibold tracking-tight">Pimpollo</p>
+        <p className="text-sm font-bold tracking-tight">Pimpollo</p>
         <p className="text-[11px] text-muted-foreground">Panel multi-sucursal</p>
       </div>
     </div>

@@ -3,17 +3,39 @@ import autoTable from 'jspdf-autotable'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { ReporteDiario } from '@/types/database'
 
-export function exportReportesPDF(
+function loadImageAsDataUrl(url: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.naturalWidth
+      canvas.height = img.naturalHeight
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return resolve(null)
+      ctx.drawImage(img, 0, 0)
+      resolve(canvas.toDataURL('image/png'))
+    }
+    img.onerror = () => resolve(null)
+    img.src = url
+  })
+}
+
+export async function exportReportesPDF(
   reportes: ReporteDiario[],
   meta: { titulo: string; sucursalNombre?: (id: string) => string },
 ) {
   const doc = new jsPDF()
+  const logo = await loadImageAsDataUrl('/mascota.png')
+
+  const textX = logo ? 26 : 14
+  if (logo) doc.addImage(logo, 'PNG', 14, 9, 14, 14)
 
   doc.setFontSize(16)
-  doc.text('Pimpollo', 14, 18)
+  doc.text('Pimpollo', textX, 18)
   doc.setFontSize(11)
   doc.setTextColor(100)
-  doc.text(meta.titulo, 14, 25)
+  doc.text(meta.titulo, 14, 29)
 
   const rows = reportes.map((r) => [
     formatDate(r.fecha),
@@ -30,11 +52,11 @@ export function exportReportesPDF(
   const totalGanancia = totalVentas - totalGastos
 
   autoTable(doc, {
-    startY: 32,
+    startY: 36,
     head: [['Fecha', 'Sucursal', 'Ventas', 'Gastos', 'Ganancia', 'Pollos vendidos', 'Dañados']],
     body: rows,
     foot: [['', 'Totales', formatCurrency(totalVentas), formatCurrency(totalGastos), formatCurrency(totalGanancia), '', '']],
-    headStyles: { fillColor: [194, 65, 12] },
+    headStyles: { fillColor: [244, 180, 0], textColor: 30 },
     footStyles: { fillColor: [244, 244, 244], textColor: 20, fontStyle: 'bold' },
     styles: { fontSize: 9 },
   })

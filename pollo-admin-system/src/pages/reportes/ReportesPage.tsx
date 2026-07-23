@@ -76,7 +76,7 @@ export function ReportesPage() {
         import('@/utils/export-pdf'),
         listReportesDiariosParaExportar(filtro),
       ])
-      exportReportesPDF(todos, { titulo: 'Reporte de operaciones', sucursalNombre: nombreSucursal })
+      await exportReportesPDF(todos, { titulo: 'Reporte de operaciones', sucursalNombre: nombreSucursal })
     } catch (err) {
       toast.error(getFriendlyErrorMessage(err))
     } finally {

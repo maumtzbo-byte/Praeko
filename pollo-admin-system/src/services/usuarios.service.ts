@@ -1,3 +1,4 @@
+import { FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { Rol, UsuarioConRelaciones } from '@/types/database'
 
@@ -47,4 +48,23 @@ export async function updateMiPerfil(id: string, input: MiPerfilInput) {
 export async function updateMiPassword(password: string): Promise<void> {
   const { error } = await supabase.auth.updateUser({ password })
   if (error) throw error
+}
+
+export interface CrearUsuarioInput {
+  nombre: string
+  email: string
+  password: string
+  rol_id: number
+  sucursal_id: string | null
+}
+
+export async function createUsuario(input: CrearUsuarioInput): Promise<void> {
+  const { error } = await supabase.functions.invoke('admin-create-user', { body: input })
+  if (!error) return
+
+  if (error instanceof FunctionsHttpError) {
+    const body = await error.context.json().catch(() => null)
+    throw new Error(body?.error ?? error.message)
+  }
+  throw error
 }

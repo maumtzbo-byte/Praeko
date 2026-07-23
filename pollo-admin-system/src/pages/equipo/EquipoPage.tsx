@@ -1,13 +1,16 @@
-import { Users } from 'lucide-react'
+import * as React from 'react'
+import { Plus, Users } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useUpdateUsuarioEstado, useUpdateUsuarioSucursal, useUsuarios } from '@/hooks/use-usuarios'
 import { useSucursales } from '@/hooks/use-sucursales'
+import { CrearUsuarioDialog } from '@/pages/equipo/CrearUsuarioDialog'
 import { initials } from '@/lib/utils'
 
 export function EquipoPage() {
@@ -15,12 +18,18 @@ export function EquipoPage() {
   const { data: sucursales = [] } = useSucursales()
   const updateEstado = useUpdateUsuarioEstado()
   const updateSucursal = useUpdateUsuarioSucursal()
+  const [formOpen, setFormOpen] = React.useState(false)
 
   return (
     <div>
       <PageHeader
         title="Equipo"
-        description="Usuarios registrados, roles y asignación de sucursal. Las cuentas nuevas se crean desde Supabase Auth o el script de datos demo."
+        description="Usuarios registrados, roles y asignación de sucursal."
+        actions={
+          <Button onClick={() => setFormOpen(true)}>
+            <Plus /> Nuevo usuario
+          </Button>
+        }
       />
 
       {isLoading ? (
@@ -95,6 +104,8 @@ export function EquipoPage() {
           </TableBody>
         </Table>
       )}
+
+      <CrearUsuarioDialog open={formOpen} onOpenChange={setFormOpen} />
     </div>
   )
 }

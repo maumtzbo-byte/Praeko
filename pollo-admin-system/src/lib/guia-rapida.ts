@@ -33,6 +33,11 @@ const PASOS_EMPLEADO: GuiaPaso[] = [
     texto: 'Registra aquí cualquier gasto de la sucursal (gas, hielo, reparaciones). Puedes adjuntar foto del comprobante.',
   },
   {
+    icon: Trash2,
+    titulo: 'Mermas',
+    texto: 'Registra aquí producto dañado, caducado o que se perdió, con el motivo — así queda contado y no se pierde de vista.',
+  },
+  {
     icon: Boxes,
     titulo: 'Inventario',
     texto:
@@ -41,12 +46,7 @@ const PASOS_EMPLEADO: GuiaPaso[] = [
   {
     icon: Truck,
     titulo: 'Pedidos',
-    texto: 'Si necesitas que te manden más producto, créalo aquí — tu administrador lo verá y le puede dar seguimiento.',
-  },
-  {
-    icon: Trash2,
-    titulo: 'Mermas',
-    texto: 'Registra aquí producto dañado, caducado o que se perdió, con el motivo — así queda contado y no se pierde de vista.',
+    texto: 'Si te está faltando producto, créalo aquí — tu administrador lo verá y le puede dar seguimiento.',
   },
   {
     icon: Bell,

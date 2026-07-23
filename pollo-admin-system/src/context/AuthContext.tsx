@@ -6,6 +6,7 @@ import type { UsuarioConRelaciones } from '@/types/database'
 interface AuthContextValue {
   session: Session | null
   usuario: UsuarioConRelaciones | null
+  usuarioError: string | null
   isLoading: boolean
   isAdmin: boolean
   isEncargado: boolean
@@ -24,21 +25,26 @@ async function fetchUsuario(userId: string): Promise<UsuarioConRelaciones | null
     .eq('id', userId)
     .maybeSingle()
 
-  if (error) {
-    console.error('Error al cargar el perfil de usuario:', error.message)
-    return null
-  }
+  if (error) throw error
   return data as UsuarioConRelaciones | null
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = React.useState<Session | null>(null)
   const [usuario, setUsuario] = React.useState<UsuarioConRelaciones | null>(null)
+  const [usuarioError, setUsuarioError] = React.useState<string | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
 
   const loadUsuario = React.useCallback(async (userId: string) => {
-    const perfil = await fetchUsuario(userId)
-    setUsuario(perfil)
+    try {
+      const perfil = await fetchUsuario(userId)
+      setUsuario(perfil)
+      setUsuarioError(null)
+    } catch (error) {
+      console.error('Error al cargar el perfil de usuario:', error)
+      setUsuario(null)
+      setUsuarioError(error instanceof Error ? error.message : 'No se pudo cargar tu perfil.')
+    }
   }, [])
 
   React.useEffect(() => {
@@ -79,6 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = React.useCallback(async () => {
     await supabase.auth.signOut()
     setUsuario(null)
+    setUsuarioError(null)
     setSession(null)
   }, [])
 
@@ -90,6 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       session,
       usuario,
+      usuarioError,
       isLoading,
       isAdmin: usuario?.rol?.clave === 'administrador',
       isEncargado: usuario?.rol?.clave === 'encargado',
@@ -98,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signOut,
       refreshUsuario,
     }),
-    [session, usuario, isLoading, signIn, signOut, refreshUsuario],
+    [session, usuario, usuarioError, isLoading, signIn, signOut, refreshUsuario],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

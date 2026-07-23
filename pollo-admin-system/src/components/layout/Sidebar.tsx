@@ -1,5 +1,4 @@
 import { NavLink } from 'react-router-dom'
-import { Drumstick } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { NAV_ITEMS } from '@/lib/nav'
 import { useAuth } from '@/context/AuthContext'
@@ -37,9 +36,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 export function SidebarBrand() {
   return (
     <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-5">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-        <Drumstick className="h-[18px] w-[18px]" />
-      </div>
+      <img src="/mascota.png" alt="Pimpollo" className="h-9 w-9 shrink-0 object-contain" />
       <div className="leading-tight">
         <p className="text-sm font-semibold tracking-tight">Pollo Admin</p>
         <p className="text-[11px] text-muted-foreground">Panel multi-sucursal</p>

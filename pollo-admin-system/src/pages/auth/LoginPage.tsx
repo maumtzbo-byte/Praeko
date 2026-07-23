@@ -3,7 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Drumstick, Loader2, LockKeyhole, Mail } from 'lucide-react'
+import { Loader2, LockKeyhole, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -52,9 +52,7 @@ export function LoginPage() {
 
       <div className="glass relative w-full max-w-sm rounded-2xl border border-border p-8 shadow-xl">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-            <Drumstick className="h-5 w-5" />
-          </div>
+          <img src="/mascota.png" alt="Pimpollo" className="mb-3 h-16 w-16 object-contain" />
           <h1 className="text-lg font-semibold tracking-tight">Pollo Admin System</h1>
           <p className="mt-1 text-sm text-muted-foreground">Panel de administración multi-sucursal</p>
         </div>

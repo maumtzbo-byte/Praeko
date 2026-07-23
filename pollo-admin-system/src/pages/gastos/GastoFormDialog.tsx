@@ -107,7 +107,7 @@ export function GastoFormDialog({
           <DialogTitle>Registrar gasto</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="monto">Monto</Label>
               <Input id="monto" type="number" step="0.01" min="0" {...register('monto')} />
@@ -115,7 +115,7 @@ export function GastoFormDialog({
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="fecha">Fecha</Label>
-              <Input id="fecha" type="date" {...register('fecha')} />
+              <Input id="fecha" type="date" max={todayISO()} {...register('fecha')} />
             </div>
           </div>
 

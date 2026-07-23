@@ -18,6 +18,7 @@ export function useCreateVenta() {
     mutationFn: (input: VentaInput) => ventasService.createVenta(input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['ventas'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Venta registrada')
     },
     onError: (err) => toast.error(getFriendlyErrorMessage(err)),
@@ -30,6 +31,7 @@ export function useDeleteVenta() {
     mutationFn: (id: string) => ventasService.deleteVenta(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['ventas'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Venta eliminada')
     },
     onError: (err) => toast.error(getFriendlyErrorMessage(err)),

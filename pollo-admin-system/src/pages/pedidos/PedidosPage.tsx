@@ -80,9 +80,11 @@ export function PedidosPage() {
               <TableRow key={p.id}>
                 <TableCell>{formatDate(p.fecha)}</TableCell>
                 {isAdmin && <TableCell>{p.sucursal.nombre}</TableCell>}
-                <TableCell className="font-medium">
+                <TableCell className="max-w-56 font-medium">
                   {p.producto.nombre}
-                  {p.comentario && <p className="text-xs font-normal text-muted-foreground">{p.comentario}</p>}
+                  {p.comentario && (
+                    <p className="truncate text-xs font-normal text-muted-foreground">{p.comentario}</p>
+                  )}
                 </TableCell>
                 <TableCell>
                   {p.cantidad} {p.producto.unidad}
@@ -95,7 +97,7 @@ export function PedidosPage() {
                     value={p.estado}
                     onValueChange={(estado) => updateEstado.mutate({ id: p.id, estado: estado as EstadoPedido })}
                   >
-                    <SelectTrigger className="h-8 w-40">
+                    <SelectTrigger className="h-9 w-40">
                       <Badge variant={ESTADO_PEDIDO_BADGE[p.estado]} className="pointer-events-none">
                         {ESTADO_PEDIDO_LABELS[p.estado]}
                       </Badge>

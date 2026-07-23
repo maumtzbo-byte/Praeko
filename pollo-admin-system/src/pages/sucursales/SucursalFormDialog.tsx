@@ -89,7 +89,7 @@ export function SucursalFormDialog({
             <Input id="direccion" {...register('direccion')} />
             {errors.direccion && <p className="text-xs text-destructive">{errors.direccion.message}</p>}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="telefono">Teléfono</Label>
               <Input id="telefono" {...register('telefono')} />

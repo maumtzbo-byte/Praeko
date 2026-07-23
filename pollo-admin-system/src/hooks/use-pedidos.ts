@@ -32,6 +32,7 @@ export function useUpdateEstadoPedido() {
       pedidosService.updateEstadoPedido(id, estado),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['pedidos'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Estado del pedido actualizado')
     },
     onError: (err) => toast.error(getFriendlyErrorMessage(err)),
@@ -44,6 +45,7 @@ export function useDeletePedido() {
     mutationFn: (id: string) => pedidosService.deletePedido(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['pedidos'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Pedido eliminado')
     },
     onError: (err) => toast.error(getFriendlyErrorMessage(err)),

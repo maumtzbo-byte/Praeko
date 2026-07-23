@@ -17,6 +17,8 @@ export function useUpsertInventario() {
     mutationFn: (input: InventarioInput) => inventarioService.upsertInventario(input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['inventario'] })
+      qc.invalidateQueries({ queryKey: ['notificaciones'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Inventario actualizado')
     },
     onError: (err) => toast.error(getFriendlyErrorMessage(err)),
@@ -30,6 +32,8 @@ export function useUpdateInventarioCantidad() {
       inventarioService.updateInventarioCantidad(id, cantidad),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['inventario'] })
+      qc.invalidateQueries({ queryKey: ['notificaciones'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Cantidad actualizada')
     },
     onError: (err) => toast.error(getFriendlyErrorMessage(err)),
@@ -42,6 +46,8 @@ export function useDeleteInventario() {
     mutationFn: (id: string) => inventarioService.deleteInventario(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['inventario'] })
+      qc.invalidateQueries({ queryKey: ['notificaciones'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Registro eliminado')
     },
     onError: (err) => toast.error(getFriendlyErrorMessage(err)),

@@ -85,7 +85,7 @@ export function MermaFormDialog({ open, onOpenChange, sucursalId }: { open: bool
             {errors.producto_id && <p className="text-xs text-destructive">{errors.producto_id.message}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="cantidad">Cantidad</Label>
               <Input id="cantidad" type="number" step="0.01" min="0" {...register('cantidad')} />
@@ -93,7 +93,7 @@ export function MermaFormDialog({ open, onOpenChange, sucursalId }: { open: bool
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="fecha">Fecha</Label>
-              <Input id="fecha" type="date" {...register('fecha')} />
+              <Input id="fecha" type="date" max={todayISO()} {...register('fecha')} />
             </div>
           </div>
 

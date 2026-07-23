@@ -73,6 +73,11 @@ export async function uploadComprobante(file: File, sucursalId: string): Promise
   const path = `${sucursalId}/${crypto.randomUUID()}.${ext}`
   const { error } = await supabase.storage.from('comprobantes').upload(path, file)
   if (error) throw error
-  const { data } = await supabase.storage.from('comprobantes').createSignedUrl(path, 60 * 60 * 24 * 365)
-  return data?.signedUrl ?? path
+  return path
+}
+
+export async function getComprobanteSignedUrl(path: string): Promise<string> {
+  const { data, error } = await supabase.storage.from('comprobantes').createSignedUrl(path, 60 * 60)
+  if (error) throw error
+  return data.signedUrl
 }

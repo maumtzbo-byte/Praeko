@@ -155,7 +155,7 @@ export function ProductosPage() {
         open={Boolean(deleting)}
         onOpenChange={(open) => !open && setDeleting(null)}
         title="Eliminar producto"
-        description={`¿Seguro que deseas eliminar "${deleting?.nombre}"?`}
+        description={`¿Seguro que deseas eliminar "${deleting?.nombre}"? También se borrará su inventario registrado en todas las sucursales. Esta acción no se puede deshacer.`}
         onConfirm={() => {
           if (deleting) deleteMutation.mutate(deleting.id)
           setDeleting(null)

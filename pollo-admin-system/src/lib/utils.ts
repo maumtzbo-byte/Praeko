@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { format } from 'date-fns'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -38,7 +39,7 @@ export function formatDateTime(value: string | Date): string {
 }
 
 export function todayISO(): string {
-  return new Date().toISOString().slice(0, 10)
+  return format(new Date(), 'yyyy-MM-dd')
 }
 
 export function initials(name: string): string {

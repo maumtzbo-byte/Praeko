@@ -11,7 +11,7 @@ import { TableSkeleton } from '@/components/shared/TableSkeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useDeleteGasto, useGastos, useGastosTotal } from '@/hooks/use-gastos'
+import { useAbrirComprobante, useDeleteGasto, useGastos, useGastosTotal } from '@/hooks/use-gastos'
 import { useSucursales } from '@/hooks/use-sucursales'
 import { useAuth } from '@/context/AuthContext'
 import { GastoFormDialog } from '@/pages/gastos/GastoFormDialog'
@@ -44,8 +44,15 @@ export function GastosPage() {
   const { data, isLoading } = useGastos(filtro, { page, pageSize: PAGE_SIZE })
   const { data: total = 0, isLoading: isLoadingTotal } = useGastosTotal(filtro)
   const deleteMutation = useDeleteGasto()
+  const abrirComprobante = useAbrirComprobante()
 
   const gastos = data?.data ?? []
+  const count = data?.count ?? 0
+
+  React.useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE))
+    if (page > totalPages) setPage(totalPages)
+  }, [count, page])
 
   const [formOpen, setFormOpen] = React.useState(false)
   const [deleting, setDeleting] = React.useState<GastoConCategoria | null>(null)
@@ -117,14 +124,14 @@ export function GastosPage() {
                   <TableCell>{formatCurrency(g.monto)}</TableCell>
                   <TableCell>
                     {g.comprobante_url ? (
-                      <a
-                        href={g.comprobante_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-primary hover:underline"
+                      <button
+                        type="button"
+                        onClick={() => abrirComprobante.mutate(g.comprobante_url!)}
+                        disabled={abrirComprobante.isPending}
+                        className="inline-flex items-center gap-1 text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring/50 disabled:opacity-50"
                       >
                         Ver <ExternalLink className="h-3 w-3" />
-                      </a>
+                      </button>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
@@ -149,7 +156,7 @@ export function GastosPage() {
               ))}
             </TableBody>
           </Table>
-          <PaginationControls page={page} pageSize={PAGE_SIZE} total={data?.count ?? 0} onPageChange={setPage} />
+          <PaginationControls page={page} pageSize={PAGE_SIZE} total={count} onPageChange={setPage} />
         </>
       )}
 

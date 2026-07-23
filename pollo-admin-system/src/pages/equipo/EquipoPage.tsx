@@ -54,9 +54,9 @@ export function EquipoPage() {
                     <Avatar className="h-8 w-8">
                       <AvatarFallback>{initials(u.nombre)}</AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">{u.nombre}</p>
-                      <p className="text-xs text-muted-foreground">{u.email}</p>
+                    <div className="min-w-0 max-w-56">
+                      <p className="truncate text-sm font-medium">{u.nombre}</p>
+                      <p className="truncate text-xs text-muted-foreground">{u.email}</p>
                     </div>
                   </div>
                 </TableCell>
@@ -70,7 +70,7 @@ export function EquipoPage() {
                     value={u.sucursal_id ?? 'sin_asignar'}
                     onValueChange={(v) => updateSucursal.mutate({ id: u.id, sucursalId: v === 'sin_asignar' ? null : v })}
                   >
-                    <SelectTrigger className="h-8 w-44">
+                    <SelectTrigger className="h-9 w-44">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -88,7 +88,7 @@ export function EquipoPage() {
                     value={u.estado}
                     onValueChange={(v) => updateEstado.mutate({ id: u.id, estado: v as 'activo' | 'inactivo' })}
                   >
-                    <SelectTrigger className="h-8 w-32">
+                    <SelectTrigger className="h-9 w-32">
                       <Badge variant={u.estado === 'activo' ? 'success' : 'secondary'} className="pointer-events-none">
                         {u.estado === 'activo' ? 'Activo' : 'Inactivo'}
                       </Badge>

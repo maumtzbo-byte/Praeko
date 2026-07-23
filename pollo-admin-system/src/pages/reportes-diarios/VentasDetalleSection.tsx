@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { useCreateVenta, useDeleteVenta, useVentasPorReporte } from '@/hooks/use-ventas'
 import { useProductos } from '@/hooks/use-productos'
 import { useAuth } from '@/context/AuthContext'
@@ -36,17 +37,20 @@ export function VentasDetalleSection({
   const [productoId, setProductoId] = React.useState('')
   const [cantidad, setCantidad] = React.useState('1')
   const [metodo, setMetodo] = React.useState<MetodoPago>('efectivo')
+  const [deleting, setDeleting] = React.useState<(typeof ventas)[number] | null>(null)
 
   const productoSeleccionado = productos.find((p) => p.id === productoId)
+  const cantidadNum = Number(cantidad)
+  const cantidadValida = Number.isFinite(cantidadNum) && cantidadNum > 0
 
   function handleAdd() {
-    if (!usuario || !productoSeleccionado) return
+    if (!usuario || !productoSeleccionado || !cantidadValida) return
     createMutation.mutate({
       sucursal_id: sucursalId,
       reporte_id: reporteId,
       producto_id: productoId,
       usuario_id: usuario.id,
-      cantidad: Number(cantidad) || 0,
+      cantidad: cantidadNum,
       precio_unitario: productoSeleccionado.precio_venta,
       metodo_pago: metodo,
       fecha,
@@ -101,7 +105,7 @@ export function VentasDetalleSection({
               ))}
             </SelectContent>
           </Select>
-          <Button type="button" onClick={handleAdd} disabled={!productoId || createMutation.isPending}>
+          <Button type="button" onClick={handleAdd} disabled={!productoId || !cantidadValida || createMutation.isPending}>
             <Plus /> Agregar
           </Button>
         </div>
@@ -131,7 +135,7 @@ export function VentasDetalleSection({
                   <TableCell>{formatCurrency(v.subtotal)}</TableCell>
                   <TableCell className="capitalize">{v.metodo_pago}</TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(v.id)}>
+                    <Button variant="ghost" size="icon" onClick={() => setDeleting(v)}>
                       <Trash2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
                   </TableCell>
@@ -141,6 +145,18 @@ export function VentasDetalleSection({
           </Table>
         )}
       </CardContent>
+
+      <ConfirmDialog
+        open={Boolean(deleting)}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        title="Eliminar venta"
+        description={`¿Eliminar la venta de "${deleting?.producto?.nombre ?? 'este producto'}"?`}
+        onConfirm={() => {
+          if (deleting) deleteMutation.mutate(deleting.id)
+          setDeleting(null)
+        }}
+        isLoading={deleteMutation.isPending}
+      />
     </Card>
   )
 }

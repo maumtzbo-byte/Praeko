@@ -36,6 +36,7 @@ export function useUpsertReporteDiario() {
     mutationFn: (input: ReporteDiarioInput) => reportesService.upsertReporteDiario(input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['reportes-diarios'] })
+      qc.invalidateQueries({ queryKey: ['reportes-diarios-totales'] })
       qc.invalidateQueries({ queryKey: ['reporte-del-dia'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Reporte diario guardado')

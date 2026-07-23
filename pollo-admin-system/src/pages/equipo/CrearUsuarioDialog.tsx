@@ -131,7 +131,7 @@ export function CrearUsuarioDialog({ open, onOpenChange }: { open: boolean; onOp
             {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label>Rol</Label>
               <Select value={watch('rol_id')} onValueChange={(v) => setValue('rol_id', v, { shouldValidate: true })}>

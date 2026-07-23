@@ -41,6 +41,14 @@ export function useUploadComprobante() {
   })
 }
 
+export function useAbrirComprobante() {
+  return useMutation({
+    mutationFn: (path: string) => gastosService.getComprobanteSignedUrl(path),
+    onSuccess: (url) => window.open(url, '_blank', 'noopener,noreferrer'),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
+  })
+}
+
 export function useDeleteGasto() {
   const qc = useQueryClient()
   return useMutation({

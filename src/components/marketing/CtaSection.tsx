@@ -19,7 +19,7 @@ export default function CtaSection() {
             href="/registro"
             className="btn-shine rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_4px_rgba(30,107,76,0.18)] dark:bg-white dark:text-zinc-950"
           >
-            Empieza gratis
+            Crear mi calendario gratis
           </Link>
         </div>
 

@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { RequireAuth, RequireRole } from '@/routes/ProtectedRoute'
+import { isSupabaseConfigured } from '@/lib/supabase'
+import { SetupRequiredPage } from '@/pages/SetupRequiredPage'
 import { LoginPage } from '@/pages/auth/LoginPage'
 import { DashboardPage } from '@/pages/dashboard/DashboardPage'
 import { SucursalesPage } from '@/pages/sucursales/SucursalesPage'
@@ -17,6 +19,14 @@ import { EquipoPage } from '@/pages/equipo/EquipoPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
 export function AppRoutes() {
+  if (!isSupabaseConfigured) {
+    return (
+      <Routes>
+        <Route path="*" element={<SetupRequiredPage />} />
+      </Routes>
+    )
+  }
+
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />

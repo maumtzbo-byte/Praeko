@@ -3,14 +3,13 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Faltan las variables de entorno VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY. ' +
-      'Copia .env.example a .env y completa los valores de tu proyecto Supabase.',
-  )
-}
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+// Placeholder values let the client construct without throwing when the
+// real env vars are missing (e.g. a fresh deploy before configuration) —
+// callers should check `isSupabaseConfigured` and render a setup screen
+// instead of letting requests hit this dummy endpoint.
+export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder-anon-key', {
   auth: {
     persistSession: true,
     autoRefreshToken: true,

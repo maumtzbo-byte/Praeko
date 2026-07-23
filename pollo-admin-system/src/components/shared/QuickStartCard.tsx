@@ -39,7 +39,7 @@ export function QuickStartCard() {
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {pasos.map((paso) => (
             <div key={paso.titulo} className="flex gap-3">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">

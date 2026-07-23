@@ -2,7 +2,8 @@ import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Dices } from 'lucide-react'
+import { Check, Copy, Dices } from 'lucide-react'
+import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +32,7 @@ export function CrearUsuarioDialog({ open, onOpenChange }: { open: boolean; onOp
   const { data: roles = [] } = useRoles()
   const { data: sucursales = [] } = useSucursales()
   const mutation = useCreateUsuario()
+  const [copied, setCopied] = React.useState(false)
 
   const {
     register,
@@ -45,8 +47,24 @@ export function CrearUsuarioDialog({ open, onOpenChange }: { open: boolean; onOp
   })
 
   React.useEffect(() => {
-    if (open) reset({ nombre: '', email: '', password: '', rol_id: '', sucursal_id: undefined })
+    if (open) {
+      reset({ nombre: '', email: '', password: '', rol_id: '', sucursal_id: undefined })
+      setCopied(false)
+    }
   }, [open, reset])
+
+  async function handleCopyPassword() {
+    const value = watch('password')
+    if (!value) return
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopied(true)
+      toast.success('Contraseña copiada')
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast.error('No se pudo copiar la contraseña')
+    }
+  }
 
   async function onSubmit(values: FormValues) {
     await mutation.mutateAsync({
@@ -89,12 +107,27 @@ export function CrearUsuarioDialog({ open, onOpenChange }: { open: boolean; onOp
                 type="button"
                 variant="outline"
                 size="icon"
+                title="Copiar contraseña"
+                onClick={handleCopyPassword}
+              >
+                {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
                 title="Generar contraseña"
-                onClick={() => setValue('password', generarPassword(), { shouldValidate: true })}
+                onClick={() => {
+                  setValue('password', generarPassword(), { shouldValidate: true })
+                  setCopied(false)
+                }}
               >
                 <Dices className="h-4 w-4" />
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Usa el botón de copiar para evitar errores al seleccionar el texto manualmente.
+            </p>
             {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
           </div>
 

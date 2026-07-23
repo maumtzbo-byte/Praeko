@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Independent sibling project with its own toolchain/deps — not part of this app.
+    "pollo-admin-system/**",
   ]),
 ]);
 

@@ -7,6 +7,16 @@
     <meta name="theme-color" content="#c2410c" />
     <meta name="description" content="Pollo Admin System — panel de administración multi-sucursal" />
     <title>Pollo Admin System</title>
+    <script>
+      // Applied before React mounts to avoid a flash of the wrong theme.
+      (function () {
+        try {
+          var stored = localStorage.getItem('pollo-admin-theme');
+          var isDark = stored === 'dark' || (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', isDark);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

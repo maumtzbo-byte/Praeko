@@ -4,7 +4,7 @@ import { PERIODOS, type Periodo } from '@/lib/date-ranges'
 export function PeriodSelector({ value, onChange }: { value: Periodo; onChange: (value: Periodo) => void }) {
   return (
     <Select value={value} onValueChange={(v) => onChange(v as Periodo)}>
-      <SelectTrigger className="w-32">
+      <SelectTrigger className="w-full sm:w-32">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

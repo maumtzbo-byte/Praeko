@@ -16,6 +16,7 @@ import { NotificacionesPage } from '@/pages/notificaciones/NotificacionesPage'
 import { ReportesPage } from '@/pages/reportes/ReportesPage'
 import { HistorialPage } from '@/pages/historial/HistorialPage'
 import { EquipoPage } from '@/pages/equipo/EquipoPage'
+import { PerfilPage } from '@/pages/perfil/PerfilPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
 export function AppRoutes() {
@@ -41,6 +42,7 @@ export function AppRoutes() {
           <Route path="/pedidos" element={<PedidosPage />} />
           <Route path="/mermas" element={<MermasPage />} />
           <Route path="/notificaciones" element={<NotificacionesPage />} />
+          <Route path="/perfil" element={<PerfilPage />} />
 
           <Route element={<RequireRole roles={['administrador']} />}>
             <Route path="/sucursales" element={<SucursalesPage />} />

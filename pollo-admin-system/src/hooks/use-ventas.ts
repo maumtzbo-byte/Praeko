@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { getFriendlyErrorMessage } from '@/lib/error-messages'
 import * as ventasService from '@/services/ventas.service'
 import type { VentaInput } from '@/services/ventas.service'
 
@@ -19,7 +20,7 @@ export function useCreateVenta() {
       qc.invalidateQueries({ queryKey: ['ventas'] })
       toast.success('Venta registrada')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }
 
@@ -31,6 +32,6 @@ export function useDeleteVenta() {
       qc.invalidateQueries({ queryKey: ['ventas'] })
       toast.success('Venta eliminada')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }

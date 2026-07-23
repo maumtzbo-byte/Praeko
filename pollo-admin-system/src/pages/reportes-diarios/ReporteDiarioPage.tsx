@@ -130,7 +130,7 @@ export function ReporteDiarioPage() {
           <>
             {isAdmin && (
               <Select value={sucursalId} onValueChange={setSucursalId}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -142,7 +142,13 @@ export function ReporteDiarioPage() {
                 </SelectContent>
               </Select>
             )}
-            <Input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="w-40" max={todayISO()} />
+            <Input
+              type="date"
+              value={fecha}
+              onChange={(e) => setFecha(e.target.value)}
+              className="w-full sm:w-40"
+              max={todayISO()}
+            />
           </>
         }
       />
@@ -184,6 +190,11 @@ export function ReporteDiarioPage() {
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="pollos_vendidos">Pollos vendidos</Label>
               <Input id="pollos_vendidos" type="number" step="1" min="0" {...register('pollos_vendidos')} />
+              {Number(values.pollos_vendidos || 0) > Number(values.pollos_recibidos || 0) && (
+                <p className="text-xs text-warning-foreground">
+                  Vendiste más pollos de los que recibiste hoy. Revisa si es correcto.
+                </p>
+              )}
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="productos_danados">Productos dañados</Label>

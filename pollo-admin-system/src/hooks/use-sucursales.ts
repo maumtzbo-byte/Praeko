@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { getFriendlyErrorMessage } from '@/lib/error-messages'
 import * as sucursalesService from '@/services/sucursales.service'
 import type { SucursalInput } from '@/services/sucursales.service'
 
@@ -17,7 +18,7 @@ export function useCreateSucursal() {
       qc.invalidateQueries({ queryKey: KEY })
       toast.success('Sucursal creada correctamente')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }
 
@@ -30,7 +31,7 @@ export function useUpdateSucursal() {
       qc.invalidateQueries({ queryKey: KEY })
       toast.success('Sucursal actualizada')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }
 
@@ -42,6 +43,6 @@ export function useDeleteSucursal() {
       qc.invalidateQueries({ queryKey: KEY })
       toast.success('Sucursal eliminada')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }

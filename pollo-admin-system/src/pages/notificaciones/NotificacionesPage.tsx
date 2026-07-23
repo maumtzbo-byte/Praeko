@@ -53,7 +53,7 @@ export function NotificacionesPage() {
 
       <div className="mb-4">
         <Select value={tipoFiltro} onValueChange={setTipoFiltro}>
-          <SelectTrigger className="w-56">
+          <SelectTrigger className="w-full sm:w-56">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

@@ -76,7 +76,7 @@ export function InventarioPage() {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {isAdmin && (
           <Select value={sucursalId} onValueChange={setSucursalId}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Todas las sucursales" />
             </SelectTrigger>
             <SelectContent>

@@ -1,9 +1,12 @@
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
+import { useTheme } from '@/context/ThemeContext'
 
 function Toaster(props: ToasterProps) {
+  const { isDark } = useTheme()
+
   return (
     <Sonner
-      theme="light"
+      theme={isDark ? 'dark' : 'light'}
       className="toaster group"
       position="top-right"
       toastOptions={{

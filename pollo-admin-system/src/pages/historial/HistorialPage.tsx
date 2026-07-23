@@ -2,6 +2,7 @@ import * as React from 'react'
 import { History } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { PaginationControls } from '@/components/shared/PaginationControls'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -30,17 +31,26 @@ const ACCION_LABEL: Record<string, string> = {
   eliminar: 'Eliminado',
 }
 
+const PAGE_SIZE = 25
+
 export function HistorialPage() {
   const { usuario, isAdmin } = useAuth()
   const { data: sucursales = [] } = useSucursales()
 
   const [tabla, setTabla] = React.useState('todas')
   const [sucursalId, setSucursalId] = React.useState(isAdmin ? 'todas' : (usuario?.sucursal_id ?? 'todas'))
+  const [page, setPage] = React.useState(1)
 
-  const { data: historial = [], isLoading } = useHistorial({
-    tabla: tabla === 'todas' ? undefined : tabla,
-    sucursalId: sucursalId === 'todas' ? undefined : sucursalId,
-  })
+  React.useEffect(() => setPage(1), [tabla, sucursalId])
+
+  const { data, isLoading } = useHistorial(
+    {
+      tabla: tabla === 'todas' ? undefined : tabla,
+      sucursalId: sucursalId === 'todas' ? undefined : sucursalId,
+    },
+    { page, pageSize: PAGE_SIZE },
+  )
+  const historial = data?.data ?? []
 
   return (
     <div>
@@ -48,7 +58,7 @@ export function HistorialPage() {
 
       <div className="mb-4 flex flex-wrap gap-2">
         <Select value={tabla} onValueChange={setTabla}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -62,7 +72,7 @@ export function HistorialPage() {
         </Select>
         {isAdmin && (
           <Select value={sucursalId} onValueChange={setSucursalId}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -82,28 +92,31 @@ export function HistorialPage() {
       ) : historial.length === 0 ? (
         <EmptyState icon={History} title="Sin movimientos" description="Aún no hay cambios registrados con estos filtros." />
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Tabla</TableHead>
-              <TableHead>Acción</TableHead>
-              <TableHead>Registro</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {historial.map((h) => (
-              <TableRow key={h.id}>
-                <TableCell>{formatDateTime(h.created_at)}</TableCell>
-                <TableCell>{TABLA_LABELS[h.tabla] ?? h.tabla}</TableCell>
-                <TableCell>
-                  <Badge variant={ACCION_BADGE[h.accion]}>{ACCION_LABEL[h.accion]}</Badge>
-                </TableCell>
-                <TableCell className="font-mono text-xs text-muted-foreground">{h.registro_id.slice(0, 8)}…</TableCell>
+        <>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Tabla</TableHead>
+                <TableHead>Acción</TableHead>
+                <TableHead>Registro</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {historial.map((h) => (
+                <TableRow key={h.id}>
+                  <TableCell>{formatDateTime(h.created_at)}</TableCell>
+                  <TableCell>{TABLA_LABELS[h.tabla] ?? h.tabla}</TableCell>
+                  <TableCell>
+                    <Badge variant={ACCION_BADGE[h.accion]}>{ACCION_LABEL[h.accion]}</Badge>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{h.registro_id.slice(0, 8)}…</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <PaginationControls page={page} pageSize={PAGE_SIZE} total={data?.count ?? 0} onPageChange={setPage} />
+        </>
       )}
     </div>
   )

@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Paperclip } from 'lucide-react'
+import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +25,9 @@ const schema = z.object({
 
 type FormInput = z.input<typeof schema>
 type FormValues = z.output<typeof schema>
+
+const MAX_COMPROBANTE_BYTES = 5 * 1024 * 1024
+const ACCEPTED_COMPROBANTE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/pdf']
 
 export function GastoFormDialog({
   open,
@@ -79,6 +83,22 @@ export function GastoFormDialog({
   }
 
   const isPending = createMutation.isPending || uploadMutation.isPending
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    if (!ACCEPTED_COMPROBANTE_TYPES.includes(file.type)) {
+      toast.error('Formato no soportado. Usa una imagen (JPG, PNG, WEBP, HEIC) o PDF.')
+      return
+    }
+    if (file.size > MAX_COMPROBANTE_BYTES) {
+      toast.error('El archivo supera los 5MB permitidos.')
+      return
+    }
+    setComprobante(file)
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -140,8 +160,9 @@ export function GastoFormDialog({
               type="file"
               accept="image/*,application/pdf"
               className="hidden"
-              onChange={(e) => setComprobante(e.target.files?.[0] ?? null)}
+              onChange={handleFileChange}
             />
+            <p className="text-xs text-muted-foreground">Imagen o PDF, máximo 5MB.</p>
           </div>
 
           <DialogFooter>

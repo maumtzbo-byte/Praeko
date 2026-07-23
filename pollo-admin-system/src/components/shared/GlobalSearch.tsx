@@ -15,7 +15,15 @@ interface SearchResult {
   to: string
 }
 
-export function GlobalSearch({ className }: { className?: string }) {
+export function GlobalSearch({
+  className,
+  autoFocus,
+  onNavigate,
+}: {
+  className?: string
+  autoFocus?: boolean
+  onNavigate?: () => void
+}) {
   const [query, setQuery] = React.useState('')
   const [open, setOpen] = React.useState(false)
   const debounced = useDebounce(query, 200)
@@ -68,6 +76,7 @@ export function GlobalSearch({ className }: { className?: string }) {
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         value={query}
+        autoFocus={autoFocus}
         onChange={(e) => {
           setQuery(e.target.value)
           setOpen(true)
@@ -100,6 +109,7 @@ export function GlobalSearch({ className }: { className?: string }) {
                       navigate(r.to)
                       setOpen(false)
                       setQuery('')
+                      onNavigate?.()
                     }}
                     className="flex w-full flex-col items-start gap-0.5 px-4 py-2 text-left text-sm hover:bg-accent"
                   >

@@ -76,7 +76,7 @@ export function AdminDashboard() {
         actions={
           <>
             <Select value={sucursalId} onValueChange={setSucursalId}>
-              <SelectTrigger className="w-44">
+              <SelectTrigger className="w-full sm:w-44">
                 <SelectValue placeholder="Sucursal" />
               </SelectTrigger>
               <SelectContent>

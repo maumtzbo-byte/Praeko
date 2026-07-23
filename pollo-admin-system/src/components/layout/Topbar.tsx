@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { Menu, LogOut, User, Settings } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Menu, LogOut, User } from 'lucide-react'
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
@@ -14,12 +15,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { SidebarBrand, SidebarNav } from '@/components/layout/Sidebar'
 import { GlobalSearch } from '@/components/shared/GlobalSearch'
+import { MobileSearchDialog } from '@/components/shared/MobileSearchDialog'
 import { NotificationsPopover } from '@/components/shared/NotificationsPopover'
+import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import { useAuth } from '@/context/AuthContext'
 import { initials } from '@/lib/utils'
 
 export function Topbar() {
   const { usuario, signOut } = useAuth()
+  const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = React.useState(false)
 
   return (
@@ -42,6 +46,8 @@ export function Topbar() {
       <GlobalSearch className="hidden sm:block" />
 
       <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+        <MobileSearchDialog />
+        <ThemeToggle />
         <NotificationsPopover />
 
         <DropdownMenu>
@@ -64,11 +70,8 @@ export function Topbar() {
               <p className="text-xs font-normal text-muted-foreground">{usuario?.email}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem disabled>
+            <DropdownMenuItem onClick={() => navigate('/perfil')}>
               <User /> Mi perfil
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled>
-              <Settings /> Preferencias
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut()} className="text-destructive focus:text-destructive">

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { getFriendlyErrorMessage } from '@/lib/error-messages'
 import * as productosService from '@/services/productos.service'
 import type { ProductoInput } from '@/services/productos.service'
 
@@ -17,7 +18,7 @@ export function useCreateProducto() {
       qc.invalidateQueries({ queryKey: KEY })
       toast.success('Producto creado')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }
 
@@ -30,7 +31,7 @@ export function useUpdateProducto() {
       qc.invalidateQueries({ queryKey: KEY })
       toast.success('Producto actualizado')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }
 
@@ -42,6 +43,6 @@ export function useDeleteProducto() {
       qc.invalidateQueries({ queryKey: KEY })
       toast.success('Producto eliminado')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }

@@ -44,7 +44,7 @@ export function PedidosPage() {
 
       <div className="mb-4 flex flex-wrap gap-2">
         <Select value={estadoFiltro} onValueChange={setEstadoFiltro}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

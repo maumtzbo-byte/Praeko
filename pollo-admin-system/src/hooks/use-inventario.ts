@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { getFriendlyErrorMessage } from '@/lib/error-messages'
 import * as inventarioService from '@/services/inventario.service'
 import type { InventarioInput } from '@/services/inventario.service'
 
@@ -18,7 +19,7 @@ export function useUpsertInventario() {
       qc.invalidateQueries({ queryKey: ['inventario'] })
       toast.success('Inventario actualizado')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }
 
@@ -31,7 +32,7 @@ export function useUpdateInventarioCantidad() {
       qc.invalidateQueries({ queryKey: ['inventario'] })
       toast.success('Cantidad actualizada')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }
 
@@ -43,6 +44,6 @@ export function useDeleteInventario() {
       qc.invalidateQueries({ queryKey: ['inventario'] })
       toast.success('Registro eliminado')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }

@@ -85,7 +85,7 @@ export function MermasPage() {
 
       <div className="mb-4">
         <Select value={motivoFiltro} onValueChange={setMotivoFiltro}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

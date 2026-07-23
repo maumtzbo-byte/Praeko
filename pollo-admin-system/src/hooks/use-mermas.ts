@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { getFriendlyErrorMessage } from '@/lib/error-messages'
 import * as mermasService from '@/services/mermas.service'
 import type { MermaInput } from '@/services/mermas.service'
 
@@ -19,7 +20,7 @@ export function useCreateMerma() {
       qc.invalidateQueries({ queryKey: ['notificaciones'] })
       toast.success('Merma registrada')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }
 
@@ -31,6 +32,6 @@ export function useDeleteMerma() {
       qc.invalidateQueries({ queryKey: ['mermas'] })
       toast.success('Merma eliminada')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }

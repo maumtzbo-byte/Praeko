@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { getFriendlyErrorMessage } from '@/lib/error-messages'
 import * as pedidosService from '@/services/pedidos.service'
 import type { PedidoInput } from '@/services/pedidos.service'
 import type { EstadoPedido } from '@/types/database'
@@ -20,7 +21,7 @@ export function useCreatePedido() {
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Pedido enviado')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }
 
@@ -33,7 +34,7 @@ export function useUpdateEstadoPedido() {
       qc.invalidateQueries({ queryKey: ['pedidos'] })
       toast.success('Estado del pedido actualizado')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }
 
@@ -45,6 +46,6 @@ export function useDeletePedido() {
       qc.invalidateQueries({ queryKey: ['pedidos'] })
       toast.success('Pedido eliminado')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }

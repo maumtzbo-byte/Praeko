@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { getFriendlyErrorMessage } from '@/lib/error-messages'
 import * as categoriasService from '@/services/categorias.service'
 import type { CategoriaInput } from '@/services/categorias.service'
 
@@ -17,7 +18,7 @@ export function useCreateCategoria() {
       qc.invalidateQueries({ queryKey: KEY })
       toast.success('Categoría creada')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }
 
@@ -29,6 +30,6 @@ export function useDeleteCategoria() {
       qc.invalidateQueries({ queryKey: KEY })
       toast.success('Categoría eliminada')
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })
 }

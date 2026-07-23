@@ -32,3 +32,19 @@ export async function updateUsuarioSucursal(id: string, sucursal_id: string | nu
   if (error) throw error
   return data
 }
+
+export interface MiPerfilInput {
+  nombre: string
+  telefono?: string | null
+}
+
+export async function updateMiPerfil(id: string, input: MiPerfilInput) {
+  const { data, error } = await supabase.from('usuarios').update(input).eq('id', id).select().single()
+  if (error) throw error
+  return data
+}
+
+export async function updateMiPassword(password: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) throw error
+}

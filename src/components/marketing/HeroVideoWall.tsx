@@ -29,19 +29,29 @@ export default function HeroVideoWall() {
 
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden opacity-[0.34]">
-      <div className="flex h-full flex-col justify-between gap-3 py-4 sm:gap-4">
-        {rows.map((r) => (
-          <div key={r} className="marquee-viewport">
-            <div
-              className="marquee-track flex w-max gap-3 sm:gap-4"
-              style={{ animationDuration: `${ROW_DURATIONS[r]}s`, animationDirection: r % 2 === 0 ? "normal" : "reverse" }}
-            >
-              {cards.map((_, i) => (
-                <WallCard key={i} />
-              ))}
+      {/* Same diagonal 3D tilt as the testimonials wall (SocialProof.tsx) —
+          perspective on the outer wrapper, rotateX/Y/Z on the row stack —
+          so the two "wall of cards" moments in the page read as one
+          consistent motif instead of one flat and one tilted. Scaled up
+          slightly to cover the corners the rotation exposes. */}
+      <div className="absolute inset-0 flex items-center justify-center" style={{ perspective: "1000px" }}>
+        <div
+          className="flex h-[130%] w-[130%] flex-col justify-between gap-3 py-4 sm:gap-4"
+          style={{ transform: "rotateX(13deg) rotateY(-9deg) rotateZ(9deg)", transformStyle: "preserve-3d" }}
+        >
+          {rows.map((r) => (
+            <div key={r} className="marquee-viewport">
+              <div
+                className="marquee-track flex w-max gap-3 sm:gap-4"
+                style={{ animationDuration: `${ROW_DURATIONS[r]}s`, animationDirection: r % 2 === 0 ? "normal" : "reverse" }}
+              >
+                {cards.map((_, i) => (
+                  <WallCard key={i} />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

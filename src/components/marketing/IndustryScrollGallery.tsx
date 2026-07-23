@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { motion, animate, useMotionValue, useTransform, type MotionValue, type AnimationPlaybackControls } from "framer-motion";
 import { Dumbbell, UtensilsCrossed, Sparkles, ShoppingBag, HeartPulse, Briefcase, type LucideIcon } from "lucide-react";
 
 // Same industry taxonomy already used in SocialProof/onboarding — real
@@ -64,20 +64,20 @@ function scatterFor(i: number) {
  * point radially outward like a spoke so the pack of cards reads as a
  * woven wreath rather than a loose cluster (phase 3, held) -> unravels into
  * a straight horizontal row (phase 4) -> keeps sliding along that row
- * (phase 5) — all driven off the same `scrollYProgress`, no independent
- * timer, so the "keeps sliding" motion is really just scrolling the last
- * stretch of the section. */
+ * (phase 5) — all driven off `progress`, a 0->1 motion value that plays and
+ * loops on its own once the section is on screen (see the IntersectionObserver
+ * + animate() in IndustryScrollGallery below), not off scroll position. */
 function GalleryCard({
   industry,
   index,
   total,
-  scrollYProgress,
+  progress,
   posScale,
 }: {
   industry: (typeof RING_ITEMS)[number];
   index: number;
   total: number;
-  scrollYProgress: MotionValue<number>;
+  progress: MotionValue<number>;
   posScale: number;
 }) {
   const Icon = industry.icon;
@@ -86,12 +86,12 @@ function GalleryCard({
   const ringNow = useMemo(() => ringPoint(angleBase, posScale), [angleBase, posScale]);
   const lineX = useMemo(() => linePoint(index, total, posScale), [index, total, posScale]);
 
-  // The ring (0.42) holds its exact position through 0.62 before unraveling
-  // into a row at 0.8, which then keeps sliding through 1 — without the
-  // hold, "converging" flows straight into "unraveling" and a normal-speed
-  // scroll never actually shows a formed ring, just cards never settling.
-  const stops = [0, 0.22, 0.42, 0.62, 0.8, 1];
-  const x = useTransform(scrollYProgress, stops, [
+  // The ring (0.45) holds its exact position through 0.62 before unraveling
+  // into a row at 0.85, which then keeps sliding through 1 — without the
+  // hold, "converging" flows straight into "unraveling" and the ring never
+  // reads as actually formed before it's gone.
+  const stops = [0, 0.28, 0.45, 0.62, 0.85, 1];
+  const x = useTransform(progress, stops, [
     scatter.x * posScale,
     scatter.x * posScale * 0.4,
     ringNow.x,
@@ -99,15 +99,17 @@ function GalleryCard({
     lineX,
     lineX - SLIDE_DISTANCE * posScale,
   ]);
-  const y = useTransform(scrollYProgress, stops, [scatter.y * posScale, scatter.y * posScale * 0.4, ringNow.y, ringNow.y, 0, 0]);
+  const y = useTransform(progress, stops, [scatter.y * posScale, scatter.y * posScale * 0.4, ringNow.y, ringNow.y, 0, 0]);
   // -angleBase points each card's bottom edge (where the label sits)
   // radially outward, away from the center text, while it's part of the
   // ring — like spokes on a wheel — then straightens out to 0 as it joins
   // the row.
-  const rotate = useTransform(scrollYProgress, stops, [scatter.rotate, scatter.rotate * 0.3, -angleBase, -angleBase, 0, 0]);
-  const scale = useTransform(scrollYProgress, stops, [0.5, 0.8, 1, 1, 0.88, 0.88]);
-  const borderRadius = useTransform(scrollYProgress, [0, 0.22, 1], ["46%", "18px", "18px"]);
-  const opacity = useTransform(scrollYProgress, [0, 0.1, 1], [0, 1, 1]);
+  const rotate = useTransform(progress, stops, [scatter.rotate, scatter.rotate * 0.3, -angleBase, -angleBase, 0, 0]);
+  const scale = useTransform(progress, stops, [0.5, 0.8, 1, 1, 0.88, 0.88]);
+  const borderRadius = useTransform(progress, [0, 0.28, 1], ["46%", "18px", "18px"]);
+  // Fades back out right before progress hits 1 (where the loop resets to 0
+  // instantly) so the restart snap happens while the cards are invisible.
+  const opacity = useTransform(progress, [0, 0.08, 0.9, 1], [0, 1, 1, 0]);
   // The card itself rotates a full 360deg around the ring (so the pack
   // reads as spokes), which would flip the label text upside down for any
   // card past the ring's far side — counter-rotating just the label keeps
@@ -169,12 +171,19 @@ function computePositionScale(width: number) {
   return Math.max(0.56, Math.min(1, width / 900));
 }
 
+// One full cycle: scatter -> converge -> ring -> unravel -> slide -> (fade
+// out, loop). ~0.6s of dead air at the end (repeatDelay) so the invisible
+// reset reads as a natural pause rather than a jump cut.
+const CYCLE_SECONDS = 9;
+const CYCLE_REPEAT_DELAY = 0.6;
+
 export default function IndustryScrollGallery() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [posScale, setPosScale] = useState(1);
-  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
-  const textOpacity = useTransform(scrollYProgress, [0.62, 0.75, 1], [1, 0, 0]);
+  const progress = useMotionValue(0);
+  const controlsRef = useRef<AnimationPlaybackControls | null>(null);
+  const textOpacity = useTransform(progress, [0, 0.08, 0.62, 0.75, 1], [0, 1, 1, 0, 0]);
 
   useEffect(() => {
     const reducedMql = window.matchMedia(SAFE_MATCH_MEDIA);
@@ -192,6 +201,40 @@ export default function IndustryScrollGallery() {
     };
   }, []);
 
+  // No scroll-jacking anymore — the ring plays and loops on its own the
+  // moment the section is actually on screen, and stops (rather than
+  // burning cycles/battery) once it scrolls out of view.
+  useEffect(() => {
+    if (reducedMotion) return;
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          progress.set(0);
+          controlsRef.current = animate(progress, 1, {
+            duration: CYCLE_SECONDS,
+            ease: "easeInOut",
+            repeat: Infinity,
+            repeatDelay: CYCLE_REPEAT_DELAY,
+          });
+        } else {
+          controlsRef.current?.stop();
+          controlsRef.current = null;
+        }
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+      controlsRef.current?.stop();
+      controlsRef.current = null;
+    };
+  }, [reducedMotion, progress]);
+
   if (reducedMotion) {
     return (
       <section className="relative overflow-hidden bg-zinc-950 py-24">
@@ -207,8 +250,8 @@ export default function IndustryScrollGallery() {
   }
 
   return (
-    <section ref={containerRef} className="relative bg-zinc-950" style={{ height: "260vh" }}>
-      <div className="sticky top-0 h-screen overflow-hidden">
+    <section ref={containerRef} className="relative overflow-hidden bg-zinc-950 py-16 sm:py-24">
+      <div className="relative mx-auto h-[26rem] max-w-5xl sm:h-[32rem] md:h-[36rem]">
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-[70vmin] w-[70vmin] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40 blur-3xl" style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)" }} />
 
         {/* Only makes sense while the cards are actually arranged in a ring
@@ -222,11 +265,11 @@ export default function IndustryScrollGallery() {
           <h2 className="max-w-[9.5rem] text-balance font-[family-name:var(--font-display)] text-sm italic leading-tight tracking-tight text-white sm:max-w-sm sm:text-2xl md:text-3xl">
             Contenido para cualquier tipo de negocio
           </h2>
-          <p className="mt-1.5 text-[9px] font-semibold tracking-[0.25em] text-zinc-500 sm:mt-4 sm:text-xs sm:tracking-[0.3em]">DESLIZA</p>
+          <p className="mt-1.5 text-[9px] font-semibold tracking-[0.25em] text-zinc-500 sm:mt-4 sm:text-xs sm:tracking-[0.3em]">TODOS LOS RUBROS</p>
         </motion.div>
 
         {RING_ITEMS.map((item, i) => (
-          <GalleryCard key={item.id} industry={item} index={i} total={RING_COUNT} scrollYProgress={scrollYProgress} posScale={posScale} />
+          <GalleryCard key={item.id} industry={item} index={i} total={RING_COUNT} progress={progress} posScale={posScale} />
         ))}
       </div>
     </section>

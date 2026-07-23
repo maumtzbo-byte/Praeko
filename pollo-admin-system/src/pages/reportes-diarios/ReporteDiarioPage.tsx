@@ -15,7 +15,7 @@ import { useReporteDelDia, useUpsertReporteDiario } from '@/hooks/use-reportes'
 import { useSucursales } from '@/hooks/use-sucursales'
 import { useAuth } from '@/context/AuthContext'
 import { VentasDetalleSection } from '@/pages/reportes-diarios/VentasDetalleSection'
-import { formatCurrency, todayISO } from '@/lib/utils'
+import { cn, formatCurrency, todayISO } from '@/lib/utils'
 
 const schema = z.object({
   ventas_efectivo: z.coerce.number().min(0),
@@ -153,7 +153,11 @@ export function ReporteDiarioPage() {
         }
       />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6" noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <fieldset
+          disabled={isLoading}
+          className={cn('flex flex-col gap-6', isLoading && 'pointer-events-none opacity-60')}
+        >
         <Card>
           <CardHeader>
             <CardTitle>Ventas por método de pago</CardTitle>
@@ -178,7 +182,7 @@ export function ReporteDiarioPage() {
           <CardHeader>
             <CardTitle>Operación del día</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <CardContent className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="gastos_total">Gastos</Label>
               <Input id="gastos_total" type="number" step="0.01" min="0" {...register('gastos_total')} />
@@ -200,7 +204,7 @@ export function ReporteDiarioPage() {
               <Label htmlFor="productos_danados">Productos dañados</Label>
               <Input id="productos_danados" type="number" step="1" min="0" {...register('productos_danados')} />
             </div>
-            <div className="flex flex-col gap-1.5 sm:col-span-1">
+            <div className="flex flex-col gap-1.5">
               <Label htmlFor="merma_total">Merma (unidades)</Label>
               <Input id="merma_total" type="number" step="0.01" min="0" {...register('merma_total')} />
             </div>
@@ -239,6 +243,7 @@ export function ReporteDiarioPage() {
             </Button>
           </CardContent>
         </Card>
+        </fieldset>
       </form>
 
       {reporte && (

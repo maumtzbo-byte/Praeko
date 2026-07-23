@@ -5,6 +5,7 @@ import { StatCard } from '@/components/shared/StatCard'
 import { PeriodSelector } from '@/components/shared/PeriodSelector'
 import { SalesTrendChart } from '@/components/charts/SalesTrendChart'
 import { TopProductsChart } from '@/components/charts/TopProductsChart'
+import { EmptyChartCard } from '@/components/charts/EmptyChartCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { useDashboardData } from '@/hooks/use-dashboard'
@@ -80,8 +81,16 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
       )}
 
       <div className="mt-6 grid gap-4 xl:grid-cols-2">
-        <SalesTrendChart data={chartData} title="Ventas y ganancia" />
-        <TopProductsChart data={data?.ventasPorProducto ?? []} />
+        {chartData.length > 0 ? (
+          <SalesTrendChart data={chartData} title="Ventas y ganancia" />
+        ) : (
+          <EmptyChartCard title="Ventas y ganancia" />
+        )}
+        {(data?.ventasPorProducto ?? []).length > 0 ? (
+          <TopProductsChart data={data?.ventasPorProducto ?? []} />
+        ) : (
+          <EmptyChartCard title="Top productos vendidos" />
+        )}
       </div>
     </div>
   )

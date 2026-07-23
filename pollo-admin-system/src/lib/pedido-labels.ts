@@ -22,7 +22,7 @@ export const ESTADO_PEDIDO_ORDEN: EstadoPedido[] = [
 export const ESTADO_PEDIDO_BADGE: Record<EstadoPedido, NonNullable<BadgeProps['variant']>> = {
   pendiente: 'warning',
   aceptado: 'default',
-  en_preparacion: 'default',
+  en_preparacion: 'info',
   enviado: 'secondary',
   recibido: 'success',
   cancelado: 'destructive',

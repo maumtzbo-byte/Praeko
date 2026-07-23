@@ -7,7 +7,7 @@ import { PaginationControls } from '@/components/shared/PaginationControls'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { TableSkeleton } from '@/components/shared/TableSkeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -42,7 +42,7 @@ export function GastosPage() {
   React.useEffect(() => setPage(1), [sucursalId, desde, hasta])
 
   const { data, isLoading } = useGastos(filtro, { page, pageSize: PAGE_SIZE })
-  const { data: total = 0 } = useGastosTotal(filtro)
+  const { data: total = 0, isLoading: isLoadingTotal } = useGastosTotal(filtro)
   const deleteMutation = useDeleteGasto()
 
   const gastos = data?.data ?? []
@@ -56,7 +56,7 @@ export function GastosPage() {
     <div>
       <PageHeader
         title="Gastos"
-        description={`Total del periodo: ${formatCurrency(total)}`}
+        description={isLoadingTotal ? 'Total del periodo: —' : `Total del periodo: ${formatCurrency(total)}`}
         actions={
           activeSucursal && (
             <Button onClick={() => setFormOpen(true)}>
@@ -90,7 +90,7 @@ export function GastosPage() {
       </div>
 
       {isLoading ? (
-        <Skeleton className="h-64" />
+        <TableSkeleton columns={5} />
       ) : gastos.length === 0 ? (
         <EmptyState icon={Receipt} title="Sin gastos registrados" description="Registra el primer gasto de esta sucursal." />
       ) : (

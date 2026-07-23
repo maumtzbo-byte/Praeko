@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import { ArrowDownRight, ArrowUpRight } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 interface StatCardProps {
@@ -10,23 +11,28 @@ interface StatCardProps {
   trend?: number
   tone?: 'default' | 'success' | 'warning' | 'destructive'
   className?: string
+  isLoading?: boolean
 }
 
 const TONE_STYLES: Record<NonNullable<StatCardProps['tone']>, string> = {
   default: 'bg-primary/10 text-primary',
   success: 'bg-success/15 text-success',
-  warning: 'bg-warning/20 text-warning-foreground',
+  warning: 'bg-warning/20 text-warning',
   destructive: 'bg-destructive/10 text-destructive',
 }
 
-export function StatCard({ label, value, icon: Icon, trend, tone = 'default', className }: StatCardProps) {
+export function StatCard({ label, value, icon: Icon, trend, tone = 'default', className, isLoading }: StatCardProps) {
   return (
     <Card className={cn('transition-shadow hover:shadow-md', className)}>
       <CardContent className="flex items-start justify-between gap-4 p-5">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-xs font-medium text-muted-foreground">{label}</p>
-          <p className="mt-1.5 truncate text-2xl font-semibold tracking-tight">{value}</p>
-          {trend !== undefined && (
+          {isLoading ? (
+            <Skeleton className="mt-1.5 h-7 w-24" />
+          ) : (
+            <p className="mt-1.5 truncate text-2xl font-semibold tracking-tight">{value}</p>
+          )}
+          {!isLoading && trend !== undefined && (
             <div
               className={cn(
                 'mt-1.5 inline-flex items-center gap-1 text-xs font-medium',

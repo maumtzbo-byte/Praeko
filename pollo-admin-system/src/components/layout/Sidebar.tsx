@@ -19,10 +19,10 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           onClick={onNavigate}
           className={({ isActive }) =>
             cn(
-              'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors before:absolute before:-left-3 before:top-1/2 before:h-4 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-primary before:transition-opacity',
               isActive
-                ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:bg-sidebar-foreground/5 hover:text-foreground',
+                ? 'bg-primary/10 text-primary before:opacity-100'
+                : 'text-muted-foreground before:opacity-0 hover:bg-sidebar-foreground/5 hover:text-foreground',
             )
           }
         >

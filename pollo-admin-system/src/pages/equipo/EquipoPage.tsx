@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import { TableSkeleton } from '@/components/shared/TableSkeleton'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -33,7 +33,7 @@ export function EquipoPage() {
       />
 
       {isLoading ? (
-        <Skeleton className="h-64" />
+        <TableSkeleton columns={4} />
       ) : usuarios.length === 0 ? (
         <EmptyState icon={Users} title="Sin usuarios" description="Aún no hay usuarios registrados." />
       ) : (

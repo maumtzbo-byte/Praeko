@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { Bell, FileWarning, PackageX, AlertTriangle, Truck, Info, CheckCheck } from 'lucide-react'
+import { Bell, FileWarning, PackageX, AlertTriangle, Truck, RefreshCw, Info, CheckCheck } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { TableSkeleton } from '@/components/shared/TableSkeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useMarcarLeida, useMarcarTodasLeidas, useNotificaciones } from '@/hooks/use-notificaciones'
 import { cn, formatDateTime } from '@/lib/utils'
@@ -24,7 +24,7 @@ const ICONS: Record<TipoNotificacion, typeof Bell> = {
   inventario_bajo: PackageX,
   merma_alta: AlertTriangle,
   pedido_pendiente: Truck,
-  pedido_actualizado: Truck,
+  pedido_actualizado: RefreshCw,
   general: Info,
 }
 
@@ -68,7 +68,7 @@ export function NotificacionesPage() {
       </div>
 
       {isLoading ? (
-        <Skeleton className="h-64" />
+        <TableSkeleton columns={1} rows={4} header={false} />
       ) : filtered.length === 0 ? (
         <EmptyState icon={Bell} title="Sin notificaciones" description="No hay alertas para mostrar con este filtro." />
       ) : (

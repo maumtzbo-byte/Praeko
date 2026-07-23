@@ -6,7 +6,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { TableSkeleton } from '@/components/shared/TableSkeleton'
 import { Progress } from '@/components/ui/progress'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -96,7 +96,7 @@ export function InventarioPage() {
       </div>
 
       {isLoading ? (
-        <Skeleton className="h-64" />
+        <TableSkeleton columns={5} />
       ) : filtered.length === 0 ? (
         <EmptyState icon={Boxes} title="Sin registros de inventario" description="Agrega productos al inventario de la sucursal." />
       ) : (

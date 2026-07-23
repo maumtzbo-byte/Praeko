@@ -1,7 +1,7 @@
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CHART_COLORS } from '@/lib/chart-colors'
-import { formatCurrency } from '@/lib/utils'
+import { formatAxisCurrency, formatCurrency } from '@/lib/utils'
 import type { ComparativoSucursal } from '@/services/dashboard.service'
 
 export function BranchComparisonChart({ data }: { data: ComparativoSucursal[] }) {
@@ -20,7 +20,7 @@ export function BranchComparisonChart({ data }: { data: ComparativoSucursal[] })
               axisLine={false}
               width={64}
               tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
-              tickFormatter={(v: number) => formatCurrency(v).replace('MX$', '$')}
+              tickFormatter={formatAxisCurrency}
             />
             <Tooltip
               formatter={(value) => formatCurrency(Number(value))}

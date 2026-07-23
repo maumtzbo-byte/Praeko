@@ -3,6 +3,7 @@ import { Plus, Tag, Trash2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { useCategorias, useCreateCategoria, useDeleteCategoria } from '@/hooks/use-categorias'
 import { useAuth } from '@/context/AuthContext'
@@ -29,24 +30,30 @@ export function CategoriasPanel() {
         </Button>
       </form>
 
-      {!isLoading && categorias.length === 0 && (
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-[52px]" />
+          ))}
+        </div>
+      ) : categorias.length === 0 ? (
         <EmptyState icon={Tag} title="Sin categorías" description="Agrega la primera categoría de producto." />
+      ) : (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {categorias.map((c) => (
+            <Card key={c.id}>
+              <CardContent className="flex items-center justify-between p-4">
+                <span className="text-sm font-medium">{c.nombre}</span>
+                {isAdmin && (
+                  <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(c.id)}>
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
-
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        {categorias.map((c) => (
-          <Card key={c.id}>
-            <CardContent className="flex items-center justify-between p-4">
-              <span className="text-sm font-medium">{c.nombre}</span>
-              {isAdmin && (
-                <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(c.id)}>
-                  <Trash2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
     </div>
   )
 }

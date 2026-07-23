@@ -89,7 +89,7 @@ export function GlobalSearch({
         <button
           type="button"
           onClick={() => setQuery('')}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           <X className="h-3.5 w-3.5" />
         </button>
@@ -111,7 +111,7 @@ export function GlobalSearch({
                       setQuery('')
                       onNavigate?.()
                     }}
-                    className="flex w-full flex-col items-start gap-0.5 px-4 py-2 text-left text-sm hover:bg-accent"
+                    className="flex w-full flex-col items-start gap-0.5 px-4 py-2 text-left text-sm outline-none hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset"
                   >
                     <span className="font-medium">{r.title}</span>
                     <span className="text-xs text-muted-foreground">{r.subtitle}</span>

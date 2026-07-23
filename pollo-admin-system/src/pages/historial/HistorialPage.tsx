@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { PaginationControls } from '@/components/shared/PaginationControls'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { TableSkeleton } from '@/components/shared/TableSkeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useHistorial } from '@/hooks/use-historial'
@@ -88,7 +88,7 @@ export function HistorialPage() {
       </div>
 
       {isLoading ? (
-        <Skeleton className="h-64" />
+        <TableSkeleton columns={4} />
       ) : historial.length === 0 ? (
         <EmptyState icon={History} title="Sin movimientos" description="Aún no hay cambios registrados con estos filtros." />
       ) : (

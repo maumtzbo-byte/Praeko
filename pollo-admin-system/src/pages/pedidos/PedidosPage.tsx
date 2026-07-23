@@ -5,7 +5,7 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { TableSkeleton } from '@/components/shared/TableSkeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -59,7 +59,7 @@ export function PedidosPage() {
       </div>
 
       {isLoading ? (
-        <Skeleton className="h-64" />
+        <TableSkeleton columns={5} />
       ) : filtered.length === 0 ? (
         <EmptyState icon={Truck} title="No hay pedidos" description="Aún no se han registrado pedidos." />
       ) : (

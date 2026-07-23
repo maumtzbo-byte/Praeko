@@ -1,7 +1,7 @@
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CHART_PALETTE } from '@/lib/chart-colors'
-import { formatCurrency } from '@/lib/utils'
+import { formatAxisCurrency, formatCurrency } from '@/lib/utils'
 import type { VentaProductoAgregada } from '@/services/dashboard.service'
 
 export function TopProductsChart({ data }: { data: VentaProductoAgregada[] }) {
@@ -21,7 +21,7 @@ export function TopProductsChart({ data }: { data: VentaProductoAgregada[] }) {
               tickLine={false}
               axisLine={false}
               tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
-              tickFormatter={(v: number) => formatCurrency(v).replace('MX$', '$')}
+              tickFormatter={formatAxisCurrency}
             />
             <YAxis
               type="category"

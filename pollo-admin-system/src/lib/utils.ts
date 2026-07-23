@@ -13,6 +13,10 @@ export function formatCurrency(value: number): string {
   }).format(value)
 }
 
+export function formatAxisCurrency(value: number): string {
+  return formatCurrency(value).replace('MX$', '$')
+}
+
 export function formatNumber(value: number): string {
   return new Intl.NumberFormat('es-MX').format(value)
 }

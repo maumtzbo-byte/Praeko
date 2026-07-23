@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { FileBarChart, FileSpreadsheet, FileText } from 'lucide-react'
+import { FileBarChart, FileSpreadsheet, FileText, Receipt, TrendingUp, Wallet } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { StatCard } from '@/components/shared/StatCard'
 import { PaginationControls } from '@/components/shared/PaginationControls'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
+import { TableSkeleton } from '@/components/shared/TableSkeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useReportesDiarios, useReportesTotales } from '@/hooks/use-reportes'
@@ -48,7 +48,7 @@ export function ReportesPage() {
   React.useEffect(() => setPage(1), [periodo, sucursalId, empleadoId, desde, hasta])
 
   const { data, isLoading } = useReportesDiarios(filtro, { page, pageSize: PAGE_SIZE })
-  const { data: totales } = useReportesTotales(filtro)
+  const { data: totales, isLoading: isLoadingTotales } = useReportesTotales(filtro)
   const reportes = data?.data ?? []
 
   const nombreSucursal = React.useCallback((id: string) => sucursales.find((s) => s.id === id)?.nombre ?? id, [sucursales])
@@ -155,13 +155,30 @@ export function ReportesPage() {
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Ventas del periodo" value={formatCurrency(totales?.ventas ?? 0)} icon={FileBarChart} />
-        <StatCard label="Gastos del periodo" value={formatCurrency(totales?.gastos ?? 0)} icon={FileBarChart} tone="warning" />
-        <StatCard label="Ganancia del periodo" value={formatCurrency(totales?.ganancia ?? 0)} icon={FileBarChart} tone="success" />
+        <StatCard
+          label="Ventas del periodo"
+          value={formatCurrency(totales?.ventas ?? 0)}
+          icon={Wallet}
+          isLoading={isLoadingTotales}
+        />
+        <StatCard
+          label="Gastos del periodo"
+          value={formatCurrency(totales?.gastos ?? 0)}
+          icon={Receipt}
+          tone="warning"
+          isLoading={isLoadingTotales}
+        />
+        <StatCard
+          label="Ganancia del periodo"
+          value={formatCurrency(totales?.ganancia ?? 0)}
+          icon={TrendingUp}
+          tone="success"
+          isLoading={isLoadingTotales}
+        />
       </div>
 
       {isLoading ? (
-        <Skeleton className="h-64" />
+        <TableSkeleton columns={7} />
       ) : reportes.length === 0 ? (
         <EmptyState icon={FileBarChart} title="Sin reportes en este rango" description="Ajusta los filtros para ver resultados." />
       ) : (

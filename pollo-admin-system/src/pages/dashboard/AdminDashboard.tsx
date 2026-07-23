@@ -15,6 +15,7 @@ import { PeriodSelector } from '@/components/shared/PeriodSelector'
 import { SalesTrendChart } from '@/components/charts/SalesTrendChart'
 import { BranchComparisonChart } from '@/components/charts/BranchComparisonChart'
 import { TopProductsChart } from '@/components/charts/TopProductsChart'
+import { EmptyChartCard } from '@/components/charts/EmptyChartCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -123,7 +124,11 @@ export function AdminDashboard() {
 
       <div className="mt-6 grid gap-4 xl:grid-cols-3">
         <div className="xl:col-span-2">
-          <SalesTrendChart data={chartData} title={`Ventas y ganancia por ${periodoLabel(periodo)}`} />
+          {chartData.length > 0 ? (
+            <SalesTrendChart data={chartData} title={`Ventas y ganancia por ${periodoLabel(periodo)}`} />
+          ) : (
+            <EmptyChartCard title={`Ventas y ganancia por ${periodoLabel(periodo)}`} />
+          )}
         </div>
         <Card>
           <CardHeader>
@@ -152,8 +157,16 @@ export function AdminDashboard() {
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
-        <BranchComparisonChart data={comparativo} />
-        <TopProductsChart data={data?.ventasPorProducto ?? []} />
+        {comparativo.length > 0 ? (
+          <BranchComparisonChart data={comparativo} />
+        ) : (
+          <EmptyChartCard title="Comparación entre sucursales" height="h-80" />
+        )}
+        {(data?.ventasPorProducto ?? []).length > 0 ? (
+          <TopProductsChart data={data?.ventasPorProducto ?? []} />
+        ) : (
+          <EmptyChartCard title="Top productos vendidos" height="h-80" />
+        )}
       </div>
     </div>
   )

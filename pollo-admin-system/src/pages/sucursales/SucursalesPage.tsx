@@ -6,7 +6,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { TableSkeleton } from '@/components/shared/TableSkeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useDeleteSucursal, useSucursales } from '@/hooks/use-sucursales'
@@ -55,7 +55,7 @@ export function SucursalesPage() {
       />
 
       {isLoading ? (
-        <Skeleton className="h-64" />
+        <TableSkeleton columns={6} />
       ) : filtered.length === 0 ? (
         <EmptyState icon={Store} title="No hay sucursales" description="Crea la primera sucursal para comenzar." />
       ) : (

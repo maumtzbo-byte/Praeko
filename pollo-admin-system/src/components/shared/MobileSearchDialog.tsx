@@ -12,7 +12,7 @@ export function MobileSearchDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="sm:hidden">
-          <Search className="h-[18px] w-[18px]" />
+          <Search className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="top-6 translate-y-0 gap-3 sm:hidden">

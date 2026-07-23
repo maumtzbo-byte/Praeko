@@ -1,7 +1,7 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CHART_COLORS } from '@/lib/chart-colors'
-import { formatCurrency } from '@/lib/utils'
+import { formatAxisCurrency, formatCurrency } from '@/lib/utils'
 
 export interface SalesTrendPoint {
   fecha: string
@@ -41,7 +41,7 @@ export function SalesTrendChart({ data, title }: { data: SalesTrendPoint[]; titl
               axisLine={false}
               width={64}
               tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
-              tickFormatter={(v: number) => formatCurrency(v).replace('MX$', '$')}
+              tickFormatter={formatAxisCurrency}
             />
             <Tooltip
               formatter={(value) => formatCurrency(Number(value))}

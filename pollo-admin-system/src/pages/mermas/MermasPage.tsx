@@ -1,12 +1,12 @@
 import * as React from 'react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { MoreHorizontal, Plus, Trash2, TrendingDown } from 'lucide-react'
+import { MoreHorizontal, PackageX, Plus, Tag, Trash2, TrendingDown } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { StatCard } from '@/components/shared/StatCard'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import { TableSkeleton } from '@/components/shared/TableSkeleton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -59,9 +59,21 @@ export function MermasPage() {
       />
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Registros de merma" value={formatNumber(registros)} icon={TrendingDown} tone="destructive" />
-        <StatCard label="Unidades perdidas" value={formatNumber(totalCantidad)} icon={TrendingDown} tone="warning" />
-        <StatCard label="Motivo más frecuente" value={motivoPrincipal} icon={TrendingDown} />
+        <StatCard
+          label="Registros de merma"
+          value={formatNumber(registros)}
+          icon={TrendingDown}
+          tone="destructive"
+          isLoading={isLoading}
+        />
+        <StatCard
+          label="Unidades perdidas"
+          value={formatNumber(totalCantidad)}
+          icon={PackageX}
+          tone="warning"
+          isLoading={isLoading}
+        />
+        <StatCard label="Motivo más frecuente" value={motivoPrincipal} icon={Tag} isLoading={isLoading} />
       </div>
 
       {porMotivo.length > 0 && (
@@ -100,7 +112,7 @@ export function MermasPage() {
       </div>
 
       {isLoading ? (
-        <Skeleton className="h-64" />
+        <TableSkeleton columns={5} />
       ) : filtered.length === 0 ? (
         <EmptyState icon={TrendingDown} title="Sin mermas registradas" description="Cuando registres una merma aparecerá aquí." />
       ) : (

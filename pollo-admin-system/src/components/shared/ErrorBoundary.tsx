@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Button } from '@/components/ui/button'
 
 interface ErrorBoundaryState {
   error: Error | null
@@ -27,13 +28,9 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
             <pre className="mt-4 max-h-56 overflow-auto rounded-lg border border-border bg-muted p-3 text-left text-xs text-muted-foreground">
               {this.state.error.name}: {this.state.error.message}
             </pre>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-            >
+            <Button className="mt-4" onClick={() => window.location.reload()}>
               Recargar página
-            </button>
+            </Button>
           </div>
         </div>
       )

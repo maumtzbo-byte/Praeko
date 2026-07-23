@@ -1,7 +1,7 @@
 // Paleta estática (hex) que refleja las variables OKLCH del tema, usada por
 // Recharts porque los atributos de presentación SVG no siempre resuelven var().
 export const CHART_COLORS = {
-  primary: '#c2410c',
+  primary: '#f4b400',
   success: '#16a34a',
   info: '#2563eb',
   warning: '#d97706',

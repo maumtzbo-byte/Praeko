@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useDeleteSucursal, useSucursales } from '@/hooks/use-sucursales'
 import { useDebounce } from '@/hooks/use-debounce'
 import { SucursalFormDialog } from '@/pages/sucursales/SucursalFormDialog'
-import { formatDate } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
 import type { Sucursal } from '@/types/database'
 
 export function SucursalesPage() {
@@ -83,7 +83,7 @@ export function SucursalesPage() {
                     {s.estado === 'activa' ? 'Activa' : 'Inactiva'}
                   </Badge>
                 </TableCell>
-                <TableCell>{formatDate(s.created_at)}</TableCell>
+                <TableCell>{formatDateTime(s.created_at)}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

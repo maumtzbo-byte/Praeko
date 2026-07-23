@@ -23,12 +23,14 @@ export function formatNumber(value: number): string {
 }
 
 export function formatDate(value: string | Date, opts?: Intl.DateTimeFormatOptions): string {
-  const date = typeof value === 'string' ? new Date(`${value}T00:00:00`) : value
+  const date = typeof value === 'string' ? new Date(value.includes('T') ? value : `${value}T00:00:00`) : value
+  if (Number.isNaN(date.getTime())) return '—'
   return new Intl.DateTimeFormat('es-MX', opts ?? { day: '2-digit', month: 'short', year: 'numeric' }).format(date)
 }
 
 export function formatDateTime(value: string | Date): string {
   const date = typeof value === 'string' ? new Date(value) : value
+  if (Number.isNaN(date.getTime())) return '—'
   return new Intl.DateTimeFormat('es-MX', {
     day: '2-digit',
     month: 'short',

@@ -32,7 +32,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Pedidos', to: '/pedidos', icon: Truck, roles: ['administrador', 'encargado', 'empleado'] },
   { label: 'Mermas', to: '/mermas', icon: Trash2, roles: ['administrador', 'encargado', 'empleado'] },
   { label: 'Notificaciones', to: '/notificaciones', icon: Bell, roles: ['administrador', 'encargado', 'empleado'] },
-  { label: 'Reportes', to: '/reportes', icon: FileBarChart, roles: ['administrador', 'encargado'] },
+  { label: 'Historial de reportes', to: '/reportes', icon: FileBarChart, roles: ['administrador', 'encargado'] },
   { label: 'Historial', to: '/historial', icon: History, roles: ['administrador', 'encargado'] },
   { label: 'Equipo', to: '/equipo', icon: Users, roles: ['administrador'] },
 ]

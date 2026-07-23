@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Wallet, Receipt, TrendingUp, ShoppingBasket, PackageX, Truck, Boxes } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { QuickStartCard } from '@/components/shared/QuickStartCard'
 import { StatCard } from '@/components/shared/StatCard'
 import { PeriodSelector } from '@/components/shared/PeriodSelector'
 import { SalesTrendChart } from '@/components/charts/SalesTrendChart'
@@ -61,6 +62,8 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
         description="Resumen de tu sucursal"
         actions={<PeriodSelector value={periodo} onChange={setPeriodo} />}
       />
+
+      <QuickStartCard />
 
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

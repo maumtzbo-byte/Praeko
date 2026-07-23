@@ -51,7 +51,7 @@ export function InventarioPage() {
     <div>
       <PageHeader
         title="Inventario"
-        description="Existencias y alertas de stock mínimo por sucursal"
+        description="Cantidades por producto en tu sucursal. Cuando recibas mercancía o se te acabe algo, tócalo y elige Editar para actualizar la cantidad."
         actions={
           canManage && (
             <Button

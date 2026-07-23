@@ -89,8 +89,8 @@ export function ReportesPage() {
   return (
     <div>
       <PageHeader
-        title="Reportes"
-        description="Consulta histórica por día, semana, mes, año, sucursal o empleado"
+        title="Historial de reportes"
+        description="Aquí consultas los reportes diarios ya capturados por las sucursales, por día, semana, mes, año, sucursal o empleado"
         actions={
           <>
             <Button variant="outline" onClick={handleExportExcel} disabled={!hasResults || isExporting}>

@@ -10,6 +10,7 @@ import {
   Trophy,
 } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { QuickStartCard } from '@/components/shared/QuickStartCard'
 import { StatCard } from '@/components/shared/StatCard'
 import { PeriodSelector } from '@/components/shared/PeriodSelector'
 import { SalesTrendChart } from '@/components/charts/SalesTrendChart'
@@ -93,6 +94,8 @@ export function AdminDashboard() {
           </>
         }
       />
+
+      <QuickStartCard />
 
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

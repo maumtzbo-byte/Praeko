@@ -125,7 +125,7 @@ export function ReporteDiarioPage() {
     <div>
       <PageHeader
         title="Reporte diario"
-        description="Captura las ventas, gastos y movimientos del día"
+        description="Captura las ventas, gastos y movimientos del día. Al guardar, tu administrador ya lo puede ver en Historial de reportes."
         actions={
           <>
             {isAdmin && (

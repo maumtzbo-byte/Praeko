@@ -18,6 +18,7 @@ import { GlobalSearch } from '@/components/shared/GlobalSearch'
 import { MobileSearchDialog } from '@/components/shared/MobileSearchDialog'
 import { NotificationsPopover } from '@/components/shared/NotificationsPopover'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
+import { HelpDialog } from '@/components/shared/HelpDialog'
 import { useAuth } from '@/context/AuthContext'
 import { initials } from '@/lib/utils'
 
@@ -47,6 +48,7 @@ export function Topbar() {
 
       <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
         <MobileSearchDialog />
+        <HelpDialog />
         <ThemeToggle />
         <NotificationsPopover />
 

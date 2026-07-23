@@ -4,6 +4,19 @@
 // "administrador" are allowed to invoke this.
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
+function jsonResponse(body: unknown, status: number): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+}
+
 interface CreateUserPayload {
   nombre: string
   email: string
@@ -28,13 +41,17 @@ function isValidPayload(body: unknown): body is CreateUserPayload {
 }
 
 Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders })
+  }
+
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Método no permitido' }), { status: 405 })
+    return jsonResponse({ error: 'Método no permitido' }, 405)
   }
 
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) {
-    return new Response(JSON.stringify({ error: 'No autenticado' }), { status: 401 })
+    return jsonResponse({ error: 'No autenticado' }, 401)
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -51,7 +68,7 @@ Deno.serve(async (req: Request) => {
   } = await callerClient.auth.getUser()
 
   if (callerError || !caller) {
-    return new Response(JSON.stringify({ error: 'No autenticado' }), { status: 401 })
+    return jsonResponse({ error: 'No autenticado' }, 401)
   }
 
   const adminClient = createClient(supabaseUrl, serviceRoleKey)
@@ -65,20 +82,18 @@ Deno.serve(async (req: Request) => {
   const callerRole = (callerProfile?.rol as { clave?: string } | null)?.clave
 
   if (profileError || callerRole !== 'administrador') {
-    return new Response(JSON.stringify({ error: 'No tienes permiso para crear usuarios' }), { status: 403 })
+    return jsonResponse({ error: 'No tienes permiso para crear usuarios' }, 403)
   }
 
   let payload: unknown
   try {
     payload = await req.json()
   } catch {
-    return new Response(JSON.stringify({ error: 'Cuerpo de la solicitud inválido' }), { status: 400 })
+    return jsonResponse({ error: 'Cuerpo de la solicitud inválido' }, 400)
   }
 
   if (!isValidPayload(payload)) {
-    return new Response(JSON.stringify({ error: 'Faltan campos requeridos o tienen un formato inválido' }), {
-      status: 400,
-    })
+    return jsonResponse({ error: 'Faltan campos requeridos o tienen un formato inválido' }, 400)
   }
 
   const { data: created, error: createError } = await adminClient.auth.admin.createUser({
@@ -91,7 +106,7 @@ Deno.serve(async (req: Request) => {
     const message = createError?.message.includes('already been registered')
       ? 'Ya existe una cuenta con ese correo.'
       : (createError?.message ?? 'No se pudo crear la cuenta')
-    return new Response(JSON.stringify({ error: message }), { status: 400 })
+    return jsonResponse({ error: message }, 400)
   }
 
   const { error: insertError } = await adminClient.from('usuarios').insert({
@@ -106,11 +121,8 @@ Deno.serve(async (req: Request) => {
   if (insertError) {
     // Roll back the auth user so we don't leave an orphaned account without a profile.
     await adminClient.auth.admin.deleteUser(created.user.id)
-    return new Response(JSON.stringify({ error: insertError.message }), { status: 400 })
+    return jsonResponse({ error: insertError.message }, 400)
   }
 
-  return new Response(JSON.stringify({ id: created.user.id }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  })
+  return jsonResponse({ id: created.user.id }, 200)
 })

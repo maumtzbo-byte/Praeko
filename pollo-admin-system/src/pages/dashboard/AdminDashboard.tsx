@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Wallet, Receipt, ShoppingBasket, PackageX, Trophy } from 'lucide-react'
+import { PackageX, Trophy } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatCard } from '@/components/shared/StatCard'
 import { PeriodSelector } from '@/components/shared/PeriodSelector'
@@ -93,13 +93,13 @@ export function AdminDashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard label="Total vendido" value={formatCurrency(totales.totalVentas)} icon={Wallet} tone="default" />
-          <StatCard label="Total gastos" value={formatCurrency(totales.totalGastos)} icon={Receipt} tone="warning" />
+          <StatCard label="Total vendido" value={formatCurrency(totales.totalVentas)} iconImage="/mascota-dinero-lanzando.png" tone="default" />
+          <StatCard label="Total gastos" value={formatCurrency(totales.totalGastos)} iconImage="/mascota-ticket.png" tone="warning" />
           <StatCard label="Ganancias" value={formatCurrency(totales.ganancia)} iconImage="/mascota-dinero.png" tone="success" />
           <StatCard
             label="Productos vendidos"
             value={formatNumber(totales.pollosVendidos)}
-            icon={ShoppingBasket}
+            iconImage="/mascota-carrito.png"
           />
           <StatCard
             label="Productos dañados"
@@ -119,7 +119,7 @@ export function AdminDashboard() {
             iconImage="/mascota-alerta.png"
             tone="destructive"
           />
-          <StatCard label="Sucursales activas" value={formatNumber(sucursales.filter((s) => s.estado === 'activa').length)} icon={Trophy} />
+          <StatCard label="Sucursales activas" value={formatNumber(sucursales.filter((s) => s.estado === 'activa').length)} iconImage="/mascota-mapa.png" />
         </div>
       )}
 

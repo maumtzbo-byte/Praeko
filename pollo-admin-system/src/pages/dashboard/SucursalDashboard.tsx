@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Wallet, Receipt, ShoppingBasket, PackageX, Boxes } from 'lucide-react'
+import { PackageX, Boxes } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatCard } from '@/components/shared/StatCard'
 import { PeriodSelector } from '@/components/shared/PeriodSelector'
@@ -70,10 +70,10 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard label="Total vendido" value={formatCurrency(totales.totalVentas)} icon={Wallet} />
-          <StatCard label="Total gastos" value={formatCurrency(totales.totalGastos)} icon={Receipt} tone="warning" />
+          <StatCard label="Total vendido" value={formatCurrency(totales.totalVentas)} iconImage="/mascota-dinero-lanzando.png" />
+          <StatCard label="Total gastos" value={formatCurrency(totales.totalGastos)} iconImage="/mascota-ticket.png" tone="warning" />
           <StatCard label="Ganancias" value={formatCurrency(totales.ganancia)} iconImage="/mascota-dinero.png" tone="success" />
-          <StatCard label="Productos vendidos" value={formatNumber(totales.pollosVendidos)} icon={ShoppingBasket} />
+          <StatCard label="Productos vendidos" value={formatNumber(totales.pollosVendidos)} iconImage="/mascota-carrito.png" />
           <StatCard label="Productos dañados" value={formatNumber(totales.productosDanados)} icon={PackageX} tone="destructive" />
           <StatCard
             label="Pedidos pendientes"

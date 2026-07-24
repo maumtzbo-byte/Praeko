@@ -160,7 +160,7 @@ export interface Pedido {
 }
 
 export interface PedidoConRelaciones extends Pedido {
-  producto: Producto
+  producto: ProductoConCategoria
   sucursal: Sucursal
 }
 

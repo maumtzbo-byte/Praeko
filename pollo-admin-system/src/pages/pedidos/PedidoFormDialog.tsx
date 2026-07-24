@@ -1,97 +1,112 @@
 import * as React from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useCreatePedido } from '@/hooks/use-pedidos'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useCreatePedidoLote } from '@/hooks/use-pedidos'
 import { useProductos } from '@/hooks/use-productos'
 import { useAuth } from '@/context/AuthContext'
 import { todayISO } from '@/lib/utils'
 import type { PrioridadPedido } from '@/types/database'
 
-const schema = z.object({
-  producto_id: z.string().min(1, 'Selecciona un producto'),
-  cantidad: z.coerce.number().positive('Debe ser mayor a 0'),
-  comentario: z.string().optional(),
-  prioridad: z.enum(['baja', 'normal', 'alta', 'urgente']),
-})
-
-type FormInput = z.input<typeof schema>
-type FormValues = z.output<typeof schema>
+const CATEGORIAS = ['Complementos', 'Insumos'] as const
 
 export function PedidoFormDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { usuario } = useAuth()
   const { data: productos = [] } = useProductos()
-  const mutation = useCreatePedido()
+  const mutation = useCreatePedidoLote()
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<FormInput, unknown, FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { producto_id: '', cantidad: 1, comentario: '', prioridad: 'normal' },
-  })
+  const [cantidades, setCantidades] = React.useState<Record<string, string>>({})
+  const [prioridad, setPrioridad] = React.useState<PrioridadPedido>('normal')
+  const [comentario, setComentario] = React.useState('')
+  const [error, setError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    if (open) reset({ producto_id: '', cantidad: 1, comentario: '', prioridad: 'normal' })
-  }, [open, reset])
+    if (open) {
+      setCantidades({})
+      setPrioridad('normal')
+      setComentario('')
+      setError(null)
+    }
+  }, [open])
 
-  async function onSubmit(values: FormValues) {
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
     if (!usuario?.sucursal_id) return
-    await mutation.mutateAsync({
-      sucursal_id: usuario.sucursal_id,
-      producto_id: values.producto_id,
-      usuario_id: usuario.id,
-      cantidad: values.cantidad,
-      comentario: values.comentario || null,
-      prioridad: values.prioridad,
-      fecha: todayISO(),
-    })
+
+    const seleccionados = Object.entries(cantidades)
+      .map(([producto_id, cantidad]) => ({ producto_id, cantidad: Number(cantidad) }))
+      .filter((item) => Number.isFinite(item.cantidad) && item.cantidad > 0)
+
+    if (seleccionados.length === 0) {
+      setError('Selecciona al menos un artículo con cantidad.')
+      return
+    }
+    setError(null)
+
+    await mutation.mutateAsync(
+      seleccionados.map((item) => ({
+        sucursal_id: usuario.sucursal_id as string,
+        producto_id: item.producto_id,
+        usuario_id: usuario.id,
+        cantidad: item.cantidad,
+        comentario: comentario || null,
+        prioridad,
+        fecha: todayISO(),
+      })),
+    )
     onOpenChange(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Nuevo pedido</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
-          <div className="flex flex-col gap-1.5">
-            <Label>Producto</Label>
-            <Select value={watch('producto_id')} onValueChange={(v) => setValue('producto_id', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona un producto" />
-              </SelectTrigger>
-              <SelectContent>
-                {productos.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.nombre} ({p.unidad})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.producto_id && <p className="text-xs text-destructive">{errors.producto_id.message}</p>}
-          </div>
+        <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+          <Tabs defaultValue="Complementos">
+            <TabsList className="w-full">
+              {CATEGORIAS.map((cat) => (
+                <TabsTrigger key={cat} value={cat}>
+                  {cat}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {CATEGORIAS.map((cat) => (
+              <TabsContent key={cat} value={cat} className="flex flex-col gap-2">
+                {productos
+                  .filter((p) => p.activo && p.categoria?.nombre === cat)
+                  .map((p) => (
+                    <div key={p.id} className="flex items-center justify-between gap-3">
+                      <Label htmlFor={`cant-${p.id}`} className="min-w-0 flex-1 truncate font-normal">
+                        {p.nombre} <span className="text-muted-foreground">({p.unidad})</span>
+                      </Label>
+                      <Input
+                        id={`cant-${p.id}`}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0"
+                        className="w-24"
+                        value={cantidades[p.id] ?? ''}
+                        onChange={(e) => setCantidades((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                      />
+                    </div>
+                  ))}
+              </TabsContent>
+            ))}
+          </Tabs>
+
+          {error && <p className="text-xs text-destructive">{error}</p>}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="cantidad">Cantidad</Label>
-              <Input id="cantidad" type="number" step="0.01" min="0" {...register('cantidad')} />
-              {errors.cantidad && <p className="text-xs text-destructive">{errors.cantidad.message}</p>}
-            </div>
-            <div className="flex flex-col gap-1.5">
               <Label>Prioridad</Label>
-              <Select value={watch('prioridad')} onValueChange={(v) => setValue('prioridad', v as PrioridadPedido)}>
+              <Select value={prioridad} onValueChange={(v) => setPrioridad(v as PrioridadPedido)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -107,7 +122,7 @@ export function PedidoFormDialog({ open, onOpenChange }: { open: boolean; onOpen
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="comentario">Comentario (opcional)</Label>
-            <Textarea id="comentario" rows={2} {...register('comentario')} />
+            <Textarea id="comentario" rows={2} value={comentario} onChange={(e) => setComentario(e.target.value)} />
           </div>
 
           <DialogFooter>

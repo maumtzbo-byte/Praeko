@@ -12,14 +12,14 @@ export function usePedidos(sucursalId?: string) {
   })
 }
 
-export function useCreatePedido() {
+export function useCreatePedidoLote() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (input: PedidoInput) => pedidosService.createPedido(input),
-    onSuccess: () => {
+    mutationFn: (inputs: PedidoInput[]) => Promise.all(inputs.map((input) => pedidosService.createPedido(input))),
+    onSuccess: (_, inputs) => {
       qc.invalidateQueries({ queryKey: ['pedidos'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
-      toast.success('Pedido enviado')
+      toast.success(inputs.length === 1 ? 'Pedido enviado' : `${inputs.length} pedidos enviados`)
     },
     onError: (err) => toast.error(getFriendlyErrorMessage(err)),
   })

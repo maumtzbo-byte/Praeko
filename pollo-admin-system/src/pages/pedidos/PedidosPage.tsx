@@ -23,10 +23,15 @@ export function PedidosPage() {
   const deleteMutation = useDeletePedido()
 
   const [estadoFiltro, setEstadoFiltro] = React.useState<string>('todos')
+  const [categoriaFiltro, setCategoriaFiltro] = React.useState<string>('todas')
   const [formOpen, setFormOpen] = React.useState(false)
   const [deleting, setDeleting] = React.useState<PedidoConRelaciones | null>(null)
 
-  const filtered = pedidos.filter((p) => estadoFiltro === 'todos' || p.estado === estadoFiltro)
+  const filtered = pedidos.filter(
+    (p) =>
+      (estadoFiltro === 'todos' || p.estado === estadoFiltro) &&
+      (categoriaFiltro === 'todas' || p.producto.categoria?.nombre === categoriaFiltro),
+  )
 
   return (
     <div>
@@ -56,6 +61,16 @@ export function PedidosPage() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={categoriaFiltro} onValueChange={setCategoriaFiltro}>
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todas">Todas las categorías</SelectItem>
+            <SelectItem value="Complementos">Complementos</SelectItem>
+            <SelectItem value="Insumos">Insumos</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading ? (
@@ -68,6 +83,7 @@ export function PedidosPage() {
             <TableRow>
               <TableHead>Fecha</TableHead>
               {isAdmin && <TableHead>Sucursal</TableHead>}
+              <TableHead>Categoría</TableHead>
               <TableHead>Producto</TableHead>
               <TableHead>Cantidad</TableHead>
               <TableHead>Prioridad</TableHead>
@@ -80,6 +96,9 @@ export function PedidosPage() {
               <TableRow key={p.id}>
                 <TableCell>{formatDate(p.fecha)}</TableCell>
                 {isAdmin && <TableCell>{p.sucursal.nombre}</TableCell>}
+                <TableCell>
+                  {p.producto.categoria?.nombre && <Badge variant="secondary">{p.producto.categoria.nombre}</Badge>}
+                </TableCell>
                 <TableCell className="max-w-56 font-medium">
                   {p.producto.nombre}
                   {p.comentario && (

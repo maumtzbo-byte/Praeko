@@ -14,7 +14,7 @@ export interface PedidoInput {
 export async function listPedidos(sucursalId?: string): Promise<PedidoConRelaciones[]> {
   let query = supabase
     .from('pedidos')
-    .select('*, producto:productos(*), sucursal:sucursales(*)')
+    .select('*, producto:productos(*, categoria:categorias(*)), sucursal:sucursales(*)')
     .order('created_at', { ascending: false })
 
   if (sucursalId) query = query.eq('sucursal_id', sucursalId)

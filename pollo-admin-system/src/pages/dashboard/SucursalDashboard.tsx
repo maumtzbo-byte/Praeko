@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Wallet, Receipt, TrendingUp, ShoppingBasket, PackageX, Truck, Boxes } from 'lucide-react'
+import { Wallet, Receipt, ShoppingBasket, PackageX, Boxes } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatCard } from '@/components/shared/StatCard'
 import { PeriodSelector } from '@/components/shared/PeriodSelector'
@@ -72,11 +72,21 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <StatCard label="Total vendido" value={formatCurrency(totales.totalVentas)} icon={Wallet} />
           <StatCard label="Total gastos" value={formatCurrency(totales.totalGastos)} icon={Receipt} tone="warning" />
-          <StatCard label="Ganancias" value={formatCurrency(totales.ganancia)} icon={TrendingUp} tone="success" />
+          <StatCard label="Ganancias" value={formatCurrency(totales.ganancia)} iconImage="/mascota-dinero.png" tone="success" />
           <StatCard label="Productos vendidos" value={formatNumber(totales.pollosVendidos)} icon={ShoppingBasket} />
           <StatCard label="Productos dañados" value={formatNumber(totales.productosDanados)} icon={PackageX} tone="destructive" />
-          <StatCard label="Pedidos pendientes" value={formatNumber(data?.pedidosPendientes ?? 0)} icon={Truck} tone="warning" />
-          <StatCard label="Inventario bajo" value={formatNumber(data?.inventarioBajo ?? 0)} icon={Boxes} tone="destructive" />
+          <StatCard
+            label="Pedidos pendientes"
+            value={formatNumber(data?.pedidosPendientes ?? 0)}
+            iconImage="/mascota-caja.png"
+            tone="warning"
+          />
+          <StatCard
+            label="Inventario bajo"
+            value={formatNumber(data?.inventarioBajo ?? 0)}
+            iconImage="/mascota-alerta.png"
+            tone="destructive"
+          />
         </div>
       )}
 

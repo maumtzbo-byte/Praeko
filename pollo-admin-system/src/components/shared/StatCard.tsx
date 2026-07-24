@@ -7,7 +7,8 @@ import { cn } from '@/lib/utils'
 interface StatCardProps {
   label: string
   value: string
-  icon: LucideIcon
+  icon?: LucideIcon
+  iconImage?: string
   trend?: number
   tone?: 'default' | 'success' | 'warning' | 'destructive'
   className?: string
@@ -21,7 +22,16 @@ const TONE_STYLES: Record<NonNullable<StatCardProps['tone']>, string> = {
   destructive: 'bg-destructive/10 text-destructive',
 }
 
-export function StatCard({ label, value, icon: Icon, trend, tone = 'default', className, isLoading }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  icon: Icon,
+  iconImage,
+  trend,
+  tone = 'default',
+  className,
+  isLoading,
+}: StatCardProps) {
   return (
     <Card className={cn('transition-shadow hover:shadow-md', className)}>
       <CardContent className="flex items-start justify-between gap-4 p-5">
@@ -44,9 +54,15 @@ export function StatCard({ label, value, icon: Icon, trend, tone = 'default', cl
             </div>
           )}
         </div>
-        <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', TONE_STYLES[tone])}>
-          <Icon className="h-5 w-5" />
-        </div>
+        {iconImage ? (
+          <img src={iconImage} alt="" className="-my-2 h-16 w-16 shrink-0 object-contain" />
+        ) : (
+          Icon && (
+            <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', TONE_STYLES[tone])}>
+              <Icon className="h-5 w-5" />
+            </div>
+          )
+        )}
       </CardContent>
     </Card>
   )

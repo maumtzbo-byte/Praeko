@@ -52,9 +52,7 @@ export function LoginPage() {
 
       <div className="glass relative w-full max-w-sm rounded-2xl border border-border p-8 shadow-xl">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-primary/15 shadow-inner ring-4 ring-primary/10">
-            <img src="/mascota.png" alt="Pimpollo" className="h-20 w-20 object-contain drop-shadow-sm" />
-          </div>
+          <img src="/mascota-llave.png" alt="Pimpollo" className="mb-2 h-28 w-28 object-contain drop-shadow-md" />
           <h1 className="text-2xl font-bold tracking-tight">Pimpollo</h1>
           <p className="mt-1 text-sm text-muted-foreground">Panel de administración multi-sucursal</p>
         </div>

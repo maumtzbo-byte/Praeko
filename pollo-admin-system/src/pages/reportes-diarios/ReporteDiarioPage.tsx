@@ -18,9 +18,12 @@ import { VentasDetalleSection } from '@/pages/reportes-diarios/VentasDetalleSect
 import { cn, formatCurrency, todayISO } from '@/lib/utils'
 
 const schema = z.object({
-  ventas_efectivo: z.coerce.number().min(0),
-  ventas_tarjeta: z.coerce.number().min(0),
-  ventas_transferencia: z.coerce.number().min(0),
+  vta_sucursal: z.coerce.number().min(0),
+  tarjeta: z.coerce.number().min(0),
+  deposito: z.coerce.number().min(0),
+  didi: z.coerce.number().min(0),
+  rappi: z.coerce.number().min(0),
+  uber: z.coerce.number().min(0),
   gastos_total: z.coerce.number().min(0),
   pollos_recibidos: z.coerce.number().min(0),
   pollos_vendidos: z.coerce.number().min(0),
@@ -28,15 +31,19 @@ const schema = z.object({
   merma_total: z.coerce.number().min(0),
   observaciones: z.string().optional(),
   notas: z.string().optional(),
+  recolecto: z.string().optional(),
 })
 
 type FormInput = z.input<typeof schema>
 type FormValues = z.output<typeof schema>
 
 const EMPTY: FormInput = {
-  ventas_efectivo: 0,
-  ventas_tarjeta: 0,
-  ventas_transferencia: 0,
+  vta_sucursal: 0,
+  tarjeta: 0,
+  deposito: 0,
+  didi: 0,
+  rappi: 0,
+  uber: 0,
   gastos_total: 0,
   pollos_recibidos: 0,
   pollos_vendidos: 0,
@@ -44,6 +51,7 @@ const EMPTY: FormInput = {
   merma_total: 0,
   observaciones: '',
   notas: '',
+  recolecto: '',
 }
 
 export function ReporteDiarioPage() {
@@ -72,9 +80,12 @@ export function ReporteDiarioPage() {
       reset(
         reporte
           ? {
-              ventas_efectivo: reporte.ventas_efectivo,
-              ventas_tarjeta: reporte.ventas_tarjeta,
-              ventas_transferencia: reporte.ventas_transferencia,
+              vta_sucursal: reporte.vta_sucursal,
+              tarjeta: reporte.tarjeta,
+              deposito: reporte.deposito,
+              didi: reporte.didi,
+              rappi: reporte.rappi,
+              uber: reporte.uber,
               gastos_total: reporte.gastos_total,
               pollos_recibidos: reporte.pollos_recibidos,
               pollos_vendidos: reporte.pollos_vendidos,
@@ -82,6 +93,7 @@ export function ReporteDiarioPage() {
               merma_total: reporte.merma_total,
               observaciones: reporte.observaciones ?? '',
               notas: reporte.notas ?? '',
+              recolecto: reporte.recolecto ?? '',
             }
           : EMPTY,
       )
@@ -89,7 +101,13 @@ export function ReporteDiarioPage() {
   }, [reporte, isLoading, reset])
 
   const values = watch()
-  const ventasTotales = Number(values.ventas_efectivo || 0) + Number(values.ventas_tarjeta || 0) + Number(values.ventas_transferencia || 0)
+  const ventasTotales =
+    Number(values.vta_sucursal || 0) +
+    Number(values.tarjeta || 0) +
+    Number(values.deposito || 0) +
+    Number(values.didi || 0) +
+    Number(values.rappi || 0) +
+    Number(values.uber || 0)
   const gananciaEstimada = ventasTotales - Number(values.gastos_total || 0)
 
   async function onSubmit(formValues: FormValues) {
@@ -98,9 +116,12 @@ export function ReporteDiarioPage() {
       sucursal_id: sucursalId,
       usuario_id: usuario.id,
       fecha,
-      ventas_efectivo: formValues.ventas_efectivo,
-      ventas_tarjeta: formValues.ventas_tarjeta,
-      ventas_transferencia: formValues.ventas_transferencia,
+      vta_sucursal: formValues.vta_sucursal,
+      tarjeta: formValues.tarjeta,
+      deposito: formValues.deposito,
+      didi: formValues.didi,
+      rappi: formValues.rappi,
+      uber: formValues.uber,
       gastos_total: formValues.gastos_total,
       pollos_recibidos: formValues.pollos_recibidos,
       pollos_vendidos: formValues.pollos_vendidos,
@@ -108,6 +129,7 @@ export function ReporteDiarioPage() {
       merma_total: formValues.merma_total,
       observaciones: formValues.observaciones || null,
       notas: formValues.notas || null,
+      recolecto: formValues.recolecto || null,
     })
   }
 
@@ -162,18 +184,36 @@ export function ReporteDiarioPage() {
           <CardHeader>
             <CardTitle>Ventas por método de pago</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="ventas_efectivo">Ventas efectivo</Label>
-              <Input id="ventas_efectivo" type="number" step="0.01" min="0" {...register('ventas_efectivo')} />
+          <CardContent className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="vta_sucursal">Vta sucursal</Label>
+                <Input id="vta_sucursal" type="number" step="0.01" min="0" {...register('vta_sucursal')} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="tarjeta">Tarjeta</Label>
+                <Input id="tarjeta" type="number" step="0.01" min="0" {...register('tarjeta')} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="deposito">Depósito</Label>
+                <Input id="deposito" type="number" step="0.01" min="0" {...register('deposito')} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="didi">DiDi</Label>
+                <Input id="didi" type="number" step="0.01" min="0" {...register('didi')} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="rappi">Rappi</Label>
+                <Input id="rappi" type="number" step="0.01" min="0" {...register('rappi')} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="uber">Uber</Label>
+                <Input id="uber" type="number" step="0.01" min="0" {...register('uber')} />
+              </div>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="ventas_tarjeta">Ventas tarjeta</Label>
-              <Input id="ventas_tarjeta" type="number" step="0.01" min="0" {...register('ventas_tarjeta')} />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="ventas_transferencia">Ventas transferencia</Label>
-              <Input id="ventas_transferencia" type="number" step="0.01" min="0" {...register('ventas_transferencia')} />
+            <div className="flex flex-col gap-1.5 sm:w-64">
+              <Label htmlFor="recolecto">Recolectó</Label>
+              <Input id="recolecto" type="text" placeholder="Nombre de quién recolectó" {...register('recolecto')} />
             </div>
           </CardContent>
         </Card>

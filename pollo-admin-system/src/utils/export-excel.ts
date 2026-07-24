@@ -6,9 +6,12 @@ export function exportReportesExcel(reportes: ReporteDiario[], sucursalNombre?: 
   const rows = reportes.map((r) => ({
     Fecha: formatDate(r.fecha),
     Sucursal: sucursalNombre?.(r.sucursal_id) ?? r.sucursal_id,
-    'Ventas efectivo': r.ventas_efectivo,
-    'Ventas tarjeta': r.ventas_tarjeta,
-    'Ventas transferencia': r.ventas_transferencia,
+    'Vta sucursal': r.vta_sucursal,
+    Tarjeta: r.tarjeta,
+    Depósito: r.deposito,
+    DiDi: r.didi,
+    Rappi: r.rappi,
+    Uber: r.uber,
     'Ventas totales': r.ventas_totales,
     Gastos: r.gastos_total,
     'Ganancia estimada': r.ganancia_estimada,
@@ -16,6 +19,7 @@ export function exportReportesExcel(reportes: ReporteDiario[], sucursalNombre?: 
     'Pollos vendidos': r.pollos_vendidos,
     'Productos dañados': r.productos_danados,
     Merma: r.merma_total,
+    Recolectó: r.recolecto ?? '',
     Observaciones: r.observaciones ?? '',
     Notas: r.notas ?? '',
   }))

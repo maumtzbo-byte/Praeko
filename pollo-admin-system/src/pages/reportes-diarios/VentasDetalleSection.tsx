@@ -14,10 +14,17 @@ import { formatCurrency } from '@/lib/utils'
 import type { MetodoPago } from '@/types/database'
 
 const METODOS: { value: MetodoPago; label: string }[] = [
-  { value: 'efectivo', label: 'Efectivo' },
+  { value: 'vta_sucursal', label: 'Vta sucursal' },
   { value: 'tarjeta', label: 'Tarjeta' },
-  { value: 'transferencia', label: 'Transferencia' },
+  { value: 'deposito', label: 'Depósito' },
+  { value: 'didi', label: 'DiDi' },
+  { value: 'rappi', label: 'Rappi' },
+  { value: 'uber', label: 'Uber' },
 ]
+
+const METODO_LABELS: Record<MetodoPago, string> = Object.fromEntries(
+  METODOS.map((m) => [m.value, m.label]),
+) as Record<MetodoPago, string>
 
 export function VentasDetalleSection({
   reporteId,
@@ -36,7 +43,7 @@ export function VentasDetalleSection({
 
   const [productoId, setProductoId] = React.useState('')
   const [cantidad, setCantidad] = React.useState('1')
-  const [metodo, setMetodo] = React.useState<MetodoPago>('efectivo')
+  const [metodo, setMetodo] = React.useState<MetodoPago>('vta_sucursal')
   const [deleting, setDeleting] = React.useState<(typeof ventas)[number] | null>(null)
 
   const productoSeleccionado = productos.find((p) => p.id === productoId)
@@ -133,7 +140,7 @@ export function VentasDetalleSection({
                   </TableCell>
                   <TableCell>{formatCurrency(v.precio_unitario)}</TableCell>
                   <TableCell>{formatCurrency(v.subtotal)}</TableCell>
-                  <TableCell className="capitalize">{v.metodo_pago}</TableCell>
+                  <TableCell>{METODO_LABELS[v.metodo_pago as MetodoPago]}</TableCell>
                   <TableCell>
                     <Button variant="ghost" size="icon" onClick={() => setDeleting(v)}>
                       <Trash2 className="h-4 w-4 text-muted-foreground" />

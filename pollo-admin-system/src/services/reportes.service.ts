@@ -5,9 +5,12 @@ export interface ReporteDiarioInput {
   sucursal_id: string
   usuario_id: string
   fecha: string
-  ventas_efectivo: number
-  ventas_tarjeta: number
-  ventas_transferencia: number
+  vta_sucursal: number
+  tarjeta: number
+  deposito: number
+  didi: number
+  rappi: number
+  uber: number
   gastos_total: number
   pollos_recibidos: number
   pollos_vendidos: number
@@ -15,6 +18,7 @@ export interface ReporteDiarioInput {
   merma_total: number
   observaciones?: string | null
   notas?: string | null
+  recolecto?: string | null
 }
 
 export interface ReportesFiltro {

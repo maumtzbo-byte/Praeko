@@ -6,7 +6,7 @@ export type RolClave = 'administrador' | 'encargado' | 'empleado'
 export type EstadoSucursal = 'activa' | 'inactiva'
 export type EstadoUsuario = 'activo' | 'inactivo'
 export type UnidadProducto = 'pieza' | 'kg' | 'g' | 'litro' | 'ml' | 'paquete' | 'caja' | 'bolsa'
-export type MetodoPago = 'efectivo' | 'tarjeta' | 'transferencia'
+export type MetodoPago = 'vta_sucursal' | 'tarjeta' | 'deposito' | 'didi' | 'rappi' | 'uber'
 export type PrioridadPedido = 'baja' | 'normal' | 'alta' | 'urgente'
 export type EstadoPedido = 'pendiente' | 'aceptado' | 'en_preparacion' | 'enviado' | 'recibido' | 'cancelado'
 export type MotivoMerma = 'caducidad' | 'dano_fisico' | 'mal_manejo' | 'transporte' | 'refrigeracion' | 'otro'
@@ -98,9 +98,12 @@ export interface ReporteDiario {
   sucursal_id: string
   usuario_id: string
   fecha: string
-  ventas_efectivo: number
-  ventas_tarjeta: number
-  ventas_transferencia: number
+  vta_sucursal: number
+  tarjeta: number
+  deposito: number
+  didi: number
+  rappi: number
+  uber: number
   gastos_total: number
   pollos_recibidos: number
   pollos_vendidos: number
@@ -108,6 +111,7 @@ export interface ReporteDiario {
   merma_total: number
   observaciones: string | null
   notas: string | null
+  recolecto: string | null
   ventas_totales: number
   ganancia_estimada: number
   created_at: string

@@ -186,9 +186,12 @@ async function main() {
     for (let dias = 13; dias >= 0; dias--) {
       const fecha = isoDaysAgo(dias)
 
-      const ventasEfectivo = randomBetween(1800, 4200)
-      const ventasTarjeta = randomBetween(900, 2600)
-      const ventasTransferencia = randomBetween(200, 900)
+      const ventaSucursal = randomBetween(1800, 4200)
+      const tarjeta = randomBetween(900, 2600)
+      const deposito = randomBetween(200, 900)
+      const didi = randomBetween(100, 600)
+      const rappi = randomBetween(100, 600)
+      const uber = randomBetween(100, 600)
       const gastosTotal = randomBetween(400, 1400)
       const pollosRecibidos = Math.round(randomBetween(20, 60))
       const pollosVendidos = Math.round(randomBetween(15, pollosRecibidos))
@@ -202,9 +205,12 @@ async function main() {
             sucursal_id: sucursal.id,
             usuario_id: responsableId,
             fecha,
-            ventas_efectivo: ventasEfectivo,
-            ventas_tarjeta: ventasTarjeta,
-            ventas_transferencia: ventasTransferencia,
+            vta_sucursal: ventaSucursal,
+            tarjeta,
+            deposito,
+            didi,
+            rappi,
+            uber,
             gastos_total: gastosTotal,
             pollos_recibidos: pollosRecibidos,
             pollos_vendidos: pollosVendidos,
@@ -212,6 +218,7 @@ async function main() {
             merma_total: mermaTotal,
             observaciones: dias === 0 ? 'Cierre de caja conciliado sin novedades.' : null,
             notas: null,
+            recolecto: pick(['Ana', 'Luis', 'Marisol', 'Carlos']),
           },
           { onConflict: 'sucursal_id,fecha' },
         )
@@ -233,7 +240,7 @@ async function main() {
           usuario_id: responsableId,
           cantidad: Math.round(randomBetween(1, 12)),
           precio_unitario: producto.precio_venta,
-          metodo_pago: pick(['efectivo', 'tarjeta', 'transferencia']),
+          metodo_pago: pick(['vta_sucursal', 'tarjeta', 'deposito', 'didi', 'rappi', 'uber']),
           fecha,
         })
       }

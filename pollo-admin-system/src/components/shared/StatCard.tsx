@@ -40,7 +40,9 @@ export function StatCard({
           {isLoading ? (
             <Skeleton className="mt-1.5 h-7 w-24" />
           ) : (
-            <p className="mt-1.5 truncate text-2xl font-semibold tracking-tight">{value}</p>
+            <p className="mt-1.5 break-words text-xl font-semibold leading-tight tracking-tight sm:text-2xl">
+              {value}
+            </p>
           )}
           {!isLoading && trend !== undefined && (
             <div
@@ -55,7 +57,7 @@ export function StatCard({
           )}
         </div>
         {iconImage ? (
-          <img src={iconImage} alt="" className="-my-2 h-16 w-16 shrink-0 object-contain" />
+          <img src={iconImage} alt="" className="h-12 w-12 shrink-0 object-contain" />
         ) : (
           Icon && (
             <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', TONE_STYLES[tone])}>

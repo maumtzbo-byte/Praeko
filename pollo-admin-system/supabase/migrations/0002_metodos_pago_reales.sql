@@ -32,12 +32,16 @@ alter table public.reportes_diarios add column ventas_totales numeric(12, 2) gen
 alter table public.reportes_diarios add column ganancia_estimada numeric(12, 2) generated always as
   (vta_sucursal + tarjeta + deposito + didi + rappi + uber - gastos_total) stored;
 
--- 4. ventas (detalle por producto): mapear los valores existentes a las
---    nuevas categorías antes de cambiar el check constraint
+-- 4. ventas (detalle por producto): quitar la restricción vieja PRIMERO
+--    (si no, el UPDATE de abajo choca contra el check constraint viejo,
+--    que todavía no permite los valores nuevos)
+alter table public.ventas drop constraint if exists ventas_metodo_pago_check;
+
+-- 5. mapear los valores existentes a las nuevas categorías
 update public.ventas set metodo_pago = 'vta_sucursal' where metodo_pago = 'efectivo';
 update public.ventas set metodo_pago = 'deposito' where metodo_pago = 'transferencia';
 
-alter table public.ventas drop constraint if exists ventas_metodo_pago_check;
+-- 6. poner la restricción nueva (ahora todos los valores ya son válidos)
 alter table public.ventas add constraint ventas_metodo_pago_check
   check (metodo_pago in ('vta_sucursal', 'tarjeta', 'deposito', 'didi', 'rappi', 'uber'));
 alter table public.ventas alter column metodo_pago set default 'vta_sucursal';

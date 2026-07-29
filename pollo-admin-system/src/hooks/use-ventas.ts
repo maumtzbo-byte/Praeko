@@ -12,6 +12,14 @@ export function useVentasPorReporte(reporteId: string | undefined) {
   })
 }
 
+export function usePollosVendidosDelDia(sucursalId: string | undefined, fecha: string) {
+  return useQuery({
+    queryKey: ['ventas', 'pollos-del-dia', sucursalId, fecha],
+    queryFn: () => ventasService.getPollosVendidosDelDia(sucursalId as string, fecha),
+    enabled: Boolean(sucursalId),
+  })
+}
+
 export function useCreateVenta() {
   const qc = useQueryClient()
   return useMutation({

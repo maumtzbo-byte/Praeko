@@ -11,6 +11,14 @@ export function useMermas(sucursalId?: string) {
   })
 }
 
+export function useResumenMermasDelDia(sucursalId: string | undefined, fecha: string) {
+  return useQuery({
+    queryKey: ['mermas', 'resumen-del-dia', sucursalId, fecha],
+    queryFn: () => mermasService.getResumenMermasDelDia(sucursalId as string, fecha),
+    enabled: Boolean(sucursalId),
+  })
+}
+
 export function useCreateMerma() {
   const qc = useQueryClient()
   return useMutation({

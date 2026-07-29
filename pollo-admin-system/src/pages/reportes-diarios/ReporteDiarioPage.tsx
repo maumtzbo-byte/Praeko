@@ -13,9 +13,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useReporteDelDia, useUpsertReporteDiario } from '@/hooks/use-reportes'
 import { useSucursales } from '@/hooks/use-sucursales'
+import { usePollosVendidosDelDia } from '@/hooks/use-ventas'
+import { useResumenMermasDelDia } from '@/hooks/use-mermas'
 import { useAuth } from '@/context/AuthContext'
 import { VentasDetalleSection } from '@/pages/reportes-diarios/VentasDetalleSection'
-import { cn, formatCurrency, todayISO } from '@/lib/utils'
+import { cn, formatCurrency, formatNumber, todayISO } from '@/lib/utils'
 
 const schema = z.object({
   vta_sucursal: z.coerce.number().min(0),
@@ -26,9 +28,6 @@ const schema = z.object({
   uber: z.coerce.number().min(0),
   gastos_total: z.coerce.number().min(0),
   pollos_recibidos: z.coerce.number().min(0),
-  pollos_vendidos: z.coerce.number().min(0),
-  productos_danados: z.coerce.number().min(0),
-  merma_total: z.coerce.number().min(0),
   observaciones: z.string().optional(),
   notas: z.string().optional(),
   recolecto: z.string().optional(),
@@ -46,9 +45,6 @@ const EMPTY: FormInput = {
   uber: 0,
   gastos_total: 0,
   pollos_recibidos: 0,
-  pollos_vendidos: 0,
-  productos_danados: 0,
-  merma_total: 0,
   observaciones: '',
   notas: '',
   recolecto: '',
@@ -67,6 +63,10 @@ export function ReporteDiarioPage() {
 
   const { data: reporte, isLoading } = useReporteDelDia(sucursalId, fecha)
   const mutation = useUpsertReporteDiario()
+
+  // Se calculan solos a partir de Ventas y Mermas, ya no se escriben a mano.
+  const { data: pollosVendidos = 0 } = usePollosVendidosDelDia(sucursalId, fecha)
+  const { data: resumenMermas = { productosDanados: 0, mermaTotal: 0 } } = useResumenMermasDelDia(sucursalId, fecha)
 
   const {
     register,
@@ -88,9 +88,6 @@ export function ReporteDiarioPage() {
               uber: reporte.uber,
               gastos_total: reporte.gastos_total,
               pollos_recibidos: reporte.pollos_recibidos,
-              pollos_vendidos: reporte.pollos_vendidos,
-              productos_danados: reporte.productos_danados,
-              merma_total: reporte.merma_total,
               observaciones: reporte.observaciones ?? '',
               notas: reporte.notas ?? '',
               recolecto: reporte.recolecto ?? '',
@@ -124,9 +121,9 @@ export function ReporteDiarioPage() {
       uber: formValues.uber,
       gastos_total: formValues.gastos_total,
       pollos_recibidos: formValues.pollos_recibidos,
-      pollos_vendidos: formValues.pollos_vendidos,
-      productos_danados: formValues.productos_danados,
-      merma_total: formValues.merma_total,
+      pollos_vendidos: pollosVendidos,
+      productos_danados: resumenMermas.productosDanados,
+      merma_total: resumenMermas.mermaTotal,
       observaciones: formValues.observaciones || null,
       notas: formValues.notas || null,
       recolecto: formValues.recolecto || null,
@@ -233,8 +230,9 @@ export function ReporteDiarioPage() {
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="pollos_vendidos">Pollos vendidos</Label>
-              <Input id="pollos_vendidos" type="number" step="1" min="0" {...register('pollos_vendidos')} />
-              {Number(values.pollos_vendidos || 0) > Number(values.pollos_recibidos || 0) && (
+              <Input id="pollos_vendidos" disabled value={formatNumber(pollosVendidos)} />
+              <p className="text-xs text-muted-foreground">Se calcula solo con lo capturado en Ventas.</p>
+              {pollosVendidos > Number(values.pollos_recibidos || 0) && (
                 <p className="text-xs text-warning-foreground">
                   Vendiste más pollos de los que recibiste hoy. Revisa si es correcto.
                 </p>
@@ -242,11 +240,13 @@ export function ReporteDiarioPage() {
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="productos_danados">Productos dañados</Label>
-              <Input id="productos_danados" type="number" step="1" min="0" {...register('productos_danados')} />
+              <Input id="productos_danados" disabled value={formatNumber(resumenMermas.productosDanados)} />
+              <p className="text-xs text-muted-foreground">Se calcula solo con lo capturado en Mermas.</p>
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="merma_total">Merma (unidades)</Label>
-              <Input id="merma_total" type="number" step="0.01" min="0" {...register('merma_total')} />
+              <Input id="merma_total" disabled value={formatNumber(resumenMermas.mermaTotal)} />
+              <p className="text-xs text-muted-foreground">Se calcula solo con lo capturado en Mermas.</p>
             </div>
           </CardContent>
         </Card>

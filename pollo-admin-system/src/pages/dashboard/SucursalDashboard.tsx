@@ -2,6 +2,7 @@ import * as React from 'react'
 import { PackageX, Boxes } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatCard } from '@/components/shared/StatCard'
+import { TareasDelDia } from '@/components/dashboard/TareasDelDia'
 import { PeriodSelector } from '@/components/shared/PeriodSelector'
 import { SalesTrendChart } from '@/components/charts/SalesTrendChart'
 import { TopProductsChart } from '@/components/charts/TopProductsChart'
@@ -74,6 +75,12 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
         title="Mi dashboard"
         description="Resumen de tu sucursal"
         actions={<PeriodSelector value={periodo} onChange={setPeriodo} />}
+      />
+
+      <TareasDelDia
+        sucursalId={sucursalId}
+        pedidosPendientes={data?.pedidosPendientes ?? 0}
+        inventarioBajo={data?.inventarioBajo ?? 0}
       />
 
       <p className="mb-3 text-xs font-medium text-muted-foreground">

@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { RotateCcw } from 'lucide-react'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -6,10 +7,10 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useCreatePedidoLote } from '@/hooks/use-pedidos'
+import { useCreatePedidoLote, usePedidos } from '@/hooks/use-pedidos'
 import { useProductos } from '@/hooks/use-productos'
 import { useAuth } from '@/context/AuthContext'
-import { todayISO } from '@/lib/utils'
+import { formatDate, todayISO } from '@/lib/utils'
 import type { PrioridadPedido } from '@/types/database'
 
 const CATEGORIAS = ['Complementos', 'Insumos'] as const
@@ -17,6 +18,7 @@ const CATEGORIAS = ['Complementos', 'Insumos'] as const
 export function PedidoFormDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { usuario } = useAuth()
   const { data: productos = [] } = useProductos()
+  const { data: historico = [] } = usePedidos(usuario?.sucursal_id ?? undefined)
   const mutation = useCreatePedidoLote()
 
   const [cantidades, setCantidades] = React.useState<Record<string, string>>({})
@@ -32,6 +34,25 @@ export function PedidoFormDialog({ open, onOpenChange }: { open: boolean; onOpen
       setError(null)
     }
   }, [open])
+
+  // Fecha del pedido más reciente (que no sea hoy), para poder "repetirlo".
+  const fechaAnterior = React.useMemo(() => {
+    const fechas = historico.map((p) => p.fecha).filter((f) => f !== todayISO())
+    return fechas.length > 0 ? fechas.reduce((max, f) => (f > max ? f : max)) : null
+  }, [historico])
+
+  function repetirPedidoAnterior() {
+    if (!fechaAnterior) return
+    setCantidades((prev) => {
+      const nuevas = { ...prev }
+      for (const p of historico) {
+        if (p.fecha !== fechaAnterior) continue
+        const actual = Number(nuevas[p.producto_id] ?? 0)
+        nuevas[p.producto_id] = String(actual + Number(p.cantidad))
+      }
+      return nuevas
+    })
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -67,6 +88,11 @@ export function PedidoFormDialog({ open, onOpenChange }: { open: boolean; onOpen
         <DialogHeader>
           <DialogTitle>Nuevo pedido</DialogTitle>
         </DialogHeader>
+        {fechaAnterior && (
+          <Button type="button" variant="outline" size="sm" className="w-fit" onClick={repetirPedidoAnterior}>
+            <RotateCcw /> Repetir pedido del {formatDate(fechaAnterior)}
+          </Button>
+        )}
         <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
           <Tabs defaultValue="Complementos">
             <TabsList className="w-full">

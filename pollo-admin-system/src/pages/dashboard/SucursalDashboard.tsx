@@ -12,9 +12,14 @@ import { useDashboardData } from '@/hooks/use-dashboard'
 import {
   agruparPorPeriodo,
   calcularTendencia,
+  filtrarPorRango,
   formatEtiquetaPeriodo,
+  getRangoActual,
+  getRangoAnterior,
   getRangoPeriodo,
-  getRangoPeriodoAnterior,
+  PERIODO_ACTUAL_LABELS,
+  PERIODO_ANTERIOR_LABELS,
+  PERIODO_SIN_COMPARACION_LABELS,
   type Periodo,
 } from '@/lib/date-ranges'
 import { calcularTotales } from '@/lib/dashboard-totales'
@@ -22,18 +27,23 @@ import { formatCurrency, formatNumber } from '@/lib/utils'
 
 export function SucursalDashboard({ sucursalId }: { sucursalId: string | null }) {
   const [periodo, setPeriodo] = React.useState<Periodo>('dia')
+  // Ventana amplia para la gráfica; periodo en curso y anterior para las tarjetas.
   const { desde, hasta } = React.useMemo(() => getRangoPeriodo(periodo), [periodo])
-  const anterior = React.useMemo(() => getRangoPeriodoAnterior(desde, hasta), [desde, hasta])
+  const rangoActual = React.useMemo(() => getRangoActual(periodo), [periodo])
+  const rangoAnterior = React.useMemo(() => getRangoAnterior(periodo), [periodo])
 
   const { data, isLoading } = useDashboardData({ sucursalId: sucursalId ?? undefined, desde, hasta })
-  const { data: dataAnterior } = useDashboardData({
-    sucursalId: sucursalId ?? undefined,
-    desde: anterior.desde,
-    hasta: anterior.hasta,
-  })
 
-  const totales = React.useMemo(() => calcularTotales(data?.reportes ?? []), [data])
-  const totalesAnteriores = React.useMemo(() => calcularTotales(dataAnterior?.reportes ?? []), [dataAnterior])
+  const totales = React.useMemo(
+    () => calcularTotales(filtrarPorRango(data?.reportes ?? [], rangoActual)),
+    [data, rangoActual],
+  )
+  const totalesAnteriores = React.useMemo(
+    () => calcularTotales(filtrarPorRango(data?.reportes ?? [], rangoAnterior)),
+    [data, rangoAnterior],
+  )
+  const trendLabel = PERIODO_ANTERIOR_LABELS[periodo]
+  const trendEmptyLabel = PERIODO_SIN_COMPARACION_LABELS[periodo]
 
   const chartData = React.useMemo(() => {
     if (!data) return []
@@ -66,6 +76,10 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
         actions={<PeriodSelector value={periodo} onChange={setPeriodo} />}
       />
 
+      <p className="mb-3 text-xs font-medium text-muted-foreground">
+        Mostrando: {PERIODO_ACTUAL_LABELS[periodo]}
+      </p>
+
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -78,12 +92,16 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
             label="Total vendido"
             value={formatCurrency(totales.totalVentas)}
             trend={calcularTendencia(totales.totalVentas, totalesAnteriores.totalVentas)}
+            trendLabel={trendLabel}
+            trendEmptyLabel={trendEmptyLabel}
             iconImage="/mascota-dinero-lanzando.png"
           />
           <StatCard
             label="Total gastos"
             value={formatCurrency(totales.totalGastos)}
             trend={calcularTendencia(totales.totalGastos, totalesAnteriores.totalGastos)}
+            trendLabel={trendLabel}
+            trendEmptyLabel={trendEmptyLabel}
             invertTrendColor
             iconImage="/mascota-ticket.png"
             tone="warning"
@@ -92,6 +110,8 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
             label="Ganancias"
             value={formatCurrency(totales.ganancia)}
             trend={calcularTendencia(totales.ganancia, totalesAnteriores.ganancia)}
+            trendLabel={trendLabel}
+            trendEmptyLabel={trendEmptyLabel}
             iconImage="/mascota-dinero.png"
             tone="success"
           />
@@ -99,6 +119,8 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
             label="Productos vendidos"
             value={formatNumber(totales.pollosVendidos)}
             trend={calcularTendencia(totales.pollosVendidos, totalesAnteriores.pollosVendidos)}
+            trendLabel={trendLabel}
+            trendEmptyLabel={trendEmptyLabel}
             iconImage="/mascota-carrito.png"
           />
           <StatCard label="Productos dañados" value={formatNumber(totales.productosDanados)} icon={PackageX} tone="destructive" />

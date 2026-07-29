@@ -16,9 +16,14 @@ import { useSucursales } from '@/hooks/use-sucursales'
 import {
   agruparPorPeriodo,
   calcularTendencia,
+  filtrarPorRango,
   formatEtiquetaPeriodo,
+  getRangoActual,
+  getRangoAnterior,
   getRangoPeriodo,
-  getRangoPeriodoAnterior,
+  PERIODO_ACTUAL_LABELS,
+  PERIODO_ANTERIOR_LABELS,
+  PERIODO_SIN_COMPARACION_LABELS,
   type Periodo,
 } from '@/lib/date-ranges'
 import { calcularTotales } from '@/lib/dashboard-totales'
@@ -27,8 +32,11 @@ import { formatCurrency, formatNumber } from '@/lib/utils'
 export function AdminDashboard() {
   const [periodo, setPeriodo] = React.useState<Periodo>('dia')
   const [sucursalId, setSucursalId] = React.useState<string>('todas')
+  // Ventana amplia para la gráfica (ej. últimos 12 meses si el periodo es "mes").
   const { desde, hasta } = React.useMemo(() => getRangoPeriodo(periodo), [periodo])
-  const anterior = React.useMemo(() => getRangoPeriodoAnterior(desde, hasta), [desde, hasta])
+  // Periodo en curso y el mismo tramo del anterior, para las tarjetas y el %.
+  const rangoActual = React.useMemo(() => getRangoActual(periodo), [periodo])
+  const rangoAnterior = React.useMemo(() => getRangoAnterior(periodo), [periodo])
 
   const { data: sucursales = [] } = useSucursales()
   const { data, isLoading } = useDashboardData({
@@ -36,15 +44,20 @@ export function AdminDashboard() {
     desde,
     hasta,
   })
-  const { data: dataAnterior } = useDashboardData({
-    sucursalId: sucursalId === 'todas' ? undefined : sucursalId,
-    desde: anterior.desde,
-    hasta: anterior.hasta,
-  })
-  const { data: comparativo = [] } = useComparativoSucursales(desde, hasta)
+  const { data: comparativo = [] } = useComparativoSucursales(rangoActual.desde, rangoActual.hasta)
 
-  const totales = React.useMemo(() => calcularTotales(data?.reportes ?? []), [data])
-  const totalesAnteriores = React.useMemo(() => calcularTotales(dataAnterior?.reportes ?? []), [dataAnterior])
+  // La ventana de la gráfica siempre contiene al periodo actual y al anterior,
+  // así que se filtran de los datos ya cargados en vez de pedirlos otra vez.
+  const totales = React.useMemo(
+    () => calcularTotales(filtrarPorRango(data?.reportes ?? [], rangoActual)),
+    [data, rangoActual],
+  )
+  const totalesAnteriores = React.useMemo(
+    () => calcularTotales(filtrarPorRango(data?.reportes ?? [], rangoAnterior)),
+    [data, rangoAnterior],
+  )
+  const trendLabel = PERIODO_ANTERIOR_LABELS[periodo]
+  const trendEmptyLabel = PERIODO_SIN_COMPARACION_LABELS[periodo]
 
   const chartData = React.useMemo(() => {
     if (!data) return []
@@ -89,6 +102,10 @@ export function AdminDashboard() {
         }
       />
 
+      <p className="mb-3 text-xs font-medium text-muted-foreground">
+        Mostrando: {PERIODO_ACTUAL_LABELS[periodo]}
+      </p>
+
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -101,6 +118,8 @@ export function AdminDashboard() {
             label="Total vendido"
             value={formatCurrency(totales.totalVentas)}
             trend={calcularTendencia(totales.totalVentas, totalesAnteriores.totalVentas)}
+            trendLabel={trendLabel}
+            trendEmptyLabel={trendEmptyLabel}
             iconImage="/mascota-dinero-lanzando.png"
             tone="default"
           />
@@ -108,6 +127,8 @@ export function AdminDashboard() {
             label="Total gastos"
             value={formatCurrency(totales.totalGastos)}
             trend={calcularTendencia(totales.totalGastos, totalesAnteriores.totalGastos)}
+            trendLabel={trendLabel}
+            trendEmptyLabel={trendEmptyLabel}
             invertTrendColor
             iconImage="/mascota-ticket.png"
             tone="warning"
@@ -116,6 +137,8 @@ export function AdminDashboard() {
             label="Ganancias"
             value={formatCurrency(totales.ganancia)}
             trend={calcularTendencia(totales.ganancia, totalesAnteriores.ganancia)}
+            trendLabel={trendLabel}
+            trendEmptyLabel={trendEmptyLabel}
             iconImage="/mascota-dinero.png"
             tone="success"
           />
@@ -123,6 +146,8 @@ export function AdminDashboard() {
             label="Productos vendidos"
             value={formatNumber(totales.pollosVendidos)}
             trend={calcularTendencia(totales.pollosVendidos, totalesAnteriores.pollosVendidos)}
+            trendLabel={trendLabel}
+            trendEmptyLabel={trendEmptyLabel}
             iconImage="/mascota-carrito.png"
           />
           <StatCard

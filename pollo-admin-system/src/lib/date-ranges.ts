@@ -8,7 +8,6 @@ import {
   subMonths,
   subYears,
   endOfDay,
-  differenceInCalendarDays,
   format,
 } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -44,20 +43,88 @@ export function getRangoPeriodo(periodo: Periodo, referencia = new Date()): { de
   return { desde: format(desde, 'yyyy-MM-dd'), hasta: format(hasta, 'yyyy-MM-dd') }
 }
 
+/** Inicio del periodo en curso: hoy / esta semana / este mes / este año. */
+function inicioDePeriodo(periodo: Periodo, referencia: Date): Date {
+  switch (periodo) {
+    case 'dia':
+      return startOfDay(referencia)
+    case 'semana':
+      return startOfWeek(referencia, { weekStartsOn: 1 })
+    case 'mes':
+      return startOfMonth(referencia)
+    case 'anio':
+      return startOfYear(referencia)
+  }
+}
+
+/** Retrocede exactamente una unidad del periodo (1 día / 1 semana / 1 mes / 1 año). */
+function retrocederUnPeriodo(periodo: Periodo, fecha: Date): Date {
+  switch (periodo) {
+    case 'dia':
+      return subDays(fecha, 1)
+    case 'semana':
+      return subWeeks(fecha, 1)
+    case 'mes':
+      return subMonths(fecha, 1)
+    case 'anio':
+      return subYears(fecha, 1)
+  }
+}
+
 /**
- * Ventana inmediatamente anterior, de la misma duración que la actual.
- * Sirve para comparar "este periodo vs. el anterior" (ej. últimos 14 días
- * contra los 14 días previos) sin importar qué periodo esté seleccionado.
+ * El periodo EN CURSO (no una ventana móvil): hoy, esta semana, este mes o
+ * este año. Es lo que suman las tarjetas del dashboard, para que las cifras
+ * sí cambien al mover el selector.
  */
-export function getRangoPeriodoAnterior(desde: string, hasta: string): { desde: string; hasta: string } {
-  const inicio = new Date(`${desde}T00:00:00`)
-  const fin = new Date(`${hasta}T00:00:00`)
-  const dias = differenceInCalendarDays(fin, inicio) + 1
+export function getRangoActual(periodo: Periodo, referencia = new Date()): { desde: string; hasta: string } {
+  return {
+    desde: format(inicioDePeriodo(periodo, referencia), 'yyyy-MM-dd'),
+    hasta: format(referencia, 'yyyy-MM-dd'),
+  }
+}
 
-  const anteriorHasta = subDays(inicio, 1)
-  const anteriorDesde = subDays(anteriorHasta, dias - 1)
+/**
+ * El mismo tramo del periodo anterior, para comparar peras con peras: si hoy
+ * es día 8 del mes, compara los días 1-8 de este mes contra los días 1-8 del
+ * mes pasado (no contra el mes pasado completo, que siempre saldría mayor).
+ */
+export function getRangoAnterior(periodo: Periodo, referencia = new Date()): { desde: string; hasta: string } {
+  const referenciaAnterior = retrocederUnPeriodo(periodo, referencia)
+  return {
+    desde: format(inicioDePeriodo(periodo, referenciaAnterior), 'yyyy-MM-dd'),
+    hasta: format(referenciaAnterior, 'yyyy-MM-dd'),
+  }
+}
 
-  return { desde: format(anteriorDesde, 'yyyy-MM-dd'), hasta: format(anteriorHasta, 'yyyy-MM-dd') }
+/** Etiquetas para que quede claro qué se está viendo y contra qué se compara. */
+export const PERIODO_ACTUAL_LABELS: Record<Periodo, string> = {
+  dia: 'Hoy',
+  semana: 'Esta semana',
+  mes: 'Este mes',
+  anio: 'Este año',
+}
+
+export const PERIODO_ANTERIOR_LABELS: Record<Periodo, string> = {
+  dia: 'vs. ayer',
+  semana: 'vs. semana pasada',
+  mes: 'vs. mes pasado',
+  anio: 'vs. año pasado',
+}
+
+/** Se muestra cuando no hay con qué comparar, para que no parezca un error. */
+export const PERIODO_SIN_COMPARACION_LABELS: Record<Periodo, string> = {
+  dia: 'Sin datos de ayer para comparar',
+  semana: 'Sin datos de la semana pasada',
+  mes: 'Sin datos del mes pasado',
+  anio: 'Sin datos del año pasado',
+}
+
+/** Filtra registros por rango de fechas (las fechas ISO se comparan como texto). */
+export function filtrarPorRango<T extends { fecha: string }>(
+  registros: T[],
+  rango: { desde: string; hasta: string },
+): T[] {
+  return registros.filter((r) => r.fecha >= rango.desde && r.fecha <= rango.hasta)
 }
 
 /**

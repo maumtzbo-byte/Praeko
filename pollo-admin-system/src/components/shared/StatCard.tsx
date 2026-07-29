@@ -10,6 +10,10 @@ interface StatCardProps {
   icon?: LucideIcon
   iconImage?: string
   trend?: number
+  /** Texto de comparación, ej. "vs. ayer". */
+  trendLabel?: string
+  /** Se muestra en gris cuando no hay periodo anterior con qué comparar. */
+  trendEmptyLabel?: string
   /** Para métricas donde subir es malo (ej. gastos): invierte el color del %. */
   invertTrendColor?: boolean
   tone?: 'default' | 'success' | 'warning' | 'destructive'
@@ -30,6 +34,8 @@ export function StatCard({
   icon: Icon,
   iconImage,
   trend,
+  trendLabel = 'vs. periodo anterior',
+  trendEmptyLabel,
   invertTrendColor = false,
   tone = 'default',
   className,
@@ -57,8 +63,11 @@ export function StatCard({
             >
               {trend >= 0 ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
               {trend >= 0 ? '+' : '−'}
-              {Math.abs(trend).toFixed(1)}% vs. periodo anterior
+              {Math.abs(trend).toFixed(1)}% {trendLabel}
             </div>
+          )}
+          {!isLoading && trend === undefined && trendEmptyLabel && (
+            <p className="mt-1.5 text-xs text-muted-foreground">{trendEmptyLabel}</p>
           )}
         </div>
         {iconImage ? (

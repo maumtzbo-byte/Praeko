@@ -8,6 +8,7 @@ import {
   subMonths,
   subYears,
   endOfDay,
+  differenceInCalendarDays,
   format,
 } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -41,6 +42,32 @@ export function getRangoPeriodo(periodo: Periodo, referencia = new Date()): { de
   }
 
   return { desde: format(desde, 'yyyy-MM-dd'), hasta: format(hasta, 'yyyy-MM-dd') }
+}
+
+/**
+ * Ventana inmediatamente anterior, de la misma duración que la actual.
+ * Sirve para comparar "este periodo vs. el anterior" (ej. últimos 14 días
+ * contra los 14 días previos) sin importar qué periodo esté seleccionado.
+ */
+export function getRangoPeriodoAnterior(desde: string, hasta: string): { desde: string; hasta: string } {
+  const inicio = new Date(`${desde}T00:00:00`)
+  const fin = new Date(`${hasta}T00:00:00`)
+  const dias = differenceInCalendarDays(fin, inicio) + 1
+
+  const anteriorHasta = subDays(inicio, 1)
+  const anteriorDesde = subDays(anteriorHasta, dias - 1)
+
+  return { desde: format(anteriorDesde, 'yyyy-MM-dd'), hasta: format(anteriorHasta, 'yyyy-MM-dd') }
+}
+
+/**
+ * Cambio porcentual contra el periodo anterior. Regresa `undefined` cuando no
+ * se puede calcular (sin datos previos), para no mostrar un "+100%" engañoso.
+ */
+export function calcularTendencia(actual: number, anterior: number): number | undefined {
+  if (!Number.isFinite(actual) || !Number.isFinite(anterior)) return undefined
+  if (anterior === 0) return undefined
+  return ((actual - anterior) / Math.abs(anterior)) * 100
 }
 
 export function formatEtiquetaPeriodo(periodo: Periodo, fecha: string): string {

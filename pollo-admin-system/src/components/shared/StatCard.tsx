@@ -10,6 +10,8 @@ interface StatCardProps {
   icon?: LucideIcon
   iconImage?: string
   trend?: number
+  /** Para métricas donde subir es malo (ej. gastos): invierte el color del %. */
+  invertTrendColor?: boolean
   tone?: 'default' | 'success' | 'warning' | 'destructive'
   className?: string
   isLoading?: boolean
@@ -28,10 +30,12 @@ export function StatCard({
   icon: Icon,
   iconImage,
   trend,
+  invertTrendColor = false,
   tone = 'default',
   className,
   isLoading,
 }: StatCardProps) {
+  const trendEsPositivo = trend !== undefined && (invertTrendColor ? trend < 0 : trend >= 0)
   return (
     <Card className={cn('transition-shadow hover:shadow-md', className)}>
       <CardContent className="flex items-start justify-between gap-4 p-5">
@@ -48,10 +52,11 @@ export function StatCard({
             <div
               className={cn(
                 'mt-1.5 inline-flex items-center gap-1 text-xs font-medium',
-                trend >= 0 ? 'text-success' : 'text-destructive',
+                trendEsPositivo ? 'text-success' : 'text-destructive',
               )}
             >
               {trend >= 0 ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+              {trend >= 0 ? '+' : '−'}
               {Math.abs(trend).toFixed(1)}% vs. periodo anterior
             </div>
           )}

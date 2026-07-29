@@ -13,13 +13,22 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { useDashboardData, useComparativoSucursales } from '@/hooks/use-dashboard'
 import { useSucursales } from '@/hooks/use-sucursales'
-import { agruparPorPeriodo, formatEtiquetaPeriodo, getRangoPeriodo, type Periodo } from '@/lib/date-ranges'
+import {
+  agruparPorPeriodo,
+  calcularTendencia,
+  formatEtiquetaPeriodo,
+  getRangoPeriodo,
+  getRangoPeriodoAnterior,
+  type Periodo,
+} from '@/lib/date-ranges'
+import { calcularTotales } from '@/lib/dashboard-totales'
 import { formatCurrency, formatNumber } from '@/lib/utils'
 
 export function AdminDashboard() {
   const [periodo, setPeriodo] = React.useState<Periodo>('dia')
   const [sucursalId, setSucursalId] = React.useState<string>('todas')
   const { desde, hasta } = React.useMemo(() => getRangoPeriodo(periodo), [periodo])
+  const anterior = React.useMemo(() => getRangoPeriodoAnterior(desde, hasta), [desde, hasta])
 
   const { data: sucursales = [] } = useSucursales()
   const { data, isLoading } = useDashboardData({
@@ -27,20 +36,15 @@ export function AdminDashboard() {
     desde,
     hasta,
   })
+  const { data: dataAnterior } = useDashboardData({
+    sucursalId: sucursalId === 'todas' ? undefined : sucursalId,
+    desde: anterior.desde,
+    hasta: anterior.hasta,
+  })
   const { data: comparativo = [] } = useComparativoSucursales(desde, hasta)
 
-  const totales = React.useMemo(() => {
-    const reportes = data?.reportes ?? []
-    const totalVentas = reportes.reduce((sum, r) => sum + Number(r.ventas_totales), 0)
-    const totalGastos = reportes.reduce((sum, r) => sum + Number(r.gastos_total), 0)
-    return {
-      totalVentas,
-      totalGastos,
-      ganancia: totalVentas - totalGastos,
-      pollosVendidos: reportes.reduce((sum, r) => sum + Number(r.pollos_vendidos), 0),
-      productosDanados: reportes.reduce((sum, r) => sum + Number(r.productos_danados), 0),
-    }
-  }, [data])
+  const totales = React.useMemo(() => calcularTotales(data?.reportes ?? []), [data])
+  const totalesAnteriores = React.useMemo(() => calcularTotales(dataAnterior?.reportes ?? []), [dataAnterior])
 
   const chartData = React.useMemo(() => {
     if (!data) return []
@@ -93,12 +97,32 @@ export function AdminDashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard label="Total vendido" value={formatCurrency(totales.totalVentas)} iconImage="/mascota-dinero-lanzando.png" tone="default" />
-          <StatCard label="Total gastos" value={formatCurrency(totales.totalGastos)} iconImage="/mascota-ticket.png" tone="warning" />
-          <StatCard label="Ganancias" value={formatCurrency(totales.ganancia)} iconImage="/mascota-dinero.png" tone="success" />
+          <StatCard
+            label="Total vendido"
+            value={formatCurrency(totales.totalVentas)}
+            trend={calcularTendencia(totales.totalVentas, totalesAnteriores.totalVentas)}
+            iconImage="/mascota-dinero-lanzando.png"
+            tone="default"
+          />
+          <StatCard
+            label="Total gastos"
+            value={formatCurrency(totales.totalGastos)}
+            trend={calcularTendencia(totales.totalGastos, totalesAnteriores.totalGastos)}
+            invertTrendColor
+            iconImage="/mascota-ticket.png"
+            tone="warning"
+          />
+          <StatCard
+            label="Ganancias"
+            value={formatCurrency(totales.ganancia)}
+            trend={calcularTendencia(totales.ganancia, totalesAnteriores.ganancia)}
+            iconImage="/mascota-dinero.png"
+            tone="success"
+          />
           <StatCard
             label="Productos vendidos"
             value={formatNumber(totales.pollosVendidos)}
+            trend={calcularTendencia(totales.pollosVendidos, totalesAnteriores.pollosVendidos)}
             iconImage="/mascota-carrito.png"
           />
           <StatCard

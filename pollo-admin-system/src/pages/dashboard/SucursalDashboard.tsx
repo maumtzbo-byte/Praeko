@@ -9,27 +9,31 @@ import { EmptyChartCard } from '@/components/charts/EmptyChartCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { useDashboardData } from '@/hooks/use-dashboard'
-import { agruparPorPeriodo, formatEtiquetaPeriodo, getRangoPeriodo, type Periodo } from '@/lib/date-ranges'
+import {
+  agruparPorPeriodo,
+  calcularTendencia,
+  formatEtiquetaPeriodo,
+  getRangoPeriodo,
+  getRangoPeriodoAnterior,
+  type Periodo,
+} from '@/lib/date-ranges'
+import { calcularTotales } from '@/lib/dashboard-totales'
 import { formatCurrency, formatNumber } from '@/lib/utils'
 
 export function SucursalDashboard({ sucursalId }: { sucursalId: string | null }) {
   const [periodo, setPeriodo] = React.useState<Periodo>('dia')
   const { desde, hasta } = React.useMemo(() => getRangoPeriodo(periodo), [periodo])
+  const anterior = React.useMemo(() => getRangoPeriodoAnterior(desde, hasta), [desde, hasta])
 
   const { data, isLoading } = useDashboardData({ sucursalId: sucursalId ?? undefined, desde, hasta })
+  const { data: dataAnterior } = useDashboardData({
+    sucursalId: sucursalId ?? undefined,
+    desde: anterior.desde,
+    hasta: anterior.hasta,
+  })
 
-  const totales = React.useMemo(() => {
-    const reportes = data?.reportes ?? []
-    const totalVentas = reportes.reduce((sum, r) => sum + Number(r.ventas_totales), 0)
-    const totalGastos = reportes.reduce((sum, r) => sum + Number(r.gastos_total), 0)
-    return {
-      totalVentas,
-      totalGastos,
-      ganancia: totalVentas - totalGastos,
-      pollosVendidos: reportes.reduce((sum, r) => sum + Number(r.pollos_vendidos), 0),
-      productosDanados: reportes.reduce((sum, r) => sum + Number(r.productos_danados), 0),
-    }
-  }, [data])
+  const totales = React.useMemo(() => calcularTotales(data?.reportes ?? []), [data])
+  const totalesAnteriores = React.useMemo(() => calcularTotales(dataAnterior?.reportes ?? []), [dataAnterior])
 
   const chartData = React.useMemo(() => {
     if (!data) return []
@@ -70,10 +74,33 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard label="Total vendido" value={formatCurrency(totales.totalVentas)} iconImage="/mascota-dinero-lanzando.png" />
-          <StatCard label="Total gastos" value={formatCurrency(totales.totalGastos)} iconImage="/mascota-ticket.png" tone="warning" />
-          <StatCard label="Ganancias" value={formatCurrency(totales.ganancia)} iconImage="/mascota-dinero.png" tone="success" />
-          <StatCard label="Productos vendidos" value={formatNumber(totales.pollosVendidos)} iconImage="/mascota-carrito.png" />
+          <StatCard
+            label="Total vendido"
+            value={formatCurrency(totales.totalVentas)}
+            trend={calcularTendencia(totales.totalVentas, totalesAnteriores.totalVentas)}
+            iconImage="/mascota-dinero-lanzando.png"
+          />
+          <StatCard
+            label="Total gastos"
+            value={formatCurrency(totales.totalGastos)}
+            trend={calcularTendencia(totales.totalGastos, totalesAnteriores.totalGastos)}
+            invertTrendColor
+            iconImage="/mascota-ticket.png"
+            tone="warning"
+          />
+          <StatCard
+            label="Ganancias"
+            value={formatCurrency(totales.ganancia)}
+            trend={calcularTendencia(totales.ganancia, totalesAnteriores.ganancia)}
+            iconImage="/mascota-dinero.png"
+            tone="success"
+          />
+          <StatCard
+            label="Productos vendidos"
+            value={formatNumber(totales.pollosVendidos)}
+            trend={calcularTendencia(totales.pollosVendidos, totalesAnteriores.pollosVendidos)}
+            iconImage="/mascota-carrito.png"
+          />
           <StatCard label="Productos dañados" value={formatNumber(totales.productosDanados)} icon={PackageX} tone="destructive" />
           <StatCard
             label="Pedidos pendientes"

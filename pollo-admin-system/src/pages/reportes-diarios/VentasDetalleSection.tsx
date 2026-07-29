@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
-import { useCreateVenta, useDeleteVenta, useVentasPorReporte } from '@/hooks/use-ventas'
+import { useCreateVenta, useDeleteVenta, useVentasDelDia } from '@/hooks/use-ventas'
 import { useProductos } from '@/hooks/use-productos'
 import { useAuth } from '@/context/AuthContext'
 import { formatCurrency } from '@/lib/utils'
@@ -31,12 +31,12 @@ export function VentasDetalleSection({
   sucursalId,
   fecha,
 }: {
-  reporteId: string
+  reporteId: string | null
   sucursalId: string
   fecha: string
 }) {
   const { usuario } = useAuth()
-  const { data: ventas = [] } = useVentasPorReporte(reporteId)
+  const { data: ventas = [] } = useVentasDelDia(sucursalId, fecha)
   const { data: productos = [] } = useProductos()
   const createMutation = useCreateVenta()
   const deleteMutation = useDeleteVenta()

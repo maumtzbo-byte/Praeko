@@ -4,11 +4,11 @@ import { getFriendlyErrorMessage } from '@/lib/error-messages'
 import * as ventasService from '@/services/ventas.service'
 import type { VentaInput } from '@/services/ventas.service'
 
-export function useVentasPorReporte(reporteId: string | undefined) {
+export function useVentasDelDia(sucursalId: string | undefined, fecha: string) {
   return useQuery({
-    queryKey: ['ventas', reporteId],
-    queryFn: () => ventasService.listVentasPorReporte(reporteId as string),
-    enabled: Boolean(reporteId),
+    queryKey: ['ventas', 'del-dia', sucursalId, fecha],
+    queryFn: () => ventasService.listVentasPorFecha(sucursalId as string, fecha),
+    enabled: Boolean(sucursalId),
   })
 }
 

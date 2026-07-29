@@ -97,6 +97,15 @@ export function ReporteDiarioPage() {
     }
   }, [reporte, isLoading, reset])
 
+  // Si ya se guardó un reporte hoy pero después se agregó/quitó una venta o
+  // merma, los totales calculados se adelantan a lo que quedó guardado hasta
+  // que se le vuelva a dar clic a "Actualizar reporte".
+  const cambiosSinGuardar = reporte
+    ? reporte.pollos_vendidos !== pollosVendidos ||
+      reporte.productos_danados !== resumenMermas.productosDanados ||
+      reporte.merma_total !== resumenMermas.mermaTotal
+    : pollosVendidos > 0 || resumenMermas.productosDanados > 0 || resumenMermas.mermaTotal > 0
+
   const values = watch()
   const ventasTotales =
     Number(values.vta_sucursal || 0) +
@@ -264,6 +273,13 @@ export function ReporteDiarioPage() {
           </CardContent>
         </Card>
 
+        {cambiosSinGuardar && (
+          <p className="rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
+            Hay ventas o mermas más recientes que el reporte guardado — dale a{' '}
+            {reporte ? '"Actualizar reporte"' : '"Guardar reporte"'} para que los totales queden al día.
+          </p>
+        )}
+
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div className="flex gap-8">
@@ -286,11 +302,9 @@ export function ReporteDiarioPage() {
         </fieldset>
       </form>
 
-      {reporte && (
-        <div className="mt-6">
-          <VentasDetalleSection reporteId={reporte.id} sucursalId={sucursalId} fecha={fecha} />
-        </div>
-      )}
+      <div className="mt-6">
+        <VentasDetalleSection reporteId={reporte?.id ?? null} sucursalId={sucursalId} fecha={fecha} />
+      </div>
     </div>
   )
 }

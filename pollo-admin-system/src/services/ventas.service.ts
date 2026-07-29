@@ -12,11 +12,17 @@ export interface VentaInput {
   fecha: string
 }
 
-export async function listVentasPorReporte(reporteId: string) {
+/**
+ * Igual que listVentasPorReporte pero por sucursal+fecha en vez de reporte_id,
+ * para poder mostrar/agregar ventas del día aunque el reporte diario todavía
+ * no se haya guardado por primera vez (reporte_id es nulo hasta entonces).
+ */
+export async function listVentasPorFecha(sucursalId: string, fecha: string) {
   const { data, error } = await supabase
     .from('ventas')
     .select('*, producto:productos(nombre, unidad)')
-    .eq('reporte_id', reporteId)
+    .eq('sucursal_id', sucursalId)
+    .eq('fecha', fecha)
     .order('created_at', { ascending: false })
   if (error) throw error
   return data

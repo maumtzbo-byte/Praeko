@@ -19,6 +19,7 @@ export default function CtaSection() {
           >
             Crear mi calendario gratis
           </Link>
+          <p className="text-xs text-zinc-500">Sin tarjeta de crédito requerida</p>
         </div>
 
         {/* Asymmetric visual accent — the only off-center element on an

@@ -2,14 +2,17 @@
 
 import { motion } from "framer-motion";
 
-// Real numbers only. "100+ negocios registrados" is an actual figure the
-// user confirmed (registered/waitlisted businesses, not a fabricated
-// usage metric) — everything else here is something the site can back up
-// elsewhere on the page (agent count, plan count, connected networks).
+// Real numbers only, and three different shapes on purpose (%, plain
+// count, "+") instead of three same-looking digits in a row. Each one
+// traces to something already true elsewhere on the site: "30" is every
+// plan's video+image count added together (8+22, 15+15, 22+8 — all land
+// on 30, just a different mix), "100%" is the product's actual language,
+// and "100+" is the same real registered-business figure used as the
+// hero number above.
 const SUPPORTING_STATS = [
-  { value: "5", label: "Agentes de IA trabajando por ti" },
-  { value: "3", label: "Planes, desde $99/mes" },
-  { value: "3", label: "Redes sociales conectadas" },
+  { value: "100%", label: "Contenido generado en español" },
+  { value: "30", label: "Videos e imágenes cada mes, en cualquier plan" },
+  { value: "100+", label: "Negocios ya registrados" },
 ];
 
 export default function StatsShowcase() {

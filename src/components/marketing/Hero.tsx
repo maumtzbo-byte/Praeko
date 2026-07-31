@@ -86,6 +86,10 @@ export default function Hero() {
             Cómo funciona
           </a>
         </div>
+        {/* Removes the "is this going to charge me" hesitation right where
+            it would otherwise stall someone on the fence — true today: the
+            signup form only asks for email and password, no payment step. */}
+        <p className="mt-4 text-xs text-white/70">Sin tarjeta de crédito requerida</p>
       </div>
 
       {/* Phone mockup overlapping the seam between the hero and the page

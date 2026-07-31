@@ -50,7 +50,15 @@ export default function StatsShowcase() {
       <div className="mx-auto mt-14 max-w-md px-6 sm:max-w-lg md:max-w-2xl">
         <video
           className="block w-full mix-blend-multiply"
-          style={{ aspectRatio: "650 / 368" }}
+          style={{
+            aspectRatio: "650 / 368",
+            // The source clip cuts the sphere off flat at the bottom of
+            // the frame — this mask fades that hard line to transparent
+            // instead, so the globe reads as dissolving into the page
+            // rather than being sliced by a rectangle.
+            maskImage: "linear-gradient(to bottom, black 0%, black 78%, transparent 97%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 78%, transparent 97%)",
+          }}
           autoPlay
           loop
           muted

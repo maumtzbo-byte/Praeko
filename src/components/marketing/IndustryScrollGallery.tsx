@@ -16,7 +16,7 @@ const INDUSTRIES: { label: string; icon: LucideIcon }[] = [
 
 export default function IndustryScrollGallery() {
   return (
-    <section className="relative py-24">
+    <section className="relative py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
         <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">PARA QUIÉN ES ESTO</p>
         <h2 className="max-w-md text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">

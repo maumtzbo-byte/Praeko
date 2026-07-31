@@ -1,6 +1,6 @@
 export default function WhyWeBuilt() {
   return (
-    <section className="relative overflow-hidden py-24 md:py-32">
+    <section className="relative overflow-hidden py-16 sm:py-24 md:py-32">
       <div className="relative mx-auto max-w-5xl px-6">
         <p className="mb-8 text-xs font-semibold tracking-[0.3em] text-zinc-500">
           POR QUÉ CREAMOS FRAMES

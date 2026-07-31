@@ -23,7 +23,7 @@ const AGENTS = [
 
 export default function WhatWeDo() {
   return (
-    <section id="agentes" className="relative py-24 md:py-28">
+    <section id="agentes" className="relative py-16 sm:py-24 md:py-28">
       <div className="mx-auto max-w-6xl px-6">
         <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">QUÉ HACEMOS</p>
         <h2 className="max-w-md text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">

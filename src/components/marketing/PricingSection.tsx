@@ -174,7 +174,7 @@ export default function PricingSection() {
   }
 
   return (
-    <section id="precios" className="relative py-28">
+    <section id="precios" className="relative py-16 sm:py-28">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">

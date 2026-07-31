@@ -44,7 +44,7 @@ const DOUBLED_VIDEOS = [...EXAMPLE_VIDEOS, ...EXAMPLE_VIDEOS];
 
 export default function VideoShowcase() {
   return (
-    <section className="relative overflow-hidden bg-zinc-950 py-24">
+    <section className="relative overflow-hidden bg-zinc-950 py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
         <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">CONTENIDO GENERADO POR IA</p>
         <h2 className="max-w-lg text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl">

@@ -111,7 +111,7 @@ export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id="preguntas" className="relative overflow-hidden py-28">
+    <section id="preguntas" className="relative overflow-hidden py-16 sm:py-28">
       <div className="relative mx-auto max-w-3xl px-6">
         <div className="mb-12 text-center">
           <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">

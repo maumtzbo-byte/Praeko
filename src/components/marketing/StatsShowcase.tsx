@@ -14,7 +14,7 @@ const SUPPORTING_STATS = [
 
 export default function StatsShowcase() {
   return (
-    <section className="relative overflow-hidden py-24">
+    <section className="relative overflow-hidden py-16 sm:py-24">
       <div className="mx-auto max-w-3xl px-6 text-center">
         <span className="inline-flex items-center rounded-full bg-zinc-950 px-3 py-1.5 text-xs font-medium text-white ">
           Creciendo en México

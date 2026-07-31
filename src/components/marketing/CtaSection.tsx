@@ -3,7 +3,7 @@ import { CalendarClock } from "lucide-react";
 
 export default function CtaSection() {
   return (
-    <section className="relative overflow-hidden py-28">
+    <section className="relative overflow-hidden py-16 sm:py-28">
       <div className="relative mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 px-6 sm:grid-cols-[1.1fr_0.9fr]">
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
           <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">

@@ -2,15 +2,14 @@
 
 import dynamic from "next/dynamic";
 
-// Real, verifiable facts about Praeko itself — no usage/customer metrics,
-// since there are no paying customers yet to measure. Mirrors the
-// reference's "big number + globe + supporting stats" layout, but every
-// number here is something the site can actually back up elsewhere on
-// the page (agent count, plan count, connected networks).
+// Real numbers only. "100+ negocios registrados" is an actual figure the
+// user confirmed (registered/waitlisted businesses, not a fabricated
+// usage metric) — everything else here is something the site can back up
+// elsewhere on the page (agent count, plan count, connected networks).
 const SUPPORTING_STATS = [
+  { value: "5", label: "Agentes de IA trabajando por ti" },
   { value: "3", label: "Planes, desde $99/mes" },
   { value: "3", label: "Redes sociales conectadas" },
-  { value: "100%", label: "Contenido en español" },
 ];
 
 // Client-only — WebGL has no server-side representation, and the ~1MB of
@@ -23,13 +22,13 @@ export default function StatsShowcase() {
     <section className="relative overflow-hidden py-24">
       <div className="mx-auto max-w-3xl px-6 text-center">
         <span className="inline-flex items-center rounded-full bg-zinc-950 px-3 py-1.5 text-xs font-medium text-white dark:bg-white dark:text-zinc-950">
-          Cómo trabajamos
+          Creciendo en México
         </span>
         <h2 className="mt-5 text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
-          Así de simple es publicar con Praeko
+          Negocios como el tuyo ya están en Praeko
         </h2>
-        <p className="mt-6 text-6xl font-semibold tracking-tight text-accent sm:text-7xl">5</p>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Agentes de IA trabajando por tu negocio, todos los días</p>
+        <p className="mt-6 text-6xl font-semibold tracking-tight text-accent sm:text-7xl">100+</p>
+        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Negocios registrados, listos para publicar con IA</p>
       </div>
 
       {/* No background box of its own — the globe sits directly on the

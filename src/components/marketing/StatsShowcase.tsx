@@ -36,31 +36,33 @@ export default function StatsShowcase() {
 
       {/* The real reference clip, not a re-built 3D scene — a rotating
           globe render already cropped to a clean hemisphere at the
-          source. Framed in a plain white card (not bled onto the page)
-          because the footage has a baked-in white background with no
-          alpha channel — a card reads as intentional in both themes,
-          where trying to blend a hard-coded white background into a
-          dark page never would. Sized off the source crop's own aspect
-          ratio (650:368) so it's never letterboxed or cut off, on phone
-          or desktop alike. */}
+          source. The footage has a baked-in near-white background
+          (#fdfdfd, no alpha channel) — mix-blend-mode: multiply is what
+          makes that read as "no background" instead of a card: multiplying
+          white by the page's own light gray returns that same gray, so
+          the video's background pixels disappear into the page while the
+          globe's actual (darker) colors stay visible, just a hair
+          deeper. Only works because the page is a fixed light color now
+          that dark mode is gone — multiply against a dark background
+          would have crushed the whole video to black. Sized off the
+          source crop's own aspect ratio (650:368) so it's never
+          letterboxed or cut off, on phone or desktop alike. */}
       <div className="mx-auto mt-14 max-w-md px-6 sm:max-w-lg md:max-w-2xl">
-        <div className="overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_80px_-40px_rgba(0,0,0,0.35)] sm:rounded-[2.5rem]">
-          <video
-            className="block w-full"
-            style={{ aspectRatio: "650 / 368" }}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-          >
-            {/* webm first: smaller, and it's the one format guaranteed
-                present in every Chromium build without a licensed H.264
-                decoder. mp4 covers Safari, which never plays webm. */}
-            <source src="/videos/earth-globe.webm" type="video/webm" />
-            <source src="/videos/earth-globe.mp4" type="video/mp4" />
-          </video>
-        </div>
+        <video
+          className="block w-full mix-blend-multiply"
+          style={{ aspectRatio: "650 / 368" }}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+        >
+          {/* webm first: smaller, and it's the one format guaranteed
+              present in every Chromium build without a licensed H.264
+              decoder. mp4 covers Safari, which never plays webm. */}
+          <source src="/videos/earth-globe.webm" type="video/webm" />
+          <source src="/videos/earth-globe.mp4" type="video/mp4" />
+        </video>
       </div>
 
       {/* Always 3 across, even on phones — stacked, these ate a whole

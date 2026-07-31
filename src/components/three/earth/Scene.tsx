@@ -52,13 +52,24 @@ export default function EarthScene({ className }: { className?: string }) {
   }, []);
 
   return (
-    <div ref={wrapperRef} className={`relative overflow-hidden bg-white ${className ?? ""}`}>
+    <div ref={wrapperRef} className={`relative overflow-hidden ${className ?? ""}`}>
       {visible && (
         <Canvas
           dpr={[1, 2]}
-          camera={{ fov: 35, position: [0, 0.55, 4.3] }}
+          camera={{ fov: 35, position: [0, 0.55, 4.7] }}
           gl={{ antialias: true, alpha: true }}
           frameloop={reducedMotion ? "demand" : "always"}
+          // A hard-edged photographic sphere sitting in its own white box
+          // read as a pasted-on sticker rather than part of the page — a
+          // soft blur plus slightly pulled-back contrast/saturation
+          // (and, below, a radial fade instead of a rectangular box)
+          // moves it toward "illustration" and away from "satellite
+          // photo," closer to what was actually asked for.
+          style={{
+            filter: "blur(0.5px) saturate(0.9) contrast(0.95)",
+            maskImage: "radial-gradient(ellipse 68% 72% at 50% 42%, black 58%, transparent 94%)",
+            WebkitMaskImage: "radial-gradient(ellipse 68% 72% at 50% 42%, black 58%, transparent 94%)",
+          }}
         >
           <ambientLight intensity={0.5} />
           {/* The one hard light — a "sun" from the upper right, matching
@@ -100,10 +111,6 @@ export default function EarthScene({ className }: { className?: string }) {
           )}
         </Canvas>
       )}
-
-      {/* Bottom fade-to-white — the globe sinks into the page instead of
-          ending on a hard circular edge, same as the reference. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-b from-transparent to-white" />
     </div>
   );
 }

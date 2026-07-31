@@ -46,8 +46,8 @@ export function Earth({ reducedMotion }: { reducedMotion: boolean }) {
   const normalScale = useMemo(() => new THREE.Vector2(0.6, 0.6), []);
   const atmosphereUniforms = useMemo(
     () => ({
-      uColor: { value: new THREE.Color("#8ec7f0") },
-      uIntensity: { value: 0.9 },
+      uColor: { value: new THREE.Color("#5b96d6") },
+      uIntensity: { value: 1.1 },
     }),
     [],
   );
@@ -67,15 +67,20 @@ export function Earth({ reducedMotion }: { reducedMotion: boolean }) {
         <meshStandardMaterial map={dayMap} normalMap={normalMap} normalScale={normalScale} roughness={0.8} metalness={0.1} />
       </mesh>
 
-      {/* Atmosphere rim glow, see atmosphere-shader.ts. */}
-      <mesh scale={1.06}>
+      {/* Atmosphere rim glow, see atmosphere-shader.ts. Additive blending
+          (the usual trick for this effect) is nearly invisible against a
+          light page background — adding light-blue to already-light
+          pixels barely moves them — so this uses normal alpha blending
+          instead, which actually paints a visible soft rim regardless of
+          what's behind it. */}
+      <mesh scale={1.09}>
         <sphereGeometry args={[EARTH_RADIUS, 64, 64]} />
         <shaderMaterial
           vertexShader={atmosphereVertexShader}
           fragmentShader={atmosphereFragmentShader}
           uniforms={atmosphereUniforms}
           transparent
-          blending={THREE.AdditiveBlending}
+          blending={THREE.NormalBlending}
           side={THREE.BackSide}
           depthWrite={false}
         />

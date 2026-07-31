@@ -32,11 +32,11 @@ export default function StatsShowcase() {
         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Agentes de IA trabajando por tu negocio, todos los días</p>
       </div>
 
-      {/* A deliberately bright "product stage" — the globe's own white
-          background stays literally white regardless of the site's dark
-          mode, the same way the Hero's impact band stays fixed-dark
-          regardless of theme; a photoreal Earth render doesn't re-theme. */}
-      <div className="mx-auto mt-14 h-[22rem] max-w-4xl px-4 sm:h-[28rem] md:h-[34rem]">
+      {/* No background box of its own — the globe sits directly on the
+          section's own background and fades out at every edge (see
+          Scene.tsx's radial mask), so it reads as part of the page
+          instead of a photo pasted into a rectangle. */}
+      <div className="mx-auto mt-14 h-[22rem] max-w-4xl sm:h-[28rem] md:h-[34rem]">
         <EarthScene className="h-full w-full" />
       </div>
 

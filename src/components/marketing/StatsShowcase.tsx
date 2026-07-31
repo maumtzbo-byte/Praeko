@@ -40,13 +40,19 @@ export default function StatsShowcase() {
         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Negocios registrados, listos para publicar con IA</p>
       </div>
 
-      {/* Only the top half of the globe shows — the outer box is exactly
-          half the canvas height with overflow-hidden, so the sphere reads
-          as cleanly cut at the section's edge instead of a full circle
-          floating on the page (matches the reference: "a la mitad y no
-          completa"). The canvas itself is unchanged (still a full sphere,
-          still centered) — it's just visually cropped by its wrapper. */}
-      <div className="relative mx-auto mt-14 h-[11rem] max-w-4xl overflow-hidden sm:h-[14rem] md:h-[17rem]">
+      {/* Only the top portion of the globe shows, and it dissolves into
+          the page rather than getting sliced off — a mask-image on this
+          wrapper fades the lower third to transparent before the
+          overflow-hidden boundary ever gets there, so there's no hard
+          silhouette edge. That's what makes it read as a soft photographic
+          blur (like the reference) instead of a shape cut out of a box. */}
+      <div
+        className="relative mx-auto mt-14 h-[13rem] max-w-4xl overflow-hidden sm:h-[16rem] md:h-[19rem]"
+        style={{
+          maskImage: "linear-gradient(to bottom, black 0%, black 55%, transparent 94%)",
+          WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 55%, transparent 94%)",
+        }}
+      >
         <div className="absolute inset-x-0 top-0 h-[22rem] sm:h-[28rem] md:h-[34rem]">
           <EarthScene className="h-full w-full" />
         </div>

@@ -67,22 +67,22 @@ export default function EarthScene({ className }: { className?: string }) {
           // StatsShowcase (half the sphere, cut clean), so fading it here
           // too would just erase the crop line instead of sharpening it.
           style={{
-            filter: "saturate(1.4) contrast(1.1)",
+            filter: "saturate(2) contrast(1.08) brightness(1.12)",
             maskImage: "linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%)",
             WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%)",
           }}
         >
-          <ambientLight intensity={0.5} />
-          {/* The one hard light — a "sun" from the upper right, matching
-              the Apple-keynote key-light composition. Everything else
-              below is soft fill, not another shadow-casting source. */}
-          <directionalLight position={[3.5, 2.2, 2.5]} intensity={1.8} />
+          {/* Brighter and flatter than a moody single-sun render — the
+              reference shows an evenly lit, fully daylit globe with no
+              visible dark terminator, not a dramatic side-lit sphere. */}
+          <ambientLight intensity={0.85} />
+          <directionalLight position={[3.5, 2.2, 2.5]} intensity={2} />
 
           {/* Procedural HDR-ish fill via drei's Lightformer rig — soft
               ambient bounce without loading an external HDRI file. */}
           <Environment resolution={128}>
-            <Lightformer intensity={1.2} color="#ffffff" position={[0, 3, -4]} scale={[10, 6, 1]} />
-            <Lightformer intensity={0.6} color="#bcdcf0" position={[-5, -1, 2]} scale={[6, 8, 1]} />
+            <Lightformer intensity={1.4} color="#ffffff" position={[0, 3, -4]} scale={[10, 6, 1]} />
+            <Lightformer intensity={0.7} color="#bcdcf0" position={[-5, -1, 2]} scale={[6, 8, 1]} />
           </Environment>
 
           <Suspense fallback={<EarthLoadingFallback />}>

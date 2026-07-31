@@ -22,7 +22,7 @@ export const atmosphereFragmentShader = /* glsl */ `
     // vNormal is in view space here, so its z faces the camera directly —
     // comparing against (0,0,1) is the same as a view-direction dot
     // product without needing to pass the view vector separately.
-    float fresnel = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);
+    float fresnel = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 1.7);
     gl_FragColor = vec4(uColor, clamp(fresnel, 0.0, 1.0) * uIntensity);
   }
 `;

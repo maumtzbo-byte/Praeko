@@ -44,10 +44,14 @@ export function Earth({ reducedMotion }: { reducedMotion: boolean }) {
   });
 
   const normalScale = useMemo(() => new THREE.Vector2(0.6, 0.6), []);
+  // A soft, pale haze — not a saturated cyan ring. The reference's rim is
+  // a photographic blur that bleeds gently into the page, not a neon
+  // outline; a lighter color plus a lower intensity is what stops it
+  // reading as a glowing line traced around the silhouette.
   const atmosphereUniforms = useMemo(
     () => ({
-      uColor: { value: new THREE.Color("#5b96d6") },
-      uIntensity: { value: 1.1 },
+      uColor: { value: new THREE.Color("#cfe4f5") },
+      uIntensity: { value: 0.6 },
     }),
     [],
   );

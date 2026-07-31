@@ -25,8 +25,8 @@ export default function WhatWeDo() {
   return (
     <section id="agentes" className="relative py-24 md:py-28">
       <div className="mx-auto max-w-6xl px-6">
-        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">QUÉ HACEMOS</p>
-        <h2 className="max-w-md text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
+        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">QUÉ HACEMOS</p>
+        <h2 className="max-w-md text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
           Cinco agentes, un negocio que se publica solo
         </h2>
 
@@ -39,10 +39,10 @@ export default function WhatWeDo() {
               key={agent.title}
               className={`flex flex-col gap-4 bg-[var(--background)] p-6 sm:p-8 ${i === AGENTS.length - 1 ? "sm:col-span-2" : ""}`}
             >
-              <span className="font-mono text-xs text-zinc-400 dark:text-zinc-600">{String(i + 1).padStart(2, "0")}</span>
+              <span className="font-mono text-xs text-zinc-400">{String(i + 1).padStart(2, "0")}</span>
               <div>
-                <h3 className="text-base font-semibold text-zinc-950 dark:text-white">{agent.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">{agent.description}</p>
+                <h3 className="text-base font-semibold text-zinc-950">{agent.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-500">{agent.description}</p>
               </div>
             </div>
           ))}

@@ -119,7 +119,7 @@ export function CalendarView({ initialItems }: { initialItems: ContentCalendarRo
       <Card className="bg-white/70">
         <CardContent className="p-5">
           <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm font-semibold capitalize text-zinc-900 dark:text-zinc-100">{MONTH_FORMATTER.format(visibleMonth)}</p>
+            <p className="text-sm font-semibold capitalize text-zinc-900">{MONTH_FORMATTER.format(visibleMonth)}</p>
             <div className="flex gap-1">
               <Button variant="ghost" size="sm" onClick={() => goToMonth(-1)} aria-label="Mes anterior">
                 <ChevronLeft className="h-4 w-4" />
@@ -129,7 +129,7 @@ export function CalendarView({ initialItems }: { initialItems: ContentCalendarRo
               </Button>
             </div>
           </div>
-          <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-zinc-400 dark:text-zinc-500">
+          <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-zinc-400">
             {WEEKDAY_LABELS.map((label, i) => (
               <div key={i} className="py-1">
                 {label}
@@ -151,10 +151,10 @@ export function CalendarView({ initialItems }: { initialItems: ContentCalendarRo
                   disabled={items.length === 0}
                   className={cn(
                     "flex min-h-16 flex-col items-start gap-1 rounded-xl border p-1.5 text-left transition-colors",
-                    inMonth ? "border-zinc-200 dark:border-zinc-700" : "border-transparent opacity-40",
+                    inMonth ? "border-zinc-200" : "border-transparent opacity-40",
                     isSelected
-                      ? "border-zinc-900 bg-zinc-50 dark:border-zinc-100 dark:bg-zinc-900"
-                      : "hover:border-zinc-300 dark:hover:border-zinc-700",
+                      ? "border-zinc-900 bg-zinc-50 "
+                      : "hover:border-zinc-300",
                     items.length === 0 && "cursor-default",
                   )}
                 >
@@ -162,8 +162,8 @@ export function CalendarView({ initialItems }: { initialItems: ContentCalendarRo
                     className={cn(
                       "text-xs font-medium",
                       isToday
-                        ? "flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-950"
-                        : "text-zinc-600 dark:text-zinc-400",
+                        ? "flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-white "
+                        : "text-zinc-600",
                     )}
                   >
                     {date.getUTCDate()}
@@ -185,7 +185,7 @@ export function CalendarView({ initialItems }: { initialItems: ContentCalendarRo
               );
             })}
           </div>
-          <div className="mt-4 flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="mt-4 flex items-center gap-4 text-xs text-zinc-500">
             <span className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-violet-500" /> Video
             </span>
@@ -200,8 +200,8 @@ export function CalendarView({ initialItems }: { initialItems: ContentCalendarRo
         {selectedItems.length === 0 && (
           <Card className="bg-white/50">
             <CardContent className="flex flex-col items-center gap-2 p-8 text-center">
-              <CalendarDays className="h-6 w-6 text-zinc-400 dark:text-zinc-500" strokeWidth={1.5} />
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">Selecciona un día con contenido para ver el detalle.</p>
+              <CalendarDays className="h-6 w-6 text-zinc-400" strokeWidth={1.5} />
+              <p className="text-sm text-zinc-500">Selecciona un día con contenido para ver el detalle.</p>
             </CardContent>
           </Card>
         )}
@@ -211,16 +211,16 @@ export function CalendarView({ initialItems }: { initialItems: ContentCalendarRo
             <Card key={item.id} className="bg-white/70">
               <CardContent className="flex flex-col gap-2 p-4">
                 <div className="flex items-center justify-between">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100">
                     <Icon className="h-3.5 w-3.5 text-accent" strokeWidth={1.75} />
                   </span>
                   <Badge variant={STATUS_VARIANTS[item.status]}>{STATUS_LABELS[item.status]}</Badge>
                 </div>
-                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{item.topic}</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">{FORMAT_LABELS[item.format]}</p>
-                {item.script && <p className="text-sm text-zinc-600 dark:text-zinc-400">{item.script}</p>}
+                <p className="text-sm font-semibold text-zinc-900">{item.topic}</p>
+                <p className="text-xs text-zinc-500">{FORMAT_LABELS[item.format]}</p>
+                {item.script && <p className="text-sm text-zinc-600">{item.script}</p>}
                 {item.recommended_publish_time && (
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-500">
                     <Clock className="h-3.5 w-3.5" />
                     {item.recommended_publish_time.slice(0, 5)}
                     {item.target_duration_seconds ? ` · ${item.target_duration_seconds}s` : ""}

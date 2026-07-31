@@ -51,35 +51,13 @@ export const metadata: Metadata = {
   },
 };
 
-// Runs before hydration (via dangerouslySetInnerHTML in <head>) so the
-// correct theme class is already on <html> for the very first paint —
-// without this, the page would flash light mode for a frame on every load
-// for anyone who'd chosen dark. Reads localStorage first, falls back to the
-// OS preference, matching the one ThemeToggle uses post-mount.
-const THEME_INIT_SCRIPT = `
-(function () {
-  try {
-    var stored = localStorage.getItem("frames-theme");
-    var isDark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
-    if (isDark) document.documentElement.classList.add("dark");
-  } catch (e) {}
-})();
-`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      suppressHydrationWarning
-    >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-      </head>
+    <html lang="es" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
         {/* Barely-visible grain — same trick Stripe/Linear use so flat color
             fields read as material instead of a solid CSS fill. Overlay

@@ -53,7 +53,7 @@ export function SupportChat({ businessId }: { businessId: string }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div ref={listRef} className="flex h-80 flex-col gap-3 overflow-y-auto rounded-2xl bg-zinc-50 p-4 dark:bg-zinc-900">
+      <div ref={listRef} className="flex h-80 flex-col gap-3 overflow-y-auto rounded-2xl bg-zinc-50 p-4">
         {messages.map((message, i) => (
           <div
             key={i}
@@ -63,8 +63,8 @@ export function SupportChat({ businessId }: { businessId: string }) {
               className={cn(
                 "flex h-7 w-7 shrink-0 items-center justify-center rounded-full",
                 message.role === "user"
-                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950"
-                  : "bg-white text-zinc-600 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:ring-zinc-700",
+                  ? "bg-zinc-900 text-white "
+                  : "bg-white text-zinc-600 ring-1 ring-zinc-200 ",
               )}
             >
               {message.role === "user" ? <User className="h-3.5 w-3.5" /> : <Bot className="h-3.5 w-3.5" />}
@@ -73,8 +73,8 @@ export function SupportChat({ businessId }: { businessId: string }) {
               className={cn(
                 "max-w-[80%] whitespace-pre-wrap rounded-2xl px-3.5 py-2 text-sm",
                 message.role === "user"
-                  ? "rounded-tr-sm bg-zinc-900 text-white dark:bg-white dark:text-zinc-950"
-                  : "rounded-tl-sm bg-white text-zinc-700 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:ring-zinc-700",
+                  ? "rounded-tr-sm bg-zinc-900 text-white "
+                  : "rounded-tl-sm bg-white text-zinc-700 ring-1 ring-zinc-200 ",
               )}
             >
               {message.content}
@@ -83,17 +83,17 @@ export function SupportChat({ businessId }: { businessId: string }) {
         ))}
         {sending && (
           <div className="flex items-start gap-2">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-zinc-600 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:ring-zinc-700">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-zinc-600 ring-1 ring-zinc-200 ">
               <Bot className="h-3.5 w-3.5" />
             </span>
-            <p className="rounded-2xl rounded-tl-sm bg-white px-3.5 py-2 text-sm text-zinc-400 ring-1 ring-zinc-200 dark:bg-zinc-800 dark:text-zinc-500 dark:ring-zinc-700">
+            <p className="rounded-2xl rounded-tl-sm bg-white px-3.5 py-2 text-sm text-zinc-400 ring-1 ring-zinc-200 ">
               Escribiendo…
             </p>
           </div>
         )}
       </div>
 
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <form
         onSubmit={(e) => {

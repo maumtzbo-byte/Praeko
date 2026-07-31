@@ -88,7 +88,7 @@ export function LoginForm() {
               </Label>
               <Link
                 href="/recuperar-contrasena"
-                className="mb-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+                className="mb-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-800 "
               >
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -107,9 +107,9 @@ export function LoginForm() {
             Iniciar sesión
           </Button>
 
-          <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-center text-sm text-zinc-500">
             ¿No tienes cuenta?{" "}
-            <Link href="/registro" className="font-medium text-zinc-900 underline dark:text-white">
+            <Link href="/registro" className="font-medium text-zinc-900 underline">
               Regístrate
             </Link>
           </p>

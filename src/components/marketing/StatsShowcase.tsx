@@ -16,10 +16,10 @@ export default function StatsShowcase() {
   return (
     <section className="relative overflow-hidden py-24">
       <div className="mx-auto max-w-3xl px-6 text-center">
-        <span className="inline-flex items-center rounded-full bg-zinc-950 px-3 py-1.5 text-xs font-medium text-white dark:bg-white dark:text-zinc-950">
+        <span className="inline-flex items-center rounded-full bg-zinc-950 px-3 py-1.5 text-xs font-medium text-white ">
           Creciendo en México
         </span>
-        <h2 className="mt-5 text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
+        <h2 className="mt-5 text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
           Negocios como el tuyo ya están en Frames
         </h2>
         <motion.p
@@ -31,7 +31,7 @@ export default function StatsShowcase() {
         >
           100+
         </motion.p>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Negocios registrados, listos para publicar con IA</p>
+        <p className="mt-2 text-sm text-zinc-500">Negocios registrados, listos para publicar con IA</p>
       </div>
 
       {/* The real reference clip, not a re-built 3D scene — a rotating
@@ -77,7 +77,7 @@ export default function StatsShowcase() {
             transition={{ duration: 0.4, delay: i * 0.1, ease: "easeOut" }}
           >
             <p className="text-3xl font-semibold tracking-tight text-accent sm:text-5xl">{stat.value}</p>
-            <p className="mt-1 text-xs leading-tight text-zinc-500 sm:text-sm dark:text-zinc-400">{stat.label}</p>
+            <p className="mt-1 text-xs leading-tight text-zinc-500 sm:text-sm">{stat.label}</p>
           </motion.div>
         ))}
       </div>

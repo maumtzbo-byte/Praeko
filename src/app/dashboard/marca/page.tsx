@@ -70,7 +70,7 @@ export default async function MarcaPage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoUrl} alt={`Logo de ${business.name}`} className="h-20 w-20 rounded-2xl object-cover" />
             ) : (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">Sin logo subido todavía.</p>
+              <p className="text-sm text-zinc-500">Sin logo subido todavía.</p>
             )}
           </CardContent>
         </Card>
@@ -91,7 +91,7 @@ export default async function MarcaPage() {
                         which is still fine since the label itself is shown. */}
                     <span
                       aria-hidden="true"
-                      className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10"
+                      className="h-3.5 w-3.5 shrink-0 rounded-full ring-1 ring-inset ring-black/10"
                       style={{ backgroundColor: color }}
                     />
                     {color}
@@ -99,7 +99,7 @@ export default async function MarcaPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">Sin colores definidos todavía.</p>
+              <p className="text-sm text-zinc-500">Sin colores definidos todavía.</p>
             )}
           </CardContent>
         </Card>
@@ -116,7 +116,7 @@ export default async function MarcaPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">Sin tipografías definidas todavía.</p>
+              <p className="text-sm text-zinc-500">Sin tipografías definidas todavía.</p>
             )}
           </CardContent>
         </Card>
@@ -126,7 +126,7 @@ export default async function MarcaPage() {
             <CardTitle>Tono de comunicación</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">{brandProfile.brand_tone || "Sin definir todavía."}</p>
+            <p className="text-sm text-zinc-600">{brandProfile.brand_tone || "Sin definir todavía."}</p>
           </CardContent>
         </Card>
 
@@ -135,7 +135,7 @@ export default async function MarcaPage() {
             <CardTitle>Misión</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">{brandProfile.mission || "Sin definir todavía."}</p>
+            <p className="text-sm text-zinc-600">{brandProfile.mission || "Sin definir todavía."}</p>
           </CardContent>
         </Card>
 
@@ -144,7 +144,7 @@ export default async function MarcaPage() {
             <CardTitle>Público objetivo</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">{brandProfile.target_audience || "Sin definir todavía."}</p>
+            <p className="text-sm text-zinc-600">{brandProfile.target_audience || "Sin definir todavía."}</p>
           </CardContent>
         </Card>
       </div>

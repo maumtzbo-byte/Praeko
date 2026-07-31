@@ -41,13 +41,13 @@ export default async function PlanPage() {
             <Card
               key={plan.key}
               className={cn(
-                isFeatured && "border-transparent bg-zinc-950 text-white dark:bg-white dark:text-zinc-950",
+                isFeatured && "border-transparent bg-zinc-950 text-white ",
                 isCurrent && "border-accent",
               )}
             >
               <CardContent className="flex flex-col gap-4 p-6">
                 <div className="flex items-center justify-between">
-                  <h3 className={cn("text-lg font-semibold", isFeatured ? "text-white dark:text-zinc-950" : "text-zinc-900 dark:text-zinc-100")}>
+                  <h3 className={cn("text-lg font-semibold", isFeatured ? "text-white" : "text-zinc-900")}>
                     {plan.display_name}
                   </h3>
                   {isCurrent && <Badge variant="success">Plan actual</Badge>}
@@ -59,9 +59,9 @@ export default async function PlanPage() {
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-semibold tracking-tight">${priceUsd.toFixed(0)}</span>
-                  <span className={cn("text-sm", isFeatured ? "text-zinc-400 dark:text-zinc-500" : "text-zinc-500 dark:text-zinc-400")}>USD/mes</span>
+                  <span className={cn("text-sm", isFeatured ? "text-zinc-400" : "text-zinc-500")}>USD/mes</span>
                 </div>
-                <ul className={cn("flex flex-col gap-2 text-sm", isFeatured ? "text-zinc-300 dark:text-zinc-600" : "text-zinc-600 dark:text-zinc-400")}>
+                <ul className={cn("flex flex-col gap-2 text-sm", isFeatured ? "text-zinc-300" : "text-zinc-600")}>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 shrink-0 text-accent" /> {plan.videos_per_month} videos/mes
                   </li>
@@ -90,7 +90,7 @@ export default async function PlanPage() {
         })}
       </div>
 
-      <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mt-6 text-center text-sm text-zinc-500">
         Aún no hay pago en línea — al solicitar un plan te contactamos por correo para activarlo a la brevedad.
       </p>
     </div>

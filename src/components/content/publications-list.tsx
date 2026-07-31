@@ -93,8 +93,8 @@ export function PublicationsList({ initialItems }: { initialItems: ContentCalend
             className={cn(
               "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
               filter === key
-                ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-950"
-                : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-600",
+                ? "border-zinc-900 bg-zinc-900 text-white "
+                : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 ",
             )}
           >
             {key === "todas" ? "Todas" : STATUS_LABELS[key]} ({counts[key]})
@@ -116,23 +116,23 @@ export function PublicationsList({ initialItems }: { initialItems: ContentCalend
               <Card key={item.id} className="bg-white/70">
                 <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
                   <div className="flex items-center gap-3 sm:w-40 sm:shrink-0">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
                       <Icon className="h-4 w-4 text-accent" strokeWidth={1.75} />
                     </span>
                     <div>
-                      <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{formatScheduledDate(item.scheduled_date)}</p>
-                      <p className="text-xs text-zinc-400 dark:text-zinc-500">{FORMAT_LABELS[item.format]}</p>
+                      <p className="text-xs font-medium text-zinc-500">{formatScheduledDate(item.scheduled_date)}</p>
+                      <p className="text-xs text-zinc-400">{FORMAT_LABELS[item.format]}</p>
                     </div>
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">{item.topic}</p>
-                    {item.script && <p className="line-clamp-1 text-sm text-zinc-500 dark:text-zinc-400">{item.script}</p>}
+                    <p className="truncate text-sm font-semibold text-zinc-900">{item.topic}</p>
+                    {item.script && <p className="line-clamp-1 text-sm text-zinc-500">{item.script}</p>}
                   </div>
 
                   <div className="flex shrink-0 items-center gap-3">
                     {item.recommended_publish_time && (
-                      <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                      <div className="flex items-center gap-1.5 text-xs text-zinc-500">
                         <Clock className="h-3.5 w-3.5" />
                         {item.recommended_publish_time.slice(0, 5)}
                         {item.target_duration_seconds ? ` · ${item.target_duration_seconds}s` : ""}

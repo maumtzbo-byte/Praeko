@@ -93,23 +93,23 @@ export function GenerateContentPanel({
             <Card key={item.id} className="bg-white/70">
               <CardContent className="flex flex-col gap-3 p-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium tracking-wide text-zinc-500 dark:text-zinc-400">
+                  <span className="text-xs font-medium tracking-wide text-zinc-500">
                     {formatScheduledDate(item.scheduled_date)}
                   </span>
                   <Badge variant={STATUS_VARIANTS[item.status]}>{STATUS_LABELS[item.status]}</Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100">
                     <Icon className="h-4 w-4 text-accent" strokeWidth={1.75} />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{item.topic}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{FORMAT_LABELS[item.format]}</p>
+                    <p className="text-sm font-semibold text-zinc-900">{item.topic}</p>
+                    <p className="text-xs text-zinc-500">{FORMAT_LABELS[item.format]}</p>
                   </div>
                 </div>
-                {item.script && <p className="line-clamp-4 text-sm text-zinc-600 dark:text-zinc-400">{item.script}</p>}
+                {item.script && <p className="line-clamp-4 text-sm text-zinc-600">{item.script}</p>}
                 {item.recommended_publish_time && (
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-500">
                     <Clock className="h-3.5 w-3.5" />
                     {item.recommended_publish_time.slice(0, 5)}
                     {item.target_duration_seconds ? ` · ${item.target_duration_seconds}s` : ""}

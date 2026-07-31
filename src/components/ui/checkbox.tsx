@@ -11,12 +11,12 @@ const Checkbox = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputEleme
           ref={ref}
           type="checkbox"
           className={cn(
-            "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-zinc-300 bg-white transition-colors checked:border-zinc-950 checked:bg-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:border-zinc-600 dark:bg-zinc-900 dark:checked:border-white dark:checked:bg-white",
+            "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-zinc-300 bg-white transition-colors checked:border-zinc-950 checked:bg-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ",
             className,
           )}
           {...props}
         />
-        <Check className="pointer-events-none absolute h-3.5 w-3.5 text-white opacity-0 peer-checked:opacity-100 dark:text-zinc-950" />
+        <Check className="pointer-events-none absolute h-3.5 w-3.5 text-white opacity-0 peer-checked:opacity-100" />
       </span>
     );
   },

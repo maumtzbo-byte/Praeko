@@ -57,8 +57,8 @@ export function NotificationsTab({
               onChange={(e) => setValue((v) => ({ ...v, [item.key]: e.target.checked }))}
             />
             <span>
-              <span className="block text-sm font-medium text-zinc-800 dark:text-zinc-200">{item.label}</span>
-              <span className="block text-xs text-zinc-500 dark:text-zinc-400">{item.description}</span>
+              <span className="block text-sm font-medium text-zinc-800">{item.label}</span>
+              <span className="block text-xs text-zinc-500">{item.description}</span>
             </span>
           </label>
         ))}

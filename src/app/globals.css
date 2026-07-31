@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-/* Class-based dark mode — a manual toggle (see ThemeToggle), not just
-   following the OS — so `dark:` utilities key off an ancestor `.dark`
-   class instead of Tailwind's default prefers-color-scheme strategy. */
-@custom-variant dark (&:where(.dark, .dark *));
-
 :root {
   --background: #f4f4f4;
   --foreground: #0a0a0b;
@@ -16,13 +11,6 @@
      swap propagates everywhere without touching those files. */
   --accent: #3d75ad;
   --accent-strong: #1f3e5c;
-}
-
-.dark {
-  --background: #0a0a0b;
-  --foreground: #f5f5f6;
-  --hairline: rgba(255, 255, 255, 0.12);
-  --card: #18181b;
 }
 
 @theme inline {

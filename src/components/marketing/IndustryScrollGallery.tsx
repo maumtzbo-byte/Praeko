@@ -18,8 +18,8 @@ export default function IndustryScrollGallery() {
   return (
     <section className="relative py-24">
       <div className="mx-auto max-w-6xl px-6">
-        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">PARA QUIÉN ES ESTO</p>
-        <h2 className="max-w-md text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
+        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">PARA QUIÉN ES ESTO</p>
+        <h2 className="max-w-md text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
           Contenido para cualquier tipo de negocio
         </h2>
 
@@ -38,7 +38,7 @@ export default function IndustryScrollGallery() {
                 className="flex flex-col items-start gap-4 bg-[var(--background)] p-6 sm:p-8"
               >
                 <Icon aria-hidden="true" className="h-5 w-5 text-accent" strokeWidth={1.5} />
-                <p className="text-sm font-medium leading-tight text-zinc-950 dark:text-white">{industry.label}</p>
+                <p className="text-sm font-medium leading-tight text-zinc-950">{industry.label}</p>
               </motion.div>
             );
           })}

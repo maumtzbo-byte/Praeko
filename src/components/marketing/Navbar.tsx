@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { FramesMark } from "@/components/brand/FramesMark";
 import { cn } from "@/lib/utils";
 
@@ -43,10 +42,10 @@ export default function Navbar() {
           against whatever's behind it (photo, gradient, page background)
           instead of needing scroll-position-driven color branching. */}
       <header className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
-        <nav className="flex w-full max-w-3xl items-center justify-between gap-4 rounded-full border border-[var(--hairline)] bg-white/90 px-5 py-2.5 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.25)] backdrop-blur-md dark:bg-zinc-900/90">
+        <nav className="flex w-full max-w-3xl items-center justify-between gap-4 rounded-full border border-[var(--hairline)] bg-white/90 px-5 py-2.5 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.25)] backdrop-blur-md">
           <Link href="/" className="flex items-center gap-2">
-            <FramesMark className="h-5 w-5 text-zinc-950 dark:text-white" />
-            <span className="text-base font-semibold tracking-[0.2em] text-zinc-950 dark:text-white">FRAMES</span>
+            <FramesMark className="h-5 w-5 text-zinc-950" />
+            <span className="text-base font-semibold tracking-[0.2em] text-zinc-950">FRAMES</span>
           </Link>
 
           <div className="hidden items-center gap-6 md:flex">
@@ -56,7 +55,7 @@ export default function Navbar() {
                 href={link.href}
                 className={cn(
                   "relative text-sm transition-colors after:absolute after:-bottom-1.5 after:left-0 after:h-px after:bg-accent after:transition-all after:duration-300",
-                  active === link.href ? "font-medium after:w-full text-zinc-950 dark:text-white" : "after:w-0 text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white",
+                  active === link.href ? "font-medium after:w-full text-zinc-950" : "after:w-0 text-zinc-600 hover:text-zinc-950 ",
                 )}
               >
                 {link.label}
@@ -65,27 +64,25 @@ export default function Navbar() {
           </div>
 
           <div className="hidden items-center gap-3 md:flex">
-            <ThemeToggle />
             <Link
               href="/login"
-              className="text-sm font-medium text-zinc-700 transition-colors hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white"
+              className="text-sm font-medium text-zinc-700 transition-colors hover:text-zinc-950 "
             >
               Iniciar sesión
             </Link>
             <Link
               href="/registro"
-              className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-zinc-950"
+              className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 "
             >
               Empieza gratis
             </Link>
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            <ThemeToggle />
             <button
               aria-label="Abrir menú"
               onClick={() => setOpen((v) => !v)}
-              className="flex h-9 w-9 items-center justify-center text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent dark:text-white"
+              className="flex h-9 w-9 items-center justify-center text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               {open ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -100,7 +97,7 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               onClick={() => setOpen(false)}
-              className="rounded-xl px-3 py-3 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              className="rounded-xl px-3 py-3 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-100 "
             >
               {link.label}
             </a>
@@ -108,7 +105,7 @@ export default function Navbar() {
           <div className="my-2 border-t border-[var(--hairline)]" />
           <Link
             href="/login"
-            className="rounded-xl px-3 py-3 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            className="rounded-xl px-3 py-3 text-base font-medium text-zinc-700 transition-colors hover:bg-zinc-100 "
             onClick={() => setOpen(false)}
           >
             Iniciar sesión
@@ -116,7 +113,7 @@ export default function Navbar() {
           <Link
             href="/registro"
             onClick={() => setOpen(false)}
-            className="mt-2 rounded-full bg-zinc-950 px-4 py-3 text-center text-base font-medium text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-zinc-950"
+            className="mt-2 rounded-full bg-zinc-950 px-4 py-3 text-center text-base font-medium text-white transition-opacity hover:opacity-90 "
           >
             Empieza gratis
           </Link>

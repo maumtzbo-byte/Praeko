@@ -90,7 +90,7 @@ function PricingCard({
         className={`relative flex h-full w-full flex-col rounded-2xl border p-5 transition-colors duration-300 md:rounded-3xl md:p-8 ${
           plan.featured
             ? "border-accent bg-zinc-950 text-white"
-            : "border-[var(--hairline)] bg-[var(--background)] text-zinc-950 dark:text-white"
+            : "border-[var(--hairline)] bg-[var(--background)] text-zinc-950"
         }`}
       >
         {plan.featured && (
@@ -100,18 +100,18 @@ function PricingCard({
         )}
 
         <h3 className="text-base font-semibold md:text-lg">{plan.name}</h3>
-        <p className={`mt-1 text-sm ${plan.featured ? "text-zinc-400" : "text-zinc-500 dark:text-zinc-400"}`}>{plan.tagline}</p>
+        <p className={`mt-1 text-sm ${plan.featured ? "text-zinc-400" : "text-zinc-500"}`}>{plan.tagline}</p>
 
         <div className="mt-6 flex items-baseline gap-1">
           <span className="text-2xl font-semibold tracking-tight md:text-4xl">${plan.price}</span>
-          <span className={`text-sm ${plan.featured ? "text-zinc-400" : "text-zinc-500 dark:text-zinc-400"}`}>/mes</span>
+          <span className={`text-sm ${plan.featured ? "text-zinc-400" : "text-zinc-500"}`}>/mes</span>
         </div>
 
         <ul className="mt-8 flex flex-1 flex-col gap-3">
           {plan.features.map((feature) => (
             <li key={feature} className="flex items-start gap-2 text-sm">
-              <Check className={`mt-0.5 h-4 w-4 shrink-0 ${plan.featured ? "text-accent" : "text-zinc-500 dark:text-zinc-400"}`} />
-              <span className={plan.featured ? "text-zinc-300" : "text-zinc-600 dark:text-zinc-300"}>{feature}</span>
+              <Check className={`mt-0.5 h-4 w-4 shrink-0 ${plan.featured ? "text-accent" : "text-zinc-500"}`} />
+              <span className={plan.featured ? "text-zinc-300" : "text-zinc-600"}>{feature}</span>
             </li>
           ))}
         </ul>
@@ -119,7 +119,7 @@ function PricingCard({
         <Link
           href={`/registro?plan=${plan.name.toLowerCase()}`}
           className={`mt-8 rounded-full px-5 py-2.5 text-center text-sm font-medium transition-opacity hover:opacity-90 ${
-            plan.featured ? "bg-accent text-white" : "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950"
+            plan.featured ? "bg-accent text-white" : "bg-zinc-950 text-white "
           }`}
         >
           Elegir {plan.name}
@@ -177,13 +177,13 @@ export default function PricingSection() {
     <section id="precios" className="relative py-28">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
+          <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">
             PLANES
           </p>
-          <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
+          <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
             Elige tu plan y publica tu primer contenido hoy
           </h2>
-          <p className="mt-4 text-zinc-600 dark:text-zinc-400">
+          <p className="mt-4 text-zinc-600">
             Precios en dólares, límites claros cada mes — sabes exactamente
             cuánto vas a gastar, sin sorpresas.
           </p>
@@ -212,9 +212,9 @@ export default function PricingSection() {
             />
           ))}
         </div>
-        <p className="mt-2 text-center text-xs text-zinc-400 sm:hidden dark:text-zinc-500">Desliza para ver los 3 planes →</p>
+        <p className="mt-2 text-center text-xs text-zinc-400 sm:hidden">Desliza para ver los 3 planes →</p>
 
-        <p className="mt-8 text-center text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-8 text-center text-xs text-zinc-500">
           Equivalente informativo en MXN al tipo de cambio del día. Sin contratos
           forzosos ni letra chica — cancela cuando quieras.
         </p>

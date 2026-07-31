@@ -54,8 +54,8 @@ function FaqItem({
     <div
       className={`overflow-hidden rounded-3xl border transition-colors duration-300 ${
         isOpen
-          ? "border-accent/25 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.06),0_24px_45px_-26px_rgba(0,0,0,0.25)] dark:bg-zinc-900 dark:shadow-[0_2px_4px_rgba(0,0,0,0.3),0_24px_45px_-26px_rgba(0,0,0,0.55)]"
-          : "border-[var(--hairline)] bg-white/60 dark:bg-zinc-900/60"
+          ? "border-accent/25 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.06),0_24px_45px_-26px_rgba(0,0,0,0.25)] "
+          : "border-[var(--hairline)] bg-white/60"
       }`}
     >
       <button
@@ -66,14 +66,14 @@ function FaqItem({
       >
         <span
           className={`shrink-0 font-mono text-sm tracking-tight transition-colors ${
-            isOpen ? "text-accent" : "text-zinc-400 dark:text-zinc-600"
+            isOpen ? "text-accent" : "text-zinc-400"
           }`}
         >
           {String(index + 1).padStart(2, "0")}
         </span>
         <span
           className={`flex-1 text-sm font-medium transition-colors sm:text-base ${
-            isOpen ? "text-zinc-950 dark:text-white" : "text-zinc-800 dark:text-zinc-200"
+            isOpen ? "text-zinc-950" : "text-zinc-800"
           }`}
         >
           {question}
@@ -82,7 +82,7 @@ function FaqItem({
           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
             isOpen
               ? "rotate-45 border-accent bg-accent text-white"
-              : "border-zinc-300 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
+              : "border-zinc-300 text-zinc-500 "
           }`}
         >
           <Plus className="h-3.5 w-3.5" strokeWidth={2} />
@@ -97,7 +97,7 @@ function FaqItem({
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <p className="px-5 pb-6 pl-[3.25rem] text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 sm:px-7 sm:pl-[3.75rem]">
+            <p className="px-5 pb-6 pl-[3.25rem] text-sm leading-relaxed text-zinc-600 sm:px-7 sm:pl-[3.75rem]">
               {answer}
             </p>
           </motion.div>
@@ -114,10 +114,10 @@ export default function FaqSection() {
     <section id="preguntas" className="relative overflow-hidden py-28">
       <div className="relative mx-auto max-w-3xl px-6">
         <div className="mb-12 text-center">
-          <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
+          <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">
             PREGUNTAS FRECUENTES
           </p>
-          <h2 className="text-balance text-2xl font-semibold tracking-tight text-zinc-950 sm:text-3xl dark:text-white">
+          <h2 className="text-balance text-2xl font-semibold tracking-tight text-zinc-950 sm:text-3xl">
             Antes de que te decidas
           </h2>
         </div>

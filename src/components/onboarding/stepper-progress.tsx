@@ -7,10 +7,10 @@ export function StepperProgress({ currentStep }: { currentStep: number }) {
   return (
     <div className="mb-8">
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-xs font-semibold tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+        <span className="text-xs font-semibold tracking-[0.2em] text-zinc-500">
           PASO {currentStep} DE {TOTAL_ONBOARDING_STEPS}
         </span>
-        <span className="text-xs text-zinc-400 dark:text-zinc-500">
+        <span className="text-xs text-zinc-400">
           {ONBOARDING_STEPS[currentStep - 1]?.title}
         </span>
       </div>
@@ -21,17 +21,17 @@ export function StepperProgress({ currentStep }: { currentStep: number }) {
             key={s.step}
             className={cn(
               "flex flex-1 items-center gap-1.5 text-[11px]",
-              s.step === currentStep ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-400 dark:text-zinc-500",
+              s.step === currentStep ? "text-zinc-900" : "text-zinc-400",
             )}
           >
             <span
               className={cn(
                 "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-medium",
                 s.step < currentStep
-                  ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950"
+                  ? "bg-zinc-950 text-white "
                   : s.step === currentStep
-                    ? "border border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100"
-                    : "border border-zinc-300 text-zinc-400 dark:border-zinc-700 dark:text-zinc-500",
+                    ? "border border-zinc-900 text-zinc-900 "
+                    : "border border-zinc-300 text-zinc-400 ",
               )}
             >
               {s.step < currentStep ? <Check className="h-3 w-3" /> : s.step}

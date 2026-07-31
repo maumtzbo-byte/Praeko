@@ -204,14 +204,14 @@ export function OnboardingWizard({ initial }: { initial: OnboardingWizardInitial
         {step === 3 && (
           <div className="flex flex-col gap-8">
             <GoalsStep value={objetivos} onChange={(p) => setObjetivos((v) => ({ ...v, ...p }))} errors={errors} />
-            <div className="border-t border-zinc-100 pt-6 dark:border-zinc-800">
-              <p className="mb-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">Redes sociales (opcional)</p>
+            <div className="border-t border-zinc-100 pt-6">
+              <p className="mb-4 text-sm font-medium text-zinc-500">Redes sociales (opcional)</p>
               <SocialLinksStep value={redes} onChange={(p) => setRedes((v) => ({ ...v, ...p }))} />
             </div>
           </div>
         )}
 
-        <div className="mt-8 flex flex-col gap-3 border-t border-zinc-100 pt-6 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-8 flex flex-col gap-3 border-t border-zinc-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <Button
             type="button"
             variant="ghost"

@@ -184,19 +184,19 @@ function CampaignCard({ campaign, pieceCount }: { campaign: Campaign; pieceCount
       <CardContent className="flex flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
               <Megaphone className="h-4 w-4 text-accent" strokeWidth={1.75} />
             </span>
-            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{campaign.name}</p>
+            <p className="text-sm font-semibold text-zinc-900">{campaign.name}</p>
           </div>
           <Badge variant={CAMPAIGN_STATUS_VARIANTS[displayStatus]}>{CAMPAIGN_STATUS_LABELS[displayStatus]}</Badge>
         </div>
-        <p className="line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">{campaign.brief}</p>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="line-clamp-2 text-sm text-zinc-600">{campaign.brief}</p>
+        <p className="text-xs text-zinc-500">
           {formatScheduledDate(campaign.start_date)} — {formatScheduledDate(campaign.end_date)}
         </p>
         <Progress value={progress} />
-        <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
           <Layers className="h-3.5 w-3.5" />
           {pieceCount} {pieceCount === 1 ? "pieza planeada" : "piezas planeadas"}
         </div>

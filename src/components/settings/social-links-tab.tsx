@@ -32,7 +32,7 @@ export function SocialLinksTab({ businessId, initial }: { businessId: string; in
     >
       <Link
         href="/dashboard/redes-sociales"
-        className="flex items-center gap-1.5 self-start text-sm text-zinc-500 underline decoration-zinc-300 underline-offset-2 hover:text-zinc-700 dark:text-zinc-400 dark:decoration-zinc-700 dark:hover:text-zinc-200"
+        className="flex items-center gap-1.5 self-start text-sm text-zinc-500 underline decoration-zinc-300 underline-offset-2 hover:text-zinc-700 "
       >
         ¿Buscas publicar automático? Conecta tus cuentas en Redes sociales
         <ArrowUpRight className="h-3.5 w-3.5" />

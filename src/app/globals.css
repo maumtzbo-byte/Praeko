@@ -80,6 +80,12 @@ body {
   animation-play-state: paused;
 }
 
+/* Same loop, opposite direction — used to make adjacent marquee rows
+   drift apart instead of marching in lockstep. */
+.marquee-track-reverse {
+  animation-direction: reverse;
+}
+
 /* Staggered entrance for dashboard sections on first paint — applied via
    .stagger-N (see below) so a server component can use it with no client
    JS needed. Runs once, `both` keeps the pre-animation state until its

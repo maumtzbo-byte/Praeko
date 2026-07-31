@@ -20,9 +20,12 @@ const CARDS: { icon: LucideIcon; from: string; to: string }[] = [
 
 /** One card's vertical offset — a sine wave across the row index instead
  * of a strict alternating up/down, so the row reads as one continuous
- * undulating line (the "snake") rather than a sawtooth zigzag. */
+ * undulating line (the "snake") rather than a sawtooth zigzag. A flat
+ * (not per-breakpoint) amplitude, sized for the mobile card height —
+ * still reads as a clear wave at the larger desktop size, just a touch
+ * gentler than before. */
 function waveOffset(index: number) {
-  return Math.sin(index * 0.9) * 22;
+  return Math.sin(index * 0.9) * 14;
 }
 
 function GalleryRow({ reverse, durationS, startOffset }: { reverse?: boolean; durationS: number; startOffset: number }) {
@@ -30,7 +33,7 @@ function GalleryRow({ reverse, durationS, startOffset }: { reverse?: boolean; du
   return (
     <div className="marquee-viewport w-full">
       <div
-        className={`marquee-track flex w-max items-center gap-5 px-2.5 ${reverse ? "marquee-track-reverse" : ""}`}
+        className={`marquee-track flex w-max items-center gap-3 px-2.5 sm:gap-5 ${reverse ? "marquee-track-reverse" : ""}`}
         style={{ animationDuration: `${durationS}s` }}
       >
         {cards.map((card, i) => {
@@ -38,13 +41,13 @@ function GalleryRow({ reverse, durationS, startOffset }: { reverse?: boolean; du
           return (
             <div
               key={i}
-              className="relative flex h-40 w-28 shrink-0 items-center justify-center overflow-hidden rounded-3xl shadow-[0_20px_40px_-24px_rgba(0,0,0,0.35)] sm:h-48 sm:w-32"
+              className="relative flex h-24 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-[0_20px_40px_-24px_rgba(0,0,0,0.35)] sm:h-48 sm:w-32 sm:rounded-3xl"
               style={{
                 background: `linear-gradient(160deg, ${card.from} 0%, ${card.to} 100%)`,
                 transform: `translateY(${waveOffset(i + startOffset)}px)`,
               }}
             >
-              <Icon className="h-7 w-7 text-white/80" strokeWidth={1.5} />
+              <Icon className="h-4 w-4 text-white/80 sm:h-7 sm:w-7" strokeWidth={1.5} />
             </div>
           );
         })}
@@ -61,7 +64,7 @@ function GalleryRow({ reverse, durationS, startOffset }: { reverse?: boolean; du
  * competes with the form for legibility. */
 export function AuthGallery() {
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 flex flex-col justify-center gap-8 overflow-hidden">
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 flex flex-col justify-center gap-4 overflow-hidden sm:gap-8">
       <GalleryRow durationS={48} startOffset={0} />
       <GalleryRow reverse durationS={38} startOffset={3} />
       <GalleryRow durationS={54} startOffset={6} />

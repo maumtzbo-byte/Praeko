@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 
 // Real numbers only. "100+ negocios registrados" is an actual figure the
@@ -12,11 +11,6 @@ const SUPPORTING_STATS = [
   { value: "3", label: "Planes, desde $99/mes" },
   { value: "3", label: "Redes sociales conectadas" },
 ];
-
-// Client-only — WebGL has no server-side representation, and the ~1MB of
-// Earth textures plus the three.js/@react-three chunk have no business in
-// the initial page bundle for something this far down the page.
-const EarthScene = dynamic(() => import("@/components/three/earth/Scene"), { ssr: false });
 
 export default function StatsShowcase() {
   return (
@@ -33,36 +27,47 @@ export default function StatsShowcase() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="mt-6 text-6xl font-semibold tracking-tight text-accent sm:text-7xl"
+          className="mt-6 text-7xl font-semibold tracking-tight text-accent sm:text-8xl md:text-9xl"
         >
           100+
         </motion.p>
         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Negocios registrados, listos para publicar con IA</p>
       </div>
 
-      {/* Only the top portion of the globe shows, and it dissolves into
-          the page rather than getting sliced off — a mask-image on this
-          wrapper fades the lower third to transparent before the
-          overflow-hidden boundary ever gets there, so there's no hard
-          silhouette edge. That's what makes it read as a soft photographic
-          blur (like the reference) instead of a shape cut out of a box. */}
-      <div
-        className="relative mx-auto mt-14 h-[13rem] max-w-4xl overflow-hidden sm:h-[16rem] md:h-[19rem]"
-        style={{
-          maskImage: "linear-gradient(to bottom, black 0%, black 55%, transparent 94%)",
-          WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 55%, transparent 94%)",
-        }}
-      >
-        <div className="absolute inset-x-0 top-0 h-[22rem] sm:h-[28rem] md:h-[34rem]">
-          <EarthScene className="h-full w-full" />
+      {/* The real reference clip, not a re-built 3D scene — a rotating
+          globe render already cropped to a clean hemisphere at the
+          source. Framed in a plain white card (not bled onto the page)
+          because the footage has a baked-in white background with no
+          alpha channel — a card reads as intentional in both themes,
+          where trying to blend a hard-coded white background into a
+          dark page never would. Sized off the source crop's own aspect
+          ratio (650:368) so it's never letterboxed or cut off, on phone
+          or desktop alike. */}
+      <div className="mx-auto mt-14 max-w-md px-6 sm:max-w-lg md:max-w-2xl">
+        <div className="overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_80px_-40px_rgba(0,0,0,0.35)] sm:rounded-[2.5rem]">
+          <video
+            className="block w-full"
+            style={{ aspectRatio: "650 / 368" }}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+          >
+            {/* webm first: smaller, and it's the one format guaranteed
+                present in every Chromium build without a licensed H.264
+                decoder. mp4 covers Safari, which never plays webm. */}
+            <source src="/videos/earth-globe.webm" type="video/webm" />
+            <source src="/videos/earth-globe.mp4" type="video/mp4" />
+          </video>
         </div>
       </div>
 
       {/* Always 3 across, even on phones — stacked, these ate a whole
-          screen of vertical space for three short numbers. Numbers in
-          the accent blue, not black — matches the reference's small
-          stat row (93 / 38 / 41+), all colored like the headline figure. */}
-      <div className="mx-auto mt-10 grid max-w-3xl grid-cols-3 gap-3 px-6 text-center sm:gap-8">
+          screen of vertical space for three short numbers. Sized up for
+          impact, not just legibility — these are meant to land the same
+          way the headline figure does, not read as fine print under it. */}
+      <div className="mx-auto mt-14 grid max-w-3xl grid-cols-3 gap-3 px-6 text-center sm:gap-8">
         {SUPPORTING_STATS.map((stat, i) => (
           <motion.div
             key={stat.label}
@@ -71,8 +76,8 @@ export default function StatsShowcase() {
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.4, delay: i * 0.1, ease: "easeOut" }}
           >
-            <p className="text-xl font-semibold tracking-tight text-accent sm:text-3xl">{stat.value}</p>
-            <p className="mt-1 text-[11px] leading-tight text-zinc-500 sm:text-sm dark:text-zinc-400">{stat.label}</p>
+            <p className="text-3xl font-semibold tracking-tight text-accent sm:text-5xl">{stat.value}</p>
+            <p className="mt-1 text-xs leading-tight text-zinc-500 sm:text-sm dark:text-zinc-400">{stat.label}</p>
           </motion.div>
         ))}
       </div>

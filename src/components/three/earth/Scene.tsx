@@ -59,14 +59,12 @@ export default function EarthScene({ className }: { className?: string }) {
           camera={{ fov: 35, position: [0, 0.55, 4.7] }}
           gl={{ antialias: true, alpha: true }}
           frameloop={reducedMotion ? "demand" : "always"}
-          // A hard-edged photographic sphere sitting in its own white box
-          // read as a pasted-on sticker rather than part of the page — a
-          // soft blur plus slightly pulled-back contrast/saturation
-          // (and, below, a radial fade instead of a rectangular box)
-          // moves it toward "illustration" and away from "satellite
-          // photo," closer to what was actually asked for.
+          // The radial mask below (not a blur/desaturation) is what
+          // dissolves the hard rectangular edge into the page — muting
+          // the colors on top of that just made the planet look washed
+          // out, so this pushes saturation/contrast up instead of down.
           style={{
-            filter: "blur(0.5px) saturate(0.9) contrast(0.95)",
+            filter: "saturate(1.4) contrast(1.1)",
             maskImage: "radial-gradient(ellipse 68% 72% at 50% 42%, black 58%, transparent 94%)",
             WebkitMaskImage: "radial-gradient(ellipse 68% 72% at 50% 42%, black 58%, transparent 94%)",
           }}

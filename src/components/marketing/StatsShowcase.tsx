@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { motion } from "framer-motion";
 
 // Real numbers only. "100+ negocios registrados" is an actual figure the
 // user confirmed (registered/waitlisted businesses, not a fabricated
@@ -27,7 +28,15 @@ export default function StatsShowcase() {
         <h2 className="mt-5 text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
           Negocios como el tuyo ya están en Praeko
         </h2>
-        <p className="mt-6 text-6xl font-semibold tracking-tight text-accent sm:text-7xl">100+</p>
+        <motion.p
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="mt-6 text-6xl font-semibold tracking-tight text-accent sm:text-7xl"
+        >
+          100+
+        </motion.p>
         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Negocios registrados, listos para publicar con IA</p>
       </div>
 
@@ -39,12 +48,20 @@ export default function StatsShowcase() {
         <EarthScene className="h-full w-full" />
       </div>
 
-      <div className="mx-auto mt-14 grid max-w-3xl grid-cols-1 gap-8 px-6 text-center sm:grid-cols-3">
-        {SUPPORTING_STATS.map((stat) => (
-          <div key={stat.label}>
-            <p className="text-3xl font-semibold tracking-tight text-zinc-950 dark:text-white">{stat.value}</p>
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{stat.label}</p>
-          </div>
+      {/* Always 3 across, even on phones — stacked, these ate a whole
+          screen of vertical space for three short numbers. */}
+      <div className="mx-auto mt-14 grid max-w-3xl grid-cols-3 gap-3 px-6 text-center sm:gap-8">
+        {SUPPORTING_STATS.map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.4, delay: i * 0.1, ease: "easeOut" }}
+          >
+            <p className="text-xl font-semibold tracking-tight text-zinc-950 sm:text-3xl dark:text-white">{stat.value}</p>
+            <p className="mt-1 text-[11px] leading-tight text-zinc-500 sm:text-sm dark:text-zinc-400">{stat.label}</p>
+          </motion.div>
         ))}
       </div>
     </section>

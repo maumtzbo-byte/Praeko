@@ -22,7 +22,7 @@ const CARD_BACKGROUNDS = ["#3d75ad", "#1f3e5c", "#5f92c4", "#264a6e", "#7fa9d2",
 function VideoCard({ industry, caption, background }: { industry: string; caption: string; background: string }) {
   return (
     <div
-      className="relative aspect-[9/16] w-48 shrink-0 snap-center overflow-hidden rounded-2xl md:w-56 md:rounded-3xl"
+      className="relative aspect-[9/16] w-48 shrink-0 overflow-hidden rounded-2xl md:w-56 md:rounded-3xl"
       style={{ background }}
     >
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/5 to-black/20" />
@@ -37,6 +37,11 @@ function VideoCard({ industry, caption, background }: { industry: string; captio
   );
 }
 
+// Doubled so the track can translate exactly -50% and loop with no
+// visible seam or reset jump — same trick .marquee-track already uses
+// for the testimonials/logo rows elsewhere on the site.
+const DOUBLED_VIDEOS = [...EXAMPLE_VIDEOS, ...EXAMPLE_VIDEOS];
+
 export default function VideoShowcase() {
   return (
     <section className="relative overflow-hidden bg-zinc-950 py-24">
@@ -47,13 +52,15 @@ export default function VideoShowcase() {
         </h2>
       </div>
 
-      {/* A horizontal row that bleeds past the right edge, not a grid that
-          fits everything evenly — same feel as the reference's row of
-          photo cards. */}
-      <div className="mt-10 flex snap-x gap-4 overflow-x-auto px-6 pb-2 md:gap-5 md:px-[max(1.5rem,calc((100vw-72rem)/2))]">
-        {EXAMPLE_VIDEOS.map((video, i) => (
-          <VideoCard key={video.industry} industry={video.industry} caption={video.caption} background={CARD_BACKGROUNDS[i % CARD_BACKGROUNDS.length]} />
-        ))}
+      {/* Auto-scrolling, not a manual drag row — pauses on hover (see
+          .marquee-viewport in globals.css), fades out at both edges so
+          cards don't just clip abruptly at the container boundary. */}
+      <div className="marquee-viewport mt-10 [mask-image:linear-gradient(to_right,transparent_0%,black_4%,black_96%,transparent_100%)]">
+        <div className="marquee-track flex w-max gap-4 px-6 md:gap-5" style={{ animationDuration: "38s" }}>
+          {DOUBLED_VIDEOS.map((video, i) => (
+            <VideoCard key={`${video.industry}-${i}`} industry={video.industry} caption={video.caption} background={CARD_BACKGROUNDS[i % CARD_BACKGROUNDS.length]} />
+          ))}
+        </div>
       </div>
     </section>
   );

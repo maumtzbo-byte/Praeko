@@ -59,14 +59,17 @@ export default function EarthScene({ className }: { className?: string }) {
           camera={{ fov: 35, position: [0, 0.55, 4.7] }}
           gl={{ antialias: true, alpha: true }}
           frameloop={reducedMotion ? "demand" : "always"}
-          // The radial mask below (not a blur/desaturation) is what
-          // dissolves the hard rectangular edge into the page — muting
-          // the colors on top of that just made the planet look washed
-          // out, so this pushes saturation/contrast up instead of down.
+          // The mask below (not a blur/desaturation) is what dissolves the
+          // hard rectangular edge into the page — muting the colors on top
+          // of that just made the planet look washed out, so this pushes
+          // saturation/contrast up instead of down. Only the sides fade:
+          // the bottom is now hard-cropped by the shorter wrapper in
+          // StatsShowcase (half the sphere, cut clean), so fading it here
+          // too would just erase the crop line instead of sharpening it.
           style={{
             filter: "saturate(1.4) contrast(1.1)",
-            maskImage: "radial-gradient(ellipse 68% 72% at 50% 42%, black 58%, transparent 94%)",
-            WebkitMaskImage: "radial-gradient(ellipse 68% 72% at 50% 42%, black 58%, transparent 94%)",
+            maskImage: "linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%)",
           }}
         >
           <ambientLight intensity={0.5} />

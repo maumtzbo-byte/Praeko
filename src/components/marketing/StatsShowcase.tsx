@@ -40,17 +40,23 @@ export default function StatsShowcase() {
         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Negocios registrados, listos para publicar con IA</p>
       </div>
 
-      {/* No background box of its own — the globe sits directly on the
-          section's own background and fades out at every edge (see
-          Scene.tsx's radial mask), so it reads as part of the page
-          instead of a photo pasted into a rectangle. */}
-      <div className="mx-auto mt-14 h-[22rem] max-w-4xl sm:h-[28rem] md:h-[34rem]">
-        <EarthScene className="h-full w-full" />
+      {/* Only the top half of the globe shows — the outer box is exactly
+          half the canvas height with overflow-hidden, so the sphere reads
+          as cleanly cut at the section's edge instead of a full circle
+          floating on the page (matches the reference: "a la mitad y no
+          completa"). The canvas itself is unchanged (still a full sphere,
+          still centered) — it's just visually cropped by its wrapper. */}
+      <div className="relative mx-auto mt-14 h-[11rem] max-w-4xl overflow-hidden sm:h-[14rem] md:h-[17rem]">
+        <div className="absolute inset-x-0 top-0 h-[22rem] sm:h-[28rem] md:h-[34rem]">
+          <EarthScene className="h-full w-full" />
+        </div>
       </div>
 
       {/* Always 3 across, even on phones — stacked, these ate a whole
-          screen of vertical space for three short numbers. */}
-      <div className="mx-auto mt-14 grid max-w-3xl grid-cols-3 gap-3 px-6 text-center sm:gap-8">
+          screen of vertical space for three short numbers. Numbers in
+          the accent blue, not black — matches the reference's small
+          stat row (93 / 38 / 41+), all colored like the headline figure. */}
+      <div className="mx-auto mt-10 grid max-w-3xl grid-cols-3 gap-3 px-6 text-center sm:gap-8">
         {SUPPORTING_STATS.map((stat, i) => (
           <motion.div
             key={stat.label}
@@ -59,7 +65,7 @@ export default function StatsShowcase() {
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.4, delay: i * 0.1, ease: "easeOut" }}
           >
-            <p className="text-xl font-semibold tracking-tight text-zinc-950 sm:text-3xl dark:text-white">{stat.value}</p>
+            <p className="text-xl font-semibold tracking-tight text-accent sm:text-3xl">{stat.value}</p>
             <p className="mt-1 text-[11px] leading-tight text-zinc-500 sm:text-sm dark:text-zinc-400">{stat.label}</p>
           </motion.div>
         ))}

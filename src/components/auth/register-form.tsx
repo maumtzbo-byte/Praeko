@@ -13,6 +13,7 @@ import { FieldError } from "@/components/ui/field-error";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { OAuthButtons, OAuthDivider } from "@/components/auth/oauth-buttons";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -64,7 +65,11 @@ export function RegisterForm() {
         <CardDescription>Empieza a automatizar tu marketing con Frames.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
+        <div className="flex flex-col gap-5">
+          <OAuthButtons />
+          <OAuthDivider />
+        </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-5 flex flex-col gap-4" noValidate>
           {formError && <Alert variant="error">{formError}</Alert>}
 
           <div>

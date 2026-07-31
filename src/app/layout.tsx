@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 const SITE_URL = "https://praekomarketingsaas.vercel.app";
-const SITE_TITLE = "Praeko — Marketing con Inteligencia";
+const SITE_TITLE = "Frames — Marketing con Inteligencia";
 const SITE_DESCRIPTION =
   "Videos, imágenes y publicaciones para tus redes sociales, creados y publicados por IA todos los días — sin que grabes, edites ni programes nada. Hecho para negocios pequeños en México.";
 
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_TITLE,
-    template: "%s — Praeko",
+    template: "%s — Frames",
   },
   description: SITE_DESCRIPTION,
   keywords: [
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_MX",
     url: SITE_URL,
-    siteName: "Praeko",
+    siteName: "Frames",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
 const THEME_INIT_SCRIPT = `
 (function () {
   try {
-    var stored = localStorage.getItem("praeko-theme");
+    var stored = localStorage.getItem("frames-theme");
     var isDark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
     if (isDark) document.documentElement.classList.add("dark");
   } catch (e) {}

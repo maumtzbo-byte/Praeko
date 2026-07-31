@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingWizard, type OnboardingWizardInitialData } from "@/components/onboarding/onboarding-wizard";
 
-export const metadata: Metadata = { title: "Onboarding — Praeko" };
+export const metadata: Metadata = { title: "Onboarding — Frames" };
 
 export default async function OnboardingPage() {
   const supabase = await createClient();

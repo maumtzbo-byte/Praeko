@@ -53,7 +53,7 @@ export function LoginForm() {
     <Card>
       <CardHeader>
         <CardTitle className="text-xl">Inicia sesión</CardTitle>
-        <CardDescription>Entra a tu cuenta de Praeko.</CardDescription>
+        <CardDescription>Entra a tu cuenta de Frames.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>

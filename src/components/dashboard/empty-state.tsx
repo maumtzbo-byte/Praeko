@@ -15,7 +15,7 @@ export function EmptyState({
     <div className="relative flex flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl border border-[var(--hairline)] bg-white/50 px-6 py-16 text-center shadow-[0_1px_2px_rgba(0,0,0,0.03)_inset] dark:bg-zinc-900/50">
       {/* A warm wash behind the icon, not just gray-on-gray — the same
           accent used across the marketing site, so "no data yet" still
-          feels like Praeko instead of a bare generic placeholder. */}
+          feels like Frames instead of a bare generic placeholder. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute left-1/2 top-6 h-36 w-36 -translate-x-1/2 rounded-full opacity-[0.16] blur-3xl"

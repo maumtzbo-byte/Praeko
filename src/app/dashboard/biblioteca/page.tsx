@@ -8,7 +8,7 @@ export default function BibliotecaPage() {
       title="Biblioteca multimedia"
       description="Todas tus piezas generadas, en un solo lugar."
       emptyTitle="Todavía no hay contenido generado"
-      emptyDescription="Cada imagen y video que Praeko genere para tu marca va a quedar guardado aquí, listo para descargar o reutilizar."
+      emptyDescription="Cada imagen y video que Frames genere para tu marca va a quedar guardado aquí, listo para descargar o reutilizar."
     />
   );
 }

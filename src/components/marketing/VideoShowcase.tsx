@@ -1,7 +1,7 @@
 import { Play } from "lucide-react";
 
-// Example content Praeko actually generates, one per real target industry
-// — not customer testimonials (Praeko has no paying customers yet to
+// Example content Frames actually generates, one per real target industry
+// — not customer testimonials (Frames has no paying customers yet to
 // quote), just a demo of the kind of video the product produces. Same
 // "don't invent an identity" rule as everywhere else on the site: no
 // fabricated business name attached to any of these.

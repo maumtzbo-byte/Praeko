@@ -1,7 +1,7 @@
 // Gates IntroReveal's cinematic entrance to once per session — sessionStorage
 // (not localStorage) so it replays on a genuinely new visit, not just once
 // ever per browser.
-const SEEN_KEY = "praeko_intro_seen";
+const SEEN_KEY = "frames_intro_seen";
 
 export function hasSeenIntro(): boolean {
   if (typeof window === "undefined") return false;

@@ -8,7 +8,7 @@ const FAQS = [
   {
     question: "¿Necesito saber de diseño o edición para usarlo?",
     answer:
-      "No. Le cuentas a Praeko sobre tu negocio una vez, durante el onboarding, y a partir de ahí los videos, imágenes y textos se generan solos cada mes. No hay que editar nada ni aprender ninguna herramienta.",
+      "No. Le cuentas a Frames sobre tu negocio una vez, durante el onboarding, y a partir de ahí los videos, imágenes y textos se generan solos cada mes. No hay que editar nada ni aprender ninguna herramienta.",
   },
   {
     question: "¿Es seguro conectar mis redes sociales?",

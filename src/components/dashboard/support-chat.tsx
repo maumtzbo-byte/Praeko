@@ -15,7 +15,7 @@ interface ChatMessage {
 const GREETING: ChatMessage = {
   role: "assistant",
   content:
-    "¡Hola! Soy el asistente de Praeko. Pregúntame cómo conectar tus redes, cómo generar contenido, o cualquier otra duda sobre el panel.",
+    "¡Hola! Soy el asistente de Frames. Pregúntame cómo conectar tus redes, cómo generar contenido, o cualquier otra duda sobre el panel.",
 };
 
 export function SupportChat({ businessId }: { businessId: string }) {

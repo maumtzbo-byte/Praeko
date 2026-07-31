@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Sun, Moon } from "lucide-react";
 
-const STORAGE_KEY = "praeko-theme";
+const STORAGE_KEY = "frames-theme";
 
 /** Mirrors the inline script in layout.tsx that sets `.dark` before first
  * paint — this only reads that already-applied class post-mount instead of

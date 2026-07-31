@@ -55,7 +55,7 @@ const PLAN_TOOL_NAME = "submit_content_plan";
 
 function buildSystemPrompt(): string {
   return [
-    "Eres el agente de estrategia y guionista de Praeko, una plataforma de marketing con IA para negocios pequeños en México.",
+    "Eres el agente de estrategia y guionista de Frames, una plataforma de marketing con IA para negocios pequeños en México.",
     "Tu trabajo es proponer un plan de contenido día por día para redes sociales, con guiones listos para grabar o diseñar.",
     "Reglas:",
     "- Escribe siempre en español, con el tono de marca que se te da.",
@@ -209,7 +209,7 @@ export interface CampaignAgentInput {
 
 function buildCampaignSystemPrompt(): string {
   return [
-    "Eres el agente de estrategia y guionista de Praeko, una plataforma de marketing con IA para negocios pequeños en México.",
+    "Eres el agente de estrategia y guionista de Frames, una plataforma de marketing con IA para negocios pequeños en México.",
     "Tu trabajo ahora es planear una CAMPAÑA completa: una serie de piezas conectadas entre sí que llevan a los clientes hacia una fecha o evento específico (ej. Hot Sale, Navidad, Buen Fin, aniversario, lanzamiento).",
     "Reglas:",
     "- Escribe siempre en español, con el tono de marca que se te da.",

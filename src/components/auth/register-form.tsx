@@ -61,7 +61,7 @@ export function RegisterForm() {
     <Card>
       <CardHeader>
         <CardTitle className="text-xl">Crea tu cuenta</CardTitle>
-        <CardDescription>Empieza a automatizar tu marketing con Praeko.</CardDescription>
+        <CardDescription>Empieza a automatizar tu marketing con Frames.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>

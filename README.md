@@ -1,4 +1,4 @@
-# Praeko
+# Frames
 
 SaaS de marketing con agentes de IA para negocios pequeños en México. Ver
 `docs/PHASE_1_PLAN.md` para la arquitectura completa de la Fase 1.

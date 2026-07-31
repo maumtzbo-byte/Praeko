@@ -178,7 +178,7 @@ export function OnboardingWizard({ initial }: { initial: OnboardingWizardInitial
           {step === 3 && "Objetivos y redes"}
         </CardTitle>
         <CardDescription>
-          {step === 1 && "Lo esencial para que Praeko entienda tu negocio."}
+          {step === 1 && "Lo esencial para que Frames entienda tu negocio."}
           {step === 2 && "Así debe sonar tu marca en todo lo que publiquemos."}
           {step === 3 && "Qué quieres lograr, y dónde vas a publicar."}
         </CardDescription>

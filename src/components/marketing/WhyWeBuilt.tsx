@@ -3,7 +3,7 @@ export default function WhyWeBuilt() {
     <section className="relative overflow-hidden py-24 md:py-32">
       <div className="relative mx-auto max-w-5xl px-6">
         <p className="mb-8 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
-          POR QUÉ CREAMOS PRAEKO
+          POR QUÉ CREAMOS FRAMES
         </p>
 
         {/* Asymmetric two-column split — a large pull-quote statement next
@@ -12,7 +12,7 @@ export default function WhyWeBuilt() {
             hierarchy between "the point" and "the reasoning". */}
         <div className="grid gap-10 md:grid-cols-[1.1fr_1fr] md:gap-16">
           <p className="text-balance text-3xl font-semibold leading-[1.1] tracking-tight text-zinc-950 sm:text-4xl md:text-5xl dark:text-white">
-            Creamos Praeko para los negocios que{" "}
+            Creamos Frames para los negocios que{" "}
             <span className="text-accent">no tienen tiempo</span> para el
             marketing — ni deberían tener que hacerlo.
           </p>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X, Sparkles, TrendingUp, AlertTriangle } from "lucide-react";
+import { FramesMark } from "@/components/brand/FramesMark";
 import { SidebarNav } from "./sidebar-nav";
 
 export type PlanBannerInfo =
@@ -122,7 +123,10 @@ export function DashboardShell({
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="text-sm font-semibold tracking-[0.2em] text-zinc-950 dark:text-white">PRAEKO</span>
+          <span className="flex items-center gap-2 text-sm font-semibold tracking-[0.2em] text-zinc-950 dark:text-white">
+            <FramesMark className="h-4 w-4" />
+            FRAMES
+          </span>
         </header>
 
         <main className="px-4 py-8 sm:px-6 lg:px-10">

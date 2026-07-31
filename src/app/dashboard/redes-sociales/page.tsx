@@ -55,7 +55,7 @@ export default async function RedesSocialesPage({
     <div>
       <PageHeader
         title="Redes sociales"
-        description={`Conectadas ${connectedCount} de ${limit} redes según tu plan. Esto autoriza a Praeko a publicar por ti — para editar tus @usuarios visibles, ve a Configuración.`}
+        description={`Conectadas ${connectedCount} de ${limit} redes según tu plan. Esto autoriza a Frames a publicar por ti — para editar tus @usuarios visibles, ve a Configuración.`}
       />
 
       <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[var(--hairline)] bg-white/60 px-4 py-3 text-xs text-zinc-500 dark:bg-zinc-900/60 dark:text-zinc-400">

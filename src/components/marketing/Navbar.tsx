@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { FramesMark } from "@/components/brand/FramesMark";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -44,7 +45,8 @@ export default function Navbar() {
       <header className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
         <nav className="flex w-full max-w-3xl items-center justify-between gap-4 rounded-full border border-[var(--hairline)] bg-white/90 px-5 py-2.5 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.25)] backdrop-blur-md dark:bg-zinc-900/90">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-base font-semibold tracking-[0.2em] text-zinc-950 dark:text-white">PRAEKO</span>
+            <FramesMark className="h-5 w-5 text-zinc-950 dark:text-white" />
+            <span className="text-base font-semibold tracking-[0.2em] text-zinc-950 dark:text-white">FRAMES</span>
           </Link>
 
           <div className="hidden items-center gap-6 md:flex">

@@ -20,7 +20,7 @@ export default function StatsShowcase() {
           Creciendo en México
         </span>
         <h2 className="mt-5 text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
-          Negocios como el tuyo ya están en Praeko
+          Negocios como el tuyo ya están en Frames
         </h2>
         <motion.p
           initial={{ opacity: 0, scale: 0.9 }}

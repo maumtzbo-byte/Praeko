@@ -28,7 +28,7 @@ export function GoalsTab({ businessId, initial }: { businessId: string; initial:
   }
 
   return (
-    <SettingsSection title="Objetivos" description="Qué quieres lograr con Praeko." saving={saving} onSave={handleSave}>
+    <SettingsSection title="Objetivos" description="Qué quieres lograr con Frames." saving={saving} onSave={handleSave}>
       <GoalsStep value={value} onChange={(p) => setValue((v) => ({ ...v, ...p }))} errors={errors} />
     </SettingsSection>
   );

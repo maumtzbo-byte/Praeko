@@ -28,7 +28,7 @@ export default async function ChooseAccountPage({ params }: { params: Promise<{ 
     <div className="mx-auto max-w-lg px-6 py-16">
       <PageHeader
         title={`Conectar ${SOCIAL_PLATFORM_LABELS[platform]}`}
-        description="Elige qué cuenta quieres conectar a Praeko."
+        description="Elige qué cuenta quieres conectar a Frames."
       />
       <form action={confirmSocialAccount} className="flex flex-col gap-3">
         {pending.accounts.map((account, index) => (

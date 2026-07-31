@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Dumbbell, UtensilsCrossed, Sparkles, ShoppingBag, HeartPulse, Briefcase, type LucideIcon } from "lucide-react";
 
 // Same industry taxonomy already used in VideoShowcase/onboarding — real
-// verticals Praeko serves.
+// verticals Frames serves.
 const INDUSTRIES: { label: string; icon: LucideIcon }[] = [
   { label: "Gimnasio o estudio boutique", icon: Dumbbell },
   { label: "Restaurante o cafetería", icon: UtensilsCrossed },

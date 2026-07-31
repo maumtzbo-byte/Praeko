@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { FramesMark } from "@/components/brand/FramesMark";
 import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS, type NavItem } from "@/lib/dashboard/nav-items";
 import { cn } from "@/lib/utils";
 
@@ -67,8 +68,9 @@ export function SidebarNav({
 }) {
   return (
     <div className="flex h-full flex-col gap-6 overflow-y-auto px-4 py-6">
-      <Link href="/dashboard" className="px-2 text-lg font-semibold tracking-[0.2em] text-zinc-950 dark:text-white">
-        PRAEKO
+      <Link href="/dashboard" className="flex items-center gap-2 px-2 text-lg font-semibold tracking-[0.2em] text-zinc-950 dark:text-white">
+        <FramesMark className="h-5 w-5" />
+        FRAMES
       </Link>
 
       <div className="rounded-xl border border-accent/15 bg-accent/[0.06] px-3 py-2.5">

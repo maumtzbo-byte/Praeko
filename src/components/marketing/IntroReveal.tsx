@@ -1,134 +1,101 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useMotionValue, animate } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useMotionValue, animate, type MotionValue } from "framer-motion";
+import { FramesMark } from "@/components/brand/FramesMark";
 import { hasSeenIntro, markIntroSeen } from "@/lib/marketing/intro-session";
 
-const SMALL_CUBE_SIZE = 34;
-const BIG_CUBE_SIZE = 68;
-const SCATTER_RADIUS = 74;
-const CUBE_COUNT = 5;
+// One word per beat while the page loads — verbs from the product's own
+// value prop (design, create, publish, automate, inspire), not generic
+// loading copy, so the wait itself reads as "Frames" rather than a stock
+// spinner.
+const LOOP_WORDS = ["Diseña", "Crea", "Publica", "Automatiza", "Inspira"];
+const WORD_INTERVAL_MS = 1100;
 
-/** The three visible faces of an isometric cube, built from real 3D
- * transforms on an ancestor with no `perspective` set — omitting perspective
- * turns 3D transforms into an orthographic (no vanishing point) projection,
- * which is what an isometric cube actually is. Shaded in the brand's forest
- * greens/cream instead of the generic gray/carbon of a typical isometric
- * loader, so it still reads as Praeko rather than a stock loading spinner. */
-function CubeFaces({ size }: { size: number }) {
-  const half = size / 2;
-  return (
-    <>
-      <div
-        className="absolute"
-        style={{ width: size, height: size, background: "#f5f5f6", transform: `rotateX(90deg) translateZ(${half}px)` }}
-      />
-      <div
-        className="absolute"
-        style={{ width: size, height: size, background: "var(--accent)", transform: `translateZ(${half}px)` }}
-      />
-      <div
-        className="absolute"
-        style={{ width: size, height: size, background: "var(--accent-strong)", transform: `rotateY(-90deg) translateZ(${half}px)` }}
-      />
-    </>
-  );
-}
+/** The word cycling through the center of the loader and the 000→100
+ * counter pinned to the bottom-right corner, both driven by the same real
+ * `progress`/`done` signals as the rest of the loader — the word list loops
+ * on its own clock (there's no natural "60% done" mapping for a word the
+ * way there is for a percentage) while the counter tracks actual load
+ * progress, and both fade out together the moment loading actually
+ * finishes, clearing the stage for the mark. */
+function LoaderStage({
+  progress,
+  done,
+  reducedMotion,
+}: {
+  progress: MotionValue<number>;
+  done: boolean;
+  reducedMotion: boolean;
+}) {
+  const [percent, setPercent] = useState(0);
+  useEffect(() => {
+    const unsubscribe = progress.on("change", (v) => setPercent(Math.round(v * 100)));
+    return unsubscribe;
+  }, [progress]);
 
-/** Small cubes drift in a loose scattered ring while the page is still
- * loading (an indeterminate loop — `done` decides only when to cut it, not
- * how any single frame looks, since a cube loader has no natural notion of
- * "60% filled" the way text does). Once `done`, they converge and fuse into
- * one larger cube, and the "PRAEKO" wordmark settles in underneath it —
- * keeping a brand moment in the loader even though the animation itself is
- * no longer the wordmark being drawn letter by letter. */
-function IsometricLoader({ done, reducedMotion }: { done: boolean; reducedMotion: boolean }) {
-  const cubes = useMemo(
-    () =>
-      Array.from({ length: CUBE_COUNT }, (_, i) => {
-        const angle = (i / CUBE_COUNT) * Math.PI * 2;
-        return { id: i, x: Math.cos(angle) * SCATTER_RADIUS, y: Math.sin(angle) * SCATTER_RADIUS, delay: i * 0.15 };
-      }),
-    [],
-  );
+  const [wordIndex, setWordIndex] = useState(0);
+  useEffect(() => {
+    if (done || reducedMotion) return;
+    const id = setInterval(() => setWordIndex((i) => (i + 1) % LOOP_WORDS.length), WORD_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [done, reducedMotion]);
 
   return (
-    <div className="relative" style={{ width: 220, height: 220 }}>
-      <div className="absolute inset-0" style={{ transformStyle: "preserve-3d", transform: "rotateX(-30deg) rotateY(45deg)" }}>
-        {cubes.map((cube) => (
-          <motion.div
-            key={cube.id}
-            className="absolute left-1/2 top-1/2"
-            style={{ transformStyle: "preserve-3d" }}
-            initial={false}
-            animate={
-              done
-                ? { x: 0, y: 0, rotateZ: 0, scale: 0, opacity: 0 }
-                : { x: [cube.x, cube.x * 0.85, cube.x], y: [cube.y - 10, cube.y + 10, cube.y - 10], rotateZ: [0, 12, 0] }
-            }
-            transition={
-              reducedMotion
-                ? { duration: 0 }
-                : done
-                  ? { duration: 0.5, ease: "easeInOut", delay: cube.delay * 0.4 }
-                  : { duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: cube.delay }
-            }
-          >
-            <div
-              className="relative"
-              style={{
-                transformStyle: "preserve-3d",
-                width: SMALL_CUBE_SIZE,
-                height: SMALL_CUBE_SIZE,
-                marginLeft: -SMALL_CUBE_SIZE / 2,
-                marginTop: -SMALL_CUBE_SIZE / 2,
-              }}
-            >
-              <CubeFaces size={SMALL_CUBE_SIZE} />
-            </div>
-          </motion.div>
-        ))}
+    <div className="relative h-full w-full">
+      <span className="absolute left-6 top-6 text-[11px] font-medium uppercase tracking-[0.3em] text-white/40 sm:left-10 sm:top-10">
+        Marketing con IA
+      </span>
+
+      <motion.span
+        className="absolute bottom-6 right-6 font-semibold tabular-nums tracking-tight text-white sm:bottom-10 sm:right-10"
+        style={{ fontSize: "clamp(2.5rem, 8vw, 5rem)" }}
+        initial={false}
+        animate={{ opacity: done ? 0 : 1 }}
+        transition={{ duration: reducedMotion ? 0 : 0.3 }}
+      >
+        {String(percent).padStart(3, "0")}
+      </motion.span>
+
+      <div className="absolute inset-0 flex items-center justify-center">
+        <motion.div initial={false} animate={{ opacity: done ? 0 : 1 }} transition={{ duration: reducedMotion ? 0 : 0.3 }}>
+          <AnimatePresence mode="wait">
+            {!done && (
+              <motion.span
+                key={wordIndex}
+                initial={reducedMotion ? false : { opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
+                transition={{ duration: reducedMotion ? 0 : 0.35, ease: "easeOut" }}
+                className="block text-4xl font-medium italic tracking-tight text-white sm:text-5xl"
+              >
+                {LOOP_WORDS[wordIndex]}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         <motion.div
-          className="absolute left-1/2 top-1/2"
-          style={{ transformStyle: "preserve-3d" }}
+          className="absolute flex flex-col items-center gap-4"
           initial={false}
-          animate={done ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
-          transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 260, damping: 22, delay: done ? 0.35 : 0 }}
+          animate={done ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.85 }}
+          transition={
+            reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 260, damping: 22, delay: done ? 0.15 : 0 }
+          }
         >
-          <div
-            className="relative"
-            style={{
-              transformStyle: "preserve-3d",
-              width: BIG_CUBE_SIZE,
-              height: BIG_CUBE_SIZE,
-              marginLeft: -BIG_CUBE_SIZE / 2,
-              marginTop: -BIG_CUBE_SIZE / 2,
-            }}
-          >
-            <CubeFaces size={BIG_CUBE_SIZE} />
-          </div>
+          <FramesMark className="h-16 w-16 text-white sm:h-20 sm:w-20" />
+          <span className="text-lg font-semibold tracking-[0.35em] text-white">FRAMES</span>
         </motion.div>
       </div>
-
-      <motion.div
-        className="absolute inset-x-0 bottom-4 flex justify-center"
-        initial={false}
-        animate={done ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
-        transition={reducedMotion ? { duration: 0 } : { duration: 0.4, delay: done ? 0.55 : 0 }}
-      >
-        <span className="text-lg font-semibold tracking-[0.35em] text-[var(--foreground)]">PRAEKO</span>
-      </motion.div>
     </div>
   );
 }
 
 const SAFETY_TIMEOUT_MS = 7000;
-// Long enough for the cube-convergence -> fuse -> wordmark sequence in
-// IsometricLoader to actually finish playing (it lands around ~950ms after
-// `done`) before the exit animation cuts it off — was 450ms under the old
-// letter-fill visual, which resolved instantly the moment progress hit 1.
-const HOLD_AFTER_COMPLETE_MS = 1150;
+// Long enough for the word/counter fade-out plus the mark's spring-in to
+// actually finish playing (lands around ~750ms after `done`) before the
+// exit animation cuts it off.
+const HOLD_AFTER_COMPLETE_MS = 1100;
 const TRICKLE_CAP = 0.92;
 
 /** Drives a 0-1 progress value from real page-load signals rather than a
@@ -191,15 +158,13 @@ export default function IntroReveal() {
   // returning visitors within the same session.
   const [visible, setVisible] = useState(true);
   const [skip, setSkip] = useState(false);
-  const { done } = useLoadProgress();
+  const { progress, done } = useLoadProgress();
   const exitedRef = useRef(false);
 
-  // The cube ring's floating animation drives real px transforms through
-  // framer-motion's x/y shorthand, which SSR-serializes at lower precision
-  // than the client's first computed frame — a guaranteed hydration mismatch
-  // if rendered unconditionally. Mounting it only after hydration (like
-  // `skip` below) means the shared server/client render has no cube markup
-  // to disagree about in the first place.
+  // Mounting the stage only after hydration keeps the shared server/client
+  // render free of anything that reads client-only APIs (matchMedia) or
+  // ticks on its own (the interval-driven word cycle), so there's nothing
+  // for hydration to disagree about.
   const [mounted, setMounted] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   useEffect(() => {
@@ -223,9 +188,6 @@ export default function IntroReveal() {
     // state above — that state updates in its own separate effect, and if
     // this effect ran first (both fire on the same mount), it would still
     // see the stale `false` and lock in the long hold via `exitedRef`.
-    // Reduced motion skips the whole convergence/wordmark sequence (it plays
-    // at duration:0 in IsometricLoader), so there's nothing to wait out here
-    // either — hold just long enough to not feel like a flicker.
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timer = setTimeout(
       () => {
@@ -251,7 +213,7 @@ export default function IntroReveal() {
       {visible && !skip && (
         <motion.div
           aria-hidden="true"
-          className="fixed inset-0 z-[1000] isolate flex items-center justify-center overflow-hidden bg-[var(--background)]"
+          className="fixed inset-0 z-[1000] isolate overflow-hidden bg-[#0a0a0b]"
           exit={{ opacity: 0, scale: 1.08 }}
           transition={{ duration: 0.55, ease: "easeInOut" }}
           onClick={() => {
@@ -261,7 +223,7 @@ export default function IntroReveal() {
             setVisible(false);
           }}
         >
-          {mounted && <IsometricLoader done={done} reducedMotion={reducedMotion} />}
+          {mounted && <LoaderStage progress={progress} done={done} reducedMotion={reducedMotion} />}
         </motion.div>
       )}
     </AnimatePresence>

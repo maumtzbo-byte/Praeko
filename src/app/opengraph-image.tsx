@@ -23,9 +23,9 @@ export default function OpengraphImage() {
           backgroundColor: "#f4f4f6",
         }}
       >
-        {/* Same aurora blobs as the rest of the site (AuroraBackground,
-            IntroReveal) — real color, not the old silver-chrome gradient,
-            so a shared link actually looks like the current brand. */}
+        {/* Soft blue blobs in the site's actual accent family, not the old
+            green/cream "aurora" palette from an earlier identity — a shared
+            link should look like the current brand, not a discontinued one. */}
         <div
           style={{
             position: "absolute",
@@ -36,7 +36,7 @@ export default function OpengraphImage() {
             display: "flex",
             borderRadius: "38% 62% 55% 45% / 45% 40% 60% 55%",
             backgroundImage:
-              "radial-gradient(circle at 35% 30%, #ece3d8 0%, #c9b896 30%, #1e6b4c 60%, #04140d 100%)",
+              "radial-gradient(circle at 35% 30%, #cfe6f8 0%, #7fb1dd 30%, #3d75ad 60%, #1f3e5c 100%)",
             opacity: 0.55,
             filter: "blur(10px)",
           }}
@@ -51,7 +51,7 @@ export default function OpengraphImage() {
             display: "flex",
             borderRadius: "55% 45% 40% 60% / 60% 55% 45% 40%",
             backgroundImage:
-              "radial-gradient(circle at 60% 40%, #ece3d8 0%, #ddd0b8 30%, #1e6b4c 60%, #04140d 100%)",
+              "radial-gradient(circle at 60% 40%, #cfe6f8 0%, #a8c9e6 30%, #3d75ad 60%, #1f3e5c 100%)",
             opacity: 0.5,
             filter: "blur(10px)",
           }}
@@ -77,7 +77,7 @@ export default function OpengraphImage() {
             boxShadow: "0 30px 60px rgba(22,22,26,0.2)",
           }}
         >
-          <img src={logoDataUrl} alt="Praeko" width={220} height={220} style={{ display: "flex", objectFit: "cover" }} />
+          <img src={logoDataUrl} alt="Frames" width={220} height={220} style={{ display: "flex", objectFit: "cover" }} />
         </div>
 
         <div

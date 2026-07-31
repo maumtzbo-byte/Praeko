@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Praeko — Marketing con Inteligencia",
-    short_name: "Praeko",
+    name: "Frames — Marketing con Inteligencia",
+    short_name: "Frames",
     description: "SaaS de marketing con agentes de IA para negocios pequeños en México.",
     start_url: "/",
     display: "standalone",

@@ -94,7 +94,7 @@ function PricingCard({
         }`}
       >
         {plan.featured && (
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-accent px-3 py-1 text-[11px] font-semibold tracking-wide text-white">
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-[11px] font-semibold tracking-wide text-white">
             MÁS POPULAR
           </span>
         )}
@@ -118,7 +118,7 @@ function PricingCard({
 
         <Link
           href={`/registro?plan=${plan.name.toLowerCase()}`}
-          className={`mt-8 rounded-lg px-5 py-2.5 text-center text-sm font-medium transition-opacity hover:opacity-90 ${
+          className={`mt-8 rounded-full px-5 py-2.5 text-center text-sm font-medium transition-opacity hover:opacity-90 ${
             plan.featured ? "bg-accent text-white" : "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950"
           }`}
         >

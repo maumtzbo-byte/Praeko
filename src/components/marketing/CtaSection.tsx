@@ -15,7 +15,7 @@ export default function CtaSection() {
           </p>
           <Link
             href="/registro"
-            className="rounded-lg bg-zinc-950 px-7 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-zinc-950"
+            className="rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-zinc-950"
           >
             Crear mi calendario gratis
           </Link>

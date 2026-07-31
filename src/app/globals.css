@@ -6,19 +6,16 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* True black/white, not a softened zinc near-black — the whole point of
-     the "minimal with authority" identity is unambiguous contrast instead
-     of the safe, slightly-warm neutral most AI-SaaS templates default to. */
-  --background: #ffffff;
+  --background: #f4f4f4;
   --foreground: #0a0a0b;
   --hairline: rgba(20, 20, 24, 0.1);
   --card: #ffffff;
-  /* Forest green stays the one accent hue (brand equity: logo, dashboard —
-     10 dashboard files depend on this exact value). What changed is the
-     *use*: a flat, single-tone accent for functional moments (buttons,
-     checks, badges), never blended into a multi-stop gradient. */
-  --accent: #1e6b4c;
-  --accent-strong: #0a2e23;
+  /* Sky blue accent, sampled directly from the reference design's pixels
+     (rgb(61,117,173)) — replaces the earlier forest green. Same two
+     variables the dashboard already keys off of (10 files), so the color
+     swap propagates everywhere without touching those files. */
+  --accent: #3d75ad;
+  --accent-strong: #1f3e5c;
 }
 
 .dark {
@@ -95,72 +92,6 @@ body {
   animation-play-state: paused;
 }
 
-/* Review cards bob gently up and down, each one out of phase with its
-   neighbor (via animation-delay: half a cycle) so there's always one
-   riding higher than the one beside it — reads as loosely floating,
-   not tilted. Runs on its own wrapper so it never fights a hover-driven
-   transform on the card underneath. */
-@keyframes card-float {
-  0%,
-  100% {
-    transform: translateY(-8px);
-  }
-  50% {
-    transform: translateY(8px);
-  }
-}
-
-.card-float {
-  animation: card-float 4.5s ease-in-out infinite;
-}
-
-.card-float-offset {
-  animation-delay: -2.25s;
-}
-
-/* Vertical counterpart to .marquee-track — same doubled-children,
-   translate-exactly-50%-loops-seamlessly trick, but up/down instead of
-   sideways, for columns that drift in alternating directions. */
-.marquee-viewport-y {
-  height: 100%;
-  overflow: hidden;
-}
-
-@keyframes marquee-y-up {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-50%);
-  }
-}
-
-@keyframes marquee-y-down {
-  from {
-    transform: translateY(-50%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-.marquee-track-y-up {
-  animation-name: marquee-y-up;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-
-.marquee-track-y-down {
-  animation-name: marquee-y-down;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-
-.marquee-viewport-y:hover .marquee-track-y-up,
-.marquee-viewport-y:hover .marquee-track-y-down {
-  animation-play-state: paused;
-}
-
 /* Staggered entrance for dashboard sections on first paint — applied via
    .stagger-N (see below) so a server component can use it with no client
    JS needed. Runs once, `both` keeps the pre-animation state until its
@@ -197,18 +128,8 @@ body {
   .marquee-viewport {
     overflow-x: auto;
   }
-  .card-float {
-    animation: none;
-  }
   .animate-fade-in-up {
     animation: none;
-  }
-  .marquee-track-y-up,
-  .marquee-track-y-down {
-    animation: none;
-  }
-  .marquee-viewport-y {
-    overflow-y: auto;
   }
 }
 

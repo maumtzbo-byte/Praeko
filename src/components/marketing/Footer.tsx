@@ -64,7 +64,7 @@ export default function Footer() {
               is informational, not a second ask. */}
           <Link
             href="/registro"
-            className="rounded-lg bg-zinc-950 px-4 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-zinc-950"
+            className="rounded-full bg-zinc-950 px-4 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-zinc-950"
           >
             Empieza gratis
           </Link>

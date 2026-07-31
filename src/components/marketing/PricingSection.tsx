@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion } from "framer-motion";
 
 // Feature copy leads with what each line means for the owner reading it —
 // not the AI provider/model behind it (nobody running a cafetería cares
@@ -65,31 +65,8 @@ function PricingCard({
   isMobileActive: boolean;
   registerRef: (index: number, el: HTMLDivElement | null) => void;
 }) {
-  const cardRef = useRef<HTMLDivElement | null>(null);
   const [hovered, setHovered] = useState(false);
-  // Tilt follows the cursor's position within the card — reset to flat on
-  // leave. Springs, not raw values, so it settles instead of snapping.
-  const rotateX = useMotionValue(0);
-  const rotateY = useMotionValue(0);
-  const springRotateX = useSpring(rotateX, { stiffness: 300, damping: 28 });
-  const springRotateY = useSpring(rotateY, { stiffness: 300, damping: 28 });
-
   const popped = hovered || isMobileActive;
-
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = cardRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const px = (e.clientX - rect.left) / rect.width - 0.5;
-    const py = (e.clientY - rect.top) / rect.height - 0.5;
-    rotateY.set(px * 8);
-    rotateX.set(-py * 8);
-  }
-
-  function handleMouseLeave() {
-    setHovered(false);
-    rotateX.set(0);
-    rotateY.set(0);
-  }
 
   // "Popping" (hover on desktop, or being the centered card in the mobile
   // snap-carousel) lifts the card a bit further and tilts it toward the
@@ -105,40 +82,19 @@ function PricingCard({
       data-index={index}
       className={`relative w-[82%] shrink-0 snap-center sm:w-auto sm:shrink ${plan.featured ? "md:-translate-y-3" : ""}`}
     >
-      {plan.featured && (
-        // A permanent, soft glow behind the featured card only — not on
-        // hover, so it reads as "this one's lit from within" at rest, the
-        // thing that should draw the eye first on the whole pricing grid.
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -inset-4 -z-10 rounded-[2rem] opacity-60 blur-2xl"
-          style={{ background: "radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%)" }}
-        />
-      )}
       <motion.div
-        ref={cardRef}
         onMouseEnter={() => setHovered(true)}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{ rotateX: springRotateX, rotateY: springRotateY, transformPerspective: 900 }}
-        animate={{ y, scale: popped ? 1.04 : 1 }}
+        onMouseLeave={() => setHovered(false)}
+        animate={{ y, scale: popped ? 1.02 : 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 22 }}
-        className={`relative flex h-full w-full flex-col rounded-2xl border p-5 transition-shadow duration-300 md:rounded-3xl md:p-8 ${
+        className={`relative flex h-full w-full flex-col rounded-2xl border p-5 transition-colors duration-300 md:rounded-3xl md:p-8 ${
           plan.featured
-            ? `border-zinc-800 bg-zinc-950 text-white ${
-                popped
-                  ? "shadow-[0_28px_70px_-15px_rgba(0,0,0,0.5),0_0_50px_-10px_rgba(30,107,76,0.45),0_0_0_1px_rgba(60,140,100,0.25)_inset]"
-                  : "shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4),0_0_0_1px_rgba(60,140,100,0.12)_inset]"
-              }`
-            : `border-[var(--hairline)] bg-white/60 text-zinc-950 dark:bg-zinc-900/60 dark:text-white ${
-                popped
-                  ? "shadow-[0_28px_54px_-20px_rgba(0,0,0,0.22)] dark:shadow-[0_28px_54px_-20px_rgba(0,0,0,0.6)]"
-                  : "shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_36px_-22px_rgba(0,0,0,0.18)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.2),0_16px_36px_-22px_rgba(0,0,0,0.5)]"
-              }`
+            ? "border-accent bg-zinc-950 text-white"
+            : "border-[var(--hairline)] bg-[var(--background)] text-zinc-950 dark:text-white"
         }`}
       >
         {plan.featured && (
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-[11px] font-semibold tracking-wide text-white shadow">
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-accent px-3 py-1 text-[11px] font-semibold tracking-wide text-white">
             MÁS POPULAR
           </span>
         )}
@@ -162,7 +118,7 @@ function PricingCard({
 
         <Link
           href={`/registro?plan=${plan.name.toLowerCase()}`}
-          className={`mt-8 rounded-full px-5 py-2.5 text-center text-sm font-medium transition-transform hover:scale-[1.02] ${
+          className={`mt-8 rounded-lg px-5 py-2.5 text-center text-sm font-medium transition-opacity hover:opacity-90 ${
             plan.featured ? "bg-accent text-white" : "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950"
           }`}
         >
@@ -224,7 +180,7 @@ export default function PricingSection() {
           <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
             PLANES
           </p>
-          <h2 className="text-balance font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
+          <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
             Elige tu plan y publica tu primer contenido hoy
           </h2>
           <p className="mt-4 text-zinc-600 dark:text-zinc-400">
@@ -245,7 +201,6 @@ export default function PricingSection() {
         <div
           ref={containerRef}
           className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4 pt-8 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 sm:pt-0 md:gap-6"
-          style={{ perspective: 1200 }}
         >
           {plans.map((plan, index) => (
             <PricingCard

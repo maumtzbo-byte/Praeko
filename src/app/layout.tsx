@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces, Baloo_2 } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
+// Geist is the only typeface on the site — headline hierarchy comes from
+// weight/size/tracking, not a separate display family (a Fraunces italic
+// serif + Baloo wordmark font used to carry that job; both are gone now).
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -11,24 +14,6 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-// Editorial serif used only for a handful of large marketing headlines
-// (CtaSection, PricingSection, SocialProof) — Geist stays the body/UI font
-// everywhere else, including the whole dashboard.
-const fraunces = Fraunces({
-  variable: "--font-display",
-  subsets: ["latin"],
-  style: ["italic", "normal"],
-});
-
-// Bold + rounded, used only by IntroReveal's letter-by-letter wordmark —
-// its chunky terminals read closer to the P logomark's liquid-glass blob
-// than any of the site's other (much straighter) type does.
-const baloo = Baloo_2({
-  variable: "--font-baloo",
-  subsets: ["latin"],
-  weight: "800",
 });
 
 const SITE_URL = "https://praekomarketingsaas.vercel.app";
@@ -89,7 +74,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${baloo.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

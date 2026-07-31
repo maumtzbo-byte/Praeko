@@ -114,7 +114,7 @@ export default function Navbar() {
             <Link
               href="/registro"
               className={cn(
-                "btn-shine rounded-full px-4 py-2 text-sm font-medium shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:scale-[1.03] hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_0_0_3px_rgba(30,107,76,0.18)]",
+                "rounded-lg px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90",
                 atTop ? "bg-white text-zinc-950" : "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950",
               )}
             >
@@ -175,7 +175,7 @@ export default function Navbar() {
           <Link
             href="/registro"
             onClick={() => setOpen(false)}
-            className="btn-shine mt-2 rounded-full bg-zinc-950 px-4 py-3 text-center text-base font-medium text-white dark:bg-white dark:text-zinc-950"
+            className="mt-2 rounded-lg bg-zinc-950 px-4 py-3 text-center text-base font-medium text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-zinc-950"
           >
             Empieza gratis
           </Link>

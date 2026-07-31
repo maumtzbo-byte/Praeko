@@ -6,38 +6,26 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f4f4f6;
-  --foreground: #16161a;
+  /* True black/white, not a softened zinc near-black — the whole point of
+     the "minimal with authority" identity is unambiguous contrast instead
+     of the safe, slightly-warm neutral most AI-SaaS templates default to. */
+  --background: #ffffff;
+  --foreground: #0a0a0b;
   --hairline: rgba(20, 20, 24, 0.1);
   --card: #ffffff;
-  /* Forest green + beige/sand identity — replaces the earlier single-hue
-     sapphire (and a short-lived terracotta accent that read as
-     orange/coral instead of beige — corrected here). Green (growth,
-     "crecer") is the dominant, pervasive brand color (buttons, badges,
-     icons, active states); the aurora-* stops are all warm neutrals —
-     sand, tan, cream — used in gradients and highlights, the way one
-     shows up as a highlight streak on the recolored P mark rather than an
-     equal, competing hue. Var names kept as "aurora-*"/"accent" for a
-     minimal diff footprint even though the hue family has changed more
-     than once now. */
+  /* Forest green stays the one accent hue (brand equity: logo, dashboard —
+     10 dashboard files depend on this exact value). What changed is the
+     *use*: a flat, single-tone accent for functional moments (buttons,
+     checks, badges), never blended into a multi-stop gradient. */
   --accent: #1e6b4c;
   --accent-strong: #0a2e23;
-  --aurora-highlight: #ece3d8;
-  --aurora-mid: #c9b896;
-  --aurora-blue: #ddd0b8;
-  --aurora-deep: #04140d;
 }
 
-/* Dark theme — same warm hues (a deep forest ground reads fine as a dark
-   backdrop), just the neutral scale inverted. Kept intentionally close to
-   zinc-950/zinc-50 rather than true black/white so shadows and hairlines
-   still read as material, not a flat OLED cutout. */
 .dark {
-  --background: #0a0a0c;
-  --foreground: #f4f4f6;
+  --background: #0a0a0b;
+  --foreground: #f5f5f6;
   --hairline: rgba(255, 255, 255, 0.12);
   --card: #18181b;
-  --aurora-highlight: #f4eee5;
 }
 
 @theme inline {
@@ -59,39 +47,6 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Aurora text: a moving gradient clipped to text, sweeping through the
-   forest-green/beige/sand identity — a small shimmer of the same
-   "paint" the P mark and hero object are made of. */
-.aurora-text {
-  background: linear-gradient(
-    115deg,
-    var(--accent-strong) 0%,
-    var(--aurora-mid) 20%,
-    var(--accent) 38%,
-    var(--aurora-highlight) 52%,
-    var(--accent) 68%,
-    var(--aurora-mid) 84%,
-    var(--accent-strong) 100%
-  );
-  background-size: 260% 260%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: aurora-sheen 9s ease-in-out infinite;
-}
-
-@keyframes aurora-sheen {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
 /* Hero's rotating headline word — a plain CSS keyframe instead of a JS
    animation library. Each rotation is a fresh DOM node (React remounts on
    key change), so a CSS animation triggered by insertion is deterministic
@@ -108,56 +63,6 @@ body {
   to {
     transform: translateY(0%);
     opacity: 1;
-  }
-}
-
-/* Soft aurora blobs used as ambient background shapes — real color wash
-   (not the old silver-chrome luminosity trick, which discarded any hue in
-   favor of the backdrop's), diffused with a heavy blur so it reads as a
-   glow rather than a flat shape. */
-.liquid-blob {
-  position: absolute;
-  border-radius: 40% 60% 65% 35% / 45% 40% 60% 55%;
-  filter: blur(56px);
-  animation: liquid-morph 18s ease-in-out infinite;
-}
-
-/* Diagonal light sweep on hover — the one "expensive button" flourish,
-   used only on the marketing site's primary CTA pill (not every button
-   everywhere, which would cheapen it). */
-.btn-shine {
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-shine::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  left: -75%;
-  width: 50%;
-  background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.35) 50%, transparent 100%);
-  transform: skewX(-20deg);
-  transition: left 0.7s ease;
-}
-
-.btn-shine:hover::after {
-  left: 125%;
-}
-
-@keyframes liquid-morph {
-  0%,
-  100% {
-    border-radius: 40% 60% 65% 35% / 45% 40% 60% 55%;
-    transform: rotate(0deg) scale(1);
-  }
-  33% {
-    border-radius: 55% 45% 40% 60% / 60% 35% 65% 40%;
-    transform: rotate(8deg) scale(1.05);
-  }
-  66% {
-    border-radius: 35% 65% 55% 45% / 40% 60% 40% 60%;
-    transform: rotate(-6deg) scale(0.97);
   }
 }
 

@@ -80,30 +80,19 @@ export default function SocialProof() {
     <section className="relative overflow-hidden bg-zinc-950 py-24">
       <div className="mx-auto max-w-6xl px-6">
         <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">CONFIANZA</p>
-        <h2 className="max-w-lg text-balance font-[family-name:var(--font-display)] text-2xl italic tracking-tight text-white sm:text-3xl">
+        <h2 className="max-w-lg text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl">
           Hecho para negocios como el tuyo
         </h2>
       </div>
 
-      {/* Columns drifting in alternating directions behind a real diagonal
-          3D tilt on the whole grid, on phones too — the first version of
-          this used a barely-there 6/-4/2deg tilt that read as a plain flat
-          grid at a glance; this needs to be unmistakably diagonal, the way
-          the reference component is. Only 2 columns render at phone widths
-          (the outer 2 stay `hidden` — CSS display:none drops them from
-          grid layout entirely, so `grid-cols-2` correctly fills with just
-          the 2 visible ones) since 4 tilted columns has no room to breathe
-          under ~640px; sm: and up brings all 4 back.
-          Columns 0/2 climb, 1/3 descend, so neighbors are always crossing
-          rather than scrolling in lockstep. */}
-      <div
-        className="relative mt-12 h-[420px] overflow-hidden [mask-image:linear-gradient(to_bottom,transparent_0%,black_12%,black_88%,transparent_100%)] sm:h-[560px]"
-        style={{ perspective: "1000px" }}
-      >
-        <div
-          className="mx-auto grid h-full max-w-6xl grid-cols-2 gap-3 px-4 sm:grid-cols-4 sm:gap-5 sm:px-6"
-          style={{ transform: "rotateX(13deg) rotateY(-9deg) rotateZ(9deg)", transformStyle: "preserve-3d" }}
-        >
+      {/* Columns drifting in alternating directions — flat, no perspective
+          tilt. Only 2 columns render at phone widths (the outer 2 stay
+          `hidden` — CSS display:none drops them from grid layout entirely,
+          so `grid-cols-2` correctly fills with just the 2 visible ones);
+          sm: and up brings all 4 back. Columns 0/2 climb, 1/3 descend, so
+          neighbors are always crossing rather than scrolling in lockstep. */}
+      <div className="relative mt-12 h-[420px] overflow-hidden [mask-image:linear-gradient(to_bottom,transparent_0%,black_12%,black_88%,transparent_100%)] sm:h-[560px]">
+        <div className="mx-auto grid h-full max-w-6xl grid-cols-2 gap-3 px-4 sm:grid-cols-4 sm:gap-5 sm:px-6">
           {columns.map((reviews, c) => (
             <div key={c} className={c === 0 || c === 3 ? "hidden sm:block" : ""}>
               <MarqueeColumn reviews={reviews} duration={COLUMN_DURATIONS[c]} direction={c % 2 === 0 ? "up" : "down"} />

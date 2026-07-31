@@ -172,7 +172,7 @@ export function OnboardingWizard({ initial }: { initial: OnboardingWizardInitial
     <Card className="w-full max-w-2xl">
       <CardHeader>
         <StepperProgress currentStep={step} />
-        <CardTitle className="font-[family-name:var(--font-display)] text-xl">
+        <CardTitle className="text-xl">
           {step === 1 && "Cuéntanos de tu negocio"}
           {step === 2 && "Tu marca"}
           {step === 3 && "Objetivos y redes"}

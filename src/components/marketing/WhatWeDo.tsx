@@ -1,10 +1,4 @@
-"use client";
-
-import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import AgentCylinderCarousel, { type CarouselAgent } from "@/components/marketing/AgentCylinderCarousel";
-
-const AGENTS: CarouselAgent[] = [
+const AGENTS = [
   {
     title: "Agente de Estrategia",
     description: "Aprende el tono, los productos y el público de tu negocio, y arma el plan de contenido del mes.",
@@ -28,72 +22,31 @@ const AGENTS: CarouselAgent[] = [
 ];
 
 export default function WhatWeDo() {
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  function goTo(index: number) {
-    setActiveIndex(Math.max(0, Math.min(AGENTS.length - 1, index)));
-  }
-
   return (
-    <section id="agentes" className="relative overflow-hidden py-24 md:py-28">
+    <section id="agentes" className="relative py-24 md:py-28">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">QUÉ HACEMOS</p>
-            <h2 className="max-w-md text-balance font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
-              Cinco agentes, un negocio que se publica solo
-            </h2>
-            <p className="mt-3 max-w-sm text-sm text-zinc-500 dark:text-zinc-400">Arrastra o haz clic en una tarjeta para girar el carrusel.</p>
-          </div>
-          <div className="hidden shrink-0 gap-2 sm:flex">
-            <button
-              type="button"
-              onClick={() => goTo(activeIndex - 1)}
-              aria-label="Agente anterior"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--hairline)] text-zinc-500 transition-colors hover:border-accent hover:text-accent dark:text-zinc-400"
+        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">QUÉ HACEMOS</p>
+        <h2 className="max-w-md text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl dark:text-white">
+          Cinco agentes, un negocio que se publica solo
+        </h2>
+
+        {/* A plain numbered grid, not a rotating 3D ring — each agent gets
+            an index instead of a large watermark icon, and a hairline
+            border does the separating instead of a per-card gradient. */}
+        <div className="mt-12 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] sm:grid-cols-2 lg:grid-cols-3">
+          {AGENTS.map((agent, i) => (
+            <div
+              key={agent.title}
+              className={`flex flex-col gap-4 bg-[var(--background)] p-6 sm:p-8 ${i === AGENTS.length - 1 ? "sm:col-span-2" : ""}`}
             >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => goTo(activeIndex + 1)}
-              aria-label="Siguiente agente"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--hairline)] text-zinc-500 transition-colors hover:border-accent hover:text-accent dark:text-zinc-400"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
+              <span className="font-mono text-xs text-zinc-400 dark:text-zinc-600">{String(i + 1).padStart(2, "0")}</span>
+              <div>
+                <h3 className="text-base font-semibold text-zinc-950 dark:text-white">{agent.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">{agent.description}</p>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-
-      {/* Cards ride a CSS 3D ring (perspective + rotateY/translateZ per
-          card), not a WebGL scene — dragging rotates the ring, clicking an
-          adjacent card jumps straight to it. */}
-      <div className="relative mt-8 h-[26rem] w-full sm:h-[30rem]">
-        {/* A "stage" behind the ring — without this the cards just float on
-            flat page background. Same radial-glow idea the Hero uses
-            behind its own cube, kept subtle via opacity. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 opacity-40 dark:opacity-25"
-          style={{
-            background:
-              "radial-gradient(ellipse 65% 70% at 50% 50%, var(--aurora-highlight) 0%, var(--accent) 45%, transparent 75%)",
-          }}
-        />
-        <AgentCylinderCarousel className="h-full w-full" agents={AGENTS} activeIndex={activeIndex} onActiveIndexChange={goTo} />
-      </div>
-
-      <div className="mt-6 flex justify-center gap-2">
-        {AGENTS.map((agent, i) => (
-          <button
-            key={agent.title}
-            type="button"
-            onClick={() => goTo(i)}
-            aria-label={`Ir a ${agent.title}`}
-            className={`h-1.5 rounded-full transition-all ${i === activeIndex ? "w-6 bg-accent" : "w-1.5 bg-zinc-300 dark:bg-zinc-700"}`}
-          />
-        ))}
       </div>
     </section>
   );

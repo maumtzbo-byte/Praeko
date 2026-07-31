@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, animate } from "framer-motion";
 import { hasSeenIntro, markIntroSeen } from "@/lib/marketing/intro-session";
 
 const SMALL_CUBE_SIZE = 34;
@@ -21,7 +21,7 @@ function CubeFaces({ size }: { size: number }) {
     <>
       <div
         className="absolute"
-        style={{ width: size, height: size, background: "var(--aurora-highlight)", transform: `rotateX(90deg) translateZ(${half}px)` }}
+        style={{ width: size, height: size, background: "#f5f5f6", transform: `rotateX(90deg) translateZ(${half}px)` }}
       />
       <div
         className="absolute"
@@ -29,7 +29,7 @@ function CubeFaces({ size }: { size: number }) {
       />
       <div
         className="absolute"
-        style={{ width: size, height: size, background: "var(--aurora-deep)", transform: `rotateY(-90deg) translateZ(${half}px)` }}
+        style={{ width: size, height: size, background: "var(--accent-strong)", transform: `rotateY(-90deg) translateZ(${half}px)` }}
       />
     </>
   );
@@ -117,7 +117,7 @@ function IsometricLoader({ done, reducedMotion }: { done: boolean; reducedMotion
         animate={done ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
         transition={reducedMotion ? { duration: 0 } : { duration: 0.4, delay: done ? 0.55 : 0 }}
       >
-        <span className="aurora-text text-lg font-semibold tracking-[0.35em]">PRAEKO</span>
+        <span className="text-lg font-semibold tracking-[0.35em] text-[var(--foreground)]">PRAEKO</span>
       </motion.div>
     </div>
   );
@@ -191,7 +191,7 @@ export default function IntroReveal() {
   // returning visitors within the same session.
   const [visible, setVisible] = useState(true);
   const [skip, setSkip] = useState(false);
-  const { progress, done } = useLoadProgress();
+  const { done } = useLoadProgress();
   const exitedRef = useRef(false);
 
   // The cube ring's floating animation drives real px transforms through
@@ -246,8 +246,6 @@ export default function IntroReveal() {
     };
   }, [visible]);
 
-  const glowOpacity = useTransform(progress, [0, 1], [0.15, 0.55]);
-
   return (
     <AnimatePresence>
       {visible && !skip && (
@@ -263,15 +261,6 @@ export default function IntroReveal() {
             setVisible(false);
           }}
         >
-          <motion.div
-            className="liquid-blob absolute left-1/2 top-1/2 h-[52vmax] w-[52vmax] -translate-x-1/2 -translate-y-1/2"
-            style={{
-              opacity: glowOpacity,
-              background:
-                "radial-gradient(circle at 45% 40%, var(--aurora-highlight) 0%, var(--aurora-mid) 32%, var(--accent) 62%, var(--aurora-deep) 100%)",
-            }}
-          />
-
           {mounted && <IsometricLoader done={done} reducedMotion={reducedMotion} />}
         </motion.div>
       )}

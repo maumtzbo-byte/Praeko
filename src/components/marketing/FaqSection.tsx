@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import AuroraBackground from "./AuroraBackground";
 
 const FAQS = [
   {
@@ -66,7 +65,7 @@ function FaqItem({
         className="flex w-full items-center gap-4 px-5 py-5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:px-7"
       >
         <span
-          className={`shrink-0 font-[family-name:var(--font-display)] text-sm tracking-tight transition-colors ${
+          className={`shrink-0 font-mono text-sm tracking-tight transition-colors ${
             isOpen ? "text-accent" : "text-zinc-400 dark:text-zinc-600"
           }`}
         >
@@ -113,13 +112,12 @@ export default function FaqSection() {
 
   return (
     <section id="preguntas" className="relative overflow-hidden py-28">
-      <AuroraBackground />
       <div className="relative mx-auto max-w-3xl px-6">
         <div className="mb-12 text-center">
           <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
             PREGUNTAS FRECUENTES
           </p>
-          <h2 className="text-balance font-[family-name:var(--font-display)] text-2xl italic tracking-tight text-zinc-950 sm:text-3xl dark:text-white">
+          <h2 className="text-balance text-2xl font-semibold tracking-tight text-zinc-950 sm:text-3xl dark:text-white">
             Antes de que te decidas
           </h2>
         </div>

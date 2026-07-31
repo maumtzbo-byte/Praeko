@@ -52,7 +52,7 @@ export function OnboardingReveal({ businessId, onFinish }: { businessId: string;
 
         {state === "loading" && (
           <div>
-            <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-zinc-950 dark:text-white">
+            <h2 className="text-xl font-semibold text-zinc-950 dark:text-white">
               Generando tu primer contenido…
             </h2>
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Tus agentes de estrategia y guionista están trabajando.</p>
@@ -62,7 +62,7 @@ export function OnboardingReveal({ businessId, onFinish }: { businessId: string;
         {state === "ready" && preview && (
           <>
             <div>
-              <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-zinc-950 dark:text-white">
+              <h2 className="text-xl font-semibold text-zinc-950 dark:text-white">
                 ¡Listo! Así arranca tu primer contenido
               </h2>
               <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
@@ -81,7 +81,7 @@ export function OnboardingReveal({ businessId, onFinish }: { businessId: string;
 
         {state === "error" && (
           <div>
-            <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-zinc-950 dark:text-white">
+            <h2 className="text-xl font-semibold text-zinc-950 dark:text-white">
               ¡Todo listo!
             </h2>
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">

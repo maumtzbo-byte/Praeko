@@ -19,14 +19,15 @@ export function BusinessInfoStep({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div className="sm:col-span-2">
-        <Label required>Nombre del negocio</Label>
-        <Input value={value.name} onChange={(e) => onChange({ name: e.target.value })} invalid={!!errors.name} />
+        <Label htmlFor="bi-name" required>Nombre del negocio</Label>
+        <Input id="bi-name" value={value.name} onChange={(e) => onChange({ name: e.target.value })} invalid={!!errors.name} />
         <FieldError message={errors.name} />
       </div>
 
       <div className="sm:col-span-2">
-        <Label required>Descripción</Label>
+        <Label htmlFor="bi-description" required>Descripción</Label>
         <Textarea
+          id="bi-description"
           value={value.description}
           onChange={(e) => onChange({ description: e.target.value })}
           invalid={!!errors.description}
@@ -36,8 +37,8 @@ export function BusinessInfoStep({
       </div>
 
       <div className="sm:col-span-2">
-        <Label required>¿A qué te dedicas?</Label>
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+        <Label id="bi-industry-label" required>¿A qué te dedicas?</Label>
+        <div role="group" aria-labelledby="bi-industry-label" className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
           {INDUSTRY_OPTIONS.map(({ value: opt, label, icon: Icon }) => (
             <OptionCard
               key={opt}
@@ -53,8 +54,9 @@ export function BusinessInfoStep({
       </div>
 
       <div>
-        <Label required>Idioma principal</Label>
+        <Label htmlFor="bi-primary-language" required>Idioma principal</Label>
         <Select
+          id="bi-primary-language"
           value={value.primaryLanguage}
           onChange={(e) => onChange({ primaryLanguage: e.target.value })}
           invalid={!!errors.primaryLanguage}
@@ -70,20 +72,21 @@ export function BusinessInfoStep({
       </div>
 
       <div>
-        <Label required>País</Label>
-        <Input value={value.country} onChange={(e) => onChange({ country: e.target.value })} invalid={!!errors.country} />
+        <Label htmlFor="bi-country" required>País</Label>
+        <Input id="bi-country" value={value.country} onChange={(e) => onChange({ country: e.target.value })} invalid={!!errors.country} />
         <FieldError message={errors.country} />
       </div>
 
       <div>
-        <Label required>Ciudad</Label>
-        <Input value={value.city} onChange={(e) => onChange({ city: e.target.value })} invalid={!!errors.city} />
+        <Label htmlFor="bi-city" required>Ciudad</Label>
+        <Input id="bi-city" value={value.city} onChange={(e) => onChange({ city: e.target.value })} invalid={!!errors.city} />
         <FieldError message={errors.city} />
       </div>
 
       <div>
-        <Label>Sitio web</Label>
+        <Label htmlFor="bi-website">Sitio web</Label>
         <Input
+          id="bi-website"
           value={value.websiteUrl}
           onChange={(e) => onChange({ websiteUrl: e.target.value })}
           invalid={!!errors.websiteUrl}
@@ -93,14 +96,15 @@ export function BusinessInfoStep({
       </div>
 
       <div>
-        <Label required>Teléfono</Label>
-        <Input value={value.phone} onChange={(e) => onChange({ phone: e.target.value })} invalid={!!errors.phone} />
+        <Label htmlFor="bi-phone" required>Teléfono</Label>
+        <Input id="bi-phone" value={value.phone} onChange={(e) => onChange({ phone: e.target.value })} invalid={!!errors.phone} />
         <FieldError message={errors.phone} />
       </div>
 
       <div className="sm:col-span-2">
-        <Label required>Correo de contacto</Label>
+        <Label htmlFor="bi-contact-email" required>Correo de contacto</Label>
         <Input
+          id="bi-contact-email"
           type="email"
           value={value.contactEmail}
           onChange={(e) => onChange({ contactEmail: e.target.value })}

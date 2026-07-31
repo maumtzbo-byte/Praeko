@@ -12,24 +12,27 @@ export function CompetitionStep({
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <Label>Principales competidores</Label>
+        <Label htmlFor="comp-main-competitors">Principales competidores</Label>
         <ChipInput
+          id="comp-main-competitors"
           value={value.mainCompetitors}
           onChange={(v) => onChange({ mainCompetitors: v })}
           placeholder="Nombre del negocio y presiona Enter"
         />
       </div>
       <div>
-        <Label>Empresas que admiras</Label>
+        <Label htmlFor="comp-admired-companies">Empresas que admiras</Label>
         <ChipInput
+          id="comp-admired-companies"
           value={value.admiredCompanies}
           onChange={(v) => onChange({ admiredCompanies: v })}
           placeholder="Marcas que te inspiran"
         />
       </div>
       <div>
-        <Label>Referencias de estilo</Label>
+        <Label htmlFor="comp-style-references">Referencias de estilo</Label>
         <ChipInput
+          id="comp-style-references"
           value={value.styleReferences}
           onChange={(v) => onChange({ styleReferences: v })}
           placeholder="Cuentas o estilos visuales que te gustan"

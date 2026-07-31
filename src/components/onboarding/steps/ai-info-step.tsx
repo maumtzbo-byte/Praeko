@@ -23,8 +23,9 @@ export function AiInfoStep({
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <Label required>Personalidad de la marca</Label>
+        <Label htmlFor="ai-personality" required>Personalidad de la marca</Label>
         <Textarea
+          id="ai-personality"
           value={value.personality}
           onChange={(e) => onChange({ personality: e.target.value })}
           invalid={!!errors.personality}
@@ -34,8 +35,9 @@ export function AiInfoStep({
       </div>
 
       <div>
-        <Label required>Cómo debe responder la IA</Label>
+        <Label htmlFor="ai-response-style" required>Cómo debe responder la IA</Label>
         <Textarea
+          id="ai-response-style"
           value={value.aiResponseStyle}
           onChange={(e) => onChange({ aiResponseStyle: e.target.value })}
           invalid={!!errors.aiResponseStyle}
@@ -45,13 +47,13 @@ export function AiInfoStep({
       </div>
 
       <div>
-        <Label>Qué debe evitar decir</Label>
-        <Textarea value={value.aiForbiddenTopics} onChange={(e) => onChange({ aiForbiddenTopics: e.target.value })} />
+        <Label htmlFor="ai-forbidden-topics">Qué debe evitar decir</Label>
+        <Textarea id="ai-forbidden-topics" value={value.aiForbiddenTopics} onChange={(e) => onChange({ aiForbiddenTopics: e.target.value })} />
       </div>
 
       <div>
-        <Label>Palabras prohibidas</Label>
-        <ChipInput value={value.aiForbiddenWords} onChange={(v) => onChange({ aiForbiddenWords: v })} />
+        <Label htmlFor="ai-forbidden-words">Palabras prohibidas</Label>
+        <ChipInput id="ai-forbidden-words" value={value.aiForbiddenWords} onChange={(v) => onChange({ aiForbiddenWords: v })} />
       </div>
 
       <div>
@@ -74,6 +76,7 @@ export function AiInfoStep({
                   value={faq.question}
                   onChange={(e) => updateFaq(i, { question: e.target.value })}
                   placeholder="Pregunta"
+                  aria-label="Pregunta"
                 />
                 <button
                   type="button"
@@ -88,6 +91,7 @@ export function AiInfoStep({
                 value={faq.answer}
                 onChange={(e) => updateFaq(i, { answer: e.target.value })}
                 placeholder="Respuesta"
+                aria-label="Respuesta"
                 className="min-h-[70px]"
               />
             </div>
@@ -96,8 +100,9 @@ export function AiInfoStep({
       </div>
 
       <div>
-        <Label>Horarios</Label>
+        <Label htmlFor="ai-business-hours">Horarios</Label>
         <Input
+          id="ai-business-hours"
           value={value.businessHours}
           onChange={(e) => onChange({ businessHours: e.target.value })}
           placeholder="Lun-vie 9am-7pm, sáb 9am-2pm"
@@ -105,13 +110,13 @@ export function AiInfoStep({
       </div>
 
       <div>
-        <Label>Dirección</Label>
-        <Input value={value.address} onChange={(e) => onChange({ address: e.target.value })} />
+        <Label htmlFor="ai-address">Dirección</Label>
+        <Input id="ai-address" value={value.address} onChange={(e) => onChange({ address: e.target.value })} />
       </div>
 
       <div>
-        <Label>Información adicional</Label>
-        <Textarea value={value.additionalInfo} onChange={(e) => onChange({ additionalInfo: e.target.value })} />
+        <Label htmlFor="ai-additional-info">Información adicional</Label>
+        <Textarea id="ai-additional-info" value={value.additionalInfo} onChange={(e) => onChange({ additionalInfo: e.target.value })} />
       </div>
     </div>
   );

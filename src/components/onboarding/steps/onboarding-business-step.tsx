@@ -22,8 +22,8 @@ export function OnboardingBusinessStep({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Label required>¿A qué te dedicas?</Label>
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+        <Label id="ob-industry-label" required>¿A qué te dedicas?</Label>
+        <div role="group" aria-labelledby="ob-industry-label" className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
           {INDUSTRY_OPTIONS.map(({ value: opt, label, icon: Icon }) => (
             <OptionCard
               key={opt}
@@ -39,14 +39,20 @@ export function OnboardingBusinessStep({
       </div>
 
       <div>
-        <Label required>Nombre del negocio</Label>
-        <Input value={value.name} onChange={(e) => onChange({ name: e.target.value })} invalid={!!errors.name} />
+        <Label htmlFor="ob-business-name" required>Nombre del negocio</Label>
+        <Input
+          id="ob-business-name"
+          value={value.name}
+          onChange={(e) => onChange({ name: e.target.value })}
+          invalid={!!errors.name}
+        />
         <FieldError message={errors.name} />
       </div>
 
       <div>
-        <Label required>¿Qué hace tu negocio?</Label>
+        <Label htmlFor="ob-business-description" required>¿Qué hace tu negocio?</Label>
         <Textarea
+          id="ob-business-description"
           value={value.description}
           onChange={(e) => onChange({ description: e.target.value })}
           invalid={!!errors.description}
@@ -57,13 +63,14 @@ export function OnboardingBusinessStep({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <Label required>Ciudad</Label>
-          <Input value={value.city} onChange={(e) => onChange({ city: e.target.value })} invalid={!!errors.city} />
+          <Label htmlFor="ob-city" required>Ciudad</Label>
+          <Input id="ob-city" value={value.city} onChange={(e) => onChange({ city: e.target.value })} invalid={!!errors.city} />
           <FieldError message={errors.city} />
         </div>
         <div>
-          <Label required>Correo de contacto</Label>
+          <Label htmlFor="ob-contact-email" required>Correo de contacto</Label>
           <Input
+            id="ob-contact-email"
             type="email"
             value={value.contactEmail}
             onChange={(e) => onChange({ contactEmail: e.target.value })}

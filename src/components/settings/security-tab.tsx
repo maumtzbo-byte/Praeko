@@ -36,8 +36,9 @@ export function SecurityTab() {
     <SettingsSection title="Seguridad" description="Cambia tu contraseña." saving={saving} onSave={handleSave}>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <Label required>Nueva contraseña</Label>
+          <Label htmlFor="security-password" required>Nueva contraseña</Label>
           <Input
+            id="security-password"
             type="password"
             value={value.password}
             onChange={(e) => setValue((v) => ({ ...v, password: e.target.value }))}
@@ -47,8 +48,9 @@ export function SecurityTab() {
           <FieldError message={errors.password} />
         </div>
         <div>
-          <Label required>Confirma la nueva contraseña</Label>
+          <Label htmlFor="security-confirm-password" required>Confirma la nueva contraseña</Label>
           <Input
+            id="security-confirm-password"
             type="password"
             value={value.confirmPassword}
             onChange={(e) => setValue((v) => ({ ...v, confirmPassword: e.target.value }))}

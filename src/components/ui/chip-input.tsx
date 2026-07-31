@@ -10,10 +10,11 @@ interface ChipInputProps {
   onChange: (value: string[]) => void;
   placeholder?: string;
   className?: string;
+  id?: string;
 }
 
 /** Freeform tag input for list-like fields (competidores, valores, categorías…). */
-export function ChipInput({ value, onChange, placeholder, className }: ChipInputProps) {
+export function ChipInput({ value, onChange, placeholder, className, id }: ChipInputProps) {
   const [draft, setDraft] = useState("");
 
   function commitDraft() {
@@ -57,6 +58,7 @@ export function ChipInput({ value, onChange, placeholder, className }: ChipInput
         </span>
       ))}
       <input
+        id={id}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={handleKeyDown}

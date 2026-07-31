@@ -36,8 +36,8 @@ export function GoalsStep({
 
       {value.goals.includes("otro") && (
         <div>
-          <Label>Cuéntanos cuál</Label>
-          <Input value={value.goalsOther} onChange={(e) => onChange({ goalsOther: e.target.value })} />
+          <Label htmlFor="ob-goals-other">Cuéntanos cuál</Label>
+          <Input id="ob-goals-other" value={value.goalsOther} onChange={(e) => onChange({ goalsOther: e.target.value })} />
         </div>
       )}
     </div>

@@ -61,8 +61,9 @@ export function OnboardingBrandStep({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Label required>¿Cómo debe sonar tu marca?</Label>
+        <Label htmlFor="ob-brand-tone" required>¿Cómo debe sonar tu marca?</Label>
         <Textarea
+          id="ob-brand-tone"
           value={value.brandTone}
           onChange={(e) => onChange({ brandTone: e.target.value })}
           invalid={!!errors.brandTone}
@@ -72,8 +73,9 @@ export function OnboardingBrandStep({
       </div>
 
       <div>
-        <Label required>¿A quién le hablas?</Label>
+        <Label htmlFor="ob-target-audience" required>¿A quién le hablas?</Label>
         <Textarea
+          id="ob-target-audience"
           value={value.targetAudience}
           onChange={(e) => onChange({ targetAudience: e.target.value })}
           invalid={!!errors.targetAudience}

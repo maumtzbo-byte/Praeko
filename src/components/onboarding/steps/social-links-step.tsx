@@ -22,8 +22,9 @@ export function SocialLinksStep({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {SOCIAL_PLATFORMS.map((platform) => (
           <div key={platform.key}>
-            <Label>{platform.label}</Label>
+            <Label htmlFor={`ob-social-${platform.key}`}>{platform.label}</Label>
             <Input
+              id={`ob-social-${platform.key}`}
               value={value[platform.key]}
               onChange={(e) => onChange({ [platform.key]: e.target.value } as Partial<SocialLinksInput>)}
               placeholder={platform.placeholder}
@@ -51,12 +52,14 @@ export function SocialLinksStep({
                 value={row.label}
                 onChange={(e) => updateOther(i, { label: e.target.value })}
                 placeholder="Plataforma"
+                aria-label="Nombre de la plataforma"
                 className="w-1/3"
               />
               <Input
                 value={row.url}
                 onChange={(e) => updateOther(i, { url: e.target.value })}
                 placeholder="URL o usuario"
+                aria-label="URL o usuario"
               />
               <button
                 type="button"

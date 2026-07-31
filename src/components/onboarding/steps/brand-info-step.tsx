@@ -83,8 +83,9 @@ export function BrandInfoStep({
       </div>
 
       <div>
-        <Label>Colores principales</Label>
+        <Label htmlFor="brand-color-palette">Colores principales</Label>
         <ChipInput
+          id="brand-color-palette"
           value={value.colorPalette}
           onChange={(v) => onChange({ colorPalette: v })}
           placeholder="#0F172A, azul marino…"
@@ -92,8 +93,9 @@ export function BrandInfoStep({
       </div>
 
       <div>
-        <Label>Tipografía (si existe)</Label>
+        <Label htmlFor="brand-preferred-fonts">Tipografía (si existe)</Label>
         <ChipInput
+          id="brand-preferred-fonts"
           value={value.preferredFonts}
           onChange={(v) => onChange({ preferredFonts: v })}
           placeholder="Montserrat, Helvetica…"
@@ -101,8 +103,9 @@ export function BrandInfoStep({
       </div>
 
       <div>
-        <Label required>Tono de comunicación</Label>
+        <Label htmlFor="brand-tone" required>Tono de comunicación</Label>
         <Textarea
+          id="brand-tone"
           value={value.brandTone}
           onChange={(e) => onChange({ brandTone: e.target.value })}
           invalid={!!errors.brandTone}
@@ -112,8 +115,9 @@ export function BrandInfoStep({
       </div>
 
       <div>
-        <Label>Valores de la marca</Label>
+        <Label htmlFor="brand-values">Valores de la marca</Label>
         <ChipInput
+          id="brand-values"
           value={value.brandValues}
           onChange={(v) => onChange({ brandValues: v })}
           placeholder="Cercanía, calidad, innovación…"
@@ -121,14 +125,15 @@ export function BrandInfoStep({
       </div>
 
       <div>
-        <Label required>Misión</Label>
-        <Textarea value={value.mission} onChange={(e) => onChange({ mission: e.target.value })} invalid={!!errors.mission} />
+        <Label htmlFor="brand-mission" required>Misión</Label>
+        <Textarea id="brand-mission" value={value.mission} onChange={(e) => onChange({ mission: e.target.value })} invalid={!!errors.mission} />
         <FieldError message={errors.mission} />
       </div>
 
       <div>
-        <Label required>Público objetivo</Label>
+        <Label htmlFor="brand-target-audience" required>Público objetivo</Label>
         <Textarea
+          id="brand-target-audience"
           value={value.targetAudience}
           onChange={(e) => onChange({ targetAudience: e.target.value })}
           invalid={!!errors.targetAudience}

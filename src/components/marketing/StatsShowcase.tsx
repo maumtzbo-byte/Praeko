@@ -9,39 +9,60 @@ const SUPPORTING_STATS = [
   { value: "100%", label: "Contenido en español" },
 ];
 
-// Purely decorative sphere (gradient shading + latitude/longitude lines +
-// abstract landmass blobs, not a real geographic projection) — same role
-// the reference's globe plays, without attaching any reach/coverage claim
-// to it.
+// Purely decorative — a large, photo-like sphere cropped by the section
+// (only the top curve visible, like a close-up satellite shot), not a
+// small grid-lined globe icon. Layered organic blobs in several
+// green/tan tones fake terrain variation instead of clean cartoon
+// continents, and a soft atmosphere rim reads as the glow at the edge of
+// a lit planet. No reach/coverage claim attached — purely ornamental,
+// same role the reference's globe plays.
 function Globe() {
   return (
-    <svg viewBox="0 0 200 200" className="h-56 w-56 sm:h-64 sm:w-64" aria-hidden="true">
-      <defs>
-        <radialGradient id="globe-sphere" cx="35%" cy="30%" r="75%">
-          <stop offset="0%" stopColor="#bcdcf0" />
-          <stop offset="45%" stopColor="#3d75ad" />
-          <stop offset="100%" stopColor="#152e45" />
-        </radialGradient>
-        <clipPath id="globe-clip">
-          <circle cx="100" cy="100" r="96" />
-        </clipPath>
-      </defs>
-      <circle cx="100" cy="100" r="96" fill="url(#globe-sphere)" />
-      <g clipPath="url(#globe-clip)" opacity="0.9">
-        <path d="M38 68 Q54 52 76 60 Q97 67 91 86 Q80 102 58 99 Q38 96 38 68Z" fill="#8fae6e" />
-        <path d="M112 48 Q138 43 152 60 Q162 79 146 92 Q125 97 114 81 Q104 65 112 48Z" fill="#8fae6e" />
-        <path d="M58 122 Q80 116 96 132 Q101 152 80 160 Q59 157 54 139 Q51 129 58 122Z" fill="#a7c184" />
-        <path d="M132 122 Q152 120 162 137 Q160 152 141 154 Q126 147 126 134 Q127 126 132 122Z" fill="#a7c184" />
-      </g>
-      <g stroke="rgba(255,255,255,0.35)" strokeWidth="1" fill="none">
-        <ellipse cx="100" cy="100" rx="96" ry="28" />
-        <ellipse cx="100" cy="100" rx="96" ry="60" />
-        <line x1="4" y1="100" x2="196" y2="100" strokeOpacity="0.5" />
-        <ellipse cx="100" cy="100" rx="30" ry="96" />
-        <ellipse cx="100" cy="100" rx="62" ry="96" />
-      </g>
-      <circle cx="100" cy="100" r="96" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="2" />
-    </svg>
+    <div className="relative mx-auto aspect-square w-full max-w-3xl overflow-hidden">
+      <svg viewBox="0 0 400 400" className="absolute inset-0 h-full w-full" aria-hidden="true">
+        <defs>
+          <radialGradient id="globe-sphere" cx="32%" cy="26%" r="80%">
+            <stop offset="0%" stopColor="#dff0fb" />
+            <stop offset="30%" stopColor="#8fbfe0" />
+            <stop offset="60%" stopColor="#3d75ad" />
+            <stop offset="100%" stopColor="#122840" />
+          </radialGradient>
+          <radialGradient id="globe-atmosphere" cx="50%" cy="50%" r="52%">
+            <stop offset="88%" stopColor="#ffffff" stopOpacity="0" />
+            <stop offset="97%" stopColor="#bcdcf0" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="#bcdcf0" stopOpacity="0" />
+          </radialGradient>
+          <clipPath id="globe-clip">
+            <circle cx="200" cy="200" r="192" />
+          </clipPath>
+        </defs>
+
+        <circle cx="200" cy="200" r="196" fill="url(#globe-atmosphere)" />
+        <circle cx="200" cy="200" r="192" fill="url(#globe-sphere)" />
+
+        <g clipPath="url(#globe-clip)">
+          {/* Layered, irregular landmasses in a few tones — texture over
+              precise geography, since this is decorative, not a map. */}
+          <path d="M70 150 Q95 110 140 118 Q180 122 178 158 Q182 190 148 205 Q108 215 82 190 Q58 175 70 150Z" fill="#7fa15f" opacity="0.9" />
+          <path d="M90 165 Q115 150 140 160 Q150 180 128 192 Q100 198 92 182 Q86 172 90 165Z" fill="#9fbb78" opacity="0.7" />
+          <path d="M210 90 Q250 72 288 95 Q310 120 296 150 Q270 168 240 155 Q212 140 205 112 Q204 98 210 90Z" fill="#7fa15f" opacity="0.9" />
+          <path d="M235 100 Q262 95 278 112 Q280 132 258 138 Q238 132 232 116 Q231 106 235 100Z" fill="#c7b98a" opacity="0.7" />
+          <path d="M120 235 Q155 222 180 245 Q192 275 165 295 Q130 305 112 280 Q102 255 120 235Z" fill="#93b16b" opacity="0.85" />
+          <path d="M260 220 Q295 212 315 235 Q320 260 292 270 Q262 268 255 244 Q253 230 260 220Z" fill="#a7c184" opacity="0.8" />
+          <path d="M40 240 Q65 228 82 248 Q86 268 62 274 Q40 270 36 254 Q35 246 40 240Z" fill="#9fbb78" opacity="0.6" />
+          <path d="M300 60 Q325 52 340 72 Q342 92 318 96 Q298 90 296 74 Q296 66 300 60Z" fill="#7fa15f" opacity="0.7" />
+        </g>
+
+        {/* Soft cloud wisps, low-opacity white blobs, no hard edges. */}
+        <g clipPath="url(#globe-clip)" opacity="0.35">
+          <ellipse cx="150" cy="130" rx="60" ry="14" fill="#ffffff" />
+          <ellipse cx="260" cy="180" rx="70" ry="16" fill="#ffffff" />
+          <ellipse cx="110" cy="230" rx="50" ry="12" fill="#ffffff" />
+        </g>
+
+        <circle cx="200" cy="200" r="192" fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="2" />
+      </svg>
+    </div>
   );
 }
 
@@ -59,7 +80,10 @@ export default function StatsShowcase() {
         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Agentes de IA trabajando por tu negocio, todos los días</p>
       </div>
 
-      <div className="mx-auto mt-14 flex justify-center">
+      {/* Cropped short of the sphere's full height — only the top curve
+          shows, like a close-up photo cut off by the section's own
+          bottom edge, the way the reference's globe sinks out of frame. */}
+      <div className="relative mx-auto mt-14 h-56 max-w-3xl overflow-hidden sm:h-72 md:h-80">
         <Globe />
       </div>
 

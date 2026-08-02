@@ -10,8 +10,16 @@ const AUTH_URL = `https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth`;
 const TOKEN_URL = `https://graph.facebook.com/${GRAPH_VERSION}/oauth/access_token`;
 const PAGES_URL = `https://graph.facebook.com/${GRAPH_VERSION}/me/accounts`;
 
-const BASE_SCOPES = ["pages_show_list", "pages_read_engagement", "pages_manage_posts", "business_management"];
-const INSTAGRAM_SCOPES = [...BASE_SCOPES, "instagram_basic", "instagram_content_publish"];
+// Business-type apps use "Facebook Login for Business", which authorizes
+// via a saved Configuration (built in the Meta dashboard: Facebook Login →
+// Configuraciones) instead of a freeform scope list — passing `scope`
+// alone on this app type fails the dialog outright. One configuration
+// bundling both Pages and Instagram permissions covers both platforms
+// here, so there's no need for a separate id per platform. The
+// Configuration itself must grant: pages_show_list, pages_read_engagement,
+// pages_manage_posts, business_management, instagram_basic,
+// instagram_content_publish.
+const CONFIG_ID = process.env.META_CONFIG_ID;
 
 interface MetaPage {
   id: string;
@@ -150,7 +158,7 @@ export async function publishToInstagram(
 export function createMetaAdapter(platform: "instagram" | "facebook"): SocialAdapter {
   return {
     isConfigured() {
-      return Boolean(process.env.META_APP_ID && process.env.META_APP_SECRET);
+      return Boolean(process.env.META_APP_ID && process.env.META_APP_SECRET && CONFIG_ID);
     },
 
     getAuthorizeUrl(state, redirectUri) {
@@ -158,7 +166,7 @@ export function createMetaAdapter(platform: "instagram" | "facebook"): SocialAda
       url.searchParams.set("client_id", process.env.META_APP_ID!);
       url.searchParams.set("redirect_uri", redirectUri);
       url.searchParams.set("state", state);
-      url.searchParams.set("scope", (platform === "instagram" ? INSTAGRAM_SCOPES : BASE_SCOPES).join(","));
+      url.searchParams.set("config_id", CONFIG_ID!);
       return url.toString();
     },
 

@@ -27,6 +27,44 @@ interface TikTokUserInfoResponse {
   };
 }
 
+/**
+ * Agente de Publicación — TikTok video, via the Content Posting API's
+ * PULL_FROM_URL flow (TikTok fetches the hosted video itself, no upload
+ * needed from us). privacy_level is hardcoded to SELF_ONLY: TikTok requires
+ * apps to complete their audit process before they're allowed to publish
+ * publicly on a user's behalf — posting anything more open than that from
+ * an unaudited app either fails outright or violates their platform policy,
+ * so this isn't a placeholder to "fix later for convenience", it's the
+ * actual safe default until Frames' TikTok app is audited.
+ * TODO(verify): confirm request/response field names against TikTok's
+ * current Content Posting API docs before going live.
+ */
+export async function publishToTikTok(accessToken: string, mediaUrl: string, caption: string): Promise<{ externalPostId: string }> {
+  const res = await fetch("https://open.tiktokapis.com/v2/post/publish/video/init/", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      post_info: {
+        title: caption,
+        privacy_level: "SELF_ONLY",
+        disable_duet: false,
+        disable_comment: false,
+        disable_stitch: false,
+      },
+      source_info: {
+        source: "PULL_FROM_URL",
+        video_url: mediaUrl,
+      },
+    }),
+  });
+  if (!res.ok) throw new Error(`TikTok publish init failed: ${res.status} ${await res.text()}`);
+  const data = (await res.json()) as { data?: { publish_id?: string }; error?: { code?: string; message?: string } };
+  if (!data.data?.publish_id) {
+    throw new Error(`TikTok publish init returned no publish_id: ${JSON.stringify(data.error)}`);
+  }
+  return { externalPostId: data.data.publish_id };
+}
+
 export function createTikTokAdapter(): SocialAdapter {
   return {
     isConfigured() {

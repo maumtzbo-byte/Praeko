@@ -62,6 +62,91 @@ async function listPages(userToken: string): Promise<MetaPage[]> {
   return data;
 }
 
+/**
+ * Agente de Publicación — Facebook Page post. Photos and videos use
+ * different Graph API endpoints; both take a hosted media URL (fal.ai's
+ * signed output URL, or our own storage) rather than an uploaded file, so
+ * this stays a single request instead of a multipart upload.
+ */
+export async function publishToFacebookPage(
+  pageAccessToken: string,
+  pageId: string,
+  mediaUrl: string,
+  caption: string,
+  contentKind: "imagen" | "video",
+): Promise<{ externalPostId: string }> {
+  const endpoint = `https://graph.facebook.com/${GRAPH_VERSION}/${pageId}/${contentKind === "video" ? "videos" : "photos"}`;
+  const body = new URLSearchParams({
+    access_token: pageAccessToken,
+    ...(contentKind === "video" ? { file_url: mediaUrl, description: caption } : { url: mediaUrl, caption }),
+  });
+  const res = await fetch(endpoint, { method: "POST", body });
+  if (!res.ok) throw new Error(`Facebook publish failed: ${res.status} ${await res.text()}`);
+  const data = (await res.json()) as { id?: string; post_id?: string };
+  const externalPostId = data.post_id ?? data.id;
+  if (!externalPostId) throw new Error("Facebook publish returned no post id.");
+  return { externalPostId };
+}
+
+/** Polls an Instagram media container until Meta finishes processing it —
+ * required before publishing video (Reels), per Meta's documented
+ * container lifecycle. Bounded to keep this inside a server action's
+ * execution window; a container that isn't ready after this either needs a
+ * longer video or genuinely failed. TODO(verify): confirm status_code
+ * field name/values against the current Graph API docs before going live. */
+async function waitForInstagramContainerReady(pageAccessToken: string, creationId: string, maxAttempts = 10): Promise<void> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const statusUrl = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${creationId}`);
+    statusUrl.searchParams.set("fields", "status_code");
+    statusUrl.searchParams.set("access_token", pageAccessToken);
+    const res = await fetch(statusUrl.toString());
+    if (res.ok) {
+      const { status_code } = (await res.json()) as { status_code?: string };
+      if (status_code === "FINISHED") return;
+      if (status_code === "ERROR") throw new Error("El contenedor de Instagram falló al procesar el video.");
+    }
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+  throw new Error("El contenedor de Instagram tardó demasiado en procesar el video.");
+}
+
+/** Agente de Publicación — Instagram post via the linked Page's access
+ * token (see listConnectableAccounts above for why: there's no separate
+ * IG-only token). Two-step create-then-publish flow per the Graph API. */
+export async function publishToInstagram(
+  pageAccessToken: string,
+  igUserId: string,
+  mediaUrl: string,
+  caption: string,
+  contentKind: "imagen" | "video",
+): Promise<{ externalPostId: string }> {
+  const createUrl = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${igUserId}/media`);
+  createUrl.searchParams.set("access_token", pageAccessToken);
+  createUrl.searchParams.set("caption", caption);
+  if (contentKind === "video") {
+    createUrl.searchParams.set("media_type", "REELS");
+    createUrl.searchParams.set("video_url", mediaUrl);
+  } else {
+    createUrl.searchParams.set("image_url", mediaUrl);
+  }
+
+  const createRes = await fetch(createUrl.toString(), { method: "POST" });
+  if (!createRes.ok) throw new Error(`Instagram media create failed: ${createRes.status} ${await createRes.text()}`);
+  const { id: creationId } = (await createRes.json()) as { id: string };
+
+  if (contentKind === "video") {
+    await waitForInstagramContainerReady(pageAccessToken, creationId);
+  }
+
+  const publishUrl = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${igUserId}/media_publish`);
+  publishUrl.searchParams.set("access_token", pageAccessToken);
+  publishUrl.searchParams.set("creation_id", creationId);
+  const publishRes = await fetch(publishUrl.toString(), { method: "POST" });
+  if (!publishRes.ok) throw new Error(`Instagram publish failed: ${publishRes.status} ${await publishRes.text()}`);
+  const { id: externalPostId } = (await publishRes.json()) as { id: string };
+  return { externalPostId };
+}
+
 export function createMetaAdapter(platform: "instagram" | "facebook"): SocialAdapter {
   return {
     isConfigured() {

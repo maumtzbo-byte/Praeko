@@ -1,3 +1,5 @@
+import type { PlanLimits } from "@/lib/plans/limits";
+
 /**
  * Generic "generation provider" interface. The rest of the app talks to
  * this, never to fal.ai directly — swapping Kling/Seedance for another
@@ -8,6 +10,10 @@ export interface VideoGenerationRequest {
   durationSeconds: number;
   referenceAssetUrls: string[];
   brandContext: string;
+  /** Which model to use — set from the business's plan (see plans/limits.ts),
+   * not chosen freely per-call, so a business never gets a video model its
+   * plan didn't pay for. */
+  provider: PlanLimits["videoProvider"];
 }
 
 export interface ImageGenerationRequest {

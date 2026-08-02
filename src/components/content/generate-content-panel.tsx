@@ -108,6 +108,9 @@ export function GenerateContentPanel({
                   </div>
                 </div>
                 {item.script && <p className="line-clamp-4 text-sm text-zinc-600">{item.script}</p>}
+                {item.status === "en_revision" && item.review_feedback && (
+                  <p className="line-clamp-2 text-xs text-amber-700">Agente revisor: {item.review_feedback}</p>
+                )}
                 {item.recommended_publish_time && (
                   <div className="flex items-center gap-1.5 text-xs text-zinc-500">
                     <Clock className="h-3.5 w-3.5" />

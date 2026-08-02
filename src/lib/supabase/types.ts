@@ -302,9 +302,13 @@ export type Database = {
           campaign_id: string | null
           content_kind: Database["public"]["Enums"]["content_kind"]
           created_at: string
+          external_post_id: string | null
           format: Database["public"]["Enums"]["content_format"]
           id: string
+          published_platform: Database["public"]["Enums"]["social_platform"] | null
           recommended_publish_time: string | null
+          review_feedback: string | null
+          review_result: Database["public"]["Enums"]["quality_review_result"] | null
           scheduled_date: string
           script: string | null
           status: Database["public"]["Enums"]["content_status"]
@@ -317,9 +321,13 @@ export type Database = {
           campaign_id?: string | null
           content_kind: Database["public"]["Enums"]["content_kind"]
           created_at?: string
+          external_post_id?: string | null
           format: Database["public"]["Enums"]["content_format"]
           id?: string
+          published_platform?: Database["public"]["Enums"]["social_platform"] | null
           recommended_publish_time?: string | null
+          review_feedback?: string | null
+          review_result?: Database["public"]["Enums"]["quality_review_result"] | null
           scheduled_date: string
           script?: string | null
           status?: Database["public"]["Enums"]["content_status"]
@@ -332,9 +340,13 @@ export type Database = {
           campaign_id?: string | null
           content_kind?: Database["public"]["Enums"]["content_kind"]
           created_at?: string
+          external_post_id?: string | null
           format?: Database["public"]["Enums"]["content_format"]
           id?: string
+          published_platform?: Database["public"]["Enums"]["social_platform"] | null
           recommended_publish_time?: string | null
+          review_feedback?: string | null
+          review_result?: Database["public"]["Enums"]["quality_review_result"] | null
           scheduled_date?: string
           script?: string | null
           status?: Database["public"]["Enums"]["content_status"]
@@ -397,7 +409,9 @@ export type Database = {
           created_at: string
           duration_seconds: number
           id: string
+          job_status: string
           provider: string
+          provider_job_id: string | null
           quality_review_result:
             | Database["public"]["Enums"]["quality_review_result"]
             | null
@@ -411,7 +425,9 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           id?: string
+          job_status?: string
           provider: string
+          provider_job_id?: string | null
           quality_review_result?:
             | Database["public"]["Enums"]["quality_review_result"]
             | null
@@ -425,7 +441,9 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           id?: string
+          job_status?: string
           provider?: string
+          provider_job_id?: string | null
           quality_review_result?:
             | Database["public"]["Enums"]["quality_review_result"]
             | null

@@ -60,9 +60,19 @@ export default function Footer() {
 
       <div className="border-t border-[var(--hairline)]">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-6 sm:flex-row sm:justify-between">
-          <p className="text-xs text-zinc-400">
-            &copy; {new Date().getFullYear()} Frames. Todos los derechos reservados.
-          </p>
+          <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-4">
+            <p className="text-xs text-zinc-400">
+              &copy; {new Date().getFullYear()} Frames. Todos los derechos reservados.
+            </p>
+            <div className="flex gap-3">
+              <Link href="/privacidad" className="text-xs text-zinc-400 hover:text-zinc-600 ">
+                Privacidad
+              </Link>
+              <Link href="/terminos" className="text-xs text-zinc-400 hover:text-zinc-600 ">
+                Términos
+              </Link>
+            </div>
+          </div>
           {/* One more conversion point for whoever scrolls all the way
               down without converting on the way — the rest of the footer
               is informational, not a second ask. */}

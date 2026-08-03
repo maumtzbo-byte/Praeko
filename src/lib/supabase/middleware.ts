@@ -9,6 +9,8 @@ const PUBLIC_PATHS = [
   "/restablecer-contrasena",
   "/verificar-correo",
   "/auth/callback",
+  "/privacidad",
+  "/terminos",
 ];
 
 // Next.js's file-convention routes (opengraph-image, robots.txt, etc.) don't

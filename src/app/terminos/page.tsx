@@ -36,7 +36,7 @@ export default function TerminosPage() {
                 Frames es una plataforma que usa inteligencia artificial para planear, generar y
                 (cuando tú lo autorizas) publicar contenido de marketing en redes sociales para tu
                 negocio. Cada plan tiene límites de generación (imágenes/videos por mes, redes
-                sociales conectables) descritos en la página de Precios.
+                sociales conectables) descritos en la sección de Precios de nuestro sitio.
               </p>
             </section>
 

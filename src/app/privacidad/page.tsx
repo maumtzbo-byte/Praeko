@@ -123,10 +123,9 @@ export default function PrivacidadPage() {
               <h2 className="text-lg font-semibold text-zinc-950">5. Transferencia internacional de datos</h2>
               <p className="mt-2">
                 Algunos de los proveedores listados arriba procesan datos en servidores fuera de
-                México (Estados Unidos, principalmente). Al usar Frames, aceptas esta transferencia,
-                necesaria para operar el servicio — todos esos proveedores están contractualmente
-                obligados a proteger tu información con estándares equivalentes a los que aplicamos
-                nosotros.
+                México (Estados Unidos, principalmente), bajo sus propias políticas de privacidad y
+                seguridad. Al usar Frames, aceptas esta transferencia, necesaria para operar el
+                servicio.
               </p>
             </section>
 
@@ -159,11 +158,13 @@ export default function PrivacidadPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-zinc-950">8. Cookies</h2>
+              <h2 className="text-lg font-semibold text-zinc-950">8. Cookies y almacenamiento local</h2>
               <p className="mt-2">
-                Usamos cookies estrictamente necesarias para mantener tu sesión iniciada y recordar
-                tus preferencias (como si ya viste la animación de bienvenida). No usamos cookies de
-                rastreo publicitario de terceros.
+                Usamos cookies estrictamente necesarias para mantener tu sesión iniciada y para
+                completar el proceso de conexión con Meta/TikTok (se borran en cuanto termina). Por
+                separado, tu navegador guarda localmente (en <code>sessionStorage</code>, no como
+                cookie) si ya viste la animación de bienvenida en esta sesión, para no repetirla. No
+                usamos cookies de rastreo publicitario de terceros.
               </p>
             </section>
 

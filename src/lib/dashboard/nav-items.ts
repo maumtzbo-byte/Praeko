@@ -3,7 +3,6 @@ import {
   Sparkles,
   Megaphone,
   CalendarDays,
-  FolderOpen,
   Images,
   Share2,
   Send,
@@ -27,18 +26,43 @@ export interface NavItem {
   comingSoon?: boolean;
 }
 
-export const PRIMARY_NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/generar-contenido", label: "Generar contenido", icon: Sparkles },
-  { href: "/dashboard/campanas", label: "Campañas", icon: Megaphone },
-  { href: "/dashboard/calendario", label: "Calendario", icon: CalendarDays },
-  { href: "/dashboard/biblioteca", label: "Biblioteca multimedia", icon: FolderOpen, comingSoon: true },
-  { href: "/dashboard/galeria", label: "Galería", icon: Images },
-  { href: "/dashboard/redes-sociales", label: "Redes sociales", icon: Share2 },
-  { href: "/dashboard/publicaciones", label: "Publicaciones programadas", icon: Send },
-  { href: "/dashboard/analiticas", label: "Analíticas", icon: BarChart3, comingSoon: true },
-  { href: "/dashboard/ia-marketing", label: "IA de Marketing", icon: Bot },
-  { href: "/dashboard/marca", label: "Marca", icon: Palette },
+export interface NavGroup {
+  /** Omitted for the standalone "Dashboard" link at the top — a label on a
+   * single-item group would just repeat what the link itself already says. */
+  label?: string;
+  items: NavItem[];
+}
+
+/** Grouped instead of one flat 11-item list — the old version read as a
+ * wall of text with no hierarchy. Three groups map to how a business owner
+ * actually thinks about the product: plan/make/publish content, grow reach,
+ * keep the AI on-brand. */
+export const PRIMARY_NAV_GROUPS: NavGroup[] = [
+  { items: [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }] },
+  {
+    label: "Contenido",
+    items: [
+      { href: "/dashboard/generar-contenido", label: "Generar contenido", icon: Sparkles },
+      { href: "/dashboard/campanas", label: "Campañas", icon: Megaphone },
+      { href: "/dashboard/calendario", label: "Calendario", icon: CalendarDays },
+      { href: "/dashboard/publicaciones", label: "Publicaciones programadas", icon: Send },
+    ],
+  },
+  {
+    label: "Crecimiento",
+    items: [
+      { href: "/dashboard/redes-sociales", label: "Redes sociales", icon: Share2 },
+      { href: "/dashboard/analiticas", label: "Analíticas", icon: BarChart3 },
+      { href: "/dashboard/galeria", label: "Galería", icon: Images },
+    ],
+  },
+  {
+    label: "Marca e IA",
+    items: [
+      { href: "/dashboard/ia-marketing", label: "IA de Marketing", icon: Bot },
+      { href: "/dashboard/marca", label: "Marca", icon: Palette },
+    ],
+  },
 ];
 
 export const SECONDARY_NAV_ITEMS: NavItem[] = [

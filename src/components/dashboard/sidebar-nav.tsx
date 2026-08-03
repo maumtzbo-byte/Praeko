@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { FramesMark } from "@/components/brand/FramesMark";
-import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS, type NavItem } from "@/lib/dashboard/nav-items";
+import { PRIMARY_NAV_GROUPS, SECONDARY_NAV_ITEMS, type NavItem } from "@/lib/dashboard/nav-items";
 import { cn } from "@/lib/utils";
 
 function NavLink({
@@ -78,8 +78,19 @@ export function SidebarNav({
       </div>
 
       <nav className="flex flex-1 flex-col gap-1">
-        {PRIMARY_NAV_ITEMS.map((item) => (
-          <NavLink key={item.href} item={item} onNavigate={onNavigate} />
+        {PRIMARY_NAV_GROUPS.map((group, i) => (
+          <div key={group.label ?? i} className={i > 0 ? "mt-3" : undefined}>
+            {group.label && (
+              <p className="mb-1 px-3 text-[11px] font-semibold tracking-[0.08em] text-zinc-400 uppercase">
+                {group.label}
+              </p>
+            )}
+            <div className="flex flex-col gap-1">
+              {group.items.map((item) => (
+                <NavLink key={item.href} item={item} onNavigate={onNavigate} />
+              ))}
+            </div>
+          </div>
         ))}
         <div className="my-2 border-t border-zinc-200" />
         {SECONDARY_NAV_ITEMS.map((item) => (

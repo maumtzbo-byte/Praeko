@@ -15,11 +15,18 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { EmptyState } from "@/components/dashboard/empty-state";
+import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Alert } from "@/components/ui/alert";
 import type { Tables } from "@/lib/supabase/types";
+
+// Below this, the Agente Creativo has too little to work with — it falls
+// back to generic prompts instead of grounding output in what the business
+// actually looks like. Matches the reference-image cap already used in
+// generateMediaForContent (publicaciones/actions.ts).
+const LOW_PHOTO_THRESHOLD = 3;
 
 function firstNameFromEmail(email: string | undefined) {
   if (!email) return "";
@@ -68,6 +75,9 @@ export default async function DashboardHomePage() {
     { count: scheduledCount },
     { data: recentActivity },
     { count: connectionsCount },
+    { count: anyContentCount },
+    { count: publishedCount },
+    { count: photoCount },
   ] = await Promise.all([
     supabase.from("subscriptions").select("*").eq("business_id", business.id).maybeSingle(),
     supabase
@@ -101,9 +111,32 @@ export default async function DashboardHomePage() {
       .from("social_connections")
       .select("id", { count: "exact", head: true })
       .eq("business_id", business.id),
+    supabase
+      .from("content_calendar")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", business.id),
+    supabase
+      .from("content_calendar")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", business.id)
+      .eq("status", "publicada"),
+    supabase
+      .from("brand_assets")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", business.id)
+      .eq("asset_type", "photo"),
   ]);
 
   const hasNoConnections = (connectionsCount ?? 0) === 0;
+  const hasPublishedContent = (publishedCount ?? 0) > 0;
+  const hasLowPhotoCount = (photoCount ?? 0) < LOW_PHOTO_THRESHOLD;
+
+  const onboardingSteps = [
+    { label: "Elige tu plan", href: "/dashboard/plan", done: Boolean(subscription) },
+    { label: "Conecta una red social", href: "/dashboard/redes-sociales", done: !hasNoConnections },
+    { label: "Genera tu primer contenido", href: "/dashboard/generar-contenido", done: (anyContentCount ?? 0) > 0 },
+    { label: "Publica tu primera pieza", href: "/dashboard/publicaciones", done: hasPublishedContent },
+  ];
 
   const displayName = (user?.user_metadata?.full_name as string | undefined) || firstNameFromEmail(user?.email);
   const videosUsed = usage?.videos_used ?? 0;
@@ -119,6 +152,26 @@ export default async function DashboardHomePage() {
           Este es el resumen de <span className="font-medium text-zinc-700">{business.name}</span>.
         </p>
       </div>
+
+      <div className="animate-fade-in-up">
+        <OnboardingChecklist steps={onboardingSteps} />
+      </div>
+
+      {hasLowPhotoCount && (
+        <Alert variant="info" className="animate-fade-in-up">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              Tu Agente Creativo tiene pocas fotos de referencia ({photoCount ?? 0} de {LOW_PHOTO_THRESHOLD}{" "}
+              recomendadas) — sube más de tu negocio para que el contenido generado se vea menos genérico.
+            </span>
+            <Link href="/dashboard/galeria" className="shrink-0">
+              <Button variant="secondary" size="sm">
+                Subir fotos
+              </Button>
+            </Link>
+          </div>
+        </Alert>
+      )}
 
       <div className="animate-fade-in-up stagger-1 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-white/70 sm:col-span-2">
@@ -169,21 +222,36 @@ export default async function DashboardHomePage() {
               <BarChart3 className="h-4 w-4 text-zinc-400" />
             </CardHeader>
             <CardContent>
-              <EmptyState
-                icon={BarChart3}
-                title="Todavía no hay datos que mostrar"
-                description="Conecta tus redes sociales y publica tu primera pieza para empezar a ver alcance y engagement aquí."
-                action={
-                  hasNoConnections ? (
-                    <Link href="/dashboard/redes-sociales">
-                      <Button size="sm">
-                        <Share2 className="h-4 w-4" />
-                        Conectar redes sociales
-                      </Button>
-                    </Link>
-                  ) : undefined
-                }
-              />
+              {hasPublishedContent ? (
+                <div className="flex flex-col items-start gap-3 py-2">
+                  <p className="text-sm text-zinc-600">
+                    Ya tienes <span className="font-semibold text-zinc-900">{publishedCount}</span>{" "}
+                    {publishedCount === 1 ? "pieza publicada" : "piezas publicadas"}.
+                  </p>
+                  <Link href="/dashboard/analiticas">
+                    <Button size="sm" variant="secondary">
+                      <BarChart3 className="h-4 w-4" />
+                      Ver alcance y engagement
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <EmptyState
+                  icon={BarChart3}
+                  title="Todavía no hay datos que mostrar"
+                  description="Conecta tus redes sociales y publica tu primera pieza para empezar a ver alcance y engagement aquí."
+                  action={
+                    hasNoConnections ? (
+                      <Link href="/dashboard/redes-sociales">
+                        <Button size="sm">
+                          <Share2 className="h-4 w-4" />
+                          Conectar redes sociales
+                        </Button>
+                      </Link>
+                    ) : undefined
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </div>
@@ -248,27 +316,16 @@ export default async function DashboardHomePage() {
             <CardTitle>Accesos rápidos</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-2">
-            {QUICK_ACTIONS.map(({ href, label, icon: Icon }) => {
-              const isPrimary = href === "/dashboard/redes-sociales" && hasNoConnections;
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={cn(
-                    "flex flex-col items-start gap-2 rounded-xl border p-3 text-left transition-all hover:-translate-y-0.5",
-                    isPrimary
-                      ? "border-zinc-950 bg-zinc-950 text-white shadow-[0_8px_20px_-12px_rgba(0,0,0,0.4)] hover:bg-zinc-800 "
-                      : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.25)] ",
-                  )}
-                >
-                  <Icon className={cn("h-4 w-4", isPrimary ? "text-white" : "text-zinc-600")} strokeWidth={1.75} />
-                  <span className={cn("text-xs font-medium", isPrimary ? "text-white" : "text-zinc-700")}>
-                    {label}
-                  </span>
-                  {isPrimary && <span className="text-[10px] font-medium text-zinc-400">Empieza aquí</span>}
-                </Link>
-              );
-            })}
+            {QUICK_ACTIONS.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex flex-col items-start gap-2 rounded-xl border border-zinc-200 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.25)] "
+              >
+                <Icon className="h-4 w-4 text-zinc-600" strokeWidth={1.75} />
+                <span className="text-xs font-medium text-zinc-700">{label}</span>
+              </Link>
+            ))}
           </CardContent>
         </Card>
       </div>

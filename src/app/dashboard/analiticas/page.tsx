@@ -88,14 +88,14 @@ export default async function AnaliticasPage() {
     <div>
       <PageHeader title="Analíticas" description="Alcance, seguidores y engagement, traducidos a lenguaje de negocio." />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="animate-fade-in-up stagger-1 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={Eye} label="Impresiones" value={formatNumber(summary.totalImpressions)} sublabel={`${summary.totalPosts} publicaciones`} />
         <StatCard icon={Heart} label="Me gusta" value={formatNumber(summary.totalLikes)} />
         <StatCard icon={MessageCircle} label="Comentarios" value={formatNumber(summary.totalComments)} />
         <StatCard icon={Share2} label="Compartidos" value={formatNumber(summary.totalShares)} />
       </div>
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="animate-fade-in-up stagger-2 mt-6 flex flex-col gap-3">
         {results.map((result) => (
           <Card key={result.itemId} className="bg-white/70">
             <CardContent className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">

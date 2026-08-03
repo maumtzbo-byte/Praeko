@@ -100,7 +100,46 @@ export default function TerminosPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-zinc-950">9. Cambios a estos términos</h2>
+              <h2 className="text-lg font-semibold text-zinc-950">9. Propiedad intelectual</h2>
+              <p className="mt-2">
+                El contenido que Frames genera específicamente para tu negocio (guiones, imágenes,
+                videos) es tuyo — puedes usarlo, publicarlo y editarlo sin restricción. La
+                tecnología, el software y la marca Frames son propiedad nuestra; usar el producto no
+                te da derechos sobre ellos más allá de lo necesario para usar el servicio.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-semibold text-zinc-950">10. Terminación de cuenta</h2>
+              <p className="mt-2">
+                Puedes cerrar tu cuenta cuando quieras desde Configuración. Nosotros podemos
+                suspender o cerrar una cuenta que incumpla la sección 7 (Uso aceptable) o que
+                represente un riesgo para el servicio o para otros usuarios, avisándote por correo
+                salvo que la ley o la urgencia del caso lo impida.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-semibold text-zinc-950">11. Limitación de responsabilidad</h2>
+              <p className="mt-2">
+                Frames se ofrece &quot;tal cual&quot;. En la medida permitida por la ley, no somos
+                responsables por daños indirectos, pérdida de ganancias, o consecuencias derivadas
+                del contenido que generes y decidas publicar, ni por fallas de los proveedores
+                externos (Meta, TikTok, fal.ai, Anthropic, Supabase, Vercel, Stripe) que están fuera
+                de nuestro control.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-semibold text-zinc-950">12. Ley aplicable y jurisdicción</h2>
+              <p className="mt-2">
+                Estos términos se rigen por las leyes de México. Cualquier disputa se someterá a los
+                tribunales competentes de México, salvo que la ley aplicable disponga otra cosa.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-semibold text-zinc-950">13. Cambios a estos términos</h2>
               <p className="mt-2">
                 Podemos actualizar estos términos ocasionalmente. Si el cambio es significativo, te
                 avisaremos por correo o dentro del producto antes de que entre en vigor.
@@ -108,7 +147,7 @@ export default function TerminosPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-zinc-950">10. Contacto</h2>
+              <h2 className="text-lg font-semibold text-zinc-950">14. Contacto</h2>
               <p className="mt-2">
                 ¿Dudas sobre estos términos? Escríbenos a{" "}
                 <a href="mailto:soporte@frames.com" className="text-accent hover:underline">

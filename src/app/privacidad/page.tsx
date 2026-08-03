@@ -33,8 +33,9 @@ export default function PrivacidadPage() {
               <h2 className="text-lg font-semibold text-zinc-950">2. Qué información recopilamos</h2>
               <ul className="mt-2 list-disc pl-5 [&>li]:mt-1.5">
                 <li>
-                  <strong>Datos de cuenta:</strong> nombre, correo electrónico y contraseña (cifrada)
-                  cuando te registras.
+                  <strong>Datos de cuenta:</strong> nombre, correo electrónico y contraseña cuando te
+                  registras — tu contraseña se guarda de forma irreversible (hash); ni nosotros
+                  podemos verla en texto plano.
                 </li>
                 <li>
                   <strong>Datos de tu negocio:</strong> nombre, giro, descripción, ciudad, tono de
@@ -86,6 +87,13 @@ export default function PrivacidadPage() {
                 </li>
               </ul>
               <p className="mt-2">
+                Para TikTok solicitamos <code>user.info.basic</code> (identificar tu cuenta) y{" "}
+                <code>video.publish</code> (publicar el video que tú confirmaste). Mientras nuestra
+                app de TikTok no complete su proceso de auditoría, esas publicaciones se hacen en
+                modo privado (solo visibles para ti) — es una limitación de la plataforma, no una
+                función que hayamos desactivado.
+              </p>
+              <p className="mt-2">
                 Puedes desconectar cualquier cuenta en cualquier momento desde{" "}
                 <span className="font-medium">Redes sociales</span> dentro de tu panel — al hacerlo,
                 eliminamos el token de acceso guardado de inmediato.
@@ -103,6 +111,7 @@ export default function PrivacidadPage() {
               </p>
               <ul className="mt-2 list-disc pl-5 [&>li]:mt-1.5">
                 <li>Supabase — base de datos y autenticación.</li>
+                <li>Vercel — hospedaje de la aplicación.</li>
                 <li>Anthropic (Claude) — generación de estrategia, guiones y revisión de contenido.</li>
                 <li>fal.ai — generación de imágenes y video.</li>
                 <li>Meta (Instagram/Facebook) y TikTok — para publicar contenido y leer métricas, únicamente en las cuentas que tú conectaste.</li>
@@ -111,7 +120,18 @@ export default function PrivacidadPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-zinc-950">5. Cuánto tiempo conservamos tus datos</h2>
+              <h2 className="text-lg font-semibold text-zinc-950">5. Transferencia internacional de datos</h2>
+              <p className="mt-2">
+                Algunos de los proveedores listados arriba procesan datos en servidores fuera de
+                México (Estados Unidos, principalmente). Al usar Frames, aceptas esta transferencia,
+                necesaria para operar el servicio — todos esos proveedores están contractualmente
+                obligados a proteger tu información con estándares equivalentes a los que aplicamos
+                nosotros.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-semibold text-zinc-950">6. Cuánto tiempo conservamos tus datos</h2>
               <p className="mt-2">
                 Conservamos tu información mientras tu cuenta esté activa. Si cierras tu cuenta,
                 eliminamos tus datos de negocio, contenido y tokens de redes sociales en un plazo
@@ -121,20 +141,25 @@ export default function PrivacidadPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-zinc-950">6. Tus derechos</h2>
+              <h2 className="text-lg font-semibold text-zinc-950">7. Tus derechos (ARCO)</h2>
               <p className="mt-2">
-                Puedes acceder, corregir o eliminar tu información en cualquier momento desde tu
-                panel de Configuración, o escribiéndonos a{" "}
+                De acuerdo con la Ley Federal de Protección de Datos Personales en Posesión de los
+                Particulares, tienes derecho a <strong>Acceder</strong> a tus datos,{" "}
+                <strong>Rectificarlos</strong> si están desactualizados o son incorrectos,{" "}
+                <strong>Cancelarlos</strong> (eliminarlos) cuando ya no sean necesarios, y{" "}
+                <strong>Oponerte</strong> a un uso específico de los mismos. Puedes ejercer estos
+                derechos directamente desde tu panel de Configuración, o escribiéndonos a{" "}
                 <a href="mailto:soporte@frames.com" className="text-accent hover:underline">
                   soporte@frames.com
-                </a>
-                . Desconectar una red social revoca inmediatamente el acceso que le diste a Frames
+                </a>{" "}
+                — respondemos solicitudes de datos en un plazo máximo de 20 días hábiles.
+                Desconectar una red social revoca inmediatamente el acceso que le diste a Frames
                 sobre esa cuenta.
               </p>
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-zinc-950">7. Cookies</h2>
+              <h2 className="text-lg font-semibold text-zinc-950">8. Cookies</h2>
               <p className="mt-2">
                 Usamos cookies estrictamente necesarias para mantener tu sesión iniciada y recordar
                 tus preferencias (como si ya viste la animación de bienvenida). No usamos cookies de
@@ -143,7 +168,7 @@ export default function PrivacidadPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-zinc-950">8. Menores de edad</h2>
+              <h2 className="text-lg font-semibold text-zinc-950">9. Menores de edad</h2>
               <p className="mt-2">
                 Frames está diseñado para dueños de negocio y no está dirigido a menores de 18 años.
                 No recopilamos intencionalmente información de menores.
@@ -151,7 +176,7 @@ export default function PrivacidadPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-zinc-950">9. Cambios a esta política</h2>
+              <h2 className="text-lg font-semibold text-zinc-950">10. Cambios a esta política</h2>
               <p className="mt-2">
                 Si hacemos cambios importantes a esta política, te avisaremos por correo o dentro
                 del producto antes de que entren en vigor.
@@ -159,7 +184,15 @@ export default function PrivacidadPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-zinc-950">10. Contacto</h2>
+              <h2 className="text-lg font-semibold text-zinc-950">11. Ley aplicable</h2>
+              <p className="mt-2">
+                Esta política se rige por las leyes de México, incluyendo la Ley Federal de
+                Protección de Datos Personales en Posesión de los Particulares.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-semibold text-zinc-950">12. Contacto</h2>
               <p className="mt-2">
                 ¿Preguntas sobre esta política o tus datos? Escríbenos a{" "}
                 <a href="mailto:soporte@frames.com" className="text-accent hover:underline">

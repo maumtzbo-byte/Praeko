@@ -21,17 +21,29 @@ export async function GET(request: Request, { params }: { params: Promise<{ plat
   const stateCookie = cookieStore.get(STATE_COOKIE)?.value;
 
   if (!code || !returnedState || !stateCookie) {
+    console.error(`oauth callback missing code/state/cookie for platform=${platform}`, {
+      hasCode: Boolean(code),
+      hasReturnedState: Boolean(returnedState),
+      hasStateCookie: Boolean(stateCookie),
+      queryError: searchParams.get("error"),
+      queryErrorDescription: searchParams.get("error_description"),
+    });
     return NextResponse.redirect(`${origin}/dashboard/redes-sociales?error=oauth_failed`);
   }
 
   let parsedState: { state: string; businessId: string; platform: string };
   try {
     parsedState = JSON.parse(stateCookie);
-  } catch {
+  } catch (err) {
+    console.error(`oauth callback failed to parse state cookie for platform=${platform}`, err);
     return NextResponse.redirect(`${origin}/dashboard/redes-sociales?error=oauth_failed`);
   }
 
   if (parsedState.state !== returnedState || parsedState.platform !== platform) {
+    console.error(`oauth callback state/platform mismatch for platform=${platform}`, {
+      parsedState,
+      returnedState,
+    });
     return NextResponse.redirect(`${origin}/dashboard/redes-sociales?error=oauth_failed`);
   }
 
@@ -48,7 +60,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ plat
   let accounts;
   try {
     accounts = await adapter.listConnectableAccounts(code, redirectUri);
-  } catch {
+  } catch (err) {
+    console.error(`listConnectableAccounts failed for platform=${platform}`, err);
     return NextResponse.redirect(`${origin}/dashboard/redes-sociales?error=oauth_failed`);
   }
 

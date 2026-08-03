@@ -146,14 +146,19 @@ export default function PrivacidadPage() {
                 Particulares, tienes derecho a <strong>Acceder</strong> a tus datos,{" "}
                 <strong>Rectificarlos</strong> si están desactualizados o son incorrectos,{" "}
                 <strong>Cancelarlos</strong> (eliminarlos) cuando ya no sean necesarios, y{" "}
-                <strong>Oponerte</strong> a un uso específico de los mismos. Puedes ejercer estos
-                derechos directamente desde tu panel de Configuración, o escribiéndonos a{" "}
+                <strong>Oponerte</strong> a un uso específico de los mismos. Puedes corregir la
+                información de tu negocio directamente desde tu panel de Configuración; para
+                acceder, cancelar (eliminar) tus datos o ejercer los demás derechos ARCO, sigue las{" "}
+                <a href="/eliminar-datos" className="text-accent hover:underline">
+                  instrucciones aquí
+                </a>{" "}
+                o escríbenos a{" "}
                 <a href="mailto:soporte@frames.com" className="text-accent hover:underline">
                   soporte@frames.com
                 </a>{" "}
-                — respondemos solicitudes de datos en un plazo máximo de 20 días hábiles.
-                Desconectar una red social revoca inmediatamente el acceso que le diste a Frames
-                sobre esa cuenta.
+                — respondemos en un plazo máximo de 20 días hábiles. Desconectar una red social
+                (desde el panel de Redes sociales) revoca de inmediato el acceso que le diste a
+                Frames sobre esa cuenta.
               </p>
             </section>
 

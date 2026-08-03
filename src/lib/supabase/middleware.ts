@@ -11,6 +11,7 @@ const PUBLIC_PATHS = [
   "/auth/callback",
   "/privacidad",
   "/terminos",
+  "/eliminar-datos",
 ];
 
 // Next.js's file-convention routes (opengraph-image, robots.txt, etc.) don't

@@ -14,13 +14,12 @@ import type {
  * Uses fal.ai's standard async queue REST API: POST to submit a job, GET
  * .../status to poll, GET the base request URL for the finished output.
  * That three-step contract is fal.ai's stable, documented submission flow
- * and is implemented for real here — what is NOT independently verified
- * from this environment (no network access to fal.ai's docs) is the exact
- * model endpoint slug and input field names for each specific model below.
- * CONFIRM those against https://fal.ai/models before enabling this in
- * production — a wrong slug fails loudly (404 from fal.ai), it doesn't
- * silently misbehave, but it does mean "flip FAL_API_KEY on" alone isn't
- * enough without that one check.
+ * and is implemented for real here. Model slugs, request fields, and output
+ * shapes below were confirmed against fal.ai's public model docs
+ * (fal.ai/models/...) — Kling 3.0 Pro and Flux dev slugs matched what was
+ * already here; the Seedance 2.0 slugs did not (fixed, see below). Still
+ * worth a final live smoke test once FAL_API_KEY is set, since docs can
+ * drift from the deployed API.
  *
  * Never called from the client: this file must only be imported from
  * server-side code (route handlers, queue workers), since the key would
@@ -29,15 +28,19 @@ import type {
 
 const QUEUE_BASE = "https://queue.fal.run";
 
-// TODO(verify): confirm these exact slugs against fal.ai's model catalog.
 const VIDEO_MODEL_SLUGS: Record<VideoGenerationRequest["provider"], { textToVideo: string; imageToVideo: string }> = {
   "kling-3.0-pro": {
     textToVideo: "fal-ai/kling-video/v3/pro/text-to-video",
     imageToVideo: "fal-ai/kling-video/v3/pro/image-to-video",
   },
+  // Was "fal-ai/bytedance/seedance/v2/text-to-video/standard" — that slug
+  // doesn't exist on fal.ai and would 404 on first real call. Confirmed
+  // slug is "bytedance/seedance-2.0/{text-to-video,image-to-video}" (no
+  // "fal-ai/" prefix, no "/standard" suffix — the standard vs. fast tier is
+  // the base slug itself, "fast" tier lives at a separate .../fast/ path).
   "seedance-2.0-standard-720p": {
-    textToVideo: "fal-ai/bytedance/seedance/v2/text-to-video/standard",
-    imageToVideo: "fal-ai/bytedance/seedance/v2/image-to-video/standard",
+    textToVideo: "bytedance/seedance-2.0/text-to-video",
+    imageToVideo: "bytedance/seedance-2.0/image-to-video",
   },
 };
 
@@ -45,6 +48,7 @@ const VIDEO_MODEL_SLUGS: Record<VideoGenerationRequest["provider"], { textToVide
 // defines videoProvider) — this is a reasonable general-purpose fal.ai
 // text-to-image/image-edit model, but should be revisited once Frames picks
 // an explicit image model the same way it pins a video model per plan.
+// Slug and "images[0].url" response shape confirmed against fal.ai docs.
 const IMAGE_MODEL_SLUG = "fal-ai/flux/dev";
 const IMAGE_EDIT_MODEL_SLUG = "fal-ai/flux/dev/image-to-image";
 
@@ -55,7 +59,7 @@ interface FalQueueSubmitResponse {
 }
 
 interface FalQueueStatusResponse {
-  status: "IN_QUEUE" | "IN_PROGRESS" | "COMPLETED";
+  status: "IN_QUEUE" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
 }
 
 /** GenerationJobHandle only carries a single opaque providerJobId string,
@@ -78,6 +82,19 @@ function decodeJobId(providerJobId: string): { modelSlug: string; requestId: str
   };
 }
 
+/** Was missing the "FAILED" case entirely — fal.ai's queue API documents
+ * four possible statuses (IN_QUEUE, IN_PROGRESS, COMPLETED, FAILED), but
+ * this switch only handled three, no `default`. A real FAILED response
+ * from fal.ai fell through every case and returned `undefined` at runtime
+ * (TypeScript trusted the input type was exhaustive; a live API response
+ * isn't bound by that). refreshMediaGenerationStatus's caller only checks
+ * for "completed" / "failed" explicitly and treats anything else as "still
+ * processing" — so a job fal.ai already gave up on would poll as
+ * perpetually in-progress instead of ever surfacing the failure to the
+ * user. The `default` below is a second layer of defense: any future
+ * status string fal.ai adds now degrades to "processing" (safe: the user
+ * just keeps polling) instead of `undefined` (unsafe: breaks the DB
+ * write and the UI's status check silently). */
 function mapFalStatus(status: FalQueueStatusResponse["status"]): GenerationJobStatus {
   switch (status) {
     case "IN_QUEUE":
@@ -86,6 +103,10 @@ function mapFalStatus(status: FalQueueStatusResponse["status"]): GenerationJobSt
       return "processing";
     case "COMPLETED":
       return "completed";
+    case "FAILED":
+      return "failed";
+    default:
+      return "processing";
   }
 }
 
@@ -126,10 +147,16 @@ export class FalGenerationProvider implements GenerationProvider {
     const slugs = VIDEO_MODEL_SLUGS[request.provider];
     const hasReference = request.referenceAssetUrls.length > 0;
     const modelSlug = hasReference ? slugs.imageToVideo : slugs.textToVideo;
+    // Seedance defaults to whatever fal.ai's endpoint default is if
+    // unspecified — the plan name promises 720p specifically
+    // ("seedance-2.0-standard-720p"), so make that explicit instead of
+    // trusting a default that fal.ai could change later.
+    const isSeedance = request.provider === "seedance-2.0-standard-720p";
 
     return this.submitToQueue(modelSlug, {
       prompt: `${request.brandContext}\n\n${request.prompt}`,
       duration: request.durationSeconds,
+      ...(isSeedance ? { resolution: "720p" } : {}),
       ...(hasReference ? { image_url: request.referenceAssetUrls[0] } : {}),
     });
   }

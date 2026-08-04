@@ -747,6 +747,16 @@ export type Database = {
         Args: { target_business_id: string }
         Returns: boolean
       }
+      increment_usage_counters: {
+        Args: {
+          p_business_id: string
+          p_period_month: string
+          p_images_delta?: number
+          p_videos_delta?: number
+          p_video_seconds_delta?: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       brand_asset_type: "logo" | "photo" | "video" | "template_reference"

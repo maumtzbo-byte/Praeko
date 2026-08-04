@@ -13,6 +13,12 @@ type ActionResult<T = undefined> =
 // runaway spend from repeated clicks or a bug, independent of any plan.
 const MAX_GENERATION_RUNS_PER_DAY = 5;
 
+// `days` is a server-action argument, not something the UI actually lets a
+// user set past 7 (see onboarding-reveal.tsx / generate-content-panel.tsx) —
+// but a server action is still a directly callable endpoint, so this caps
+// what a hand-crafted request could ask for in one paid Claude call.
+const MAX_DAYS_PER_REQUEST = 31;
+
 export interface GeneratedContentPreview {
   scheduledDate: string;
   contentKind: string;
@@ -30,6 +36,10 @@ export async function generateContentPlan(
   ActionResult<{ created: number; runsRemainingToday: number; preview: GeneratedContentPreview[] }>
 > {
   try {
+    if (!Number.isInteger(days) || days < 1 || days > MAX_DAYS_PER_REQUEST) {
+      return { success: false, error: `El plan debe cubrir entre 1 y ${MAX_DAYS_PER_REQUEST} días.` };
+    }
+
     const supabase = await createClient();
     const {
       data: { user },

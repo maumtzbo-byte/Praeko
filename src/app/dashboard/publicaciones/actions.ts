@@ -7,7 +7,7 @@ import {
   fetchMediaGenerationResult,
 } from "@/lib/agents/creative-agent";
 import { publishToSocialPlatform } from "@/lib/social/publish";
-import { PLAN_LIMITS, type PlanKey } from "@/lib/plans/limits";
+import { PLAN_LIMITS, canGenerateVideo, type PlanKey } from "@/lib/plans/limits";
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -50,6 +50,43 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
 
     const planKey = (subscription?.plan_key ?? "basico") as PlanKey;
     const plan = PLAN_LIMITS[planKey];
+
+    // Hard ceiling on paid fal.ai calls per business per month, matching the
+    // plan's advertised images_per_month/videos_per_month — without this,
+    // any "pendiente" piece could be generated regardless of what the
+    // business already used this month.
+    const periodMonth = new Date();
+    periodMonth.setDate(1);
+    const periodMonthStr = periodMonth.toISOString().slice(0, 10);
+    const { data: usage } = await supabase
+      .from("usage_counters")
+      .select("images_used, videos_used, video_seconds_used")
+      .eq("business_id", item.business_id)
+      .eq("period_month", periodMonthStr)
+      .maybeSingle();
+
+    const requestedSeconds = item.content_kind === "video"
+      ? Math.min(item.target_duration_seconds ?? plan.videoAvgSeconds, plan.videoMaxSeconds)
+      : 0;
+
+    if (item.content_kind === "video") {
+      const check = canGenerateVideo(plan, {
+        requestedSeconds,
+        secondsUsedSoFar: usage?.video_seconds_used ?? 0,
+        videosUsedSoFar: usage?.videos_used ?? 0,
+      });
+      if (!check.allowed) {
+        return {
+          success: false,
+          error: `Ya usaste los videos incluidos este mes en tu plan ${plan.displayName}. Mejora tu plan o espera al próximo mes.`,
+        };
+      }
+    } else if ((usage?.images_used ?? 0) >= plan.imagesPerMonth) {
+      return {
+        success: false,
+        error: `Ya usaste las imágenes incluidas este mes en tu plan ${plan.displayName}. Mejora tu plan o espera al próximo mes.`,
+      };
+    }
 
     const referenceAssetUrls: string[] = [];
     for (const asset of assets ?? []) {
@@ -100,6 +137,19 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
     if (insertError || !generation) {
       return { success: false, error: insertError?.message ?? "No se pudo registrar la generación." };
     }
+
+    // Same "record right after the paid call succeeds" logic as
+    // content_generation_runs — the fal.ai job is already queued and billed
+    // for at this point regardless of what happens after. Don't fail the
+    // request over a logging error.
+    const { error: usageError } = await serviceRole.rpc("increment_usage_counters", {
+      p_business_id: item.business_id,
+      p_period_month: periodMonthStr,
+      p_images_delta: item.content_kind === "imagen" ? 1 : 0,
+      p_videos_delta: item.content_kind === "video" ? 1 : 0,
+      p_video_seconds_delta: item.content_kind === "video" ? requestedSeconds : 0,
+    });
+    if (usageError) console.error("increment_usage_counters failed", usageError);
 
     return { success: true, data: { generationId: generation.id } };
   } catch (err) {

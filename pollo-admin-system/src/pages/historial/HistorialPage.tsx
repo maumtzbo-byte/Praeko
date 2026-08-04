@@ -54,7 +54,7 @@ export function HistorialPage() {
 
   return (
     <div>
-      <PageHeader title="Historial de cambios" description="Auditoría de pedidos, reportes diarios e inventario" />
+      <PageHeader title="Auditoría" description="Registro de cada cambio en pedidos, reportes diarios e inventario — quién lo hizo y cuándo" />
 
       <div className="mb-4 flex flex-wrap gap-2">
         <Select value={tabla} onValueChange={setTabla}>

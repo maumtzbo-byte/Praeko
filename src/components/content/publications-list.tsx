@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Clapperboard, ImageIcon, Clock, Send, Sparkles, RotateCcw, Wand2 } from "lucide-react";
+import { Clapperboard, ImageIcon, Clock, Send, Sparkles, RotateCcw, Wand2, Megaphone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
   generateMediaForContent,
   refreshMediaGenerationStatus,
   publishContentNow,
+  getPromoteLink,
 } from "@/app/dashboard/publicaciones/actions";
 import { cn } from "@/lib/utils";
 import { FORMAT_LABELS, STATUS_VARIANTS, STATUS_LABELS, formatScheduledDate } from "@/lib/content/labels";
@@ -169,6 +170,32 @@ function PublishButtons({ itemId, connections }: { itemId: string; connections: 
   );
 }
 
+/** "Promocionar" — opens the real published post on Facebook/Instagram in a
+ * new tab, where Meta's own native Boost/Promote button already lives.
+ * Frames doesn't create or touch the ad itself (no ads_management
+ * permission, no spend, no cut) — this is a doorway, not an integration. */
+function PromoteButton({ itemId }: { itemId: string }) {
+  const [loading, setLoading] = useState(false);
+
+  async function handlePromote() {
+    setLoading(true);
+    const res = await getPromoteLink(itemId);
+    setLoading(false);
+    if (!res.success) {
+      toast.error(res.error);
+      return;
+    }
+    window.open(res.data.url, "_blank", "noopener,noreferrer");
+  }
+
+  return (
+    <Button variant="secondary" size="sm" onClick={handlePromote} loading={loading}>
+      <Megaphone className="h-3.5 w-3.5" />
+      Promocionar
+    </Button>
+  );
+}
+
 export function PublicationsList({
   initialItems,
   inFlightByItemId,
@@ -285,6 +312,10 @@ export function PublicationsList({
                         <GenerateMediaButton itemId={item.id} contentKind={item.content_kind} />
                       ))}
                     {item.status === "generada" && <PublishButtons itemId={item.id} connections={connections} />}
+                    {item.status === "publicada" &&
+                      (item.published_platform === "facebook" || item.published_platform === "instagram") && (
+                        <PromoteButton itemId={item.id} />
+                      )}
                     <Badge variant={STATUS_VARIANTS[item.status]}>{STATUS_LABELS[item.status]}</Badge>
                   </div>
                 </CardContent>

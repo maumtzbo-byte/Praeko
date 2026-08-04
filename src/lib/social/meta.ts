@@ -155,6 +155,29 @@ export async function publishToInstagram(
   return { externalPostId };
 }
 
+/** "Promocionar" button — the real permalink for an already-published post
+ * or media, so the dueño lands on the exact post where Meta's own native
+ * Boost/Promote button already lives, instead of Frames trying to
+ * reconstruct (and keep working) Meta's own ad-creation deep link. Frames
+ * never touches the ad itself — no ads_management permission, no spend, no
+ * cut of anything; this is just a doorway to a page Meta already built. */
+export async function getPostPermalink(
+  pageAccessToken: string,
+  postId: string,
+  platform: "facebook" | "instagram",
+): Promise<string> {
+  const field = platform === "facebook" ? "permalink_url" : "permalink";
+  const url = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${postId}`);
+  url.searchParams.set("fields", field);
+  url.searchParams.set("access_token", pageAccessToken);
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error(`Meta permalink lookup failed: ${res.status} ${await res.text()}`);
+  const data = (await res.json()) as Record<string, string | undefined>;
+  const permalink = data[field];
+  if (!permalink) throw new Error("Meta no devolvió el enlace de la publicación.");
+  return permalink;
+}
+
 /** Agente de Respuestas — reply to a public comment (works for both
  * Instagram and Facebook Page comments, same endpoint shape on the Graph API). */
 export async function replyToComment(

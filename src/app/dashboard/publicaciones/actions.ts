@@ -7,6 +7,7 @@ import {
   fetchMediaGenerationResult,
 } from "@/lib/agents/creative-agent";
 import { publishToSocialPlatform } from "@/lib/social/publish";
+import { getPostPermalink } from "@/lib/social/meta";
 import { PLAN_LIMITS, canGenerateVideo, type PlanKey } from "@/lib/plans/limits";
 
 type ActionResult<T = undefined> =
@@ -318,5 +319,60 @@ export async function publishContentNow(itemId: string, connectionId: string): P
   } catch (err) {
     console.error("publishContentNow failed", err);
     return { success: false, error: "No se pudo publicar. Intenta de nuevo." };
+  }
+}
+
+/** "Promocionar" — returns the real permalink of an already-published post
+ * so the frontend can open it in a new tab, where Meta's own native
+ * Boost/Promote button already lives on the post. Facebook and Instagram
+ * only (TikTok's ad tools work differently and aren't wired up yet); Frames
+ * never creates or touches the ad itself. */
+export async function getPromoteLink(itemId: string): Promise<ActionResult<{ url: string }>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "No autenticado." };
+
+    const { data: item } = await supabase
+      .from("content_calendar")
+      .select("published_platform, external_post_id, business_id")
+      .eq("id", itemId)
+      .single();
+    if (!item) return { success: false, error: "Pieza no encontrada." };
+    if (!item.external_post_id || item.published_platform === null) {
+      return { success: false, error: "Esta pieza todavía no está publicada." };
+    }
+    if (item.published_platform !== "facebook" && item.published_platform !== "instagram") {
+      return { success: false, error: "Promocionar solo está disponible para Facebook e Instagram por ahora." };
+    }
+
+    const { data: connection } = await supabase
+      .from("social_connections")
+      .select("id")
+      .eq("business_id", item.business_id)
+      .eq("platform", item.published_platform)
+      .maybeSingle();
+    if (!connection) return { success: false, error: "No se encontró la cuenta conectada." };
+
+    const serviceRole = createServiceRoleClient();
+    const { data: tokenRow } = await serviceRole
+      .from("social_connection_tokens")
+      .select("access_token")
+      .eq("connection_id", connection.id)
+      .single();
+    if (!tokenRow) return { success: false, error: "No se encontró el token de esta cuenta." };
+
+    try {
+      const url = await getPostPermalink(tokenRow.access_token, item.external_post_id, item.published_platform);
+      return { success: true, data: { url } };
+    } catch (err) {
+      console.error("getPostPermalink failed", err);
+      return { success: false, error: "No se pudo obtener el enlace de la publicación." };
+    }
+  } catch (err) {
+    console.error("getPromoteLink failed", err);
+    return { success: false, error: "No se pudo abrir la publicación. Intenta de nuevo." };
   }
 }

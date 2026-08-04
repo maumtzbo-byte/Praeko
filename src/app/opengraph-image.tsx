@@ -23,48 +23,41 @@ export default function OpengraphImage() {
           backgroundColor: "#f4f4f6",
         }}
       >
-        {/* Soft blue blobs in the site's actual accent family, not the old
-            green/cream "aurora" palette from an earlier identity — a shared
-            link should look like the current brand, not a discontinued one. */}
+        {/* One deliberate corner glow instead of two overlapping blur-blobs
+            — that twin-blob-on-light-background look is the same "generic
+            AI SaaS" background almost everyone in the space is using right
+            now, not something specific to Frames. A thin rule-of-thirds
+            grid ties this back to the actual product (composing a shot)
+            without touching the logo mark itself. */}
         <div
           style={{
             position: "absolute",
-            top: -220,
-            right: -180,
-            width: 620,
-            height: 620,
+            top: -260,
+            right: -220,
+            width: 760,
+            height: 760,
             display: "flex",
-            borderRadius: "38% 62% 55% 45% / 45% 40% 60% 55%",
-            backgroundImage:
-              "radial-gradient(circle at 35% 30%, #cfe6f8 0%, #7fb1dd 30%, #3d75ad 60%, #1f3e5c 100%)",
-            opacity: 0.55,
-            filter: "blur(10px)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: -260,
-            left: -200,
-            width: 680,
-            height: 680,
-            display: "flex",
-            borderRadius: "55% 45% 40% 60% / 60% 55% 45% 40%",
-            backgroundImage:
-              "radial-gradient(circle at 60% 40%, #cfe6f8 0%, #a8c9e6 30%, #3d75ad 60%, #1f3e5c 100%)",
+            borderRadius: "50%",
+            backgroundImage: "radial-gradient(circle, #7fb1dd 0%, #3d75ad 45%, rgba(63,117,173,0) 72%)",
             opacity: 0.5,
-            filter: "blur(10px)",
+            filter: "blur(6px)",
           }}
         />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            backgroundImage:
-              "radial-gradient(circle at 22% 15%, rgba(244,244,246,0) 0%, #f4f4f6 60%), radial-gradient(circle at 82% 88%, rgba(244,244,246,0) 0%, #f4f4f6 60%)",
-          }}
-        />
+        {/* Faint grid lines, two verticals and two horizontals — a
+            composition-grid reference, kept subtle enough to read as
+            texture rather than a graphic element competing with the logo. */}
+        {[1 / 3, 2 / 3].map((frac) => (
+          <div
+            key={`v-${frac}`}
+            style={{ position: "absolute", top: 0, bottom: 0, left: 1200 * frac, width: 1, display: "flex", backgroundColor: "rgba(24,24,27,0.06)" }}
+          />
+        ))}
+        {[1 / 3, 2 / 3].map((frac) => (
+          <div
+            key={`h-${frac}`}
+            style={{ position: "absolute", left: 0, right: 0, top: 630 * frac, height: 1, display: "flex", backgroundColor: "rgba(24,24,27,0.06)" }}
+          />
+        ))}
 
         {/* content */}
         <div

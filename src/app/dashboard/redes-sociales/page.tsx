@@ -1,13 +1,20 @@
 import Link from "next/link";
-import { CheckCircle2, Lock } from "lucide-react";
+import { CheckCircle2, Lock, MessageCircle } from "lucide-react";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { createClient } from "@/lib/supabase/server";
 import { getAdapter, SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/social";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { FacebookIcon, InstagramIcon, TikTokIcon } from "@/components/dashboard/social-icons";
-import { disconnectSocialAccount } from "./actions";
+import { disconnectSocialAccount, setAutoReplyEnabled } from "./actions";
+
+const REPLY_STATUS_LABELS: Record<string, { label: string; variant: "success" | "warning" | "danger" }> = {
+  respondido: { label: "Respondido", variant: "success" },
+  necesita_revision: { label: "Necesita revisión", variant: "warning" },
+  fallido: { label: "Falló", variant: "danger" },
+};
 
 const PLATFORMS: { key: SocialPlatform; Icon: typeof InstagramIcon; brandClass: string }[] = [
   { key: "instagram", Icon: InstagramIcon, brandClass: "bg-gradient-to-br from-fuchsia-500 to-amber-400" },
@@ -32,12 +39,18 @@ export default async function RedesSocialesPage({
   const { business } = await getCurrentBusiness();
   const supabase = await createClient();
 
-  const [{ data: connections }, { data: subscription }] = await Promise.all([
+  const [{ data: connections }, { data: subscription }, { data: interactions }] = await Promise.all([
     supabase
       .from("social_connections")
       .select("id, platform, external_account_name, external_account_avatar_url")
       .eq("business_id", business.id),
     supabase.from("subscriptions").select("plan_key").eq("business_id", business.id).maybeSingle(),
+    supabase
+      .from("social_interactions")
+      .select("id, platform, interaction_type, author_name, inbound_text, reply_text, reply_status, created_at")
+      .eq("business_id", business.id)
+      .order("created_at", { ascending: false })
+      .limit(15),
   ]);
 
   const { data: plan } = await supabase
@@ -139,6 +152,52 @@ export default async function RedesSocialesPage({
           );
         })}
       </div>
+
+      <Card className="mt-6 flex flex-col gap-4 p-6">
+        <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+          <div className="flex items-start gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+              <MessageCircle className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="font-semibold text-zinc-900">Agente de Respuestas</p>
+              <p className="mt-0.5 max-w-md text-sm text-zinc-500">
+                Contesta comentarios y mensajes directos de Instagram y Facebook usando tus preguntas
+                frecuentes, horario y precios de Configuración → Marca. Si no está seguro, no contesta —
+                lo deja aquí para que tú respondas.
+              </p>
+            </div>
+          </div>
+          <form action={setAutoReplyEnabled}>
+            <input type="hidden" name="enabled" value={(!business.auto_reply_enabled).toString()} />
+            <Button type="submit" variant={business.auto_reply_enabled ? "secondary" : "primary"} size="sm">
+              {business.auto_reply_enabled ? "Desactivar" : "Activar"}
+            </Button>
+          </form>
+        </div>
+
+        {interactions && interactions.length > 0 && (
+          <div className="flex flex-col gap-2 border-t border-[var(--hairline)] pt-4">
+            {interactions.map((interaction) => {
+              const status = REPLY_STATUS_LABELS[interaction.reply_status] ?? REPLY_STATUS_LABELS.necesita_revision;
+              return (
+                <div key={interaction.id} className="flex flex-col gap-1.5 rounded-xl bg-zinc-50 p-3 text-sm ">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-medium text-zinc-500">
+                      {SOCIAL_PLATFORM_LABELS[interaction.platform]} ·{" "}
+                      {interaction.interaction_type === "comentario" ? "Comentario" : "Mensaje directo"}
+                      {interaction.author_name ? ` · ${interaction.author_name}` : ""}
+                    </p>
+                    <Badge variant={status.variant}>{status.label}</Badge>
+                  </div>
+                  <p className="text-zinc-700">{interaction.inbound_text}</p>
+                  {interaction.reply_text && <p className="text-zinc-500">↳ {interaction.reply_text}</p>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

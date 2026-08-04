@@ -155,6 +155,49 @@ export async function publishToInstagram(
   return { externalPostId };
 }
 
+/** Agente de Respuestas — reply to a public comment (works for both
+ * Instagram and Facebook Page comments, same endpoint shape on the Graph API). */
+export async function replyToComment(
+  pageAccessToken: string,
+  commentId: string,
+  message: string,
+): Promise<{ externalReplyId: string }> {
+  const url = `https://graph.facebook.com/${GRAPH_VERSION}/${commentId}/comments`;
+  const body = new URLSearchParams({ access_token: pageAccessToken, message });
+  const res = await fetch(url, { method: "POST", body });
+  if (!res.ok) throw new Error(`Meta comment reply failed: ${res.status} ${await res.text()}`);
+  const data = (await res.json()) as { id?: string };
+  if (!data.id) throw new Error("Meta comment reply returned no id.");
+  return { externalReplyId: data.id };
+}
+
+/** Agente de Respuestas — reply to a DM. Meta's Send API is unified across
+ * Messenger and Instagram messaging: always POST to the connected Page's
+ * /messages endpoint with the Page access token, whether the original
+ * message came in as a Facebook or an Instagram DM. */
+export async function sendDirectMessage(
+  pageAccessToken: string,
+  pageId: string,
+  recipientId: string,
+  message: string,
+): Promise<{ externalMessageId: string }> {
+  const url = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${pageId}/messages`);
+  url.searchParams.set("access_token", pageAccessToken);
+  const res = await fetch(url.toString(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      recipient: { id: recipientId },
+      message: { text: message },
+      messaging_type: "RESPONSE",
+    }),
+  });
+  if (!res.ok) throw new Error(`Meta DM send failed: ${res.status} ${await res.text()}`);
+  const data = (await res.json()) as { message_id?: string };
+  if (!data.message_id) throw new Error("Meta DM send returned no message id.");
+  return { externalMessageId: data.message_id };
+}
+
 export function createMetaAdapter(platform: "instagram" | "facebook"): SocialAdapter {
   return {
     isConfigured() {

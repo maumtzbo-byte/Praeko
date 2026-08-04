@@ -25,7 +25,14 @@ function isPublicPath(pathname: string) {
   if (PUBLIC_PATHS.includes(pathname)) return true;
   if (CRAWLER_PATHS.includes(pathname)) return true;
   // Static assets and Next internals never require a session.
-  return pathname.startsWith("/_next") || pathname.startsWith("/favicon");
+  if (pathname.startsWith("/_next") || pathname.startsWith("/favicon")) return true;
+  // Meta calls these directly (webhook verification + delivery) with no
+  // browser session at all — without this they'd 307 to /login instead of
+  // ever reaching the route handler, same failure mode the crawler paths
+  // above already hit once. Signature verification inside the route itself
+  // (not a session) is what actually authenticates these calls.
+  if (pathname.startsWith("/api/webhooks/")) return true;
+  return false;
 }
 
 /**

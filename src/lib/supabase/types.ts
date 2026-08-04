@@ -200,6 +200,7 @@ export type Database = {
       }
       businesses: {
         Row: {
+          auto_reply_enabled: boolean
           city: string | null
           contact_email: string | null
           country: string | null
@@ -217,6 +218,7 @@ export type Database = {
           website_url: string | null
         }
         Insert: {
+          auto_reply_enabled?: boolean
           city?: string | null
           contact_email?: string | null
           country?: string | null
@@ -234,6 +236,7 @@ export type Database = {
           website_url?: string | null
         }
         Update: {
+          auto_reply_enabled?: boolean
           city?: string | null
           contact_email?: string | null
           country?: string | null
@@ -593,6 +596,63 @@ export type Database = {
           },
         ]
       }
+      social_interactions: {
+        Row: {
+          author_name: string | null
+          business_id: string
+          connection_id: string | null
+          created_at: string
+          external_interaction_id: string
+          id: string
+          inbound_text: string
+          interaction_type: Database["public"]["Enums"]["interaction_type"]
+          platform: Database["public"]["Enums"]["social_platform"]
+          reply_status: Database["public"]["Enums"]["interaction_reply_status"]
+          reply_text: string | null
+        }
+        Insert: {
+          author_name?: string | null
+          business_id: string
+          connection_id?: string | null
+          created_at?: string
+          external_interaction_id: string
+          id?: string
+          inbound_text: string
+          interaction_type: Database["public"]["Enums"]["interaction_type"]
+          platform: Database["public"]["Enums"]["social_platform"]
+          reply_status: Database["public"]["Enums"]["interaction_reply_status"]
+          reply_text?: string | null
+        }
+        Update: {
+          author_name?: string | null
+          business_id?: string
+          connection_id?: string | null
+          created_at?: string
+          external_interaction_id?: string
+          id?: string
+          inbound_text?: string
+          interaction_type?: Database["public"]["Enums"]["interaction_type"]
+          platform?: Database["public"]["Enums"]["social_platform"]
+          reply_status?: Database["public"]["Enums"]["interaction_reply_status"]
+          reply_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_interactions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_interactions_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "social_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           business_id: string
@@ -770,6 +830,8 @@ export type Database = {
         | "en_revision"
         | "publicada"
         | "fallida"
+      interaction_reply_status: "respondido" | "necesita_revision" | "fallido"
+      interaction_type: "comentario" | "mensaje_directo"
       plan_key: "basico" | "pro" | "max"
       quality_review_result:
         | "aprobado"

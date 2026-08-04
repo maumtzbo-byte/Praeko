@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FacebookIcon, InstagramIcon, TikTokIcon } from "@/components/dashboard/social-icons";
+import { ConnectAtLimitButton } from "@/components/dashboard/connect-at-limit-button";
 import { disconnectSocialAccount, setAutoReplyEnabled } from "./actions";
 
 const REPLY_STATUS_LABELS: Record<string, { label: string; variant: "success" | "warning" | "danger" }> = {
@@ -138,9 +139,7 @@ export default async function RedesSocialesPage({
                   Próximamente — falta configuración
                 </div>
               ) : atLimit ? (
-                <Link href="/dashboard/plan" className="text-xs text-zinc-500 underline hover:text-zinc-700 ">
-                  Alcanzaste el límite de tu plan — mejora tu plan para conectar más
-                </Link>
+                <ConnectAtLimitButton />
               ) : (
                 <Link href={`/social/${key}/start`}>
                   <Button size="sm" className="w-full">

@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/dashboard/empty-state";
+import { UpgradePlanModal } from "@/components/dashboard/upgrade-plan-modal";
 import { retryFailedContent } from "@/lib/content/actions";
 import {
   generateMediaForContent,
@@ -55,15 +56,20 @@ function RetryButton({ itemId }: { itemId: string }) {
 
 /** Agente Creativo trigger — only meaningful once FAL_API_KEY is configured
  * server-side; the action itself fails with a clear message otherwise. */
-function GenerateMediaButton({ itemId }: { itemId: string }) {
+function GenerateMediaButton({ itemId, contentKind }: { itemId: string; contentKind: "imagen" | "video" }) {
   const router = useRouter();
   const [generating, setGenerating] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   async function handleGenerate() {
     setGenerating(true);
     const res = await generateMediaForContent(itemId);
     if (!res.success) {
-      toast.error(res.error);
+      if (res.code === "plan_limit") {
+        setShowUpgrade(true);
+      } else {
+        toast.error(res.error);
+      }
       setGenerating(false);
       return;
     }
@@ -72,10 +78,15 @@ function GenerateMediaButton({ itemId }: { itemId: string }) {
   }
 
   return (
-    <Button variant="secondary" size="sm" onClick={handleGenerate} loading={generating}>
-      <Wand2 className="h-3.5 w-3.5" />
-      Generar
-    </Button>
+    <>
+      <Button variant="secondary" size="sm" onClick={handleGenerate} loading={generating}>
+        <Wand2 className="h-3.5 w-3.5" />
+        Generar
+      </Button>
+      {showUpgrade && (
+        <UpgradePlanModal reason={contentKind === "video" ? "videos" : "images"} onClose={() => setShowUpgrade(false)} />
+      )}
+    </>
   );
 }
 
@@ -271,7 +282,7 @@ export function PublicationsList({
                       (inFlightByItemId?.get(item.id) ? (
                         <RefreshStatusButton generationId={inFlightByItemId.get(item.id)!} />
                       ) : (
-                        <GenerateMediaButton itemId={item.id} />
+                        <GenerateMediaButton itemId={item.id} contentKind={item.content_kind} />
                       ))}
                     {item.status === "generada" && <PublishButtons itemId={item.id} connections={connections} />}
                     <Badge variant={STATUS_VARIANTS[item.status]}>{STATUS_LABELS[item.status]}</Badge>

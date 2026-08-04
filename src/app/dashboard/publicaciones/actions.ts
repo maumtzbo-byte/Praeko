@@ -11,7 +11,7 @@ import { PLAN_LIMITS, canGenerateVideo, type PlanKey } from "@/lib/plans/limits"
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
-  | { success: false; error: string };
+  | { success: false; error: string; code?: "plan_limit" };
 
 /** Kicks off the Agente Creativo for one content_calendar piece: submits an
  * async fal.ai job and records it as a `generations` row in "queued" state.
@@ -78,13 +78,15 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
       if (!check.allowed) {
         return {
           success: false,
-          error: `Ya usaste los videos incluidos este mes en tu plan ${plan.displayName}. Mejora tu plan o espera al próximo mes.`,
+          error: `Ya usaste los videos incluidos este mes en tu plan ${plan.displayName}.`,
+          code: "plan_limit",
         };
       }
     } else if ((usage?.images_used ?? 0) >= plan.imagesPerMonth) {
       return {
         success: false,
-        error: `Ya usaste las imágenes incluidas este mes en tu plan ${plan.displayName}. Mejora tu plan o espera al próximo mes.`,
+        error: `Ya usaste las imágenes incluidas este mes en tu plan ${plan.displayName}.`,
+        code: "plan_limit",
       };
     }
 

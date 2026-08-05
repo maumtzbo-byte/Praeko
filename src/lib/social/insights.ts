@@ -135,5 +135,10 @@ export async function fetchPostInsights(
       return fetchInstagramMediaInsights(accessToken, externalPostId);
     case "tiktok":
       return fetchTikTokVideoInsights(accessToken, externalPostId);
+    case "google_business":
+      // Reviews (fetchGoogleReviews in google-business.ts) aren't "post
+      // insights" — different shape entirely. Exists so this switch stays
+      // exhaustive against SocialPlatform; callers should never reach it.
+      throw new Error("Google Business Profile no publica posts — usa fetchGoogleReviews.");
   }
 }

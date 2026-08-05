@@ -2,13 +2,14 @@ import Link from "next/link";
 import { CheckCircle2, Lock, MessageCircle } from "lucide-react";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { createClient } from "@/lib/supabase/server";
-import { getAdapter, SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/social";
+import { getAdapter, isPublishablePlatform, SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/social";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FacebookIcon, InstagramIcon, TikTokIcon } from "@/components/dashboard/social-icons";
+import { FacebookIcon, InstagramIcon, TikTokIcon, GoogleBusinessIcon } from "@/components/dashboard/social-icons";
 import { ConnectAtLimitButton } from "@/components/dashboard/connect-at-limit-button";
+import { RefreshGoogleReviewsButton } from "@/components/dashboard/refresh-google-reviews-button";
 import { disconnectSocialAccount, setAutoReplyEnabled } from "./actions";
 
 const REPLY_STATUS_LABELS: Record<string, { label: string; variant: "success" | "warning" | "danger" }> = {
@@ -17,10 +18,17 @@ const REPLY_STATUS_LABELS: Record<string, { label: string; variant: "success" | 
   fallido: { label: "Falló", variant: "danger" },
 };
 
+const INTERACTION_TYPE_LABELS: Record<string, string> = {
+  comentario: "Comentario",
+  mensaje_directo: "Mensaje directo",
+  reseña: "Reseña de Google",
+};
+
 const PLATFORMS: { key: SocialPlatform; Icon: typeof InstagramIcon; brandClass: string }[] = [
   { key: "instagram", Icon: InstagramIcon, brandClass: "bg-gradient-to-br from-fuchsia-500 to-amber-400" },
   { key: "facebook", Icon: FacebookIcon, brandClass: "bg-blue-600" },
   { key: "tiktok", Icon: TikTokIcon, brandClass: "bg-zinc-950" },
+  { key: "google_business", Icon: GoogleBusinessIcon, brandClass: "bg-amber-500" },
 ];
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -48,7 +56,7 @@ export default async function RedesSocialesPage({
     supabase.from("subscriptions").select("plan_key").eq("business_id", business.id).maybeSingle(),
     supabase
       .from("social_interactions")
-      .select("id, platform, interaction_type, author_name, inbound_text, reply_text, reply_status, created_at")
+      .select("id, platform, interaction_type, author_name, inbound_text, reply_text, reply_status, rating, created_at")
       .eq("business_id", business.id)
       .order("created_at", { ascending: false })
       .limit(15),
@@ -62,7 +70,10 @@ export default async function RedesSocialesPage({
 
   const connectionsByPlatform = new Map((connections ?? []).map((c) => [c.platform, c]));
   const limit = plan?.social_network_limit ?? 1;
-  const connectedCount = connections?.length ?? 0;
+  // Google Business Profile is a data source, not a publishing slot — see
+  // isPublishablePlatform — so it's excluded from the "de tu plan" count.
+  const publishableConnections = (connections ?? []).filter((c) => isPublishablePlatform(c.platform));
+  const connectedCount = publishableConnections.length;
   const atLimit = connectedCount >= limit;
 
   return (
@@ -75,8 +86,9 @@ export default async function RedesSocialesPage({
       <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[var(--hairline)] bg-white/60 px-4 py-3 text-xs text-zinc-500 ">
         <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
         <p>
-          La conexión usa el inicio de sesión oficial de cada red (Meta / TikTok) — nunca vemos ni
-          guardamos tu contraseña, y solo obtenemos permiso para publicar en tu nombre. Puedes
+          La conexión usa el inicio de sesión oficial de cada red (Meta / TikTok / Google) — nunca
+          vemos ni guardamos tu contraseña. Google Business Profile no cuenta contra tu límite de
+          redes del plan — es una fuente de datos (reseñas), no un canal de publicación. Puedes
           desconectar cualquier cuenta cuando quieras.
         </p>
       </div>
@@ -126,6 +138,7 @@ export default async function RedesSocialesPage({
                       </p>
                     </div>
                   </div>
+                  {key === "google_business" && <RefreshGoogleReviewsButton />}
                   <form action={disconnectSocialAccount}>
                     <input type="hidden" name="connectionId" value={connection.id} />
                     <Button type="submit" variant="secondary" size="sm" className="w-full">
@@ -138,7 +151,7 @@ export default async function RedesSocialesPage({
                   <Lock className="h-3.5 w-3.5 shrink-0" />
                   Próximamente — falta configuración
                 </div>
-              ) : atLimit ? (
+              ) : atLimit && isPublishablePlatform(key) ? (
                 <ConnectAtLimitButton />
               ) : (
                 <Link href={`/social/${key}/start`}>
@@ -161,9 +174,9 @@ export default async function RedesSocialesPage({
             <div>
               <p className="font-semibold text-zinc-900">Agente de Respuestas</p>
               <p className="mt-0.5 max-w-md text-sm text-zinc-500">
-                Contesta comentarios y mensajes directos de Instagram y Facebook usando tus preguntas
-                frecuentes, horario y precios de Configuración → Marca. Si no está seguro, no contesta —
-                lo deja aquí para que tú respondas.
+                Contesta comentarios y mensajes directos de Instagram/Facebook, y reseñas de Google
+                Business Profile, usando tus preguntas frecuentes, horario y precios de Configuración →
+                Marca. Si no está seguro, no contesta — lo deja aquí para que tú respondas.
               </p>
             </div>
           </div>
@@ -184,7 +197,8 @@ export default async function RedesSocialesPage({
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-medium text-zinc-500">
                       {SOCIAL_PLATFORM_LABELS[interaction.platform]} ·{" "}
-                      {interaction.interaction_type === "comentario" ? "Comentario" : "Mensaje directo"}
+                      {INTERACTION_TYPE_LABELS[interaction.interaction_type] ?? interaction.interaction_type}
+                      {interaction.rating ? ` · ${"★".repeat(interaction.rating)}${"☆".repeat(5 - interaction.rating)}` : ""}
                       {interaction.author_name ? ` · ${interaction.author_name}` : ""}
                     </p>
                     <Badge variant={status.variant}>{status.label}</Badge>

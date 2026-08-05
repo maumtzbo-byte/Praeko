@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { createClient } from "@/lib/supabase/server";
-import { getAdapter, isSocialPlatform } from "@/lib/social";
+import { getAdapter, isSocialPlatform, isPublishablePlatform } from "@/lib/social";
 
 const STATE_COOKIE = "social_oauth_state";
 
@@ -40,8 +40,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ plat
     .single();
 
   const alreadyConnectedThisPlatform = existingConnections?.some((c) => c.platform === platform) ?? false;
-  const connectedCount = existingConnections?.length ?? 0;
-  if (!alreadyConnectedThisPlatform && connectedCount >= (plan?.social_network_limit ?? 1)) {
+  const connectedCount = existingConnections?.filter((c) => isPublishablePlatform(c.platform)).length ?? 0;
+  if (isPublishablePlatform(platform) && !alreadyConnectedThisPlatform && connectedCount >= (plan?.social_network_limit ?? 1)) {
     return NextResponse.redirect(`${origin}/dashboard/redes-sociales?error=plan_limit`);
   }
 

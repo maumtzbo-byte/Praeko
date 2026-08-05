@@ -21,5 +21,10 @@ export async function publishToSocialPlatform(
       return publishToInstagram(accessToken, externalAccountId, mediaUrl, caption, contentKind);
     case "tiktok":
       return publishToTikTok(accessToken, mediaUrl, caption);
+    case "google_business":
+      // Not a publishing channel — see isPublishablePlatform in
+      // src/lib/social/index.ts. Callers should never reach this branch;
+      // it exists so the switch stays exhaustive against SocialPlatform.
+      throw new Error("Google Business Profile no es un canal de publicación.");
   }
 }

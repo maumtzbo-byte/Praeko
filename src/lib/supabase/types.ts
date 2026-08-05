@@ -607,6 +607,7 @@ export type Database = {
           inbound_text: string
           interaction_type: Database["public"]["Enums"]["interaction_type"]
           platform: Database["public"]["Enums"]["social_platform"]
+          rating: number | null
           reply_status: Database["public"]["Enums"]["interaction_reply_status"]
           reply_text: string | null
         }
@@ -620,6 +621,7 @@ export type Database = {
           inbound_text: string
           interaction_type: Database["public"]["Enums"]["interaction_type"]
           platform: Database["public"]["Enums"]["social_platform"]
+          rating?: number | null
           reply_status: Database["public"]["Enums"]["interaction_reply_status"]
           reply_text?: string | null
         }
@@ -633,6 +635,7 @@ export type Database = {
           inbound_text?: string
           interaction_type?: Database["public"]["Enums"]["interaction_type"]
           platform?: Database["public"]["Enums"]["social_platform"]
+          rating?: number | null
           reply_status?: Database["public"]["Enums"]["interaction_reply_status"]
           reply_text?: string | null
         }
@@ -831,14 +834,14 @@ export type Database = {
         | "publicada"
         | "fallida"
       interaction_reply_status: "respondido" | "necesita_revision" | "fallido"
-      interaction_type: "comentario" | "mensaje_directo"
+      interaction_type: "comentario" | "mensaje_directo" | "reseña"
       plan_key: "basico" | "pro" | "max"
       quality_review_result:
         | "aprobado"
         | "necesita_revision_humana"
         | "rechazado"
       social_connection_status: "active" | "error"
-      social_platform: "instagram" | "facebook" | "tiktok"
+      social_platform: "instagram" | "facebook" | "tiktok" | "google_business"
       subscription_status: "active" | "past_due" | "canceled" | "incomplete"
     }
     CompositeTypes: {
@@ -986,7 +989,7 @@ export const Constants = {
         "rechazado",
       ],
       social_connection_status: ["active", "error"],
-      social_platform: ["instagram", "facebook", "tiktok"],
+      social_platform: ["instagram", "facebook", "tiktok", "google_business"],
       subscription_status: ["active", "past_due", "canceled", "incomplete"],
     },
   },

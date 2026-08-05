@@ -25,7 +25,12 @@ import type { Tables } from "@/lib/supabase/types";
 
 type ContentCalendarRow = Tables<"content_calendar">;
 type ContentStatus = ContentCalendarRow["status"];
-type SocialConnection = Pick<Tables<"social_connections">, "id" | "platform" | "external_account_name">;
+// Publishable platforms only — Google Business Profile is a data source
+// (reviews), never something Frames publishes content to, so it's
+// narrowed out here rather than needing a dead icon-map entry.
+type SocialConnection = Pick<Tables<"social_connections">, "id" | "external_account_name"> & {
+  platform: "instagram" | "facebook" | "tiktok";
+};
 
 const PLATFORM_ICONS = { instagram: InstagramIcon, facebook: FacebookIcon, tiktok: TikTokIcon } as const;
 

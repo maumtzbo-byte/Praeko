@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { PublicationsList } from "@/components/content/publications-list";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { createClient } from "@/lib/supabase/server";
+import { isPublishablePlatform } from "@/lib/social";
 
 // publishContentNow (called from this page) polls Meta's Instagram container
 // status inline before it can return — see waitForInstagramContainerReady in
@@ -42,13 +43,23 @@ export default async function PublicacionesPage() {
       .map((g) => [g.content_calendar_id, g.id]),
   );
 
+  // Google Business Profile connections never belong in the "publish to"
+  // list — it's a data source (reviews), not a channel Frames posts
+  // content to (see isPublishablePlatform). Narrowed here, not just
+  // filtered, so PublicationsList's icon map stays exhaustive over
+  // instagram/facebook/tiktok without needing a Google icon it would
+  // never actually render.
+  const publishableConnections = (connections ?? []).filter(
+    (c): c is typeof c & { platform: "instagram" | "facebook" | "tiktok" } => isPublishablePlatform(c.platform),
+  );
+
   return (
     <div>
       <PageHeader title="Publicaciones programadas" description="Qué está a punto de publicarse y cuándo." />
       <PublicationsList
         initialItems={calendarItems ?? []}
         inFlightByItemId={inFlightByItemId}
-        connections={connections ?? []}
+        connections={publishableConnections}
       />
     </div>
   );

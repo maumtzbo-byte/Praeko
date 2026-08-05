@@ -38,3 +38,24 @@ export function TikTokIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+// A location pin with a star, not Google's own "G" mark — reads as
+// "reviews for a place on a map" (what this connection actually is)
+// without reproducing a trademarked logo, same approach as the icons
+// above.
+export function GoogleBusinessIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M12 21c4-4.2 6.5-7.6 6.5-10.8A6.5 6.5 0 0 0 5.5 10.2C5.5 13.4 8 16.8 12 21Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 7.2 12.9 9.3 15.1 9.5 13.5 11 14 13.2 12 12.1 10 13.2 10.5 11 8.9 9.5 11.1 9.3Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}

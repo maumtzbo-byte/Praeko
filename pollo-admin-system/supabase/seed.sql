@@ -40,5 +40,5 @@ on conflict do nothing;
 insert into public.sucursales (nombre, direccion, telefono, responsable, estado) values
   ('Cumbres',     'Av. Juárez 123, Centro, CDMX', '55-1234-5678', 'María González', 'activa'),
   ('Fray',        'Blvd. López Mateos 456, Zona Norte, GDL', '33-2345-6789', 'Carlos Ramírez', 'activa'),
-  ('San Nicolás', 'Calz. del Valle 789, Zona Sur, MTY', '81-3456-7890', 'Ana Torres', 'activa')
+  ('Pedro Infante', 'Calz. del Valle 789, Zona Sur, MTY', '81-3456-7890', 'Ana Torres', 'activa')
 on conflict do nothing;

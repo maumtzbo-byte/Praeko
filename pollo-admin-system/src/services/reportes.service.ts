@@ -18,8 +18,14 @@ export interface ReporteDiarioInput {
   merma_total: number
   pollo_completo: number
   medio_pollo: number
-  venta_complementos: number
-  venta_extras: number
+  complementos_frijoles: number
+  complementos_salchicha: number
+  complementos_coditos: number
+  complementos_arroz: number
+  complementos_cebolla: number
+  extras_totopos: number
+  extras_salsas: number
+  extras_tortillas: number
   promo_miercoles: number
   promo_2x: number
   promo_1_5: number

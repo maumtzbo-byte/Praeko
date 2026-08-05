@@ -16,7 +16,7 @@ import { useSucursales } from '@/hooks/use-sucursales'
 import { useResumenMermasDelDia } from '@/hooks/use-mermas'
 import { useGastosTotal } from '@/hooks/use-gastos'
 import { useAuth } from '@/context/AuthContext'
-import { MENU_ITEMS, PROMO_MIERCOLES } from '@/lib/menu-precios'
+import { COMPLEMENTOS_ITEMS, EXTRAS_ITEMS, MENU_ITEMS, POLLO_ITEMS, PROMO_ITEMS, PROMO_MIERCOLES } from '@/lib/menu-precios'
 import { cn, formatCurrency, todayISO } from '@/lib/utils'
 import { GastosDelDiaSection } from '@/pages/reportes-diarios/GastosDelDiaSection'
 
@@ -29,8 +29,14 @@ const schema = z.object({
   uber: z.coerce.number().min(0),
   pollo_completo: z.coerce.number().min(0),
   medio_pollo: z.coerce.number().min(0),
-  venta_complementos: z.coerce.number().min(0),
-  venta_extras: z.coerce.number().min(0),
+  complementos_frijoles: z.coerce.number().min(0),
+  complementos_salchicha: z.coerce.number().min(0),
+  complementos_coditos: z.coerce.number().min(0),
+  complementos_arroz: z.coerce.number().min(0),
+  complementos_cebolla: z.coerce.number().min(0),
+  extras_totopos: z.coerce.number().min(0),
+  extras_salsas: z.coerce.number().min(0),
+  extras_tortillas: z.coerce.number().min(0),
   promo_2x: z.coerce.number().min(0),
   promo_1_5: z.coerce.number().min(0),
   promo_miercoles: z.coerce.number().min(0),
@@ -49,8 +55,14 @@ const EMPTY: FormInput = {
   uber: 0,
   pollo_completo: 0,
   medio_pollo: 0,
-  venta_complementos: 0,
-  venta_extras: 0,
+  complementos_frijoles: 0,
+  complementos_salchicha: 0,
+  complementos_coditos: 0,
+  complementos_arroz: 0,
+  complementos_cebolla: 0,
+  extras_totopos: 0,
+  extras_salsas: 0,
+  extras_tortillas: 0,
   promo_2x: 0,
   promo_1_5: 0,
   promo_miercoles: 0,
@@ -101,8 +113,14 @@ export function ReporteDiarioPage() {
               uber: reporte.uber,
               pollo_completo: reporte.pollo_completo,
               medio_pollo: reporte.medio_pollo,
-              venta_complementos: reporte.venta_complementos,
-              venta_extras: reporte.venta_extras,
+              complementos_frijoles: reporte.complementos_frijoles,
+              complementos_salchicha: reporte.complementos_salchicha,
+              complementos_coditos: reporte.complementos_coditos,
+              complementos_arroz: reporte.complementos_arroz,
+              complementos_cebolla: reporte.complementos_cebolla,
+              extras_totopos: reporte.extras_totopos,
+              extras_salsas: reporte.extras_salsas,
+              extras_tortillas: reporte.extras_tortillas,
               promo_2x: reporte.promo_2x,
               promo_1_5: reporte.promo_1_5,
               promo_miercoles: reporte.promo_miercoles,
@@ -167,8 +185,14 @@ export function ReporteDiarioPage() {
       merma_total: resumenMermas.mermaTotal,
       pollo_completo: formValues.pollo_completo,
       medio_pollo: formValues.medio_pollo,
-      venta_complementos: formValues.venta_complementos,
-      venta_extras: formValues.venta_extras,
+      complementos_frijoles: formValues.complementos_frijoles,
+      complementos_salchicha: formValues.complementos_salchicha,
+      complementos_coditos: formValues.complementos_coditos,
+      complementos_arroz: formValues.complementos_arroz,
+      complementos_cebolla: formValues.complementos_cebolla,
+      extras_totopos: formValues.extras_totopos,
+      extras_salsas: formValues.extras_salsas,
+      extras_tortillas: formValues.extras_tortillas,
       promo_2x: formValues.promo_2x,
       promo_1_5: formValues.promo_1_5,
       promo_miercoles: esMiercoles ? formValues.promo_miercoles : 0,
@@ -238,21 +262,58 @@ export function ReporteDiarioPage() {
           <CardHeader>
             <CardTitle>Operación del día</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+          <CardContent className="flex flex-col gap-5">
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {MENU_ITEMS.map((item) => (
+              {POLLO_ITEMS.map((item) => (
                 <div key={item.key} className="flex flex-col gap-1.5">
                   <Label htmlFor={item.key}>{item.label}</Label>
                   <Input id={item.key} type="number" step="1" min="0" {...register(item.key)} />
                 </div>
               ))}
-              {esMiercoles && (
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="promo_miercoles">{PROMO_MIERCOLES.label}</Label>
-                  <Input id="promo_miercoles" type="number" step="1" min="0" {...register('promo_miercoles')} />
-                </div>
-              )}
             </div>
+
+            <div>
+              <p className="mb-2 text-xs font-medium text-muted-foreground">Complementos ($45 c/u)</p>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                {COMPLEMENTOS_ITEMS.map((item) => (
+                  <div key={item.key} className="flex flex-col gap-1.5">
+                    <Label htmlFor={item.key}>{item.label}</Label>
+                    <Input id={item.key} type="number" step="1" min="0" {...register(item.key)} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-xs font-medium text-muted-foreground">Extras ($10 c/u)</p>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                {EXTRAS_ITEMS.map((item) => (
+                  <div key={item.key} className="flex flex-col gap-1.5">
+                    <Label htmlFor={item.key}>{item.label}</Label>
+                    <Input id={item.key} type="number" step="1" min="0" {...register(item.key)} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-xs font-medium text-muted-foreground">Promociones</p>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                {PROMO_ITEMS.map((item) => (
+                  <div key={item.key} className="flex flex-col gap-1.5">
+                    <Label htmlFor={item.key}>{item.label}</Label>
+                    <Input id={item.key} type="number" step="1" min="0" {...register(item.key)} />
+                  </div>
+                ))}
+                {esMiercoles && (
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="promo_miercoles">{PROMO_MIERCOLES.label}</Label>
+                    <Input id="promo_miercoles" type="number" step="1" min="0" {...register('promo_miercoles')} />
+                  </div>
+                )}
+              </div>
+            </div>
+
             <p className="text-sm text-muted-foreground">
               Total por productos: <span className="font-semibold text-foreground">{formatCurrency(operacionTotal)}</span>
             </p>

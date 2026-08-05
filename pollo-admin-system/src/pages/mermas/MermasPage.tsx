@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useDeleteMerma, useMermas } from '@/hooks/use-mermas'
 import { useAuth } from '@/context/AuthContext'
 import { MermaFormDialog } from '@/pages/mermas/MermaFormDialog'
-import { MOTIVO_MERMA_LABELS } from '@/lib/merma-labels'
 import { CHART_COLORS } from '@/lib/chart-colors'
 import { formatDate, formatNumber } from '@/lib/utils'
 import type { MermaConProducto } from '@/types/database'
@@ -36,11 +35,13 @@ export function MermasPage() {
   const porMotivo = React.useMemo(() => {
     const map = new Map<string, number>()
     for (const m of mermas) map.set(m.motivo, (map.get(m.motivo) ?? 0) + Number(m.cantidad))
-    return Array.from(map.entries()).map(([motivo, cantidad]) => ({
-      motivo: MOTIVO_MERMA_LABELS[motivo as keyof typeof MOTIVO_MERMA_LABELS],
-      cantidad,
-    }))
+    return Array.from(map.entries()).map(([motivo, cantidad]) => ({ motivo, cantidad }))
   }, [mermas])
+
+  const motivosUnicos = React.useMemo(
+    () => Array.from(new Set(mermas.map((m) => m.motivo))).sort((a, b) => a.localeCompare(b)),
+    [mermas],
+  )
 
   const motivoPrincipal = [...porMotivo].sort((a, b) => b.cantidad - a.cantidad)[0]?.motivo ?? '—'
 
@@ -102,9 +103,9 @@ export function MermasPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos los motivos</SelectItem>
-            {Object.entries(MOTIVO_MERMA_LABELS).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
+            {motivosUnicos.map((motivo) => (
+              <SelectItem key={motivo} value={motivo}>
+                {motivo}
               </SelectItem>
             ))}
           </SelectContent>
@@ -135,7 +136,7 @@ export function MermasPage() {
                 <TableCell>
                   {m.cantidad} {m.producto.unidad}
                 </TableCell>
-                <TableCell>{MOTIVO_MERMA_LABELS[m.motivo]}</TableCell>
+                <TableCell>{m.motivo}</TableCell>
                 <TableCell className="max-w-56 truncate text-muted-foreground">{m.observaciones ?? '—'}</TableCell>
                 <TableCell>
                   <DropdownMenu>

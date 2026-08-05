@@ -8,18 +8,13 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCreateGasto, useUploadComprobante } from '@/hooks/use-gastos'
-import { useCategorias } from '@/hooks/use-categorias'
 import { useAuth } from '@/context/AuthContext'
 import { todayISO } from '@/lib/utils'
 
 const schema = z.object({
-  categoria_id: z.string().optional(),
   monto: z.coerce.number().positive('Debe ser mayor a 0'),
   concepto: z.string().min(2, 'Requerido'),
-  descripcion: z.string().optional(),
   fecha: z.string().min(1, 'Requerido'),
 })
 
@@ -39,7 +34,6 @@ export function GastoFormDialog({
   sucursalId: string
 }) {
   const { usuario } = useAuth()
-  const { data: categorias = [] } = useCategorias()
   const createMutation = useCreateGasto()
   const uploadMutation = useUploadComprobante()
   const [comprobante, setComprobante] = React.useState<File | null>(null)
@@ -48,17 +42,15 @@ export function GastoFormDialog({
     register,
     handleSubmit,
     reset,
-    watch,
-    setValue,
     formState: { errors },
   } = useForm<FormInput, unknown, FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { categoria_id: undefined, monto: 0, concepto: '', descripcion: '', fecha: todayISO() },
+    defaultValues: { monto: 0, concepto: '', fecha: todayISO() },
   })
 
   React.useEffect(() => {
     if (open) {
-      reset({ categoria_id: undefined, monto: 0, concepto: '', descripcion: '', fecha: todayISO() })
+      reset({ monto: 0, concepto: '', fecha: todayISO() })
       setComprobante(null)
     }
   }, [open, reset])
@@ -72,10 +64,10 @@ export function GastoFormDialog({
     await createMutation.mutateAsync({
       sucursal_id: sucursalId,
       usuario_id: usuario.id,
-      categoria_id: values.categoria_id ?? null,
+      categoria_id: null,
       monto: values.monto,
       concepto: values.concepto,
-      descripcion: values.descripcion || null,
+      descripcion: null,
       fecha: values.fecha,
       comprobante_url,
     })
@@ -108,42 +100,21 @@ export function GastoFormDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
+            <div className="flex min-w-0 flex-col gap-1.5">
+              <Label htmlFor="fecha">Fecha</Label>
+              <Input id="fecha" type="date" max={todayISO()} {...register('fecha')} />
+            </div>
+            <div className="flex min-w-0 flex-col gap-1.5">
               <Label htmlFor="monto">Monto</Label>
               <Input id="monto" type="number" step="0.01" min="0" {...register('monto')} />
               {errors.monto && <p className="text-xs text-destructive">{errors.monto.message}</p>}
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="fecha">Fecha</Label>
-              <Input id="fecha" type="date" max={todayISO()} {...register('fecha')} />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label>Categoría</Label>
-            <Select value={watch('categoria_id')} onValueChange={(v) => setValue('categoria_id', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona una categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                {categorias.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="concepto">Concepto</Label>
             <Input id="concepto" placeholder="Ej. Compra de carbón" {...register('concepto')} />
             {errors.concepto && <p className="text-xs text-destructive">{errors.concepto.message}</p>}
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="descripcion">Descripción (opcional)</Label>
-            <Textarea id="descripcion" rows={2} {...register('descripcion')} />
           </div>
 
           <div className="flex flex-col gap-1.5">

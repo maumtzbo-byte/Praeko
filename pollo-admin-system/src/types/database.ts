@@ -9,7 +9,7 @@ export type UnidadProducto = 'pieza' | 'kg' | 'g' | 'litro' | 'ml' | 'paquete' |
 export type MetodoPago = 'vta_sucursal' | 'tarjeta' | 'deposito' | 'didi' | 'rappi' | 'uber'
 export type PrioridadPedido = 'baja' | 'normal' | 'alta' | 'urgente'
 export type EstadoPedido = 'pendiente' | 'aceptado' | 'en_preparacion' | 'enviado' | 'recibido' | 'cancelado'
-export type MotivoMerma = 'caducidad' | 'dano_fisico' | 'mal_manejo' | 'transporte' | 'refrigeracion' | 'otro'
+export type MotivoMerma = string
 export type TipoNotificacion =
   | 'reporte_faltante'
   | 'inventario_bajo'

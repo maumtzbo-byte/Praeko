@@ -10,6 +10,14 @@ import { publishToSocialPlatform } from "@/lib/social/publish";
 import { getPostPermalink } from "@/lib/social/meta";
 import { PLAN_LIMITS, canGenerateVideo, type PlanKey } from "@/lib/plans/limits";
 
+// publishContentNow polls Meta's Instagram container status inline (see
+// waitForInstagramContainerReady in src/lib/social/meta.ts) before it can
+// return — that alone can take tens of seconds for real video. A "use
+// server" actions file can only export async functions (`maxDuration`
+// export here fails the build), so the route-segment duration override
+// lives on src/app/dashboard/publicaciones/page.tsx instead, which Next.js
+// applies to Server Actions invoked from that route.
+
 type ActionResult<T = undefined> =
   | { success: true; data: T }
   | { success: false; error: string; code?: "plan_limit" };

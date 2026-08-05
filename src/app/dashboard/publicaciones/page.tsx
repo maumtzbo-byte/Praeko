@@ -3,6 +3,15 @@ import { PublicationsList } from "@/components/content/publications-list";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { createClient } from "@/lib/supabase/server";
 
+// publishContentNow (called from this page) polls Meta's Instagram container
+// status inline before it can return — see waitForInstagramContainerReady in
+// src/lib/social/meta.ts — which alone can take tens of seconds for real
+// video. Without this, Vercel's default serverless function duration (10s
+// on Hobby, 15s on Pro) would kill the action mid-poll on any video that
+// isn't near-instant to process. 60s is the max Hobby allows and covers
+// Pro's default with room to spare.
+export const maxDuration = 60;
+
 export default async function PublicacionesPage() {
   const { business } = await getCurrentBusiness();
   const supabase = await createClient();

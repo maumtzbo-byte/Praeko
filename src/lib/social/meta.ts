@@ -98,11 +98,17 @@ export async function publishToFacebookPage(
 
 /** Polls an Instagram media container until Meta finishes processing it —
  * required before publishing video (Reels), per Meta's documented
- * container lifecycle. Bounded to keep this inside a server action's
- * execution window; a container that isn't ready after this either needs a
- * longer video or genuinely failed. TODO(verify): confirm status_code
- * field name/values against the current Graph API docs before going live. */
-async function waitForInstagramContainerReady(pageAccessToken: string, creationId: string, maxAttempts = 10): Promise<void> {
+ * container lifecycle (status_code field/values confirmed against current
+ * Graph API docs: IN_PROGRESS, FINISHED, PUBLISHED, EXPIRED, ERROR). Meta
+ * itself recommends polling roughly once a minute for up to 5 minutes —
+ * this polls faster (every 4s) since it's bounded by the caller's
+ * serverless function duration, not by Meta's rate limits; 45s total
+ * (maxDuration=60 on the calling action, see publicaciones/actions.ts)
+ * leaves headroom for the create/publish calls and DB writes around this.
+ * A container that isn't ready after that either needs a longer video or
+ * genuinely failed — either way the caller surfaces a clear error instead
+ * of the request just hanging past the platform's function timeout. */
+async function waitForInstagramContainerReady(pageAccessToken: string, creationId: string, maxAttempts = 11): Promise<void> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const statusUrl = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${creationId}`);
     statusUrl.searchParams.set("fields", "status_code");
@@ -113,7 +119,7 @@ async function waitForInstagramContainerReady(pageAccessToken: string, creationI
       if (status_code === "FINISHED") return;
       if (status_code === "ERROR") throw new Error("El contenedor de Instagram falló al procesar el video.");
     }
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 4000));
   }
   throw new Error("El contenedor de Instagram tardó demasiado en procesar el video.");
 }

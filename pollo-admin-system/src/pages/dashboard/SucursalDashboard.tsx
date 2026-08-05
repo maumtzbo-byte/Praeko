@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { StatCard } from '@/components/shared/StatCard'
 import { TareasDelDia } from '@/components/dashboard/TareasDelDia'
 import { PeriodSelector } from '@/components/shared/PeriodSelector'
+import { PeriodNavigator } from '@/components/shared/PeriodNavigator'
 import { SalesTrendChart } from '@/components/charts/SalesTrendChart'
 import { TopProductsChart } from '@/components/charts/TopProductsChart'
 import { EmptyChartCard } from '@/components/charts/EmptyChartCard'
@@ -13,8 +14,10 @@ import { useDashboardData } from '@/hooks/use-dashboard'
 import {
   agruparPorPeriodo,
   calcularTendencia,
+  esPeriodoVigente,
   filtrarPorRango,
   formatEtiquetaPeriodo,
+  formatRangoNavegacion,
   getRangoActual,
   getRangoAnterior,
   getRangoPeriodo,
@@ -28,10 +31,13 @@ import { formatCurrency, formatNumber } from '@/lib/utils'
 
 export function SucursalDashboard({ sucursalId }: { sucursalId: string | null }) {
   const [periodo, setPeriodo] = React.useState<Periodo>('dia')
+  const [referencia, setReferencia] = React.useState(new Date())
+  React.useEffect(() => setReferencia(new Date()), [periodo])
+
   // Ventana amplia para la gráfica; periodo en curso y anterior para las tarjetas.
-  const { desde, hasta } = React.useMemo(() => getRangoPeriodo(periodo), [periodo])
-  const rangoActual = React.useMemo(() => getRangoActual(periodo), [periodo])
-  const rangoAnterior = React.useMemo(() => getRangoAnterior(periodo), [periodo])
+  const { desde, hasta } = React.useMemo(() => getRangoPeriodo(periodo, referencia), [periodo, referencia])
+  const rangoActual = React.useMemo(() => getRangoActual(periodo, referencia), [periodo, referencia])
+  const rangoAnterior = React.useMemo(() => getRangoAnterior(periodo, referencia), [periodo, referencia])
 
   const { data, isLoading } = useDashboardData({ sucursalId: sucursalId ?? undefined, desde, hasta })
 
@@ -43,8 +49,10 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
     () => calcularTotales(filtrarPorRango(data?.reportes ?? [], rangoAnterior)),
     [data, rangoAnterior],
   )
-  const trendLabel = PERIODO_ANTERIOR_LABELS[periodo]
-  const trendEmptyLabel = PERIODO_SIN_COMPARACION_LABELS[periodo]
+  const mostrarTendencia = periodo !== 'total'
+  const trendLabel = mostrarTendencia ? PERIODO_ANTERIOR_LABELS[periodo] : undefined
+  const trendEmptyLabel = mostrarTendencia ? PERIODO_SIN_COMPARACION_LABELS[periodo] : undefined
+  const calcTrend = (actual: number, anterior: number) => (mostrarTendencia ? calcularTendencia(actual, anterior) : undefined)
 
   const chartData = React.useMemo(() => {
     if (!data) return []
@@ -58,6 +66,10 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
         ganancia: registros.reduce((sum, r) => sum + Number(r.ganancia_estimada), 0),
       }))
   }, [data, periodo])
+
+  const mostrandoLabel = esPeriodoVigente(periodo, referencia)
+    ? PERIODO_ACTUAL_LABELS[periodo]
+    : formatRangoNavegacion(periodo, referencia)
 
   if (!sucursalId) {
     return (
@@ -74,7 +86,12 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
       <PageHeader
         title="Mi dashboard"
         description="Resumen de tu sucursal"
-        actions={<PeriodSelector value={periodo} onChange={setPeriodo} />}
+        actions={
+          <>
+            <PeriodSelector value={periodo} onChange={setPeriodo} />
+            <PeriodNavigator periodo={periodo} referencia={referencia} onChange={setReferencia} />
+          </>
+        }
       />
 
       <TareasDelDia
@@ -83,9 +100,7 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
         inventarioBajo={data?.inventarioBajo ?? 0}
       />
 
-      <p className="mb-3 text-xs font-medium text-muted-foreground">
-        Mostrando: {PERIODO_ACTUAL_LABELS[periodo]}
-      </p>
+      <p className="mb-3 text-xs font-medium text-muted-foreground">Mostrando: {mostrandoLabel}</p>
 
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -98,7 +113,7 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
           <StatCard
             label="Total vendido"
             value={formatCurrency(totales.totalVentas)}
-            trend={calcularTendencia(totales.totalVentas, totalesAnteriores.totalVentas)}
+            trend={calcTrend(totales.totalVentas, totalesAnteriores.totalVentas)}
             trendLabel={trendLabel}
             trendEmptyLabel={trendEmptyLabel}
             iconImage="/mascota-dinero-lanzando.png"
@@ -106,7 +121,7 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
           <StatCard
             label="Total gastos"
             value={formatCurrency(totales.totalGastos)}
-            trend={calcularTendencia(totales.totalGastos, totalesAnteriores.totalGastos)}
+            trend={calcTrend(totales.totalGastos, totalesAnteriores.totalGastos)}
             trendLabel={trendLabel}
             trendEmptyLabel={trendEmptyLabel}
             invertTrendColor
@@ -116,7 +131,7 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
           <StatCard
             label="Ganancias"
             value={formatCurrency(totales.ganancia)}
-            trend={calcularTendencia(totales.ganancia, totalesAnteriores.ganancia)}
+            trend={calcTrend(totales.ganancia, totalesAnteriores.ganancia)}
             trendLabel={trendLabel}
             trendEmptyLabel={trendEmptyLabel}
             iconImage="/mascota-dinero.png"
@@ -125,7 +140,7 @@ export function SucursalDashboard({ sucursalId }: { sucursalId: string | null })
           <StatCard
             label="Productos vendidos"
             value={formatNumber(totales.pollosVendidos)}
-            trend={calcularTendencia(totales.pollosVendidos, totalesAnteriores.pollosVendidos)}
+            trend={calcTrend(totales.pollosVendidos, totalesAnteriores.pollosVendidos)}
             trendLabel={trendLabel}
             trendEmptyLabel={trendEmptyLabel}
             iconImage="/mascota-carrito.png"

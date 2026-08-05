@@ -3,6 +3,7 @@ import { PackageX, Trophy } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatCard } from '@/components/shared/StatCard'
 import { PeriodSelector } from '@/components/shared/PeriodSelector'
+import { PeriodNavigator } from '@/components/shared/PeriodNavigator'
 import { SalesTrendChart } from '@/components/charts/SalesTrendChart'
 import { BranchComparisonChart } from '@/components/charts/BranchComparisonChart'
 import { TopProductsChart } from '@/components/charts/TopProductsChart'
@@ -16,8 +17,10 @@ import { useSucursales } from '@/hooks/use-sucursales'
 import {
   agruparPorPeriodo,
   calcularTendencia,
+  esPeriodoVigente,
   filtrarPorRango,
   formatEtiquetaPeriodo,
+  formatRangoNavegacion,
   getRangoActual,
   getRangoAnterior,
   getRangoPeriodo,
@@ -31,12 +34,14 @@ import { formatCurrency, formatNumber } from '@/lib/utils'
 
 export function AdminDashboard() {
   const [periodo, setPeriodo] = React.useState<Periodo>('dia')
+  const [referencia, setReferencia] = React.useState(new Date())
+  React.useEffect(() => setReferencia(new Date()), [periodo])
   const [sucursalId, setSucursalId] = React.useState<string>('todas')
   // Ventana amplia para la gráfica (ej. últimos 12 meses si el periodo es "mes").
-  const { desde, hasta } = React.useMemo(() => getRangoPeriodo(periodo), [periodo])
+  const { desde, hasta } = React.useMemo(() => getRangoPeriodo(periodo, referencia), [periodo, referencia])
   // Periodo en curso y el mismo tramo del anterior, para las tarjetas y el %.
-  const rangoActual = React.useMemo(() => getRangoActual(periodo), [periodo])
-  const rangoAnterior = React.useMemo(() => getRangoAnterior(periodo), [periodo])
+  const rangoActual = React.useMemo(() => getRangoActual(periodo, referencia), [periodo, referencia])
+  const rangoAnterior = React.useMemo(() => getRangoAnterior(periodo, referencia), [periodo, referencia])
 
   const { data: sucursales = [] } = useSucursales()
   const { data, isLoading } = useDashboardData({
@@ -56,8 +61,10 @@ export function AdminDashboard() {
     () => calcularTotales(filtrarPorRango(data?.reportes ?? [], rangoAnterior)),
     [data, rangoAnterior],
   )
-  const trendLabel = PERIODO_ANTERIOR_LABELS[periodo]
-  const trendEmptyLabel = PERIODO_SIN_COMPARACION_LABELS[periodo]
+  const mostrarTendencia = periodo !== 'total'
+  const trendLabel = mostrarTendencia ? PERIODO_ANTERIOR_LABELS[periodo] : undefined
+  const trendEmptyLabel = mostrarTendencia ? PERIODO_SIN_COMPARACION_LABELS[periodo] : undefined
+  const calcTrend = (actual: number, anterior: number) => (mostrarTendencia ? calcularTendencia(actual, anterior) : undefined)
 
   const chartData = React.useMemo(() => {
     if (!data) return []
@@ -76,6 +83,10 @@ export function AdminDashboard() {
     () => [...comparativo].sort((a, b) => b.ventas - a.ventas).slice(0, 5),
     [comparativo],
   )
+
+  const mostrandoLabel = esPeriodoVigente(periodo, referencia)
+    ? PERIODO_ACTUAL_LABELS[periodo]
+    : formatRangoNavegacion(periodo, referencia)
 
   return (
     <div>
@@ -98,13 +109,12 @@ export function AdminDashboard() {
               </SelectContent>
             </Select>
             <PeriodSelector value={periodo} onChange={setPeriodo} />
+            <PeriodNavigator periodo={periodo} referencia={referencia} onChange={setReferencia} />
           </>
         }
       />
 
-      <p className="mb-3 text-xs font-medium text-muted-foreground">
-        Mostrando: {PERIODO_ACTUAL_LABELS[periodo]}
-      </p>
+      <p className="mb-3 text-xs font-medium text-muted-foreground">Mostrando: {mostrandoLabel}</p>
 
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -117,7 +127,7 @@ export function AdminDashboard() {
           <StatCard
             label="Total vendido"
             value={formatCurrency(totales.totalVentas)}
-            trend={calcularTendencia(totales.totalVentas, totalesAnteriores.totalVentas)}
+            trend={calcTrend(totales.totalVentas, totalesAnteriores.totalVentas)}
             trendLabel={trendLabel}
             trendEmptyLabel={trendEmptyLabel}
             iconImage="/mascota-dinero-lanzando.png"
@@ -126,7 +136,7 @@ export function AdminDashboard() {
           <StatCard
             label="Total gastos"
             value={formatCurrency(totales.totalGastos)}
-            trend={calcularTendencia(totales.totalGastos, totalesAnteriores.totalGastos)}
+            trend={calcTrend(totales.totalGastos, totalesAnteriores.totalGastos)}
             trendLabel={trendLabel}
             trendEmptyLabel={trendEmptyLabel}
             invertTrendColor
@@ -136,7 +146,7 @@ export function AdminDashboard() {
           <StatCard
             label="Ganancias"
             value={formatCurrency(totales.ganancia)}
-            trend={calcularTendencia(totales.ganancia, totalesAnteriores.ganancia)}
+            trend={calcTrend(totales.ganancia, totalesAnteriores.ganancia)}
             trendLabel={trendLabel}
             trendEmptyLabel={trendEmptyLabel}
             iconImage="/mascota-dinero.png"
@@ -145,7 +155,7 @@ export function AdminDashboard() {
           <StatCard
             label="Productos vendidos"
             value={formatNumber(totales.pollosVendidos)}
-            trend={calcularTendencia(totales.pollosVendidos, totalesAnteriores.pollosVendidos)}
+            trend={calcTrend(totales.pollosVendidos, totalesAnteriores.pollosVendidos)}
             trendLabel={trendLabel}
             trendEmptyLabel={trendEmptyLabel}
             iconImage="/mascota-carrito.png"
@@ -232,5 +242,7 @@ function periodoLabel(periodo: Periodo): string {
       return 'mes'
     case 'anio':
       return 'año'
+    case 'total':
+      return 'mes'
   }
 }

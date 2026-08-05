@@ -59,7 +59,7 @@ export default function Hero() {
     >
       <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-6 text-center">
         <span className="inline-flex items-center gap-2 rounded-full bg-zinc-950/70 py-1.5 pl-1.5 pr-3.5 text-xs font-medium text-white backdrop-blur-sm">
-          <span className="rounded-full bg-white/25 px-2 py-1 text-[10px] font-semibold">Nuevo</span>
+          <span className="rounded-full bg-white/25 px-2 py-1 text-[10px] font-semibold">Beta</span>
           Agentes de IA para negocios en México
         </span>
 
@@ -77,7 +77,7 @@ export default function Hero() {
             href="/registro"
             className="rounded-full bg-white px-5 py-3 text-sm font-medium tracking-tight text-zinc-950 transition-opacity hover:opacity-90 sm:px-7 sm:py-3.5 sm:text-[15px]"
           >
-            Empieza gratis
+            Únete a la beta
           </Link>
           <a
             href="#agentes"

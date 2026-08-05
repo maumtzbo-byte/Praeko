@@ -1,13 +1,14 @@
 import { Play, Dumbbell, UtensilsCrossed, Sparkles, ShoppingBag, HeartPulse, Briefcase, type LucideIcon } from "lucide-react";
 
-// Example content Frames actually generates, one per real target industry
-// — not customer testimonials (Frames has no paying customers yet to
-// quote), just a demo of the kind of video the product produces. Same
-// "don't invent an identity" rule as everywhere else on the site: no
-// fabricated business name attached to any of these. Same taxonomy (and
-// now the same icon per industry) as IndustryScrollGallery further down
-// the page, so this row and that one read as one system, not two
-// unrelated lists that happen to share words.
+// Illustrative examples of the kind of video Frames generates per
+// industry — not real finished output (Frames is in beta, there's no
+// library of real generated videos to show yet) and not customer
+// testimonials (no paying customers to quote either). Same "don't invent
+// an identity" rule as everywhere else on the site: no fabricated
+// business name attached to any of these. Same taxonomy (and now the
+// same icon per industry) as IndustryScrollGallery further down the
+// page, so this row and that one read as one system, not two unrelated
+// lists that happen to share words.
 const EXAMPLE_VIDEOS: { industry: string; caption: string; icon: LucideIcon }[] = [
   { industry: "Gimnasio o estudio boutique", caption: "Rutina de la semana: piernas y core", icon: Dumbbell },
   { industry: "Restaurante o cafetería", caption: "Platillo del día: risotto de temporada", icon: UtensilsCrossed },
@@ -77,7 +78,7 @@ export default function VideoShowcase() {
       <div className="mx-auto max-w-6xl px-6">
         <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">CONTENIDO GENERADO POR IA</p>
         <h2 className="max-w-lg text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-          Videos hechos por nosotros, listos para publicar
+          Así es el tipo de video que Frames genera para tu negocio
         </h2>
       </div>
 

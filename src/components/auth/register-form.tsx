@@ -61,8 +61,10 @@ export function RegisterForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Crea tu cuenta</CardTitle>
-        <CardDescription>Empieza a automatizar tu marketing con Frames.</CardDescription>
+        <CardTitle className="text-xl">Únete a la beta de Frames</CardTitle>
+        <CardDescription>
+          Tu cuenta es real y tu contenido se genera y publica de verdad — seguimos puliendo el producto.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-5">

@@ -17,7 +17,7 @@ export default function CtaSection() {
             href="/registro"
             className="rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 "
           >
-            Crear mi calendario gratis
+            Únete a la beta
           </Link>
           <p className="text-xs text-zinc-500">Sin tarjeta de crédito requerida</p>
         </div>

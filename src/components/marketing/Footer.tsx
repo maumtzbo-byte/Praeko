@@ -80,7 +80,7 @@ export default function Footer() {
             href="/registro"
             className="rounded-full bg-zinc-950 px-4 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90 "
           >
-            Empieza gratis
+            Únete a la beta
           </Link>
         </div>
       </div>

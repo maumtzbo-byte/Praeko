@@ -1,18 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 
-// Real numbers only, and three different shapes on purpose (%, plain
-// count, "+") instead of three same-looking digits in a row. Each one
-// traces to something already true elsewhere on the site: "30" is every
-// plan's video+image count added together (8+22, 15+15, 22+8 — all land
-// on 30, just a different mix), "100%" is the product's actual language,
-// and "100+" is the same real registered-business figure used as the
-// hero number above.
+// Real numbers only, nothing invented to look like traction Frames
+// doesn't have yet. "30" is every plan's video+image count added
+// together (8+22, 15+15, 22+8 — all land on 30, just a different mix),
+// "100%" is the product's actual language, and "5" is the number of
+// agents actually listed below on this same page (see WhatWeDo.tsx) —
+// no fabricated user/customer count.
 const SUPPORTING_STATS = [
   { value: "100%", label: "Contenido generado en español" },
   { value: "30", label: "Videos e imágenes cada mes, en cualquier plan" },
-  { value: "100+", label: "Negocios ya registrados" },
+  { value: "5", label: "Agentes de IA trabajando por tu negocio" },
 ];
 
 export default function StatsShowcase() {
@@ -20,21 +20,22 @@ export default function StatsShowcase() {
     <section className="relative overflow-hidden py-16 sm:py-24">
       <div className="mx-auto max-w-3xl px-6 text-center">
         <span className="inline-flex items-center rounded-full bg-zinc-950 px-3 py-1.5 text-xs font-medium text-white ">
-          Creciendo en México
+          Beta abierta
         </span>
         <h2 className="mt-5 text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-          Negocios como el tuyo ya están en Frames
+          Sé de los primeros negocios en usar Frames
         </h2>
-        <motion.p
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="mt-6 text-7xl font-semibold tracking-tight text-accent sm:text-8xl md:text-9xl"
+        <p className="mx-auto mt-4 max-w-lg text-sm text-zinc-600 sm:text-base">
+          Estamos en beta: tu cuenta es real y tu contenido se genera y se
+          publica de verdad — seguimos puliendo cosas, y tu opinión nos ayuda
+          a mejorar rápido.
+        </p>
+        <Link
+          href="/registro"
+          className="mt-6 inline-flex rounded-full bg-zinc-950 px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
         >
-          100+
-        </motion.p>
-        <p className="mt-2 text-sm text-zinc-500">Negocios registrados, listos para publicar con IA</p>
+          Únete a la beta
+        </Link>
       </div>
 
       {/* The real reference clip, not a re-built 3D scene — a rotating

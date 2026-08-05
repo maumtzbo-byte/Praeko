@@ -6,7 +6,7 @@ export function exportReportesExcel(reportes: ReporteDiario[], sucursalNombre?: 
   const rows = reportes.map((r) => ({
     Fecha: formatDate(r.fecha),
     Sucursal: sucursalNombre?.(r.sucursal_id) ?? r.sucursal_id,
-    'Vta sucursal': r.vta_sucursal,
+    Efectivo: r.vta_sucursal,
     Tarjeta: r.tarjeta,
     Depósito: r.deposito,
     DiDi: r.didi,

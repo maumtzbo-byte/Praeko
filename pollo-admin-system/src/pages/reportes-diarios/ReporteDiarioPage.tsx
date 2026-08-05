@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { ClipboardList } from 'lucide-react'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,10 +14,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useReporteDelDia, useUpsertReporteDiario } from '@/hooks/use-reportes'
 import { useSucursales } from '@/hooks/use-sucursales'
-import { usePollosVendidosDelDia } from '@/hooks/use-ventas'
 import { useResumenMermasDelDia } from '@/hooks/use-mermas'
 import { useAuth } from '@/context/AuthContext'
-import { VentasDetalleSection } from '@/pages/reportes-diarios/VentasDetalleSection'
+import { MENU_ITEMS, PROMO_MIERCOLES } from '@/lib/menu-precios'
 import { cn, formatCurrency, formatNumber, todayISO } from '@/lib/utils'
 
 const schema = z.object({
@@ -28,9 +28,16 @@ const schema = z.object({
   uber: z.coerce.number().min(0),
   gastos_total: z.coerce.number().min(0),
   pollos_recibidos: z.coerce.number().min(0),
+  pollo_completo: z.coerce.number().min(0),
+  medio_pollo: z.coerce.number().min(0),
+  venta_complementos: z.coerce.number().min(0),
+  venta_extras: z.coerce.number().min(0),
+  promo_2x: z.coerce.number().min(0),
+  promo_1_5: z.coerce.number().min(0),
+  promo_miercoles: z.coerce.number().min(0),
   observaciones: z.string().optional(),
   notas: z.string().optional(),
-  recolecto: z.string().optional(),
+  recolecto: z.string().min(1, 'Es necesario poner el nombre'),
 })
 
 type FormInput = z.input<typeof schema>
@@ -45,6 +52,13 @@ const EMPTY: FormInput = {
   uber: 0,
   gastos_total: 0,
   pollos_recibidos: 0,
+  pollo_completo: 0,
+  medio_pollo: 0,
+  venta_complementos: 0,
+  venta_extras: 0,
+  promo_2x: 0,
+  promo_1_5: 0,
+  promo_miercoles: 0,
   observaciones: '',
   notas: '',
   recolecto: '',
@@ -56,16 +70,18 @@ export function ReporteDiarioPage() {
 
   const [sucursalId, setSucursalId] = React.useState(usuario?.sucursal_id ?? '')
   const [fecha, setFecha] = React.useState(todayISO())
+  const [pendingValues, setPendingValues] = React.useState<FormValues | null>(null)
 
   React.useEffect(() => {
     if (!isAdmin && usuario?.sucursal_id) setSucursalId(usuario.sucursal_id)
   }, [isAdmin, usuario])
 
+  const esMiercoles = new Date(`${fecha}T00:00:00`).getDay() === 3
+
   const { data: reporte, isLoading } = useReporteDelDia(sucursalId, fecha)
   const mutation = useUpsertReporteDiario()
 
-  // Se calculan solos a partir de Ventas y Mermas, ya no se escriben a mano.
-  const { data: pollosVendidos = 0 } = usePollosVendidosDelDia(sucursalId, fecha)
+  // Se calculan solos a partir de Mermas, ya no se escriben a mano.
   const { data: resumenMermas = { productosDanados: 0, mermaTotal: 0 } } = useResumenMermasDelDia(sucursalId, fecha)
 
   const {
@@ -73,6 +89,7 @@ export function ReporteDiarioPage() {
     handleSubmit,
     reset,
     watch,
+    formState: { errors },
   } = useForm<FormInput, unknown, FormValues>({ resolver: zodResolver(schema), defaultValues: EMPTY })
 
   React.useEffect(() => {
@@ -88,6 +105,13 @@ export function ReporteDiarioPage() {
               uber: reporte.uber,
               gastos_total: reporte.gastos_total,
               pollos_recibidos: reporte.pollos_recibidos,
+              pollo_completo: reporte.pollo_completo,
+              medio_pollo: reporte.medio_pollo,
+              venta_complementos: reporte.venta_complementos,
+              venta_extras: reporte.venta_extras,
+              promo_2x: reporte.promo_2x,
+              promo_1_5: reporte.promo_1_5,
+              promo_miercoles: reporte.promo_miercoles,
               observaciones: reporte.observaciones ?? '',
               notas: reporte.notas ?? '',
               recolecto: reporte.recolecto ?? '',
@@ -97,14 +121,12 @@ export function ReporteDiarioPage() {
     }
   }, [reporte, isLoading, reset])
 
-  // Si ya se guardó un reporte hoy pero después se agregó/quitó una venta o
-  // merma, los totales calculados se adelantan a lo que quedó guardado hasta
-  // que se le vuelva a dar clic a "Actualizar reporte".
+  // Si ya se guardó un reporte hoy pero después se registró una merma nueva,
+  // el total calculado se adelanta a lo que quedó guardado hasta que se le
+  // vuelva a dar clic a "Actualizar reporte".
   const cambiosSinGuardar = reporte
-    ? reporte.pollos_vendidos !== pollosVendidos ||
-      reporte.productos_danados !== resumenMermas.productosDanados ||
-      reporte.merma_total !== resumenMermas.mermaTotal
-    : pollosVendidos > 0 || resumenMermas.productosDanados > 0 || resumenMermas.mermaTotal > 0
+    ? reporte.productos_danados !== resumenMermas.productosDanados || reporte.merma_total !== resumenMermas.mermaTotal
+    : resumenMermas.productosDanados > 0 || resumenMermas.mermaTotal > 0
 
   const values = watch()
   const ventasTotales =
@@ -116,7 +138,23 @@ export function ReporteDiarioPage() {
     Number(values.uber || 0)
   const gananciaEstimada = ventasTotales - Number(values.gastos_total || 0)
 
-  async function onSubmit(formValues: FormValues) {
+  const operacionTotal =
+    MENU_ITEMS.reduce((sum, item) => sum + Number(values[item.key] || 0) * item.precio, 0) +
+    (esMiercoles ? Number(values.promo_miercoles || 0) * PROMO_MIERCOLES.precio : 0)
+
+  // "Pollos vendidos" ya no es un campo aparte: se deriva de lo que sí se
+  // captura (medio pollo cuenta 0.5, las promos de pollo y medio cuentan 1.5).
+  const pollosVendidosEquivalente = Math.round(
+    Number(values.pollo_completo || 0) +
+      Number(values.medio_pollo || 0) * 0.5 +
+      Number(values.promo_2x || 0) * 2 +
+      Number(values.promo_1_5 || 0) * 1.5 +
+      (esMiercoles ? Number(values.promo_miercoles || 0) * 1.5 : 0),
+  )
+
+  const descuadre = Math.abs(operacionTotal - ventasTotales) > 1
+
+  async function guardarReporte(formValues: FormValues) {
     if (!usuario || !sucursalId) return
     await mutation.mutateAsync({
       sucursal_id: sucursalId,
@@ -130,13 +168,29 @@ export function ReporteDiarioPage() {
       uber: formValues.uber,
       gastos_total: formValues.gastos_total,
       pollos_recibidos: formValues.pollos_recibidos,
-      pollos_vendidos: pollosVendidos,
+      pollos_vendidos: pollosVendidosEquivalente,
       productos_danados: resumenMermas.productosDanados,
       merma_total: resumenMermas.mermaTotal,
+      pollo_completo: formValues.pollo_completo,
+      medio_pollo: formValues.medio_pollo,
+      venta_complementos: formValues.venta_complementos,
+      venta_extras: formValues.venta_extras,
+      promo_2x: formValues.promo_2x,
+      promo_1_5: formValues.promo_1_5,
+      promo_miercoles: esMiercoles ? formValues.promo_miercoles : 0,
       observaciones: formValues.observaciones || null,
       notas: formValues.notas || null,
-      recolecto: formValues.recolecto || null,
+      recolecto: formValues.recolecto,
     })
+    setPendingValues(null)
+  }
+
+  async function onValidSubmit(formValues: FormValues) {
+    if (descuadre) {
+      setPendingValues(formValues)
+      return
+    }
+    await guardarReporte(formValues)
   }
 
   if (!sucursalId) {
@@ -181,7 +235,7 @@ export function ReporteDiarioPage() {
         }
       />
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form onSubmit={handleSubmit(onValidSubmit)} noValidate>
         <fieldset
           disabled={isLoading}
           className={cn('flex flex-col gap-6', isLoading && 'pointer-events-none opacity-60')}
@@ -193,7 +247,7 @@ export function ReporteDiarioPage() {
           <CardContent className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="vta_sucursal">Vta sucursal</Label>
+                <Label htmlFor="vta_sucursal">Efectivo</Label>
                 <Input id="vta_sucursal" type="number" step="0.01" min="0" {...register('vta_sucursal')} />
               </div>
               <div className="flex flex-col gap-1.5">
@@ -220,6 +274,7 @@ export function ReporteDiarioPage() {
             <div className="flex flex-col gap-1.5 sm:w-64">
               <Label htmlFor="recolecto">Recolectó</Label>
               <Input id="recolecto" type="text" placeholder="Nombre de quién recolectó" {...register('recolecto')} />
+              {errors.recolecto && <p className="text-xs text-destructive">{errors.recolecto.message}</p>}
             </div>
           </CardContent>
         </Card>
@@ -228,34 +283,51 @@ export function ReporteDiarioPage() {
           <CardHeader>
             <CardTitle>Operación del día</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="gastos_total">Gastos</Label>
-              <Input id="gastos_total" type="number" step="0.01" min="0" {...register('gastos_total')} />
+          <CardContent className="flex flex-col gap-5">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="gastos_total">Gastos</Label>
+                <Input id="gastos_total" type="number" step="0.01" min="0" {...register('gastos_total')} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="pollos_recibidos">Pollos recibidos</Label>
+                <Input id="pollos_recibidos" type="number" step="1" min="0" {...register('pollos_recibidos')} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="productos_danados">Productos dañados</Label>
+                <Input id="productos_danados" disabled value={formatNumber(resumenMermas.productosDanados)} />
+                <p className="text-xs text-muted-foreground">Se calcula solo con lo capturado en Mermas.</p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="merma_total">Merma (unidades)</Label>
+                <Input id="merma_total" disabled value={formatNumber(resumenMermas.mermaTotal)} />
+                <p className="text-xs text-muted-foreground">Se calcula solo con lo capturado en Mermas.</p>
+              </div>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="pollos_recibidos">Pollos recibidos</Label>
-              <Input id="pollos_recibidos" type="number" step="1" min="0" {...register('pollos_recibidos')} />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="pollos_vendidos">Pollos vendidos</Label>
-              <Input id="pollos_vendidos" disabled value={formatNumber(pollosVendidos)} />
-              <p className="text-xs text-muted-foreground">Se calcula solo con lo capturado en Ventas.</p>
-              {pollosVendidos > Number(values.pollos_recibidos || 0) && (
-                <p className="text-xs text-warning-foreground">
-                  Vendiste más pollos de los que recibiste hoy. Revisa si es correcto.
-                </p>
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="productos_danados">Productos dañados</Label>
-              <Input id="productos_danados" disabled value={formatNumber(resumenMermas.productosDanados)} />
-              <p className="text-xs text-muted-foreground">Se calcula solo con lo capturado en Mermas.</p>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="merma_total">Merma (unidades)</Label>
-              <Input id="merma_total" disabled value={formatNumber(resumenMermas.mermaTotal)} />
-              <p className="text-xs text-muted-foreground">Se calcula solo con lo capturado en Mermas.</p>
+
+            <div className="border-t border-border pt-4">
+              <p className="mb-3 text-sm font-medium">Productos vendidos hoy</p>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                {MENU_ITEMS.map((item) => (
+                  <div key={item.key} className="flex flex-col gap-1.5">
+                    <Label htmlFor={item.key}>
+                      {item.label} <span className="text-muted-foreground">({formatCurrency(item.precio)})</span>
+                    </Label>
+                    <Input id={item.key} type="number" step="1" min="0" {...register(item.key)} />
+                  </div>
+                ))}
+                {esMiercoles && (
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="promo_miercoles">
+                      {PROMO_MIERCOLES.label} <span className="text-muted-foreground">({formatCurrency(PROMO_MIERCOLES.precio)})</span>
+                    </Label>
+                    <Input id="promo_miercoles" type="number" step="1" min="0" {...register('promo_miercoles')} />
+                  </div>
+                )}
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Total por productos: <span className="font-semibold text-foreground">{formatCurrency(operacionTotal)}</span>
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -275,14 +347,14 @@ export function ReporteDiarioPage() {
 
         {cambiosSinGuardar && (
           <p className="rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
-            Hay ventas o mermas más recientes que el reporte guardado — dale a{' '}
+            Hay mermas más recientes que el reporte guardado — dale a{' '}
             {reporte ? '"Actualizar reporte"' : '"Guardar reporte"'} para que los totales queden al día.
           </p>
         )}
 
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-            <div className="flex gap-8">
+            <div className="flex flex-wrap gap-8">
               <div>
                 <p className="text-xs text-muted-foreground">Ventas totales</p>
                 <p className="text-xl font-semibold">{formatCurrency(ventasTotales)}</p>
@@ -302,9 +374,16 @@ export function ReporteDiarioPage() {
         </fieldset>
       </form>
 
-      <div className="mt-6">
-        <VentasDetalleSection reporteId={reporte?.id ?? null} sucursalId={sucursalId} fecha={fecha} />
-      </div>
+      <ConfirmDialog
+        open={Boolean(pendingValues)}
+        onOpenChange={(open) => !open && setPendingValues(null)}
+        title="Las cifras no coinciden"
+        description={`Los productos vendidos suman ${formatCurrency(operacionTotal)}, pero los métodos de pago suman ${formatCurrency(ventasTotales)}. Puedes revisar los números antes de guardar, o continuar de todas formas — si avanzas, se le avisará al administrador que este reporte no cuadró.`}
+        confirmLabel="Avanzar de todas formas"
+        destructive={false}
+        onConfirm={() => pendingValues && guardarReporte(pendingValues)}
+        isLoading={mutation.isPending}
+      />
     </div>
   )
 }

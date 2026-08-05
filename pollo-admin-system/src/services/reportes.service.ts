@@ -16,6 +16,13 @@ export interface ReporteDiarioInput {
   pollos_vendidos: number
   productos_danados: number
   merma_total: number
+  pollo_completo: number
+  medio_pollo: number
+  venta_complementos: number
+  venta_extras: number
+  promo_miercoles: number
+  promo_2x: number
+  promo_1_5: number
   observaciones?: string | null
   notas?: string | null
   recolecto?: string | null

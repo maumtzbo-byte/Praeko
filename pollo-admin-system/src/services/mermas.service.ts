@@ -3,7 +3,7 @@ import type { MermaConProducto, MotivoMerma } from '@/types/database'
 
 export interface MermaInput {
   sucursal_id: string
-  producto_id: string
+  producto_nombre: string
   usuario_id: string
   cantidad: number
   motivo: MotivoMerma

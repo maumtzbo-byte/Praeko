@@ -94,7 +94,7 @@ export function GastoFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Registrar gasto</DialogTitle>
         </DialogHeader>

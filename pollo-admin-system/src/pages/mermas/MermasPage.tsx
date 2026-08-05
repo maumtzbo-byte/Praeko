@@ -132,9 +132,9 @@ export function MermasPage() {
             {filtered.map((m) => (
               <TableRow key={m.id}>
                 <TableCell>{formatDate(m.fecha)}</TableCell>
-                <TableCell className="font-medium">{m.producto.nombre}</TableCell>
+                <TableCell className="font-medium">{m.producto?.nombre ?? m.producto_nombre}</TableCell>
                 <TableCell>
-                  {m.cantidad} {m.producto.unidad}
+                  {m.cantidad} {m.producto?.unidad ?? ''}
                 </TableCell>
                 <TableCell>{m.motivo}</TableCell>
                 <TableCell className="max-w-56 truncate text-muted-foreground">{m.observaciones ?? '—'}</TableCell>
@@ -166,7 +166,7 @@ export function MermasPage() {
         open={Boolean(deleting)}
         onOpenChange={(open) => !open && setDeleting(null)}
         title="Eliminar merma"
-        description={`¿Eliminar el registro de merma de "${deleting?.producto.nombre}"?`}
+        description={`¿Eliminar el registro de merma de "${deleting?.producto?.nombre ?? deleting?.producto_nombre}"?`}
         onConfirm={() => {
           if (deleting) deleteMutation.mutate(deleting.id)
           setDeleting(null)

@@ -175,7 +175,8 @@ export interface PedidoConRelaciones extends Pedido {
 export interface Merma {
   id: string
   sucursal_id: string
-  producto_id: string
+  producto_id: string | null
+  producto_nombre: string | null
   usuario_id: string
   cantidad: number
   motivo: MotivoMerma
@@ -185,7 +186,7 @@ export interface Merma {
 }
 
 export interface MermaConProducto extends Merma {
-  producto: Producto
+  producto: Producto | null
 }
 
 export interface Notificacion {

@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useDeletePedido, usePedidos, useUpdateEstadoPedido } from '@/hooks/use-pedidos'
+import { useSucursales } from '@/hooks/use-sucursales'
 import { useAuth } from '@/context/AuthContext'
 import { PedidoFormDialog } from '@/pages/pedidos/PedidoFormDialog'
 import { ESTADO_PEDIDO_BADGE, ESTADO_PEDIDO_LABELS, ESTADO_PEDIDO_ORDEN, PRIORIDAD_BADGE, PRIORIDAD_LABELS } from '@/lib/pedido-labels'
@@ -18,9 +19,18 @@ import type { EstadoPedido, PedidoConRelaciones } from '@/types/database'
 
 export function PedidosPage() {
   const { usuario, isAdmin } = useAuth()
-  const { data: pedidos = [], isLoading } = usePedidos(isAdmin ? undefined : (usuario?.sucursal_id ?? undefined))
+  const { data: sucursales = [] } = useSucursales()
+
+  const [sucursalId, setSucursalId] = React.useState(isAdmin ? '' : (usuario?.sucursal_id ?? ''))
+  React.useEffect(() => {
+    if (!isAdmin && usuario?.sucursal_id) setSucursalId(usuario.sucursal_id)
+  }, [isAdmin, usuario])
+
+  const { data: pedidos = [], isLoading } = usePedidos(sucursalId || undefined)
   const updateEstado = useUpdateEstadoPedido()
   const deleteMutation = useDeletePedido()
+
+  const activeSucursal = sucursalId || usuario?.sucursal_id || ''
 
   const [estadoFiltro, setEstadoFiltro] = React.useState<string>('todos')
   const [categoriaFiltro, setCategoriaFiltro] = React.useState<string>('todas')
@@ -39,11 +49,28 @@ export function PedidosPage() {
         title="Pedidos"
         description="Solicitudes de producto entre sucursales y central"
         actions={
-          usuario?.sucursal_id && (
-            <Button onClick={() => setFormOpen(true)}>
-              <Plus /> Nuevo pedido
-            </Button>
-          )
+          <>
+            {isAdmin && (
+              <Select value={sucursalId} onValueChange={setSucursalId}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Todas las sucursales" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todas las sucursales</SelectItem>
+                  {sucursales.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            {activeSucursal && (
+              <Button onClick={() => setFormOpen(true)}>
+                <Plus /> Nuevo pedido
+              </Button>
+            )}
+          </>
         }
       />
 
@@ -152,7 +179,7 @@ export function PedidosPage() {
         </Table>
       )}
 
-      <PedidoFormDialog open={formOpen} onOpenChange={setFormOpen} />
+      {activeSucursal && <PedidoFormDialog open={formOpen} onOpenChange={setFormOpen} sucursalId={activeSucursal} />}
 
       <ConfirmDialog
         open={Boolean(deleting)}

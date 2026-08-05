@@ -15,10 +15,18 @@ import type { PrioridadPedido } from '@/types/database'
 
 const CATEGORIAS = ['Complementos', 'Insumos'] as const
 
-export function PedidoFormDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function PedidoFormDialog({
+  open,
+  onOpenChange,
+  sucursalId,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  sucursalId: string
+}) {
   const { usuario } = useAuth()
   const { data: productos = [] } = useProductos()
-  const { data: historico = [] } = usePedidos(usuario?.sucursal_id ?? undefined)
+  const { data: historico = [] } = usePedidos(sucursalId)
   const mutation = useCreatePedidoLote()
 
   const [cantidades, setCantidades] = React.useState<Record<string, string>>({})
@@ -56,7 +64,7 @@ export function PedidoFormDialog({ open, onOpenChange }: { open: boolean; onOpen
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!usuario?.sucursal_id) return
+    if (!usuario) return
 
     const seleccionados = Object.entries(cantidades)
       .map(([producto_id, cantidad]) => ({ producto_id, cantidad: Number(cantidad) }))
@@ -70,7 +78,7 @@ export function PedidoFormDialog({ open, onOpenChange }: { open: boolean; onOpen
 
     await mutation.mutateAsync(
       seleccionados.map((item) => ({
-        sucursal_id: usuario.sucursal_id as string,
+        sucursal_id: sucursalId,
         producto_id: item.producto_id,
         usuario_id: usuario.id,
         cantidad: item.cantidad,

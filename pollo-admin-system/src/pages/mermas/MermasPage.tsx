@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useDeleteMerma, useMermas } from '@/hooks/use-mermas'
+import { useSucursales } from '@/hooks/use-sucursales'
 import { useAuth } from '@/context/AuthContext'
 import { MermaFormDialog } from '@/pages/mermas/MermaFormDialog'
 import { CHART_COLORS } from '@/lib/chart-colors'
@@ -20,8 +21,17 @@ import type { MermaConProducto } from '@/types/database'
 
 export function MermasPage() {
   const { usuario, isAdmin } = useAuth()
-  const { data: mermas = [], isLoading } = useMermas(isAdmin ? undefined : (usuario?.sucursal_id ?? undefined))
+  const { data: sucursales = [] } = useSucursales()
+
+  const [sucursalId, setSucursalId] = React.useState(isAdmin ? '' : (usuario?.sucursal_id ?? ''))
+  React.useEffect(() => {
+    if (!isAdmin && usuario?.sucursal_id) setSucursalId(usuario.sucursal_id)
+  }, [isAdmin, usuario])
+
+  const { data: mermas = [], isLoading } = useMermas(sucursalId || undefined)
   const deleteMutation = useDeleteMerma()
+
+  const activeSucursal = sucursalId || usuario?.sucursal_id || ''
 
   const [motivoFiltro, setMotivoFiltro] = React.useState('todos')
   const [formOpen, setFormOpen] = React.useState(false)
@@ -51,11 +61,28 @@ export function MermasPage() {
         title="Mermas"
         description="Registro y estadísticas de productos perdidos o dañados"
         actions={
-          usuario?.sucursal_id && (
-            <Button onClick={() => setFormOpen(true)}>
-              <Plus /> Registrar merma
-            </Button>
-          )
+          <>
+            {isAdmin && (
+              <Select value={sucursalId} onValueChange={setSucursalId}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Todas las sucursales" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todas las sucursales</SelectItem>
+                  {sucursales.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            {activeSucursal && (
+              <Button onClick={() => setFormOpen(true)}>
+                <Plus /> Registrar merma
+              </Button>
+            )}
+          </>
         }
       />
 
@@ -160,7 +187,7 @@ export function MermasPage() {
         </Table>
       )}
 
-      {usuario?.sucursal_id && <MermaFormDialog open={formOpen} onOpenChange={setFormOpen} sucursalId={usuario.sucursal_id} />}
+      {activeSucursal && <MermaFormDialog open={formOpen} onOpenChange={setFormOpen} sucursalId={activeSucursal} />}
 
       <ConfirmDialog
         open={Boolean(deleting)}

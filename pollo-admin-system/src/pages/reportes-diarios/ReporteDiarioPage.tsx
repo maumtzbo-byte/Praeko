@@ -81,6 +81,13 @@ export function ReporteDiarioPage() {
     if (!isAdmin && usuario?.sucursal_id) setSucursalId(usuario.sucursal_id)
   }, [isAdmin, usuario])
 
+  // El admin no tiene una sucursal propia: en cuanto carga la lista, se le
+  // asigna la primera para que pueda empezar a capturar de inmediato (y
+  // luego cambiar de sucursal con el selector de arriba).
+  React.useEffect(() => {
+    if (isAdmin && !sucursalId && sucursales.length > 0) setSucursalId(sucursales[0].id)
+  }, [isAdmin, sucursalId, sucursales])
+
   const esMiercoles = new Date(`${fecha}T00:00:00`).getDay() === 3
 
   const { data: reporte, isLoading } = useReporteDelDia(sucursalId, fecha)

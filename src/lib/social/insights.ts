@@ -17,19 +17,47 @@ const GRAPH_VERSION = "v21.0";
 
 const EMPTY_INSIGHTS: PostInsights = { impressions: null, likes: null, comments: null, shares: null };
 
-/** TODO(verify): Meta periodically renames/retires insight metrics (e.g.
- * "impressions" is being phased out on some edges in favor of "views") —
- * confirm this metric list against the current Graph API docs for the
- * relevant object type before going live. */
+/** Meta validates a post/media insights request as all-or-nothing: if even
+ * one metric in the comma-separated list doesn't apply to that specific
+ * object (varies by media_product_type — IMAGE/VIDEO/REELS/CAROUSEL_ALBUM
+ * — and by Page type for Facebook), the WHOLE request is rejected, not just
+ * the offending metric. Meta also periodically retires metrics outright
+ * (confirmed: several Instagram insights metrics, "impressions" among them
+ * for some media types, were deprecated in 2025) — so a hardcoded metric
+ * list is inherently fragile against both problems at once, and there's no
+ * single confirmable "correct" list that stays correct. queryInsights()
+ * below tries the full list first and falls back to querying metrics one
+ * at a time, keeping whichever ones Meta actually accepts instead of losing
+ * every number for a post because one metric name was wrong or retired. */
+async function queryInsights(
+  url: URL,
+  pageAccessToken: string,
+  metrics: string[],
+): Promise<Map<string, number | null>> {
+  async function tryFetch(metric: string): Promise<Map<string, number | null> | null> {
+    const attemptUrl = new URL(url);
+    attemptUrl.searchParams.set("metric", metric);
+    attemptUrl.searchParams.set("access_token", pageAccessToken);
+    const res = await fetch(attemptUrl.toString());
+    if (!res.ok) return null;
+    const { data } = (await res.json()) as { data: { name: string; values: { value: number }[] }[] };
+    return new Map(data.map((d) => [d.name, d.values[0]?.value ?? null]));
+  }
+
+  const combined = await tryFetch(metrics.join(","));
+  if (combined) return combined;
+
+  const byName = new Map<string, number | null>();
+  for (const metric of metrics) {
+    const single = await tryFetch(metric);
+    if (single) for (const [name, value] of single) byName.set(name, value);
+  }
+  return byName;
+}
+
 async function fetchFacebookPostInsights(pageAccessToken: string, postId: string): Promise<PostInsights> {
   const url = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${postId}/insights`);
-  url.searchParams.set("metric", "post_impressions,post_engaged_users");
-  url.searchParams.set("access_token", pageAccessToken);
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`Facebook insights fetch failed: ${res.status} ${await res.text()}`);
-  const { data } = (await res.json()) as { data: { name: string; values: { value: number }[] }[] };
-
-  const byName = new Map(data.map((d) => [d.name, d.values[0]?.value ?? null]));
+  const byName = await queryInsights(url, pageAccessToken, ["post_impressions", "post_engaged_users"]);
   return {
     impressions: byName.get("post_impressions") ?? null,
     likes: null,
@@ -40,13 +68,14 @@ async function fetchFacebookPostInsights(pageAccessToken: string, postId: string
 
 async function fetchInstagramMediaInsights(pageAccessToken: string, mediaId: string): Promise<PostInsights> {
   const url = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${mediaId}/insights`);
-  url.searchParams.set("metric", "impressions,reach,likes,comments,shares,saved");
-  url.searchParams.set("access_token", pageAccessToken);
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`Instagram insights fetch failed: ${res.status} ${await res.text()}`);
-  const { data } = (await res.json()) as { data: { name: string; values: { value: number }[] }[] };
-
-  const byName = new Map(data.map((d) => [d.name, d.values[0]?.value ?? null]));
+  const byName = await queryInsights(url, pageAccessToken, [
+    "impressions",
+    "reach",
+    "likes",
+    "comments",
+    "shares",
+    "saved",
+  ]);
   return {
     impressions: byName.get("impressions") ?? byName.get("reach") ?? null,
     likes: byName.get("likes") ?? null,

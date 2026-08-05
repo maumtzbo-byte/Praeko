@@ -81,8 +81,9 @@ export async function createGasto(input: GastoInput) {
 }
 
 export async function deleteGasto(id: string): Promise<void> {
-  const { error } = await supabase.from('gastos').delete().eq('id', id)
+  const { data, error } = await supabase.from('gastos').delete().eq('id', id).select('id')
   if (error) throw error
+  if (!data || data.length === 0) throw new Error('No se pudo eliminar el gasto (sin permiso o ya no existe).')
 }
 
 export async function uploadComprobante(file: File, sucursalId: string): Promise<string> {

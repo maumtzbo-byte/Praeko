@@ -9,15 +9,15 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useReporteDelDia, useUpsertReporteDiario } from '@/hooks/use-reportes'
 import { useSucursales } from '@/hooks/use-sucursales'
 import { useResumenMermasDelDia } from '@/hooks/use-mermas'
+import { useGastosTotal } from '@/hooks/use-gastos'
 import { useAuth } from '@/context/AuthContext'
 import { MENU_ITEMS, PROMO_MIERCOLES } from '@/lib/menu-precios'
-import { cn, formatCurrency, formatNumber, todayISO } from '@/lib/utils'
+import { cn, formatCurrency, todayISO } from '@/lib/utils'
 
 const schema = z.object({
   vta_sucursal: z.coerce.number().min(0),
@@ -26,8 +26,6 @@ const schema = z.object({
   didi: z.coerce.number().min(0),
   rappi: z.coerce.number().min(0),
   uber: z.coerce.number().min(0),
-  gastos_total: z.coerce.number().min(0),
-  pollos_recibidos: z.coerce.number().min(0),
   pollo_completo: z.coerce.number().min(0),
   medio_pollo: z.coerce.number().min(0),
   venta_complementos: z.coerce.number().min(0),
@@ -35,8 +33,6 @@ const schema = z.object({
   promo_2x: z.coerce.number().min(0),
   promo_1_5: z.coerce.number().min(0),
   promo_miercoles: z.coerce.number().min(0),
-  observaciones: z.string().optional(),
-  notas: z.string().optional(),
   recolecto: z.string().min(1, 'Es necesario poner el nombre'),
 })
 
@@ -50,8 +46,6 @@ const EMPTY: FormInput = {
   didi: 0,
   rappi: 0,
   uber: 0,
-  gastos_total: 0,
-  pollos_recibidos: 0,
   pollo_completo: 0,
   medio_pollo: 0,
   venta_complementos: 0,
@@ -59,8 +53,6 @@ const EMPTY: FormInput = {
   promo_2x: 0,
   promo_1_5: 0,
   promo_miercoles: 0,
-  observaciones: '',
-  notas: '',
   recolecto: '',
 }
 
@@ -81,7 +73,9 @@ export function ReporteDiarioPage() {
   const { data: reporte, isLoading } = useReporteDelDia(sucursalId, fecha)
   const mutation = useUpsertReporteDiario()
 
-  // Se calculan solos a partir de Mermas, ya no se escriben a mano.
+  // Gastos, productos dañados y merma ya no se escriben aquí: se calculan
+  // solos con lo capturado en Gastos y Mermas ese mismo día.
+  const { data: gastosTotal = 0 } = useGastosTotal({ sucursalId, desde: fecha, hasta: fecha })
   const { data: resumenMermas = { productosDanados: 0, mermaTotal: 0 } } = useResumenMermasDelDia(sucursalId, fecha)
 
   const {
@@ -103,8 +97,6 @@ export function ReporteDiarioPage() {
               didi: reporte.didi,
               rappi: reporte.rappi,
               uber: reporte.uber,
-              gastos_total: reporte.gastos_total,
-              pollos_recibidos: reporte.pollos_recibidos,
               pollo_completo: reporte.pollo_completo,
               medio_pollo: reporte.medio_pollo,
               venta_complementos: reporte.venta_complementos,
@@ -112,8 +104,6 @@ export function ReporteDiarioPage() {
               promo_2x: reporte.promo_2x,
               promo_1_5: reporte.promo_1_5,
               promo_miercoles: reporte.promo_miercoles,
-              observaciones: reporte.observaciones ?? '',
-              notas: reporte.notas ?? '',
               recolecto: reporte.recolecto ?? '',
             }
           : EMPTY,
@@ -121,12 +111,14 @@ export function ReporteDiarioPage() {
     }
   }, [reporte, isLoading, reset])
 
-  // Si ya se guardó un reporte hoy pero después se registró una merma nueva,
-  // el total calculado se adelanta a lo que quedó guardado hasta que se le
-  // vuelva a dar clic a "Actualizar reporte".
+  // Si ya se guardó un reporte hoy pero después cambió el total de Gastos o
+  // se registró una merma nueva, el total calculado se adelanta a lo que
+  // quedó guardado hasta que se le vuelva a dar clic a "Actualizar reporte".
   const cambiosSinGuardar = reporte
-    ? reporte.productos_danados !== resumenMermas.productosDanados || reporte.merma_total !== resumenMermas.mermaTotal
-    : resumenMermas.productosDanados > 0 || resumenMermas.mermaTotal > 0
+    ? reporte.gastos_total !== gastosTotal ||
+      reporte.productos_danados !== resumenMermas.productosDanados ||
+      reporte.merma_total !== resumenMermas.mermaTotal
+    : gastosTotal > 0 || resumenMermas.productosDanados > 0 || resumenMermas.mermaTotal > 0
 
   const values = watch()
   const ventasTotales =
@@ -136,14 +128,14 @@ export function ReporteDiarioPage() {
     Number(values.didi || 0) +
     Number(values.rappi || 0) +
     Number(values.uber || 0)
-  const gananciaEstimada = ventasTotales - Number(values.gastos_total || 0)
+  const gananciaEstimada = ventasTotales - gastosTotal
 
   const operacionTotal =
     MENU_ITEMS.reduce((sum, item) => sum + Number(values[item.key] || 0) * item.precio, 0) +
     (esMiercoles ? Number(values.promo_miercoles || 0) * PROMO_MIERCOLES.precio : 0)
 
-  // "Pollos vendidos" ya no es un campo aparte: se deriva de lo que sí se
-  // captura (medio pollo cuenta 0.5, las promos de pollo y medio cuentan 1.5).
+  // "Pollos vendidos" se deriva de lo capturado (medio pollo cuenta 0.5, las
+  // promos de pollo y medio cuentan 1.5) para las estadísticas del dashboard.
   const pollosVendidosEquivalente = Math.round(
     Number(values.pollo_completo || 0) +
       Number(values.medio_pollo || 0) * 0.5 +
@@ -166,8 +158,8 @@ export function ReporteDiarioPage() {
       didi: formValues.didi,
       rappi: formValues.rappi,
       uber: formValues.uber,
-      gastos_total: formValues.gastos_total,
-      pollos_recibidos: formValues.pollos_recibidos,
+      gastos_total: gastosTotal,
+      pollos_recibidos: 0,
       pollos_vendidos: pollosVendidosEquivalente,
       productos_danados: resumenMermas.productosDanados,
       merma_total: resumenMermas.mermaTotal,
@@ -178,8 +170,8 @@ export function ReporteDiarioPage() {
       promo_2x: formValues.promo_2x,
       promo_1_5: formValues.promo_1_5,
       promo_miercoles: esMiercoles ? formValues.promo_miercoles : 0,
-      observaciones: formValues.observaciones || null,
-      notas: formValues.notas || null,
+      observaciones: reporte?.observaciones ?? null,
+      notas: reporte?.notas ?? null,
       recolecto: formValues.recolecto,
     })
     setPendingValues(null)
@@ -207,7 +199,7 @@ export function ReporteDiarioPage() {
     <div>
       <PageHeader
         title="Reporte diario"
-        description="Captura las ventas, gastos y movimientos del día. Al guardar, tu administrador ya lo puede ver en Historial de reportes."
+        description="Captura las ventas del día. Al guardar, tu administrador ya lo puede ver en Historial de reportes."
         actions={
           <>
             {isAdmin && (
@@ -240,6 +232,31 @@ export function ReporteDiarioPage() {
           disabled={isLoading}
           className={cn('flex flex-col gap-6', isLoading && 'pointer-events-none opacity-60')}
         >
+        <Card>
+          <CardHeader>
+            <CardTitle>Operación del día</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {MENU_ITEMS.map((item) => (
+                <div key={item.key} className="flex flex-col gap-1.5">
+                  <Label htmlFor={item.key}>{item.label}</Label>
+                  <Input id={item.key} type="number" step="1" min="0" {...register(item.key)} />
+                </div>
+              ))}
+              {esMiercoles && (
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="promo_miercoles">{PROMO_MIERCOLES.label}</Label>
+                  <Input id="promo_miercoles" type="number" step="1" min="0" {...register('promo_miercoles')} />
+                </div>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Total por productos: <span className="font-semibold text-foreground">{formatCurrency(operacionTotal)}</span>
+            </p>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Ventas por método de pago</CardTitle>
@@ -279,75 +296,9 @@ export function ReporteDiarioPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Operación del día</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-5">
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="gastos_total">Gastos</Label>
-                <Input id="gastos_total" type="number" step="0.01" min="0" {...register('gastos_total')} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="pollos_recibidos">Pollos recibidos</Label>
-                <Input id="pollos_recibidos" type="number" step="1" min="0" {...register('pollos_recibidos')} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="productos_danados">Productos dañados</Label>
-                <Input id="productos_danados" disabled value={formatNumber(resumenMermas.productosDanados)} />
-                <p className="text-xs text-muted-foreground">Se calcula solo con lo capturado en Mermas.</p>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="merma_total">Merma (unidades)</Label>
-                <Input id="merma_total" disabled value={formatNumber(resumenMermas.mermaTotal)} />
-                <p className="text-xs text-muted-foreground">Se calcula solo con lo capturado en Mermas.</p>
-              </div>
-            </div>
-
-            <div className="border-t border-border pt-4">
-              <p className="mb-3 text-sm font-medium">Productos vendidos hoy</p>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {MENU_ITEMS.map((item) => (
-                  <div key={item.key} className="flex flex-col gap-1.5">
-                    <Label htmlFor={item.key}>
-                      {item.label} <span className="text-muted-foreground">({formatCurrency(item.precio)})</span>
-                    </Label>
-                    <Input id={item.key} type="number" step="1" min="0" {...register(item.key)} />
-                  </div>
-                ))}
-                {esMiercoles && (
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="promo_miercoles">
-                      {PROMO_MIERCOLES.label} <span className="text-muted-foreground">({formatCurrency(PROMO_MIERCOLES.precio)})</span>
-                    </Label>
-                    <Input id="promo_miercoles" type="number" step="1" min="0" {...register('promo_miercoles')} />
-                  </div>
-                )}
-              </div>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Total por productos: <span className="font-semibold text-foreground">{formatCurrency(operacionTotal)}</span>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:p-6">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="observaciones">Observaciones</Label>
-              <Textarea id="observaciones" rows={3} {...register('observaciones')} />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="notas">Notas</Label>
-              <Textarea id="notas" rows={3} {...register('notas')} />
-            </div>
-          </CardContent>
-        </Card>
-
         {cambiosSinGuardar && (
           <p className="rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
-            Hay mermas más recientes que el reporte guardado — dale a{' '}
+            Hay gastos o mermas más recientes que el reporte guardado — dale a{' '}
             {reporte ? '"Actualizar reporte"' : '"Guardar reporte"'} para que los totales queden al día.
           </p>
         )}

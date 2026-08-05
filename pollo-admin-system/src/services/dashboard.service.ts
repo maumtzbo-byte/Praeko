@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { ReporteDiario } from '@/types/database'
+import { MENU_ITEMS, PROMO_MIERCOLES } from '@/lib/menu-precios'
 
 export interface DashboardFiltro {
   sucursalId?: string
@@ -32,14 +33,6 @@ export async function fetchDashboardData(filtro: DashboardFiltro): Promise<Dashb
 
   if (filtro.sucursalId) reportesQuery = reportesQuery.eq('sucursal_id', filtro.sucursalId)
 
-  let ventasQuery = supabase
-    .from('ventas')
-    .select('producto_id, cantidad, subtotal, producto:productos(nombre)')
-    .gte('fecha', filtro.desde)
-    .lte('fecha', filtro.hasta)
-
-  if (filtro.sucursalId) ventasQuery = ventasQuery.eq('sucursal_id', filtro.sucursalId)
-
   let pedidosQuery = supabase
     .from('pedidos')
     .select('id', { count: 'exact', head: true })
@@ -53,45 +46,43 @@ export async function fetchDashboardData(filtro: DashboardFiltro): Promise<Dashb
 
   if (filtro.sucursalId) inventarioQuery = inventarioQuery.eq('sucursal_id', filtro.sucursalId)
 
-  const [reportesRes, ventasRes, pedidosRes, inventarioRes, sucursalesRes] = await Promise.all([
+  const [reportesRes, pedidosRes, inventarioRes, sucursalesRes] = await Promise.all([
     reportesQuery,
-    ventasQuery,
     pedidosQuery,
     inventarioQuery,
     supabase.from('sucursales').select('id, nombre').order('nombre'),
   ])
 
   if (reportesRes.error) throw reportesRes.error
-  if (ventasRes.error) throw ventasRes.error
   if (pedidosRes.error) throw pedidosRes.error
   if (inventarioRes.error) throw inventarioRes.error
   if (sucursalesRes.error) throw sucursalesRes.error
 
-  const agregados = new Map<string, VentaProductoAgregada>()
-  for (const venta of ventasRes.data ?? []) {
-    const producto = venta.producto as unknown as { nombre: string } | null
-    const nombre = producto?.nombre ?? 'Producto'
-    const existing = agregados.get(venta.producto_id)
-    if (existing) {
-      existing.cantidad += Number(venta.cantidad)
-      existing.total += Number(venta.subtotal)
-    } else {
-      agregados.set(venta.producto_id, {
-        producto_id: venta.producto_id,
-        nombre,
-        cantidad: Number(venta.cantidad),
-        total: Number(venta.subtotal),
-      })
-    }
-  }
+  const reportes = (reportesRes.data ?? []) as ReporteDiario[]
+
+  // "Productos vendidos" sale de lo capturado en Operación del día
+  // (Pollo Completo, Medio Pollo, promos, etc.), no de una tabla aparte.
+  const itemsMenu = [...MENU_ITEMS, PROMO_MIERCOLES]
+  const ventasPorProducto: VentaProductoAgregada[] = itemsMenu
+    .map((item) => {
+      const cantidad = reportes.reduce((sum, r) => sum + Number(r[item.key as keyof ReporteDiario] ?? 0), 0)
+      return {
+        producto_id: item.key,
+        nombre: item.label,
+        cantidad,
+        total: cantidad * item.precio,
+      }
+    })
+    .filter((p) => p.cantidad > 0)
+    .sort((a, b) => b.total - a.total)
 
   const inventarioBajo = (inventarioRes.data ?? []).filter(
     (item) => Number(item.cantidad_actual) <= Number(item.stock_minimo),
   ).length
 
   return {
-    reportes: reportesRes.data as ReporteDiario[],
-    ventasPorProducto: Array.from(agregados.values()).sort((a, b) => b.total - a.total),
+    reportes,
+    ventasPorProducto,
     pedidosPendientes: pedidosRes.count ?? 0,
     inventarioBajo,
     sucursales: sucursalesRes.data,

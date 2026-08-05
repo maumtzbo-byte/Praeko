@@ -19,6 +19,14 @@ export function useGastosTotal(filtro: GastosFiltro = {}) {
   return useQuery({ queryKey: ['gastos-total', filtro], queryFn: () => gastosService.getGastosTotal(filtro) })
 }
 
+export function useGastosDelDia(sucursalId: string | undefined, fecha: string) {
+  return useQuery({
+    queryKey: ['gastos', 'del-dia', sucursalId, fecha],
+    queryFn: () => gastosService.listGastosDelDia(sucursalId as string, fecha),
+    enabled: Boolean(sucursalId),
+  })
+}
+
 export function useCreateGasto() {
   const qc = useQueryClient()
   return useMutation({

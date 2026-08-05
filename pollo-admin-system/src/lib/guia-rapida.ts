@@ -29,8 +29,9 @@ const PASOS_EMPLEADO: GuiaPaso[] = [
   },
   {
     icon: Receipt,
-    titulo: 'Gastos',
-    texto: 'Registra aquí cualquier gasto de la sucursal (gas, hielo, reparaciones). Puedes adjuntar foto del comprobante.',
+    titulo: 'Gastos fijos',
+    texto:
+      'Aquí van solo los gastos fijos de la sucursal, como renta y sueldos. Los gastos del día a día (gas, hielo, reparaciones) se anotan directo en Reporte diario.',
   },
   {
     icon: Trash2,
@@ -83,8 +84,8 @@ const PASOS_ADMIN: GuiaPaso[] = [
   },
   {
     icon: Receipt,
-    titulo: 'Gastos',
-    texto: 'Revisa los gastos que registra cada sucursal, con su comprobante adjunto si lo subieron.',
+    titulo: 'Gastos fijos',
+    texto: 'Renta, sueldos y otros gastos fijos que registra cada sucursal. Los gastos del día a día se ven dentro de cada Reporte diario.',
   },
   {
     icon: Boxes,

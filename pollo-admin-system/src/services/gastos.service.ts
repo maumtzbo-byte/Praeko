@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { Gasto } from '@/types/database'
+import type { Gasto, TipoGasto } from '@/types/database'
 import type { PaginaResultado } from '@/services/reportes.service'
 
 export interface GastoConCategoria extends Gasto {
@@ -15,12 +15,14 @@ export interface GastoInput {
   descripcion?: string | null
   fecha: string
   comprobante_url?: string | null
+  tipo: TipoGasto
 }
 
 export interface GastosFiltro {
   sucursalId?: string
   desde?: string
   hasta?: string
+  tipo?: TipoGasto
 }
 
 export async function listGastos(
@@ -39,6 +41,7 @@ export async function listGastos(
   if (filtro.sucursalId) query = query.eq('sucursal_id', filtro.sucursalId)
   if (filtro.desde) query = query.gte('fecha', filtro.desde)
   if (filtro.hasta) query = query.lte('fecha', filtro.hasta)
+  if (filtro.tipo) query = query.eq('tipo', filtro.tipo)
 
   const { data, error, count } = await query
   if (error) throw error
@@ -51,10 +54,24 @@ export async function getGastosTotal(filtro: GastosFiltro = {}): Promise<number>
   if (filtro.sucursalId) query = query.eq('sucursal_id', filtro.sucursalId)
   if (filtro.desde) query = query.gte('fecha', filtro.desde)
   if (filtro.hasta) query = query.lte('fecha', filtro.hasta)
+  if (filtro.tipo) query = query.eq('tipo', filtro.tipo)
 
   const { data, error } = await query
   if (error) throw error
   return (data ?? []).reduce((sum, g) => sum + Number(g.monto), 0)
+}
+
+/** Gastos normales (no fijos) de una sucursal en un día puntual, para el Reporte diario. */
+export async function listGastosDelDia(sucursalId: string, fecha: string): Promise<Gasto[]> {
+  const { data, error } = await supabase
+    .from('gastos')
+    .select('*')
+    .eq('sucursal_id', sucursalId)
+    .eq('fecha', fecha)
+    .eq('tipo', 'normal')
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return data as Gasto[]
 }
 
 export async function createGasto(input: GastoInput) {

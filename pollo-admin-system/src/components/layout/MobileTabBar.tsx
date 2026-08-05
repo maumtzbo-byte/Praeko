@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 const TABS = [
   { label: 'Inicio', to: '/dashboard', icon: LayoutDashboard },
   { label: 'Reporte', to: '/reportes-diarios', icon: ClipboardList },
-  { label: 'Gastos', to: '/gastos', icon: Receipt },
+  { label: 'Gastos fijos', to: '/gastos', icon: Receipt },
   { label: 'Inventario', to: '/inventario', icon: Boxes },
   { label: 'Pedidos', to: '/pedidos', icon: Truck },
   { label: 'Alertas', to: '/notificaciones', icon: Bell },

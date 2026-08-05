@@ -70,6 +70,7 @@ export function GastoFormDialog({
       descripcion: null,
       fecha: values.fecha,
       comprobante_url,
+      tipo: 'fijo',
     })
     onOpenChange(false)
   }
@@ -96,7 +97,7 @@ export function GastoFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Registrar gasto</DialogTitle>
+          <DialogTitle>Registrar gasto fijo</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -113,7 +114,7 @@ export function GastoFormDialog({
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="concepto">Concepto</Label>
-            <Input id="concepto" placeholder="Ej. Compra de carbón" {...register('concepto')} />
+            <Input id="concepto" placeholder="Ej. Renta del local, sueldo de Ana" {...register('concepto')} />
             {errors.concepto && <p className="text-xs text-destructive">{errors.concepto.message}</p>}
           </div>
 
@@ -141,7 +142,7 @@ export function GastoFormDialog({
               Cancelar
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Guardando…' : 'Registrar gasto'}
+              {isPending ? 'Guardando…' : 'Registrar gasto fijo'}
             </Button>
           </DialogFooter>
         </form>

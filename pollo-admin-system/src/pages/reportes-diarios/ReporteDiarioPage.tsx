@@ -18,6 +18,7 @@ import { useGastosTotal } from '@/hooks/use-gastos'
 import { useAuth } from '@/context/AuthContext'
 import { MENU_ITEMS, PROMO_MIERCOLES } from '@/lib/menu-precios'
 import { cn, formatCurrency, todayISO } from '@/lib/utils'
+import { GastosDelDiaSection } from '@/pages/reportes-diarios/GastosDelDiaSection'
 
 const schema = z.object({
   vta_sucursal: z.coerce.number().min(0),
@@ -73,9 +74,10 @@ export function ReporteDiarioPage() {
   const { data: reporte, isLoading } = useReporteDelDia(sucursalId, fecha)
   const mutation = useUpsertReporteDiario()
 
-  // Gastos, productos dañados y merma ya no se escriben aquí: se calculan
-  // solos con lo capturado en Gastos y Mermas ese mismo día.
-  const { data: gastosTotal = 0 } = useGastosTotal({ sucursalId, desde: fecha, hasta: fecha })
+  // Los gastos normales del día se capturan abajo, en esta misma página; los
+  // gastos fijos (renta, sueldos) van aparte y no cuentan aquí. Productos
+  // dañados y merma se calculan solos con lo capturado en Mermas ese día.
+  const { data: gastosTotal = 0 } = useGastosTotal({ sucursalId, desde: fecha, hasta: fecha, tipo: 'normal' })
   const { data: resumenMermas = { productosDanados: 0, mermaTotal: 0 } } = useResumenMermasDelDia(sucursalId, fecha)
 
   const {
@@ -295,6 +297,8 @@ export function ReporteDiarioPage() {
             </div>
           </CardContent>
         </Card>
+
+        <GastosDelDiaSection sucursalId={sucursalId} fecha={fecha} />
 
         {cambiosSinGuardar && (
           <p className="rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">

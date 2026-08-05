@@ -140,6 +140,8 @@ export interface Venta {
   created_at: string
 }
 
+export type TipoGasto = 'normal' | 'fijo'
+
 export interface Gasto {
   id: string
   sucursal_id: string
@@ -150,6 +152,7 @@ export interface Gasto {
   descripcion: string | null
   fecha: string
   comprobante_url: string | null
+  tipo: TipoGasto
   created_at: string
 }
 

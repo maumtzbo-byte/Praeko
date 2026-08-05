@@ -37,6 +37,7 @@ export function GastosPage() {
     sucursalId: sucursalId || undefined,
     desde: desde || undefined,
     hasta: hasta || undefined,
+    tipo: 'fijo' as const,
   }
 
   React.useEffect(() => setPage(1), [sucursalId, desde, hasta])
@@ -62,12 +63,16 @@ export function GastosPage() {
   return (
     <div>
       <PageHeader
-        title="Gastos"
-        description={isLoadingTotal ? 'Total del periodo: —' : `Total del periodo: ${formatCurrency(total)}`}
+        title="Gastos fijos"
+        description={
+          isLoadingTotal
+            ? 'Renta, sueldos y otros gastos fijos — total del periodo: —'
+            : `Renta, sueldos y otros gastos fijos — total del periodo: ${formatCurrency(total)}`
+        }
         actions={
           activeSucursal && (
             <Button onClick={() => setFormOpen(true)}>
-              <Plus /> Registrar gasto
+              <Plus /> Registrar gasto fijo
             </Button>
           )
         }
@@ -99,7 +104,11 @@ export function GastosPage() {
       {isLoading ? (
         <TableSkeleton columns={5} />
       ) : gastos.length === 0 ? (
-        <EmptyState icon={Receipt} title="Sin gastos registrados" description="Registra el primer gasto de esta sucursal." />
+        <EmptyState
+          icon={Receipt}
+          title="Sin gastos fijos registrados"
+          description="Registra aquí renta, sueldos y otros gastos fijos de esta sucursal. Los gastos del día a día se capturan en Reporte diario."
+        />
       ) : (
         <>
           <Table>
@@ -165,8 +174,8 @@ export function GastosPage() {
       <ConfirmDialog
         open={Boolean(deleting)}
         onOpenChange={(open) => !open && setDeleting(null)}
-        title="Eliminar gasto"
-        description={`¿Eliminar el gasto "${deleting?.concepto}"?`}
+        title="Eliminar gasto fijo"
+        description={`¿Eliminar el gasto fijo "${deleting?.concepto}"?`}
         onConfirm={() => {
           if (deleting) deleteMutation.mutate(deleting.id)
           setDeleting(null)

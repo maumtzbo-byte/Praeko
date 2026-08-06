@@ -28,7 +28,7 @@ export default async function IaMarketingPage() {
 
   const planKey = subscription?.plan_key as PlanKey | undefined;
   const plan = planKey ? PLAN_LIMITS[planKey] : null;
-  const modelLabel = plan?.contentModel === "claude-opus-4-8" ? "Claude Opus 4.8" : "Claude Sonnet 5";
+  const modelLabel = plan?.contentModel === "claude-opus-5" ? "Claude Opus 5" : "Claude Sonnet 5";
 
   const modelCard = (
     <Card className="mb-6 bg-white/70">

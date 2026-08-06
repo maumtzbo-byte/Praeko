@@ -119,6 +119,25 @@ export async function generateContentPlan(
     }
     const reviewByIndex = new Map(reviews.map((r) => [r.index, r]));
 
+    // The upsert below is keyed on (business_id, scheduled_date, format) —
+    // the same key a piece that's already had media generated or already
+    // published uses. Re-running generation for an overlapping range (the
+    // 5-runs-per-day cap explicitly allows more than one call the same
+    // day, and every call defaults to starting "tomorrow", so overlap is
+    // the common case, not an edge case) would otherwise silently blow
+    // away that row's topic/script/status — including on a piece that's
+    // already live on Instagram, leaving the dashboard showing different
+    // content than what's actually posted. Fetch which (date, format)
+    // pairs already moved past "just a draft" and never touch those rows.
+    const targetDates = strategy.days.map((d) => d.date);
+    const { data: protectedRows } = await supabase
+      .from("content_calendar")
+      .select("scheduled_date, format")
+      .eq("business_id", businessId)
+      .in("scheduled_date", targetDates)
+      .in("status", ["generada", "publicada"]);
+    const protectedKeys = new Set((protectedRows ?? []).map((r) => `${r.scheduled_date}|${r.format}`));
+
     // Record the run right after the paid Claude call succeeds — the money
     // is spent at this point regardless of whether the upsert below fails.
     const { error: runLogError } = await supabase
@@ -131,36 +150,39 @@ export async function generateContentPlan(
       console.error("Failed to log content_generation_runs", runLogError);
     }
 
-    const rows = strategy.days.map((d, i) => {
-      const review = reviewByIndex.get(i);
-      return {
-        business_id: businessId,
-        scheduled_date: d.date,
-        content_kind: d.contentKind,
-        format: d.format,
-        topic: d.topic,
-        script: d.script,
-        target_duration_seconds: d.contentKind === "video" ? d.targetDurationSeconds ?? null : null,
-        recommended_publish_time: d.recommendedPublishTime,
-        // rechazado is still saved as en_revision, not dropped — the dueño
-        // should see and decide on it, not lose it silently. A MISSING
-        // review (reviewContentBatch threw, or Claude's batch response
-        // omitted this index) must fail closed the same way — !review used
-        // to fall through to the true branch's ":" alternative ("pendiente",
-        // meaning "cleared to generate/publish automatically"), which
-        // treated "the safety check never ran" the same as "the safety
-        // check passed". Exactly backwards: a reviewer failure is the one
-        // case that most needs a human to look before this goes further.
-        status: !review || review.result !== "aprobado" ? ("en_revision" as const) : ("pendiente" as const),
-        review_result: review?.result ?? null,
-        review_feedback: review?.feedback ?? null,
-      };
-    });
+    const rows = strategy.days
+      .map((d, i) => ({ d, i }))
+      .filter(({ d }) => !protectedKeys.has(`${d.date}|${d.format}`))
+      .map(({ d, i }) => {
+        const review = reviewByIndex.get(i);
+        return {
+          business_id: businessId,
+          scheduled_date: d.date,
+          content_kind: d.contentKind,
+          format: d.format,
+          topic: d.topic,
+          script: d.script,
+          target_duration_seconds: d.contentKind === "video" ? d.targetDurationSeconds ?? null : null,
+          recommended_publish_time: d.recommendedPublishTime,
+          // rechazado is still saved as en_revision, not dropped — the dueño
+          // should see and decide on it, not lose it silently. A MISSING
+          // review (reviewContentBatch threw, or Claude's batch response
+          // omitted this index) must fail closed the same way — !review used
+          // to fall through to the true branch's ":" alternative ("pendiente",
+          // meaning "cleared to generate/publish automatically"), which
+          // treated "the safety check never ran" the same as "the safety
+          // check passed". Exactly backwards: a reviewer failure is the one
+          // case that most needs a human to look before this goes further.
+          status: !review || review.result !== "aprobado" ? ("en_revision" as const) : ("pendiente" as const),
+          review_result: review?.result ?? null,
+          review_feedback: review?.feedback ?? null,
+        };
+      });
 
-    const { data: inserted, error } = await supabase
-      .from("content_calendar")
-      .upsert(rows, { onConflict: "business_id,scheduled_date,format" })
-      .select("id");
+    const { data: inserted, error } =
+      rows.length > 0
+        ? await supabase.from("content_calendar").upsert(rows, { onConflict: "business_id,scheduled_date,format" }).select("id")
+        : { data: [], error: null };
 
     if (error) return { success: false, error: error.message };
 

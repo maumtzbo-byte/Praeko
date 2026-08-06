@@ -117,6 +117,22 @@ export async function createCampaign(
     }
     const reviewByIndex = new Map(reviews.map((r) => [r.index, r]));
 
+    // Same overlap risk as generar-contenido/actions.ts: the upsert below
+    // is keyed on (business_id, scheduled_date, format), the same key a
+    // piece that already has generated media or is already published
+    // uses. "Campaign piece should win over generic filler" (the original
+    // intent here) only holds while the existing row is still just a
+    // draft — it doesn't hold once that filler is already live on
+    // Instagram. Never touch rows that already moved past draft.
+    const targetDates = strategy.days.map((d) => d.date);
+    const { data: protectedRows } = await supabase
+      .from("content_calendar")
+      .select("scheduled_date, format")
+      .eq("business_id", businessId)
+      .in("scheduled_date", targetDates)
+      .in("status", ["generada", "publicada"]);
+    const protectedKeys = new Set((protectedRows ?? []).map((r) => `${r.scheduled_date}|${r.format}`));
+
     // Same accounting as generar-contenido: the Claude call is already paid
     // for at this point regardless of what happens below.
     const { error: runLogError } = await supabase
@@ -137,36 +153,40 @@ export async function createCampaign(
     }
 
     // Upsert on (business_id, scheduled_date, format) deliberately overwrites
-    // any generic day-to-day content already scheduled on these dates —
+    // any generic day-to-day DRAFT content already scheduled on these dates —
     // inside a campaign's own date range, the campaign's themed piece
-    // should win over generic filler for that day/format.
-    const rows = strategy.days.map((d, i) => {
-      const review = reviewByIndex.get(i);
-      return {
-        business_id: businessId,
-        campaign_id: campaign.id,
-        scheduled_date: d.date,
-        content_kind: d.contentKind,
-        format: d.format,
-        topic: d.topic,
-        script: d.script,
-        target_duration_seconds: d.contentKind === "video" ? (d.targetDurationSeconds ?? null) : null,
-        recommended_publish_time: d.recommendedPublishTime,
-        // A missing review (reviewContentBatch threw, or the batch response
-        // omitted this index) must fail closed, same fix as
-        // generar-contenido/actions.ts — !review used to fall through to
-        // "pendiente" (cleared to proceed automatically), treating "the
-        // safety check never ran" the same as "it passed".
-        status: !review || review.result !== "aprobado" ? ("en_revision" as const) : ("pendiente" as const),
-        review_result: review?.result ?? null,
-        review_feedback: review?.feedback ?? null,
-      };
-    });
+    // should win over generic filler for that day/format. Rows already past
+    // draft (protectedKeys, above) are excluded instead of overwritten.
+    const rows = strategy.days
+      .map((d, i) => ({ d, i }))
+      .filter(({ d }) => !protectedKeys.has(`${d.date}|${d.format}`))
+      .map(({ d, i }) => {
+        const review = reviewByIndex.get(i);
+        return {
+          business_id: businessId,
+          campaign_id: campaign.id,
+          scheduled_date: d.date,
+          content_kind: d.contentKind,
+          format: d.format,
+          topic: d.topic,
+          script: d.script,
+          target_duration_seconds: d.contentKind === "video" ? (d.targetDurationSeconds ?? null) : null,
+          recommended_publish_time: d.recommendedPublishTime,
+          // A missing review (reviewContentBatch threw, or the batch response
+          // omitted this index) must fail closed, same fix as
+          // generar-contenido/actions.ts — !review used to fall through to
+          // "pendiente" (cleared to proceed automatically), treating "the
+          // safety check never ran" the same as "it passed".
+          status: !review || review.result !== "aprobado" ? ("en_revision" as const) : ("pendiente" as const),
+          review_result: review?.result ?? null,
+          review_feedback: review?.feedback ?? null,
+        };
+      });
 
-    const { data: inserted, error: insertError } = await supabase
-      .from("content_calendar")
-      .upsert(rows, { onConflict: "business_id,scheduled_date,format" })
-      .select("id");
+    const { data: inserted, error: insertError } =
+      rows.length > 0
+        ? await supabase.from("content_calendar").upsert(rows, { onConflict: "business_id,scheduled_date,format" }).select("id")
+        : { data: [], error: null };
 
     if (insertError) return { success: false, error: insertError.message };
 

@@ -3,6 +3,7 @@ import { getClaudeClient } from "./claude-client";
 import type { ContentFormat, ContentKind } from "@/lib/content/types";
 import { canGenerateVideo, type PlanLimits } from "@/lib/plans/limits";
 import { getUpcomingKeyDates } from "@/lib/content/mexico-key-dates";
+import { researchIndustryTrends } from "./trends-research-agent";
 
 /**
  * Output contract for the combined agente de estrategia + agente de guiones
@@ -84,9 +85,18 @@ function buildKeyDatesSection(startDate: string, days: number): string | null {
   ].join("\n");
 }
 
-function buildUserPrompt(input: StrategyAgentInput): string {
+/** Formats the Agente de Tendencias' web research as a prompt section, or
+ * null when there was nothing to add — same "omit the header if there's no
+ * content" rule as buildKeyDatesSection. */
+function buildResearchSection(researchSummary: string | null): string | null {
+  if (!researchSummary) return null;
+  return ["Investigación de tendencias actuales para esta industria (Agente de Tendencias):", researchSummary].join("\n");
+}
+
+function buildUserPrompt(input: StrategyAgentInput, researchSummary: string | null): string {
   const { business, brand, plan } = input;
   const keyDatesSection = buildKeyDatesSection(input.startDate, input.days);
+  const researchSection = buildResearchSection(researchSummary);
   const lines = [
     `Negocio: ${business.name}`,
     business.industry ? `Giro: ${business.industry}` : null,
@@ -106,6 +116,8 @@ function buildUserPrompt(input: StrategyAgentInput): string {
     `Límite de videos al mes: ${plan.videosPerMonth} (máximo ${plan.videoMaxSeconds}s por video, proveedor ${plan.videoProvider})`,
     `Límite de imágenes al mes: ${plan.imagesPerMonth}`,
     "",
+    researchSection,
+    researchSection ? "" : null,
     keyDatesSection,
     keyDatesSection ? "" : null,
     `Genera ${input.days} días de contenido empezando el ${input.startDate} (fechas consecutivas, formato YYYY-MM-DD).`,
@@ -209,7 +221,13 @@ async function callStrategyAgent(system: string, user: string, plan: PlanLimits)
 }
 
 export async function generateMonthlyStrategy(input: StrategyAgentInput): Promise<MonthlyStrategyPlan> {
-  return callStrategyAgent(buildSystemPrompt(), buildUserPrompt(input), input.plan);
+  const researchSummary = await researchIndustryTrends({
+    industry: input.business.industry,
+    city: input.business.city,
+    country: input.business.country,
+    sellsDescription: input.brand.sellsDescription,
+  });
+  return callStrategyAgent(buildSystemPrompt(), buildUserPrompt(input, researchSummary), input.plan);
 }
 
 export interface CampaignAgentInput {
@@ -244,10 +262,11 @@ function buildCampaignSystemPrompt(): string {
   ].join("\n");
 }
 
-function buildCampaignUserPrompt(input: CampaignAgentInput): string {
+function buildCampaignUserPrompt(input: CampaignAgentInput, researchSummary: string | null): string {
   const { business, brand, plan, campaign } = input;
   const days = daysBetweenInclusive(campaign.startDate, campaign.endDate);
   const keyDatesSection = buildKeyDatesSection(campaign.startDate, days);
+  const researchSection = buildResearchSection(researchSummary);
   const lines = [
     `Negocio: ${business.name}`,
     business.industry ? `Giro: ${business.industry}` : null,
@@ -266,6 +285,8 @@ function buildCampaignUserPrompt(input: CampaignAgentInput): string {
     `Límite de videos al mes: ${plan.videosPerMonth} (máximo ${plan.videoMaxSeconds}s por video, proveedor ${plan.videoProvider})`,
     `Límite de imágenes al mes: ${plan.imagesPerMonth}`,
     "",
+    researchSection,
+    researchSection ? "" : null,
     keyDatesSection,
     keyDatesSection ? "" : null,
     `CAMPAÑA: ${campaign.name}`,
@@ -284,5 +305,11 @@ function daysBetweenInclusive(startDate: string, endDate: string): number {
 }
 
 export async function generateCampaignPlan(input: CampaignAgentInput): Promise<MonthlyStrategyPlan> {
-  return callStrategyAgent(buildCampaignSystemPrompt(), buildCampaignUserPrompt(input), input.plan);
+  const researchSummary = await researchIndustryTrends({
+    industry: input.business.industry,
+    city: input.business.city,
+    country: input.business.country,
+    sellsDescription: input.brand.sellsDescription,
+  });
+  return callStrategyAgent(buildCampaignSystemPrompt(), buildCampaignUserPrompt(input, researchSummary), input.plan);
 }

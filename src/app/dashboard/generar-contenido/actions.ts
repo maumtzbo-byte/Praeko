@@ -143,8 +143,15 @@ export async function generateContentPlan(
         target_duration_seconds: d.contentKind === "video" ? d.targetDurationSeconds ?? null : null,
         recommended_publish_time: d.recommendedPublishTime,
         // rechazado is still saved as en_revision, not dropped — the dueño
-        // should see and decide on it, not lose it silently.
-        status: review && review.result !== "aprobado" ? ("en_revision" as const) : ("pendiente" as const),
+        // should see and decide on it, not lose it silently. A MISSING
+        // review (reviewContentBatch threw, or Claude's batch response
+        // omitted this index) must fail closed the same way — !review used
+        // to fall through to the true branch's ":" alternative ("pendiente",
+        // meaning "cleared to generate/publish automatically"), which
+        // treated "the safety check never ran" the same as "the safety
+        // check passed". Exactly backwards: a reviewer failure is the one
+        // case that most needs a human to look before this goes further.
+        status: !review || review.result !== "aprobado" ? ("en_revision" as const) : ("pendiente" as const),
         review_result: review?.result ?? null,
         review_feedback: review?.feedback ?? null,
       };

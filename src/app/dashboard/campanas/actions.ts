@@ -152,7 +152,12 @@ export async function createCampaign(
         script: d.script,
         target_duration_seconds: d.contentKind === "video" ? (d.targetDurationSeconds ?? null) : null,
         recommended_publish_time: d.recommendedPublishTime,
-        status: review && review.result !== "aprobado" ? ("en_revision" as const) : ("pendiente" as const),
+        // A missing review (reviewContentBatch threw, or the batch response
+        // omitted this index) must fail closed, same fix as
+        // generar-contenido/actions.ts — !review used to fall through to
+        // "pendiente" (cleared to proceed automatically), treating "the
+        // safety check never ran" the same as "it passed".
+        status: !review || review.result !== "aprobado" ? ("en_revision" as const) : ("pendiente" as const),
         review_result: review?.result ?? null,
         review_feedback: review?.feedback ?? null,
       };

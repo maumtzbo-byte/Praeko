@@ -2,6 +2,7 @@ import { FalGenerationProvider } from "@/lib/providers/generation/fal-provider";
 import type { GenerationJobHandle, GenerationResult } from "@/lib/providers/generation/types";
 import type { ContentKind } from "@/lib/content/types";
 import type { PlanLimits } from "@/lib/plans/limits";
+import { craftVisualPrompt } from "./visual-prompt-agent";
 
 /**
  * Agente Creativo: turns an approved script from the estrategia/guionista
@@ -31,9 +32,23 @@ function getProvider() {
 export async function requestMediaGeneration(input: CreativeAgentInput): Promise<GenerationJobHandle> {
   const provider = getProvider();
 
+  // The script is written for a human presenter to read on camera (hook /
+  // development / closing) — it's not a generation prompt. craftVisualPrompt
+  // translates it into what the image/video model actually needs (a visual
+  // scene description, not a talking-head script) before this goes to
+  // fal.ai. Falls back to the raw topic+script on any failure, so a bad
+  // translation never blocks generation outright.
+  const visualPrompt = await craftVisualPrompt({
+    contentKind: input.contentKind,
+    topic: input.topic,
+    script: input.script,
+    targetDurationSeconds: input.targetDurationSeconds,
+    brandContext: input.brandContext,
+  });
+
   if (input.contentKind === "video") {
     return provider.submitVideo({
-      prompt: `${input.topic}\n\n${input.script}`,
+      prompt: visualPrompt,
       durationSeconds: input.targetDurationSeconds ?? 10,
       referenceAssetUrls: input.referenceAssetUrls,
       brandContext: input.brandContext,
@@ -42,7 +57,7 @@ export async function requestMediaGeneration(input: CreativeAgentInput): Promise
   }
 
   return provider.submitImage({
-    prompt: `${input.topic}\n\n${input.script}`,
+    prompt: visualPrompt,
     referenceAssetUrls: input.referenceAssetUrls,
     brandContext: input.brandContext,
   });

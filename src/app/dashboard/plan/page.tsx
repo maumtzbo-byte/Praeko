@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import RequestPlanButton from "@/components/dashboard/request-plan-button";
+import { BetaTrialTicket } from "@/components/dashboard/beta-trial-ticket";
 import { cn } from "@/lib/utils";
 
 const TRIAL_END_FORMATTER = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "long" });
@@ -23,6 +24,7 @@ export default async function PlanPage() {
     subscription?.is_beta_trial && subscription.current_period_end
       ? TRIAL_END_FORMATTER.format(new Date(subscription.current_period_end))
       : null;
+  const trialPlan = trialEndLabel ? (plans ?? []).find((p) => p.key === subscription!.plan_key) : null;
 
   return (
     <div>
@@ -30,12 +32,21 @@ export default async function PlanPage() {
         title="Mi plan"
         description={
           trialEndLabel
-            ? `Estás en tu mes gratis de prueba (plan ${subscription!.plan_key}) — termina el ${trialEndLabel}. Cuando quieras más, solicita Pro o Max abajo.`
+            ? "Cuando quieras más que el plan Básico, solicita Pro o Max abajo."
             : subscription
               ? `Tu plan actual es ${subscription.plan_key} (${subscription.status}).`
               : "Todavía no tienes una suscripción activa — elige un plan para empezar a generar contenido."
         }
       />
+
+      {trialEndLabel && trialPlan && (
+        <BetaTrialTicket
+          customerNumber={business.customer_number}
+          planDisplayName={trialPlan.display_name}
+          trialEndLabel={trialEndLabel}
+          priceUsd={trialPlan.price_usd_cents / 100}
+        />
+      )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {(plans ?? []).map((plan) => {

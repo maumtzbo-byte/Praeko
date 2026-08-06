@@ -56,6 +56,38 @@ export type Database = {
           },
         ]
       }
+      feedback_submissions: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          rating: number
+          recommendation: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          rating: number
+          recommendation?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          rating?: number
+          recommendation?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_submissions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brand_profiles: {
         Row: {
           additional_info: string | null

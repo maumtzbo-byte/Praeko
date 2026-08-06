@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, X, Sparkles, TrendingUp, AlertTriangle } from "lucide-react";
 import { FramesMark } from "@/components/brand/FramesMark";
 import { SidebarNav } from "./sidebar-nav";
+import { FeedbackModal } from "./feedback-modal";
 
 export type PlanBannerInfo =
   | { kind: "no_plan" }
@@ -79,17 +80,22 @@ function PlanBanner({ info }: { info: PlanBannerInfo }) {
 
 export function DashboardShell({
   businessName,
+  businessId,
   planBanner = null,
+  showFeedbackPrompt = false,
   children,
 }: {
   businessName: string;
+  businessId: string;
   planBanner?: PlanBannerInfo | null;
+  showFeedbackPrompt?: boolean;
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
+      <FeedbackModal businessId={businessId} eligible={showFeedbackPrompt} />
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-zinc-200 bg-white/80 backdrop-blur-sm lg:block ">
         <SidebarNav businessName={businessName} needsPlanAttention={planBanner !== null} />
       </aside>

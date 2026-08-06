@@ -44,12 +44,44 @@ async function getPlanBanner(businessId: string): Promise<PlanBannerInfo | null>
   return null;
 }
 
+// Don't ask a business to rate its experience before it's had one — this
+// gates the monthly feedback prompt to accounts that finished onboarding
+// at least this long ago.
+const FEEDBACK_MIN_ACCOUNT_AGE_DAYS = 7;
+
+/** Whether to show the "1-5 estrellas, ¿alguna recomendación?" prompt
+ * (see FeedbackModal): once per calendar month per business, and only
+ * once the business has had a real chance to use the product. */
+async function shouldPromptFeedback(businessId: string, onboardingCompletedAt: string | null): Promise<boolean> {
+  if (!onboardingCompletedAt) return false;
+  const accountAgeMs = Date.now() - new Date(onboardingCompletedAt).getTime();
+  if (accountAgeMs < FEEDBACK_MIN_ACCOUNT_AGE_DAYS * 86_400_000) return false;
+
+  const supabase = await createClient();
+  const startOfMonth = new Date();
+  startOfMonth.setUTCDate(1);
+  startOfMonth.setUTCHours(0, 0, 0, 0);
+
+  const { data: existing } = await supabase
+    .from("feedback_submissions")
+    .select("id")
+    .eq("business_id", businessId)
+    .gte("created_at", startOfMonth.toISOString())
+    .limit(1)
+    .maybeSingle();
+
+  return !existing;
+}
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { business } = await getCurrentBusiness();
-  const planBanner = await getPlanBanner(business.id);
+  const [planBanner, showFeedbackPrompt] = await Promise.all([
+    getPlanBanner(business.id),
+    shouldPromptFeedback(business.id, business.onboarding_completed_at),
+  ]);
 
   return (
-    <DashboardShell businessName={business.name} planBanner={planBanner}>
+    <DashboardShell businessName={business.name} businessId={business.id} planBanner={planBanner} showFeedbackPrompt={showFeedbackPrompt}>
       {children}
     </DashboardShell>
   );

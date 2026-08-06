@@ -9,7 +9,7 @@ const AGENTS = [
   },
   {
     title: "Agente de Publicación",
-    description: "Programa y publica cada pieza en el horario en que tu público realmente está activo.",
+    description: "Programa y publica cada pieza en el horario recomendado para tu tipo de negocio.",
   },
   {
     title: "Agente de Respuestas",

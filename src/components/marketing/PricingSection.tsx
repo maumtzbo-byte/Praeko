@@ -34,7 +34,7 @@ const plans = [
       "15 imágenes o carruseles al mes",
       "Video con calidad profesional y subtítulos automáticos incluidos",
       "3 redes sociales conectadas (Instagram, Facebook y TikTok)",
-      "Publicamos a la hora en que tu público está más activo, con tu panel de resultados",
+      "Publicamos con el horario recomendado para tu tipo de negocio, y ves tus resultados reales en tu panel",
     ],
   },
   {

@@ -66,6 +66,7 @@ function buildSystemPrompt(): string {
     "- Varía los formatos y temas a lo largo de los días; no repitas el mismo tema dos días seguidos.",
     "- Respeta el proveedor de video asignado al plan del negocio al proponer el nivel de producción esperado.",
     "- Si se te dan fechas clave de México dentro del rango, úsalas cuando tengan sentido real para este negocio (no fuerces una fecha genérica en un negocio al que no le aplica).",
+    "- Para recommendedPublishTime: este negocio todavía no tiene historial de datos propios de a qué hora responde mejor su audiencia (eso llega después, con más publicaciones). Mientras tanto, razona con lo que sí es verificable: patrones generales conocidos por plataforma y formato (ej. Reels de Instagram funcionan mejor en la tarde/noche, contenido B2B entre semana en horario laboral) y el giro específico del negocio (ej. un restaurante conviene publicar antes de horas de comida, un gimnasio antes del horario en que la gente suele entrenar). No es un dato medido de este negocio — es la mejor recomendación razonada disponible hasta que haya datos reales.",
     "Responde únicamente llamando a la herramienta proporcionada — no escribas texto fuera de la llamada.",
   ].join("\n");
 }
@@ -258,6 +259,7 @@ function buildCampaignSystemPrompt(): string {
     "- Varía los formatos a lo largo de la campaña; no repitas el mismo formato dos días seguidos si se puede evitar.",
     "- Respeta el proveedor de video asignado al plan del negocio al proponer el nivel de producción esperado.",
     "- Si se te da la fecha clave de México que da origen a la campaña, ancla el arco de la campaña hacia esa fecha; si hay otras fechas clave dentro del rango, úsalas solo si tienen sentido real para este negocio.",
+    "- Para recommendedPublishTime: este negocio todavía no tiene historial de datos propios de a qué hora responde mejor su audiencia. Razona con patrones generales conocidos por plataforma y formato, y el giro específico del negocio — no es un dato medido, es la mejor recomendación razonada disponible.",
     "Responde únicamente llamando a la herramienta proporcionada — no escribas texto fuera de la llamada.",
   ].join("\n");
 }

@@ -1,4 +1,4 @@
-// Generated from the live Praeko Supabase project (hpjcgitivizvrzeihoxi).
+// Generated from the live Frames Supabase project (hpjcgitivizvrzeihoxi).
 // Regenerate after any migration with:
 //   supabase gen types typescript --project-id hpjcgitivizvrzeihoxi > src/lib/supabase/types.ts
 

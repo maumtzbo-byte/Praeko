@@ -216,7 +216,28 @@ export async function respondToInboundInteraction(event: ParsedMetaEvent): Promi
       supabase.from("businesses").select("id, name, industry, phone, auto_reply_enabled").eq("id", connection.business_id).single(),
       supabase.from("brand_profiles").select("*").eq("business_id", connection.business_id).maybeSingle(),
     ]);
-    if (!business || !business.auto_reply_enabled) return;
+    if (!business) return;
+
+    // auto_reply_enabled defaults to false (0017_auto_reply.sql), so most
+    // businesses have never turned it on — that must only gate whether a
+    // reply is *attempted*, never whether the comment/DM gets stored. It
+    // used to return here before any insert, so every interaction on a
+    // business without auto-reply on vanished instead of showing up in
+    // Redes sociales for the dueño to answer by hand — same class of bug
+    // already fixed for Google reviews in respondToGoogleReview below.
+    if (!business.auto_reply_enabled) {
+      await supabase.from("social_interactions").insert({
+        business_id: business.id,
+        connection_id: connection.id,
+        platform: event.platform,
+        interaction_type: event.interactionType,
+        external_interaction_id: event.externalInteractionId,
+        author_name: event.authorName,
+        inbound_text: event.text,
+        reply_status: "necesita_revision",
+      });
+      return;
+    }
 
     const startOfToday = new Date();
     startOfToday.setUTCHours(0, 0, 0, 0);

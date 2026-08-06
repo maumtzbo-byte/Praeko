@@ -10,12 +10,25 @@ import { motion } from "framer-motion";
 // what "Kling 3.0 Pro" is) — while keeping every real number and limit
 // exactly as it is in the plans table, so nothing here overstates what the
 // plan actually includes.
-const plans = [
+interface PricingPlan {
+  name: string;
+  price: number;
+  tagline: string;
+  featured: boolean;
+  /** Beta launch offer, Básico only: the first month is free, granted
+   * automatically the moment onboarding finishes (see grantBetaTrial in
+   * src/app/onboarding/actions.ts) — no card, no waiting on a human. */
+  trialBadge?: string;
+  features: string[];
+}
+
+const plans: PricingPlan[] = [
   {
     name: "Básico",
     price: 99,
     tagline: "Para arrancar a publicar cada semana, sin complicarte",
     featured: false,
+    trialBadge: "1er mes gratis (beta)",
     features: [
       "8 videos al mes, de 10 segundos con audio, listos para subir",
       "22 imágenes o carruseles al mes",
@@ -52,7 +65,7 @@ const plans = [
   },
 ];
 
-type Plan = (typeof plans)[number];
+type Plan = PricingPlan;
 
 function PricingCard({
   plan,
@@ -106,6 +119,11 @@ function PricingCard({
           <span className="text-2xl font-semibold tracking-tight md:text-4xl">${plan.price}</span>
           <span className={`text-sm ${plan.featured ? "text-zinc-400" : "text-zinc-500"}`}>/mes</span>
         </div>
+        {plan.trialBadge && (
+          <span className="mt-2 inline-flex w-fit items-center rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-semibold text-accent">
+            {plan.trialBadge}
+          </span>
+        )}
 
         <ul className="mt-8 flex flex-1 flex-col gap-3">
           {plan.features.map((feature) => (
@@ -122,7 +140,7 @@ function PricingCard({
             plan.featured ? "bg-accent text-white" : "bg-zinc-950 text-white "
           }`}
         >
-          Elegir {plan.name}
+          {plan.trialBadge ? "Prueba gratis" : `Elegir ${plan.name}`}
         </Link>
       </motion.div>
     </div>

@@ -662,6 +662,7 @@ export type Database = {
           created_at: string
           current_period_end: string | null
           id: string
+          is_beta_trial: boolean
           plan_key: Database["public"]["Enums"]["plan_key"]
           status: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id: string | null
@@ -673,6 +674,7 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           id?: string
+          is_beta_trial?: boolean
           plan_key: Database["public"]["Enums"]["plan_key"]
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null
@@ -684,6 +686,7 @@ export type Database = {
           created_at?: string
           current_period_end?: string | null
           id?: string
+          is_beta_trial?: boolean
           plan_key?: Database["public"]["Enums"]["plan_key"]
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null

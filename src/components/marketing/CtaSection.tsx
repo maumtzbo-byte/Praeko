@@ -19,7 +19,7 @@ export default function CtaSection() {
           >
             Únete a la beta
           </Link>
-          <p className="text-xs text-zinc-500">Sin tarjeta de crédito requerida</p>
+          <p className="text-xs text-zinc-500">Primer mes gratis del plan Básico — sin tarjeta de crédito</p>
         </div>
 
         {/* Asymmetric visual accent — the only off-center element on an

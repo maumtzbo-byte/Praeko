@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import {
   businessInfoSchema,
   brandInfoSchema,
@@ -233,6 +233,47 @@ export async function saveProducts(
   return { success: true, data: undefined };
 }
 
+const BETA_TRIAL_DAYS = 30;
+
+/** Beta launch offer: every business that finishes onboarding gets a free
+ * month of the cheapest plan automatically, no card, no email round-trip
+ * with a human (see the "Solicitar este plan" flow in /dashboard/plan for
+ * the manual path Pro/Max still use). subscriptions has no insert/update
+ * RLS policy for regular users (billing state is service-role-only by
+ * design — see 0001_init.sql), so this needs the service-role client even
+ * though the caller's own ownership was already established by whoever
+ * called completeOnboarding. Guarded on "no subscription yet" so this only
+ * ever fires once per business — the unique index on business_id would
+ * reject a second row anyway, but checking first avoids logging a spurious
+ * conflict error on a business that already has a real plan. Never blocks
+ * onboarding completion if the grant itself fails — a missing free trial
+ * is a support conversation, not a reason to strand someone on the wizard. */
+async function grantBetaTrial(businessId: string): Promise<void> {
+  try {
+    const serviceRole = createServiceRoleClient();
+    const { data: existing } = await serviceRole
+      .from("subscriptions")
+      .select("id")
+      .eq("business_id", businessId)
+      .maybeSingle();
+    if (existing) return;
+
+    const trialEnd = new Date();
+    trialEnd.setDate(trialEnd.getDate() + BETA_TRIAL_DAYS);
+
+    const { error } = await serviceRole.from("subscriptions").insert({
+      business_id: businessId,
+      plan_key: "basico",
+      status: "active",
+      current_period_end: trialEnd.toISOString(),
+      is_beta_trial: true,
+    });
+    if (error) console.error("grantBetaTrial insert failed", error);
+  } catch (err) {
+    console.error("grantBetaTrial failed", err);
+  }
+}
+
 /** Marks onboarding done — called once the 3-step compact flow finishes.
  * saveAiInfoAndComplete below also sets this same flag when the (now
  * optional, Configuración-only) AI info step is saved later; setting it
@@ -245,6 +286,7 @@ export async function completeOnboarding(businessId: string): Promise<ActionResu
       .update({ onboarding_step: 4, onboarding_completed_at: new Date().toISOString() })
       .eq("id", businessId);
     if (error) return { success: false, error: error.message };
+    await grantBetaTrial(businessId);
     return { success: true, data: undefined };
   } catch (err) {
     console.error("completeOnboarding failed", err);

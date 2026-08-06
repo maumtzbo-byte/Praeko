@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import RequestPlanButton from "@/components/dashboard/request-plan-button";
 import { cn } from "@/lib/utils";
 
+const TRIAL_END_FORMATTER = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "long" });
+
 export default async function PlanPage() {
   const { business } = await getCurrentBusiness();
   const supabase = await createClient();
@@ -17,14 +19,21 @@ export default async function PlanPage() {
     supabase.from("subscriptions").select("*").eq("business_id", business.id).maybeSingle(),
   ]);
 
+  const trialEndLabel =
+    subscription?.is_beta_trial && subscription.current_period_end
+      ? TRIAL_END_FORMATTER.format(new Date(subscription.current_period_end))
+      : null;
+
   return (
     <div>
       <PageHeader
         title="Mi plan"
         description={
-          subscription
-            ? `Tu plan actual es ${subscription.plan_key} (${subscription.status}).`
-            : "Todavía no tienes una suscripción activa — elige un plan para empezar a generar contenido."
+          trialEndLabel
+            ? `Estás en tu mes gratis de prueba (plan ${subscription!.plan_key}) — termina el ${trialEndLabel}. Cuando quieras más, solicita Pro o Max abajo.`
+            : subscription
+              ? `Tu plan actual es ${subscription.plan_key} (${subscription.status}).`
+              : "Todavía no tienes una suscripción activa — elige un plan para empezar a generar contenido."
         }
       />
 
@@ -50,7 +59,9 @@ export default async function PlanPage() {
                   <h3 className={cn("text-lg font-semibold", isFeatured ? "text-white" : "text-zinc-900")}>
                     {plan.display_name}
                   </h3>
-                  {isCurrent && <Badge variant="success">Plan actual</Badge>}
+                  {isCurrent && (
+                    <Badge variant="success">{subscription?.is_beta_trial ? "Mes gratis de prueba" : "Plan actual"}</Badge>
+                  )}
                   {isFeatured && (
                     <span className="rounded-full bg-accent px-2.5 py-1 text-[11px] font-semibold text-white">
                       MÁS POPULAR

@@ -253,6 +253,91 @@ export class ShopifyAdminClient {
     return (amountUsd * rate).toFixed(2);
   }
 
+  /** Uploads raw file bytes to a Shopify staged-upload target and returns the resourceUrl that productSet's `files` field expects as `originalSource`. */
+  async uploadImage(fileBuffer: Buffer, filename: string, mimeType: string): Promise<string> {
+    interface StagedUploadsCreateResult {
+      stagedUploadsCreate: {
+        stagedTargets: { url: string; resourceUrl: string; parameters: { name: string; value: string }[] }[];
+        userErrors: { field: string[] | null; message: string }[];
+      };
+    }
+    const data = await this.graphql<StagedUploadsCreateResult>(
+      `
+        mutation StagedUploadsCreate($input: [StagedUploadInput!]!) {
+          stagedUploadsCreate(input: $input) {
+            stagedTargets { url resourceUrl parameters { name value } }
+            userErrors { field message }
+          }
+        }
+      `,
+      { input: [{ resource: "IMAGE", filename, mimeType, httpMethod: "POST" }] },
+    );
+    const { stagedTargets, userErrors } = data.stagedUploadsCreate;
+    if (userErrors.length) {
+      throw new Error(`Shopify rechazó la solicitud de carga: ${userErrors.map((e) => e.message).join("; ")}`);
+    }
+    const target = stagedTargets[0];
+    if (!target) {
+      throw new Error("Shopify no devolvió un destino de carga para el archivo.");
+    }
+
+    const form = new FormData();
+    for (const { name, value } of target.parameters) {
+      form.append(name, value);
+    }
+    form.append("file", new Blob([new Uint8Array(fileBuffer)], { type: mimeType }), filename);
+
+    const uploadRes = await fetch(target.url, { method: "POST", body: form });
+    if (!uploadRes.ok) {
+      throw new Error(`Carga del archivo a Shopify falló: ${uploadRes.status} ${await uploadRes.text()}`);
+    }
+    return target.resourceUrl;
+  }
+
+  /**
+   * Updates fields on an already-created product — e.g. attaching a real
+   * product photo, or refining the title/description after review. Reuses
+   * productSet against the product's id instead of productCreate/
+   * productUpdate: per Shopify's docs, fields left out of `input` are left
+   * unchanged, so this only touches what's passed in.
+   */
+  async updateProduct(
+    productId: string,
+    input: { title?: string; descriptionHtml?: string; imageResourceUrl?: string; imageAlt?: string },
+  ): Promise<void> {
+    interface ProductSetResult {
+      productSet: {
+        product: { id: string } | null;
+        userErrors: { field: string[] | null; message: string }[];
+      };
+    }
+    const productSetInput: Record<string, unknown> = {};
+    if (input.title !== undefined) productSetInput.title = input.title;
+    if (input.descriptionHtml !== undefined) productSetInput.descriptionHtml = input.descriptionHtml;
+    if (input.imageResourceUrl !== undefined) {
+      productSetInput.files = [
+        { originalSource: input.imageResourceUrl, contentType: "IMAGE", alt: input.imageAlt ?? "" },
+      ];
+    }
+
+    const data = await this.graphql<ProductSetResult>(
+      `
+        mutation UpdateProduct($identifier: ProductSetIdentifiers!, $input: ProductSetInput!) {
+          productSet(synchronous: true, identifier: $identifier, input: $input) {
+            product { id }
+            userErrors { field message }
+          }
+        }
+      `,
+      { identifier: { id: productId }, input: productSetInput },
+    );
+
+    const { userErrors } = data.productSet;
+    if (userErrors.length) {
+      throw new Error(`Shopify rechazó la actualización del producto: ${userErrors.map((e) => e.message).join("; ")}`);
+    }
+  }
+
   /**
    * Creates a product as a DRAFT — never ACTIVE — so an agent proposing a
    * product never makes it visible in the storefront on its own; a human

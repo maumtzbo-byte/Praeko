@@ -251,8 +251,97 @@ export default async function DashboardHomePage() {
         </Alert>
       )}
 
-      <div className="animate-fade-in-up stagger-1 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-white/70 sm:col-span-2">
+      {/* Resultados first — a business owner opening the dashboard wants to
+          know "is this working", not the raw generation count, so results
+          lead the page instead of sharing a row with unrelated stats. */}
+      <div className="animate-fade-in-up stagger-1">
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle>Rendimiento de publicaciones</CardTitle>
+            <BarChart3 className="h-4 w-4 text-zinc-400" />
+          </CardHeader>
+          <CardContent>
+            {hasPublishedContent ? (
+              <div className="flex flex-col gap-4 py-2">
+                {insightsSummary ? (
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    <div>
+                      <div className="flex items-center gap-1.5 text-zinc-400">
+                        <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
+                        <span className="text-[10px] font-medium tracking-wide">IMPRESIONES</span>
+                      </div>
+                      <p className="mt-1 text-xl font-semibold text-zinc-900">
+                        {formatInsightNumber(insightsSummary.totalImpressions)}
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 text-zinc-400">
+                        <Heart className="h-3.5 w-3.5" strokeWidth={1.75} />
+                        <span className="text-[10px] font-medium tracking-wide">ME GUSTA</span>
+                      </div>
+                      <p className="mt-1 text-xl font-semibold text-zinc-900">
+                        {formatInsightNumber(insightsSummary.totalLikes)}
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 text-zinc-400">
+                        <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
+                        <span className="text-[10px] font-medium tracking-wide">COMENTARIOS</span>
+                      </div>
+                      <p className="mt-1 text-xl font-semibold text-zinc-900">
+                        {formatInsightNumber(insightsSummary.totalComments)}
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 text-zinc-400">
+                        <Share2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+                        <span className="text-[10px] font-medium tracking-wide">COMPARTIDOS</span>
+                      </div>
+                      <p className="mt-1 text-xl font-semibold text-zinc-900">
+                        {formatInsightNumber(insightsSummary.totalShares)}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-zinc-600">
+                    Ya tienes <span className="font-semibold text-zinc-900">{publishedCount}</span>{" "}
+                    {publishedCount === 1 ? "pieza publicada" : "piezas publicadas"} — sin datos de alcance por
+                    ahora.
+                  </p>
+                )}
+                <Link href="/dashboard/analiticas" className="w-fit">
+                  <Button size="sm" variant="secondary">
+                    <BarChart3 className="h-4 w-4" />
+                    Ver el detalle completo
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <EmptyState
+                icon={BarChart3}
+                title="Todavía no hay datos que mostrar"
+                description="Conecta tus redes sociales y publica tu primera pieza para empezar a ver alcance y engagement aquí."
+                action={
+                  hasNoConnections ? (
+                    <Link href="/dashboard/redes-sociales">
+                      <Button size="sm">
+                        <Share2 className="h-4 w-4" />
+                        Conectar redes sociales
+                      </Button>
+                    </Link>
+                  ) : undefined
+                }
+              />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* One consistent stat rail — subscription status alongside the raw
+          generation/queue numbers, all the same size/weight, instead of
+          the previous mismatched 2-col-span + separate-row layout. */}
+      <div className="animate-fade-in-up stagger-2 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-white/70">
           <CardContent className="flex flex-col gap-3 p-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium tracking-wide text-zinc-500">ESTADO DE SUSCRIPCIÓN</span>
@@ -268,12 +357,9 @@ export default async function DashboardHomePage() {
                 </Badge>
               </div>
             ) : (
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-zinc-500">Elige tu plan para empezar a generar contenido.</p>
-                <Link href="/dashboard/plan" className="shrink-0">
-                  <Button size="sm">Elegir plan</Button>
-                </Link>
-              </div>
+              <Link href="/dashboard/plan" className="w-fit">
+                <Button size="sm">Elegir plan</Button>
+              </Link>
             )}
           </CardContent>
         </Card>
@@ -290,95 +376,12 @@ export default async function DashboardHomePage() {
           value={String(imagesCount ?? 0)}
           sublabel={`${imagesUsed} este mes`}
         />
-      </div>
-
-      <div className="animate-fade-in-up stagger-2 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader className="flex-row items-center justify-between">
-              <CardTitle>Rendimiento de publicaciones</CardTitle>
-              <BarChart3 className="h-4 w-4 text-zinc-400" />
-            </CardHeader>
-            <CardContent>
-              {hasPublishedContent ? (
-                <div className="flex flex-col gap-4 py-2">
-                  {insightsSummary ? (
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <div className="flex items-center gap-1.5 text-zinc-400">
-                          <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
-                          <span className="text-[10px] font-medium tracking-wide">IMPRESIONES</span>
-                        </div>
-                        <p className="mt-1 text-xl font-semibold text-zinc-900">
-                          {formatInsightNumber(insightsSummary.totalImpressions)}
-                        </p>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5 text-zinc-400">
-                          <Heart className="h-3.5 w-3.5" strokeWidth={1.75} />
-                          <span className="text-[10px] font-medium tracking-wide">ME GUSTA</span>
-                        </div>
-                        <p className="mt-1 text-xl font-semibold text-zinc-900">
-                          {formatInsightNumber(insightsSummary.totalLikes)}
-                        </p>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5 text-zinc-400">
-                          <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
-                          <span className="text-[10px] font-medium tracking-wide">COMENTARIOS</span>
-                        </div>
-                        <p className="mt-1 text-xl font-semibold text-zinc-900">
-                          {formatInsightNumber(insightsSummary.totalComments)}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-zinc-600">
-                      Ya tienes <span className="font-semibold text-zinc-900">{publishedCount}</span>{" "}
-                      {publishedCount === 1 ? "pieza publicada" : "piezas publicadas"} — sin datos de alcance por
-                      ahora.
-                    </p>
-                  )}
-                  <Link href="/dashboard/analiticas">
-                    <Button size="sm" variant="secondary">
-                      <BarChart3 className="h-4 w-4" />
-                      Ver el detalle completo
-                    </Button>
-                  </Link>
-                </div>
-              ) : (
-                <EmptyState
-                  icon={BarChart3}
-                  title="Todavía no hay datos que mostrar"
-                  description="Conecta tus redes sociales y publica tu primera pieza para empezar a ver alcance y engagement aquí."
-                  action={
-                    hasNoConnections ? (
-                      <Link href="/dashboard/redes-sociales">
-                        <Button size="sm">
-                          <Share2 className="h-4 w-4" />
-                          Conectar redes sociales
-                        </Button>
-                      </Link>
-                    ) : undefined
-                  }
-                />
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Publicaciones programadas</CardTitle>
-            <Send className="h-4 w-4 text-zinc-400" />
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <p className="text-3xl font-semibold tracking-tight text-zinc-950">{scheduledCount ?? 0}</p>
-            <p className="text-sm text-zinc-500">
-              {scheduledCount ? "piezas en camino." : "Aún no tienes piezas en cola."}
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          icon={Send}
+          label="PROGRAMADAS"
+          value={String(scheduledCount ?? 0)}
+          sublabel={scheduledCount ? "en camino" : "sin piezas en cola"}
+        />
       </div>
 
       <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-4 lg:grid-cols-3">

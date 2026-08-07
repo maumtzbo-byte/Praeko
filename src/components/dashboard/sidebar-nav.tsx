@@ -27,7 +27,7 @@ function NavLink({
       className={cn(
         "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
         active
-          ? "bg-zinc-950 text-white "
+          ? "bg-accent text-white "
           : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 ",
       )}
     >

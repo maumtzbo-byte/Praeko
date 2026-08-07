@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
+import { FramesMark } from "@/components/brand/FramesMark";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
@@ -222,13 +223,18 @@ export default async function DashboardHomePage() {
 
   return (
     <div className="flex flex-col gap-5 sm:gap-8">
-      <div className="animate-fade-in-up">
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-950 sm:text-2xl">
-          Hola{displayName ? `, ${displayName}` : ""} 👋
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Este es el resumen de <span className="font-medium text-zinc-700">{business.name}</span>.
-        </p>
+      <div className="animate-fade-in-up flex items-start gap-3">
+        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">
+          <FramesMark className="h-4 w-4 text-accent" />
+        </span>
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 sm:text-2xl">
+            Hola{displayName ? `, ${displayName}` : ""} 👋
+          </h1>
+          <p className="mt-1 text-sm text-zinc-500">
+            Este es el resumen de <span className="font-medium text-zinc-700">{business.name}</span>.
+          </p>
+        </div>
       </div>
 
       <div className="animate-fade-in-up">
@@ -258,7 +264,7 @@ export default async function DashboardHomePage() {
         <Card>
           <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
             <CardTitle>Rendimiento de publicaciones</CardTitle>
-            <BarChart3 className="h-4 w-4 text-zinc-400" />
+            <BarChart3 className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
             {hasPublishedContent ? (
@@ -389,7 +395,7 @@ export default async function DashboardHomePage() {
           <Card>
             <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
               <CardTitle>Actividad reciente</CardTitle>
-              <Activity className="h-4 w-4 text-zinc-400" />
+              <Activity className="h-4 w-4 text-accent" />
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
               {recentActivity && recentActivity.length > 0 ? (

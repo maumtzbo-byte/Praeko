@@ -8,7 +8,10 @@ import {
 } from "@/lib/agents/creative-agent";
 import { publishToSocialPlatform } from "@/lib/social/publish";
 import { getPostPermalink } from "@/lib/social/meta";
+import { fetchPostInsights, type PostInsights } from "@/lib/social/insights";
+import { isPublishablePlatform } from "@/lib/social";
 import { PLAN_LIMITS, canGenerateVideo, type PlanKey } from "@/lib/plans/limits";
+import type { Database } from "@/lib/supabase/types";
 
 // publishContentNow polls Meta's Instagram container status inline (see
 // waitForInstagramContainerReady in src/lib/social/meta.ts) before it can
@@ -382,5 +385,97 @@ export async function getPromoteLink(itemId: string): Promise<ActionResult<{ url
   } catch (err) {
     console.error("getPromoteLink failed", err);
     return { success: false, error: "No se pudo abrir la publicación. Intenta de nuevo." };
+  }
+}
+
+export interface ContentDetail {
+  contentKind: Database["public"]["Enums"]["content_kind"];
+  topic: string;
+  script: string | null;
+  format: Database["public"]["Enums"]["content_format"];
+  scheduledDate: string;
+  status: Database["public"]["Enums"]["content_status"];
+  /** Real fal.ai output URL (generations.storage_path already IS the full
+   * URL, not a Supabase Storage path — see FalGenerationProvider) — null
+   * if nothing has finished generating yet for this piece. */
+  mediaUrl: string | null;
+  /** Only ever populated once status is "publicada" — there's no post to
+   * ask a platform about before that. null also covers "the fetch failed",
+   * same fail-open-per-post reasoning as gatherPublishedPostInsights: one
+   * piece's stats being unavailable is never a reason to fail the whole
+   * detail view. */
+  insights: PostInsights | null;
+}
+
+/** Backs the click-into-a-piece detail view (ContentDetailModal) — the
+ * per-post twin of gatherPublishedPostInsights/summarizeInsights
+ * (results-agent.ts), fetched on demand for exactly one piece instead of
+ * the bounded batch those two power on /dashboard and /dashboard/analiticas. */
+export async function getContentDetail(itemId: string): Promise<ActionResult<ContentDetail>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "No autenticado." };
+
+    // Cookie-bound select does the ownership check for free (RLS), same
+    // pattern as every other action in this file.
+    const { data: item } = await supabase.from("content_calendar").select("*").eq("id", itemId).single();
+    if (!item) return { success: false, error: "Pieza no encontrada." };
+
+    const { data: generation } = await supabase
+      .from("generations")
+      .select("storage_path")
+      .eq("content_calendar_id", itemId)
+      .eq("job_status", "completed")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let insights: PostInsights | null = null;
+    if (item.status === "publicada" && item.published_platform && item.external_post_id && isPublishablePlatform(item.published_platform)) {
+      const serviceRole = createServiceRoleClient();
+      const { data: connection } = await serviceRole
+        .from("social_connections")
+        .select("id")
+        .eq("business_id", item.business_id)
+        .eq("platform", item.published_platform)
+        .maybeSingle();
+      const tokenRow = connection
+        ? (
+            await serviceRole
+              .from("social_connection_tokens")
+              .select("access_token")
+              .eq("connection_id", connection.id)
+              .maybeSingle()
+          ).data
+        : null;
+
+      if (tokenRow) {
+        try {
+          insights = await fetchPostInsights(item.published_platform, tokenRow.access_token, item.external_post_id);
+        } catch (err) {
+          console.error(`fetchPostInsights failed for content_calendar ${itemId}`, err);
+        }
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        contentKind: item.content_kind,
+        topic: item.topic,
+        script: item.script,
+        format: item.format,
+        scheduledDate: item.scheduled_date,
+        status: item.status,
+        mediaUrl: generation?.storage_path ?? null,
+        insights,
+      },
+    };
+  } catch (err) {
+    console.error("getContentDetail failed", err);
+    return { success: false, error: "No se pudo cargar el detalle. Intenta de nuevo." };
   }
 }

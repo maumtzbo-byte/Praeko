@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { UpgradePlanModal } from "@/components/dashboard/upgrade-plan-modal";
+import { ContentDetailModal } from "@/components/content/content-detail-modal";
 import { retryFailedContent } from "@/lib/content/actions";
 import {
   generateMediaForContent,
@@ -211,6 +212,7 @@ export function PublicationsList({
   connections?: SocialConnection[];
 }) {
   const [filter, setFilter] = useState<ContentStatus | "todas">("todas");
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
   const counts = useMemo(() => {
     const base: Record<ContentStatus | "todas", number> = {
@@ -249,6 +251,7 @@ export function PublicationsList({
   }
 
   return (
+    <>
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-2">
         {(["todas", ...STATUS_ORDER] as const).map((key) => (
@@ -279,7 +282,11 @@ export function PublicationsList({
           {filtered.map((item) => {
             const Icon = item.content_kind === "video" ? Clapperboard : ImageIcon;
             return (
-              <Card key={item.id} className="bg-white/70">
+              <Card
+                key={item.id}
+                className="cursor-pointer bg-white/70 transition-colors hover:border-zinc-300"
+                onClick={() => setSelectedItemId(item.id)}
+              >
                 <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
                   <div className="flex items-center gap-3 sm:w-40 sm:shrink-0">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
@@ -301,7 +308,10 @@ export function PublicationsList({
                     )}
                   </div>
 
-                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-2.5 sm:gap-3">
+                  <div
+                    className="flex shrink-0 flex-wrap items-center justify-end gap-2.5 sm:gap-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {item.recommended_publish_time && (
                       <div className="flex items-center gap-1.5 text-xs text-zinc-500">
                         <Clock className="h-3.5 w-3.5" />
@@ -330,5 +340,7 @@ export function PublicationsList({
         </div>
       )}
     </div>
+    <ContentDetailModal itemId={selectedItemId} onClose={() => setSelectedItemId(null)} />
+    </>
   );
 }

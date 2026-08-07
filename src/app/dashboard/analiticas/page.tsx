@@ -8,16 +8,13 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { gatherPublishedPostInsights, summarizeInsights } from "@/lib/agents/results-agent";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/social";
 import { formatScheduledDate } from "@/lib/content/labels";
+import { formatInsightNumber } from "@/lib/content/format-insights";
 
 // Bounds how many posts fetch live metrics on each page load — this project
 // has no background job to precompute analytics yet, so this endpoint pays
 // the API cost synchronously; kept small to keep the page fast and stay
 // well under any platform rate limit.
 const MAX_POSTS_PER_LOAD = 12;
-
-function formatNumber(value: number | null): string {
-  return value === null ? "—" : value.toLocaleString("es-MX");
-}
 
 export default async function AnaliticasPage() {
   const { business } = await getCurrentBusiness();
@@ -89,10 +86,10 @@ export default async function AnaliticasPage() {
       <PageHeader title="Analíticas" description="Alcance, seguidores y engagement, traducidos a lenguaje de negocio." />
 
       <div className="animate-fade-in-up stagger-1 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Eye} label="Impresiones" value={formatNumber(summary.totalImpressions)} sublabel={`${summary.totalPosts} publicaciones`} />
-        <StatCard icon={Heart} label="Me gusta" value={formatNumber(summary.totalLikes)} />
-        <StatCard icon={MessageCircle} label="Comentarios" value={formatNumber(summary.totalComments)} />
-        <StatCard icon={Share2} label="Compartidos" value={formatNumber(summary.totalShares)} />
+        <StatCard icon={Eye} label="Impresiones" value={formatInsightNumber(summary.totalImpressions)} sublabel={`${summary.totalPosts} publicaciones`} />
+        <StatCard icon={Heart} label="Me gusta" value={formatInsightNumber(summary.totalLikes)} />
+        <StatCard icon={MessageCircle} label="Comentarios" value={formatInsightNumber(summary.totalComments)} />
+        <StatCard icon={Share2} label="Compartidos" value={formatInsightNumber(summary.totalShares)} />
       </div>
 
       <div className="animate-fade-in-up stagger-2 mt-6 flex flex-col gap-3">
@@ -107,9 +104,9 @@ export default async function AnaliticasPage() {
               </div>
               {result.insights ? (
                 <div className="flex shrink-0 gap-4 text-xs text-zinc-600">
-                  <span>{formatNumber(result.insights.impressions)} impresiones</span>
-                  <span>{formatNumber(result.insights.likes)} me gusta</span>
-                  <span>{formatNumber(result.insights.comments)} comentarios</span>
+                  <span>{formatInsightNumber(result.insights.impressions)} impresiones</span>
+                  <span>{formatInsightNumber(result.insights.likes)} me gusta</span>
+                  <span>{formatInsightNumber(result.insights.comments)} comentarios</span>
                 </div>
               ) : (
                 <span className="shrink-0 text-xs text-zinc-400">Sin datos por ahora</span>

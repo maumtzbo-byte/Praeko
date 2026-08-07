@@ -10,8 +10,11 @@ import {
   CalendarDays,
   Share2,
   Settings,
+  Eye,
+  Heart,
+  MessageCircle,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { EmptyState } from "@/components/dashboard/empty-state";
@@ -20,6 +23,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
+import { gatherPublishedPostInsights, summarizeInsights, type InsightsSummary } from "@/lib/agents/results-agent";
+import { formatInsightNumber } from "@/lib/content/format-insights";
+import type { SocialPlatform } from "@/lib/social";
 import type { Tables } from "@/lib/supabase/types";
 
 // Below this, the Agente Creativo has too little to work with — it falls
@@ -27,6 +33,74 @@ import type { Tables } from "@/lib/supabase/types";
 // actually looks like. Matches the reference-image cap already used in
 // generateMediaForContent (publicaciones/actions.ts).
 const LOW_PHOTO_THRESHOLD = 3;
+
+// The dashboard home is a teaser, not the full picture — /dashboard/analiticas
+// already does the real deep-dive with up to 12 posts (MAX_POSTS_PER_LOAD
+// there). Fetching live metrics from Meta/TikTok on every dashboard-home
+// load too means the API cost is now paid on two pages instead of one, so
+// this pulls a smaller, more recent slice rather than duplicating the full
+// fetch — just enough to prove the product is actually working.
+const MAX_POSTS_FOR_DASHBOARD_TEASER = 6;
+
+/** Same fetch shape as /dashboard/analiticas (gatherPublishedPostInsights +
+ * summarizeInsights), just bounded smaller and returning only the summary
+ * — the dashboard home links out to Analíticas for the per-post breakdown. */
+async function getRecentInsightsSummary(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  businessId: string,
+): Promise<InsightsSummary | null> {
+  const { data: publishedItems } = await supabase
+    .from("content_calendar")
+    .select("id, topic, scheduled_date, published_platform, external_post_id")
+    .eq("business_id", businessId)
+    .eq("status", "publicada")
+    .not("external_post_id", "is", null)
+    .order("scheduled_date", { ascending: false })
+    .limit(MAX_POSTS_FOR_DASHBOARD_TEASER);
+
+  const publishedWithPost = (publishedItems ?? []).filter(
+    (item): item is typeof item & { published_platform: SocialPlatform; external_post_id: string } =>
+      item.published_platform !== null && item.external_post_id !== null,
+  );
+  if (publishedWithPost.length === 0) return null;
+
+  const platforms = Array.from(new Set(publishedWithPost.map((item) => item.published_platform)));
+  const { data: connections } = await supabase
+    .from("social_connections")
+    .select("id, platform")
+    .eq("business_id", businessId)
+    .in("platform", platforms);
+
+  const serviceRole = createServiceRoleClient();
+  const connectionIds = (connections ?? []).map((c) => c.id);
+  const { data: tokenRows } = connectionIds.length
+    ? await serviceRole.from("social_connection_tokens").select("connection_id, access_token").in("connection_id", connectionIds)
+    : { data: [] };
+
+  const connectionIdByPlatform = new Map((connections ?? []).map((c) => [c.platform, c.id]));
+  const tokenByConnectionId = new Map((tokenRows ?? []).map((t) => [t.connection_id, t.access_token]));
+
+  const postsToFetch = publishedWithPost
+    .map((item) => {
+      const connectionId = connectionIdByPlatform.get(item.published_platform);
+      const accessToken = connectionId ? tokenByConnectionId.get(connectionId) : undefined;
+      if (!accessToken) return null;
+      return {
+        itemId: item.id,
+        topic: item.topic,
+        scheduledDate: item.scheduled_date,
+        platform: item.published_platform,
+        externalPostId: item.external_post_id,
+        accessToken,
+      };
+    })
+    .filter((p): p is NonNullable<typeof p> => p !== null);
+
+  if (postsToFetch.length === 0) return null;
+
+  const results = await gatherPublishedPostInsights(postsToFetch);
+  return summarizeInsights(results);
+}
 
 function firstNameFromEmail(email: string | undefined) {
   if (!email) return "";
@@ -131,6 +205,10 @@ export default async function DashboardHomePage() {
   const hasPublishedContent = (publishedCount ?? 0) > 0;
   const hasLowPhotoCount = (photoCount ?? 0) < LOW_PHOTO_THRESHOLD;
 
+  // Only worth the live Meta/TikTok calls when there's actually something
+  // published to ask about.
+  const insightsSummary = hasPublishedContent ? await getRecentInsightsSummary(supabase, business.id) : null;
+
   const onboardingSteps = [
     { label: "Elige tu plan", href: "/dashboard/plan", done: Boolean(subscription) },
     { label: "Conecta una red social", href: "/dashboard/redes-sociales", done: !hasNoConnections },
@@ -223,15 +301,48 @@ export default async function DashboardHomePage() {
             </CardHeader>
             <CardContent>
               {hasPublishedContent ? (
-                <div className="flex flex-col items-start gap-3 py-2">
-                  <p className="text-sm text-zinc-600">
-                    Ya tienes <span className="font-semibold text-zinc-900">{publishedCount}</span>{" "}
-                    {publishedCount === 1 ? "pieza publicada" : "piezas publicadas"}.
-                  </p>
+                <div className="flex flex-col gap-4 py-2">
+                  {insightsSummary ? (
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <div className="flex items-center gap-1.5 text-zinc-400">
+                          <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
+                          <span className="text-[10px] font-medium tracking-wide">IMPRESIONES</span>
+                        </div>
+                        <p className="mt-1 text-xl font-semibold text-zinc-900">
+                          {formatInsightNumber(insightsSummary.totalImpressions)}
+                        </p>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5 text-zinc-400">
+                          <Heart className="h-3.5 w-3.5" strokeWidth={1.75} />
+                          <span className="text-[10px] font-medium tracking-wide">ME GUSTA</span>
+                        </div>
+                        <p className="mt-1 text-xl font-semibold text-zinc-900">
+                          {formatInsightNumber(insightsSummary.totalLikes)}
+                        </p>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5 text-zinc-400">
+                          <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
+                          <span className="text-[10px] font-medium tracking-wide">COMENTARIOS</span>
+                        </div>
+                        <p className="mt-1 text-xl font-semibold text-zinc-900">
+                          {formatInsightNumber(insightsSummary.totalComments)}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-zinc-600">
+                      Ya tienes <span className="font-semibold text-zinc-900">{publishedCount}</span>{" "}
+                      {publishedCount === 1 ? "pieza publicada" : "piezas publicadas"} — sin datos de alcance por
+                      ahora.
+                    </p>
+                  )}
                   <Link href="/dashboard/analiticas">
                     <Button size="sm" variant="secondary">
                       <BarChart3 className="h-4 w-4" />
-                      Ver alcance y engagement
+                      Ver el detalle completo
                     </Button>
                   </Link>
                 </div>

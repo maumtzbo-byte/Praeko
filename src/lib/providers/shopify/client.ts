@@ -437,6 +437,136 @@ export class ShopifyAdminClient {
     return page;
   }
 
+  /** The currently-published ("MAIN") theme's id — the one a real visitor sees. */
+  async getMainThemeId(): Promise<string> {
+    interface ThemesResult {
+      themes: { nodes: { id: string; role: string }[] };
+    }
+    const data = await this.graphql<ThemesResult>(`
+      query { themes(first: 10) { nodes { id role } } }
+    `);
+    const main = data.themes.nodes.find((t) => t.role === "MAIN");
+    if (!main) {
+      throw new Error("No se encontró un tema publicado (role MAIN).");
+    }
+    return main.id;
+  }
+
+  /** Reads one theme file's text content (e.g. config/settings_data.json). Returns null if the file doesn't exist. */
+  async getThemeFile(themeId: string, filename: string): Promise<string | null> {
+    interface ThemeFilesResult {
+      themes: { nodes: { id: string; files: { nodes: { filename: string; body: { content?: string } }[] } }[] };
+    }
+    const data = await this.graphql<ThemeFilesResult>(
+      `
+        query ThemeFile($filenames: [String!]!) {
+          themes(first: 10) {
+            nodes {
+              id
+              files(filenames: $filenames) {
+                nodes { filename body { ... on OnlineStoreThemeFileBodyText { content } } }
+              }
+            }
+          }
+        }
+      `,
+      { filenames: [filename] },
+    );
+    const theme = data.themes.nodes.find((t) => t.id === themeId);
+    return theme?.files.nodes[0]?.body.content ?? null;
+  }
+
+  /** Writes one theme file's text content — used for JSON config files like settings_data.json. */
+  async setThemeFile(themeId: string, filename: string, content: string): Promise<void> {
+    interface ThemeFilesUpsertResult {
+      themeFilesUpsert: {
+        upsertedThemeFiles: { filename: string }[] | null;
+        userErrors: { field: string[] | null; message: string }[];
+      };
+    }
+    const data = await this.graphql<ThemeFilesUpsertResult>(
+      `
+        mutation SetThemeFile($themeId: ID!, $files: [OnlineStoreThemeFilesUpsertFileInput!]!) {
+          themeFilesUpsert(themeId: $themeId, files: $files) {
+            upsertedThemeFiles { filename }
+            userErrors { field message }
+          }
+        }
+      `,
+      { themeId, files: [{ filename, body: { type: "TEXT", value: content } }] },
+    );
+    const { userErrors } = data.themeFilesUpsert;
+    if (userErrors.length) {
+      throw new Error(`Shopify rechazó el archivo de tema: ${userErrors.map((e) => e.message).join("; ")}`);
+    }
+  }
+
+  /**
+   * Uploads an image into the shop's Content > Files library (distinct from
+   * uploadImage()'s staged-upload step, which just gets bytes to Shopify —
+   * this is the extra fileCreate call that actually registers it as a
+   * MediaImage) and returns its CDN filename, e.g. "elora-logo.png" — the
+   * value theme settings like `logo` (image_picker) reference as
+   * `shopify://shop_images/<filename>`. Polls briefly since Shopify
+   * processes the upload asynchronously before the CDN URL is available.
+   */
+  async uploadShopFile(fileBuffer: Buffer, filename: string, mimeType: string, alt?: string): Promise<string> {
+    const resourceUrl = await this.uploadImage(fileBuffer, filename, mimeType);
+
+    interface FileCreateResult {
+      fileCreate: {
+        files: { id: string; fileStatus: string; image?: { url: string } | null }[];
+        userErrors: { field: string[] | null; message: string }[];
+      };
+    }
+    const created = await this.graphql<FileCreateResult>(
+      `
+        mutation UploadShopFile($files: [FileCreateInput!]!) {
+          fileCreate(files: $files) {
+            files {
+              id
+              fileStatus
+              ... on MediaImage { image { url } }
+            }
+            userErrors { field message }
+          }
+        }
+      `,
+      { files: [{ originalSource: resourceUrl, contentType: "IMAGE", filename, alt: alt ?? filename }] },
+    );
+    const { files, userErrors } = created.fileCreate;
+    if (userErrors.length) {
+      throw new Error(`Shopify rechazó el archivo: ${userErrors.map((e) => e.message).join("; ")}`);
+    }
+    const fileId = files[0]?.id;
+    if (!fileId) {
+      throw new Error("Shopify no devolvió el archivo creado.");
+    }
+
+    interface FileNodeResult {
+      node: { fileStatus: string; image?: { url: string } | null } | null;
+    }
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const check = await this.graphql<FileNodeResult>(
+        `
+          query CheckFile($id: ID!) {
+            node(id: $id) {
+              ... on MediaImage { fileStatus image { url } }
+            }
+          }
+        `,
+        { id: fileId },
+      );
+      const url = check.node?.image?.url;
+      if (check.node?.fileStatus === "READY" && url) {
+        const withoutQuery = url.split("?")[0];
+        return withoutQuery.split("/").pop() as string;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    throw new Error("El archivo no terminó de procesarse en Shopify a tiempo.");
+  }
+
   /**
    * Creates a product as a DRAFT — never ACTIVE — so an agent proposing a
    * product never makes it visible in the storefront on its own; a human

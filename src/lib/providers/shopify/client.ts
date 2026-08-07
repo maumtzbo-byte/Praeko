@@ -1,4 +1,11 @@
-import type { CreatedProduct, DraftProductInput, ShopInfo, ShopifyProduct, ShopifyProductStatus } from "./types";
+import type {
+  CreatedProduct,
+  DraftProductInput,
+  ShopInfo,
+  ShopifyProduct,
+  ShopifyProductStatus,
+  ShopPolicyType,
+} from "./types";
 
 /**
  * Bumped roughly with Shopify's quarterly releases (YYYY-MM/YYYY-04/07/10).
@@ -374,6 +381,60 @@ export class ShopifyAdminClient {
     if (!deletedProductId) {
       throw new Error("Shopify no confirmó el borrado del producto.");
     }
+  }
+
+  /** Sets the body (HTML) of one of the shop's standard legal policies — Shopify derives the title/URL from `type` itself, so there's nothing else to pass. */
+  async setShopPolicy(type: ShopPolicyType, bodyHtml: string): Promise<void> {
+    interface ShopPolicyUpdateResult {
+      shopPolicyUpdate: {
+        shopPolicy: { id: string } | null;
+        userErrors: { field: string[] | null; message: string }[];
+      };
+    }
+    const data = await this.graphql<ShopPolicyUpdateResult>(
+      `
+        mutation SetShopPolicy($shopPolicy: ShopPolicyInput!) {
+          shopPolicyUpdate(shopPolicy: $shopPolicy) {
+            shopPolicy { id }
+            userErrors { field message }
+          }
+        }
+      `,
+      { shopPolicy: { type, body: bodyHtml } },
+    );
+    const { userErrors } = data.shopPolicyUpdate;
+    if (userErrors.length) {
+      throw new Error(`Shopify rechazó la política: ${userErrors.map((e) => e.message).join("; ")}`);
+    }
+  }
+
+  /** Creates an Online Store page (About, Contact, FAQ, etc.), published by default. */
+  async createPage(title: string, bodyHtml: string, handle?: string): Promise<{ id: string; handle: string }> {
+    interface PageCreateResult {
+      pageCreate: {
+        page: { id: string; handle: string } | null;
+        userErrors: { field: string[] | null; message: string }[];
+      };
+    }
+    const data = await this.graphql<PageCreateResult>(
+      `
+        mutation CreatePage($page: PageCreateInput!) {
+          pageCreate(page: $page) {
+            page { id handle }
+            userErrors { field message }
+          }
+        }
+      `,
+      { page: { title, body: bodyHtml, handle, isPublished: true } },
+    );
+    const { page, userErrors } = data.pageCreate;
+    if (userErrors.length) {
+      throw new Error(`Shopify rechazó la página: ${userErrors.map((e) => e.message).join("; ")}`);
+    }
+    if (!page) {
+      throw new Error("Shopify no devolvió la página creada.");
+    }
+    return page;
   }
 
   /**

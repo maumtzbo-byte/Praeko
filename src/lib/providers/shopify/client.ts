@@ -208,15 +208,17 @@ export class ShopifyAdminClient {
    * agent's use case (one product idea, one price) without needing a
    * variant-matrix UI on top of this yet.
    *
-   * TODO(verify): productSet is the current Shopify-recommended mutation
-   * for setting a product + its variants/price in one call (replaces the
-   * old productCreate + separate productVariantsBulkCreate two-step), and
-   * the shape below (productOptions with a single "Title"/"Default Title"
-   * option, variants keyed by optionValues) matches Shopify's documented
-   * examples as of API 2025-10 — but this sandbox's network policy blocks
-   * fetching shopify.dev directly, so this hasn't been checked against a
-   * live call. Worth a real smoke test (create one throwaway draft) once
-   * real credentials are set, same caveat as fal-provider.ts.
+   * productSet is the current Shopify-recommended mutation for setting a
+   * product + its variants/price in one call (replaces the old
+   * productCreate + separate productVariantsBulkCreate two-step). The
+   * shape below — OptionSetInput { name, values: [{ name }] } and
+   * ProductVariantSetInput { optionValues: [{ optionName, name }], price }
+   * — was checked field-by-field against the live ProductSetInput /
+   * OptionSetInput / OptionValueSetInput / ProductVariantSetInput /
+   * VariantOptionValueInput docs on shopify.dev (API 2025-10) and matches.
+   * Still worth a real smoke test (create one throwaway draft) once real
+   * store credentials are set — this confirms the request shape, not a
+   * live round-trip.
    */
   async createDraftProduct(input: DraftProductInput): Promise<CreatedProduct> {
     interface ProductSetResult {

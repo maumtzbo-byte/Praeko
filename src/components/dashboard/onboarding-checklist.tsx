@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, ArrowRight } from "lucide-react";
+import { Check, type LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -8,10 +8,14 @@ interface ChecklistStep {
   label: string;
   href: string;
   done: boolean;
+  icon: LucideIcon;
 }
 
 /** Shown on the dashboard home only until every step is done — once a
- * business is up and running this would just be noise, not help. */
+ * business is up and running this would just be noise, not help. Icon-tile
+ * grid instead of a plain list — each step reuses the same icon its own
+ * page/quick-action already shows elsewhere, so this isn't a new visual
+ * vocabulary, just a bigger version of it. */
 export function OnboardingChecklist({ steps }: { steps: ChecklistStep[] }) {
   const doneCount = steps.filter((s) => s.done).length;
   if (doneCount === steps.length) return null;
@@ -26,33 +30,44 @@ export function OnboardingChecklist({ steps }: { steps: ChecklistStep[] }) {
               {doneCount} de {steps.length} listos — termina para que Frames publique solo.
             </p>
           </div>
-          <span className="shrink-0 text-xs font-medium text-zinc-500">
+          <span className="shrink-0 text-xs font-medium text-accent">
             {Math.round((doneCount / steps.length) * 100)}%
           </span>
         </div>
         <Progress value={(doneCount / steps.length) * 100} />
-        <div className="flex flex-col gap-1">
-          {steps.map((step) => (
-            <Link
-              key={step.href}
-              href={step.href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-2.5 py-1.5 text-sm transition-colors",
-                step.done ? "text-zinc-400" : "text-zinc-800 hover:bg-white",
-              )}
-            >
-              <span
-                className={cn(
-                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
-                  step.done ? "border-emerald-500 bg-emerald-500 text-white" : "border-zinc-300 ",
-                )}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+          {steps.map((step) => {
+            const Icon = step.icon;
+            return (
+              <Link
+                key={step.href}
+                href={step.href}
+                className="group relative flex flex-col items-center gap-2 rounded-2xl px-3 py-4 text-center transition-colors hover:bg-white"
               >
-                {step.done && <Check className="h-3 w-3" strokeWidth={3} />}
-              </span>
-              <span className={cn("flex-1", step.done && "line-through decoration-zinc-300")}>{step.label}</span>
-              {!step.done && <ArrowRight className="h-3.5 w-3.5 shrink-0 text-zinc-400" />}
-            </Link>
-          ))}
+                <span
+                  className={cn(
+                    "relative flex h-11 w-11 items-center justify-center rounded-2xl",
+                    step.done ? "bg-accent text-white" : "bg-accent/10 text-accent",
+                  )}
+                >
+                  <Icon className="h-5 w-5" strokeWidth={1.75} />
+                  {step.done && (
+                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-white ring-2 ring-[var(--background)]">
+                      <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                    </span>
+                  )}
+                </span>
+                <span
+                  className={cn(
+                    "text-xs font-medium leading-tight",
+                    step.done ? "text-zinc-400 line-through decoration-zinc-300" : "text-zinc-700 group-hover:text-zinc-900",
+                  )}
+                >
+                  {step.label}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

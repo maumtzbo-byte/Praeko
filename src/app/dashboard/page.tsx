@@ -13,6 +13,8 @@ import {
   Eye,
   Heart,
   MessageCircle,
+  AlertTriangle,
+  XCircle,
 } from "lucide-react";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
@@ -20,14 +22,92 @@ import { FramesMark } from "@/components/brand/FramesMark";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
+import { NotificationBell, type AttentionItem } from "@/components/dashboard/notification-bell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
-import { gatherPublishedPostInsights, summarizeInsights, type InsightsSummary } from "@/lib/agents/results-agent";
+import {
+  gatherPublishedPostInsights,
+  summarizeInsights,
+  buildDailyInsightsSeries,
+  type PublishedPostInsightResult,
+} from "@/lib/agents/results-agent";
 import { formatInsightNumber } from "@/lib/content/format-insights";
-import type { SocialPlatform } from "@/lib/social";
+import { PublicationsChart } from "@/components/dashboard/publications-chart";
+import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/social";
 import type { Tables } from "@/lib/supabase/types";
+
+// A beta trial with no cron/queue to send a reminder email needs the
+// dashboard itself to surface "this is ending" before it lapses silently.
+const BETA_ENDING_SOON_DAYS = 3;
+
+/**
+ * No notifications table exists (and there's no cron to keep one fresh) —
+ * so the bell shows things that already need attention right now, computed
+ * live from tables that already exist: content stuck in review or failed,
+ * interactions nobody replied to, and a beta trial about to end.
+ */
+async function getAttentionItems(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  businessId: string,
+  subscription: Tables<"subscriptions"> | null,
+): Promise<AttentionItem[]> {
+  const [{ data: reviewItems }, { data: failedItems }, { data: interactions }] = await Promise.all([
+    supabase.from("content_calendar").select("id, topic").eq("business_id", businessId).eq("status", "en_revision").limit(5),
+    supabase.from("content_calendar").select("id, topic").eq("business_id", businessId).eq("status", "fallida").limit(5),
+    supabase
+      .from("social_interactions")
+      .select("id, author_name, platform")
+      .eq("business_id", businessId)
+      .eq("reply_status", "necesita_revision")
+      .limit(5),
+  ]);
+
+  const iconClass = "h-3.5 w-3.5";
+  const items: AttentionItem[] = [];
+
+  for (const item of reviewItems ?? []) {
+    items.push({
+      id: `review-${item.id}`,
+      href: "/dashboard/publicaciones",
+      label: "En revisión",
+      detail: `"${item.topic}" necesita tu aprobación`,
+      icon: <AlertTriangle className={iconClass} strokeWidth={1.75} />,
+    });
+  }
+  for (const item of failedItems ?? []) {
+    items.push({
+      id: `failed-${item.id}`,
+      href: "/dashboard/publicaciones",
+      label: "Generación fallida",
+      detail: `"${item.topic}" no se pudo generar`,
+      icon: <XCircle className={iconClass} strokeWidth={1.75} />,
+    });
+  }
+  for (const item of interactions ?? []) {
+    items.push({
+      id: `interaction-${item.id}`,
+      href: "/dashboard/redes-sociales",
+      label: "Necesita respuesta",
+      detail: `${item.author_name ?? "Alguien"} en ${SOCIAL_PLATFORM_LABELS[item.platform]}`,
+      icon: <MessageCircle className={iconClass} strokeWidth={1.75} />,
+    });
+  }
+  if (subscription?.is_beta_trial && subscription.current_period_end) {
+    const daysLeft = Math.ceil((new Date(subscription.current_period_end).getTime() - Date.now()) / 86_400_000);
+    if (daysLeft >= 0 && daysLeft <= BETA_ENDING_SOON_DAYS) {
+      items.push({
+        id: "beta-ending",
+        href: "/dashboard/plan",
+        label: "Tu mes gratis termina pronto",
+        detail: daysLeft === 0 ? "Termina hoy" : daysLeft === 1 ? "Termina mañana" : `Quedan ${daysLeft} días`,
+        icon: <Gem className={iconClass} strokeWidth={1.75} />,
+      });
+    }
+  }
+
+  return items;
+}
 
 // Below this, the Agente Creativo has too little to work with — it falls
 // back to generic prompts instead of grounding output in what the business
@@ -35,35 +115,39 @@ import type { Tables } from "@/lib/supabase/types";
 // generateMediaForContent (publicaciones/actions.ts).
 const LOW_PHOTO_THRESHOLD = 3;
 
-// The dashboard home is a teaser, not the full picture — /dashboard/analiticas
-// already does the real deep-dive with up to 12 posts (MAX_POSTS_PER_LOAD
-// there). Fetching live metrics from Meta/TikTok on every dashboard-home
-// load too means the API cost is now paid on two pages instead of one, so
-// this pulls a smaller, more recent slice rather than duplicating the full
-// fetch — just enough to prove the product is actually working.
-const MAX_POSTS_FOR_DASHBOARD_TEASER = 6;
+// The dashboard home draws its stat tiles AND its chart from one fetch —
+// no reason to pay the Meta/TikTok API cost twice. Bounded to the trailing
+// 30 days (matches the chart's widest range option) with a hard cap on
+// post count, same rate-limit caution already documented in Analíticas.
+const INSIGHTS_WINDOW_DAYS = 30;
+const MAX_POSTS_FOR_INSIGHTS = 40;
 
-/** Same fetch shape as /dashboard/analiticas (gatherPublishedPostInsights +
- * summarizeInsights), just bounded smaller and returning only the summary
- * — the dashboard home links out to Analíticas for the per-post breakdown. */
-async function getRecentInsightsSummary(
+/** Same fetch shape as /dashboard/analiticas (gatherPublishedPostInsights),
+ * bounded to a trailing window instead of a flat post count so the results
+ * can also be aggregated into a daily chart series. */
+async function getPublishedInsightsResults(
   supabase: Awaited<ReturnType<typeof createClient>>,
   businessId: string,
-): Promise<InsightsSummary | null> {
+): Promise<PublishedPostInsightResult[]> {
+  const windowStart = new Date();
+  windowStart.setDate(windowStart.getDate() - INSIGHTS_WINDOW_DAYS);
+  const windowStartStr = windowStart.toISOString().slice(0, 10);
+
   const { data: publishedItems } = await supabase
     .from("content_calendar")
     .select("id, topic, scheduled_date, published_platform, external_post_id")
     .eq("business_id", businessId)
     .eq("status", "publicada")
     .not("external_post_id", "is", null)
+    .gte("scheduled_date", windowStartStr)
     .order("scheduled_date", { ascending: false })
-    .limit(MAX_POSTS_FOR_DASHBOARD_TEASER);
+    .limit(MAX_POSTS_FOR_INSIGHTS);
 
   const publishedWithPost = (publishedItems ?? []).filter(
     (item): item is typeof item & { published_platform: SocialPlatform; external_post_id: string } =>
       item.published_platform !== null && item.external_post_id !== null,
   );
-  if (publishedWithPost.length === 0) return null;
+  if (publishedWithPost.length === 0) return [];
 
   const platforms = Array.from(new Set(publishedWithPost.map((item) => item.published_platform)));
   const { data: connections } = await supabase
@@ -97,10 +181,9 @@ async function getRecentInsightsSummary(
     })
     .filter((p): p is NonNullable<typeof p> => p !== null);
 
-  if (postsToFetch.length === 0) return null;
+  if (postsToFetch.length === 0) return [];
 
-  const results = await gatherPublishedPostInsights(postsToFetch);
-  return summarizeInsights(results);
+  return gatherPublishedPostInsights(postsToFetch);
 }
 
 function firstNameFromEmail(email: string | undefined) {
@@ -123,11 +206,37 @@ const activityDateFormatter = new Intl.DateTimeFormat("es-MX", {
   minute: "2-digit",
 });
 
+const todayFormatter = new Intl.DateTimeFormat("es-MX", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
+
 const QUICK_ACTIONS = [
-  { href: "/dashboard/generar-contenido", label: "Generar contenido", icon: Sparkles },
-  { href: "/dashboard/calendario", label: "Ver calendario", icon: CalendarDays },
-  { href: "/dashboard/redes-sociales", label: "Conectar redes", icon: Share2 },
-  { href: "/dashboard/configuracion", label: "Configuración", icon: Settings },
+  {
+    href: "/dashboard/generar-contenido",
+    label: "Generar contenido",
+    description: "Crea un video o imagen nuevo con IA",
+    icon: Sparkles,
+  },
+  {
+    href: "/dashboard/calendario",
+    label: "Ver calendario",
+    description: "Revisa lo que está programado esta semana",
+    icon: CalendarDays,
+  },
+  {
+    href: "/dashboard/redes-sociales",
+    label: "Conectar redes",
+    description: "Vincula Instagram, Facebook o TikTok",
+    icon: Share2,
+  },
+  {
+    href: "/dashboard/configuracion",
+    label: "Configuración",
+    description: "Ajusta el perfil de marca de tu negocio",
+    icon: Settings,
+  },
 ];
 
 export default async function DashboardHomePage() {
@@ -208,13 +317,23 @@ export default async function DashboardHomePage() {
 
   // Only worth the live Meta/TikTok calls when there's actually something
   // published to ask about.
-  const insightsSummary = hasPublishedContent ? await getRecentInsightsSummary(supabase, business.id) : null;
+  const [insightsResults, attentionItems] = await Promise.all([
+    hasPublishedContent ? getPublishedInsightsResults(supabase, business.id) : Promise.resolve([]),
+    getAttentionItems(supabase, business.id, subscription),
+  ]);
+  const insightsSummary = insightsResults.length > 0 ? summarizeInsights(insightsResults) : null;
+  const chartData = buildDailyInsightsSeries(insightsResults, INSIGHTS_WINDOW_DAYS);
 
   const onboardingSteps = [
-    { label: "Elige tu plan", href: "/dashboard/plan", done: Boolean(subscription) },
-    { label: "Conecta una red social", href: "/dashboard/redes-sociales", done: !hasNoConnections },
-    { label: "Genera tu primer contenido", href: "/dashboard/generar-contenido", done: (anyContentCount ?? 0) > 0 },
-    { label: "Publica tu primera pieza", href: "/dashboard/publicaciones", done: hasPublishedContent },
+    { label: "Elige tu plan", href: "/dashboard/plan", done: Boolean(subscription), icon: Gem },
+    { label: "Conecta una red social", href: "/dashboard/redes-sociales", done: !hasNoConnections, icon: Share2 },
+    {
+      label: "Genera tu primer contenido",
+      href: "/dashboard/generar-contenido",
+      done: (anyContentCount ?? 0) > 0,
+      icon: Sparkles,
+    },
+    { label: "Publica tu primera pieza", href: "/dashboard/publicaciones", done: hasPublishedContent, icon: Send },
   ];
 
   const displayName = (user?.user_metadata?.full_name as string | undefined) || firstNameFromEmail(user?.email);
@@ -223,17 +342,26 @@ export default async function DashboardHomePage() {
 
   return (
     <div className="flex flex-col gap-5 sm:gap-8">
-      <div className="animate-fade-in-up flex items-start gap-3">
-        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">
-          <FramesMark className="h-4 w-4 text-accent" />
-        </span>
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 sm:text-2xl">
-            Hola{displayName ? `, ${displayName}` : ""} 👋
-          </h1>
-          <p className="mt-1 text-sm text-zinc-500">
-            Este es el resumen de <span className="font-medium text-zinc-700">{business.name}</span>.
-          </p>
+      <div className="animate-fade-in-up flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">
+            <FramesMark className="h-4 w-4 text-accent" />
+          </span>
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight text-zinc-950 sm:text-2xl">
+              Hola{displayName ? `, ${displayName}` : ""} 👋
+            </h1>
+            <p className="mt-1 text-sm text-zinc-500">
+              Este es el resumen de <span className="font-medium text-zinc-700">{business.name}</span>.
+            </p>
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="hidden items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-medium capitalize text-zinc-500 sm:flex">
+            <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.75} />
+            {todayFormatter.format(new Date())}
+          </span>
+          <NotificationBell items={attentionItems} />
         </div>
       </div>
 
@@ -307,6 +435,7 @@ export default async function DashboardHomePage() {
                         {formatInsightNumber(insightsSummary.totalShares)}
                       </p>
                     </div>
+                    <PublicationsChart data={chartData} />
                   </div>
                 ) : (
                   <p className="text-sm text-zinc-600">
@@ -343,33 +472,11 @@ export default async function DashboardHomePage() {
         </Card>
       </div>
 
-      {/* One consistent stat rail — subscription status alongside the raw
-          generation/queue numbers, all the same size/weight, instead of
-          the previous mismatched 2-col-span + separate-row layout. */}
+      {/* Subscription status now lives only in PlanBanner (dashboard/layout.tsx,
+          shown when it actually needs attention) — repeating it here as a
+          stat tile when everything's fine was just noise. These 4 tiles are
+          the same size/weight, all real counts already queried above. */}
       <div className="animate-fade-in-up stagger-2 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <Card className="bg-white/70">
-          <CardContent className="flex flex-col gap-2 p-4 sm:gap-3 sm:p-5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium tracking-wide text-zinc-500 sm:text-xs">SUSCRIPCIÓN</span>
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
-                <Gem className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
-              </span>
-            </div>
-            {subscription ? (
-              <div className="flex flex-wrap items-center gap-1.5">
-                <p className="text-lg font-semibold text-zinc-950 sm:text-xl">{subscription.plan_key}</p>
-                <Badge variant={subscription.status === "active" ? "success" : "warning"}>
-                  {subscription.status}
-                </Badge>
-              </div>
-            ) : (
-              <Link href="/dashboard/plan" className="w-fit">
-                <Button size="sm">Elegir plan</Button>
-              </Link>
-            )}
-          </CardContent>
-        </Card>
-
         <StatCard
           icon={Clapperboard}
           label="VIDEOS GENERADOS"
@@ -388,62 +495,103 @@ export default async function DashboardHomePage() {
           value={String(scheduledCount ?? 0)}
           sublabel={scheduledCount ? "en camino" : "sin piezas en cola"}
         />
+        <StatCard
+          icon={Share2}
+          label="REDES CONECTADAS"
+          value={String(connectionsCount ?? 0)}
+          sublabel={connectionsCount ? "activas" : "sin conectar"}
+        />
       </div>
 
-      <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-              <CardTitle>Actividad reciente</CardTitle>
-              <Activity className="h-4 w-4 text-accent" />
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              {recentActivity && recentActivity.length > 0 ? (
-                <div className="flex flex-col divide-y divide-zinc-100">
-                  {recentActivity.map((item) => {
-                    const Icon = item.content_kind === "video" ? Clapperboard : ImageIcon;
-                    return (
-                      <div key={item.id} className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0 sm:gap-3 sm:py-3">
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
-                          <Icon className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm text-zinc-700">
-                            {ACTIVITY_VERBS[item.status]}{" "}
-                            <span className="font-medium text-zinc-900">&ldquo;{item.topic}&rdquo;</span>
-                          </p>
-                          <p className="text-xs text-zinc-400">
-                            {activityDateFormatter.format(new Date(item.created_at))}
-                          </p>
-                        </div>
+      <div className="animate-fade-in-up stagger-3">
+        <Card>
+          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+            <CardTitle>Actividad reciente</CardTitle>
+            <Activity className="h-4 w-4 text-accent" />
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            {recentActivity && recentActivity.length > 0 ? (
+              <div className="flex flex-col divide-y divide-zinc-100">
+                {recentActivity.map((item) => {
+                  const Icon = item.content_kind === "video" ? Clapperboard : ImageIcon;
+                  return (
+                    <div key={item.id} className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0 sm:gap-3 sm:py-3">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
+                        <Icon className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm text-zinc-700">
+                          {ACTIVITY_VERBS[item.status]}{" "}
+                          <span className="font-medium text-zinc-900">&ldquo;{item.topic}&rdquo;</span>
+                        </p>
+                        <p className="text-xs text-zinc-400">
+                          {activityDateFormatter.format(new Date(item.created_at))}
+                        </p>
                       </div>
-                    );
-                  })}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              /* Fixed, honest tips instead of a generic EmptyState block —
+                 same two things onboarding already asks for, just surfaced
+                 here too since this is the first thing a new owner sees. */
+              <div className="flex flex-col divide-y divide-zinc-100">
+                <div className="flex items-center gap-2.5 py-2.5 first:pt-0 sm:gap-3 sm:py-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
+                    <Activity className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
+                  </span>
+                  <p className="text-sm text-zinc-500">
+                    Aún no hay actividad — aquí vas a ver cada generación, publicación y revisión.
+                  </p>
                 </div>
-              ) : (
-                <EmptyState
-                  icon={Activity}
-                  title="Sin actividad todavía"
-                  description="Aquí vas a ver cada generación, publicación y revisión de calidad en cuanto empiece a correr tu ciclo diario."
-                />
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                {hasNoConnections && (
+                  <Link
+                    href="/dashboard/redes-sociales"
+                    className="flex items-center gap-2.5 py-2.5 sm:gap-3 sm:py-3"
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
+                      <Share2 className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
+                    </span>
+                    <p className="text-sm text-zinc-700">
+                      Conecta tus redes sociales — así podemos publicar por ti automáticamente.
+                    </p>
+                  </Link>
+                )}
+                {(anyContentCount ?? 0) === 0 && (
+                  <Link
+                    href="/dashboard/generar-contenido"
+                    className="flex items-center gap-2.5 py-2.5 last:pb-0 sm:gap-3 sm:py-3"
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
+                      <Sparkles className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
+                    </span>
+                    <p className="text-sm text-zinc-700">Genera tu primer contenido con el Agente Creativo.</p>
+                  </Link>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
+      <div className="animate-fade-in-up stagger-4">
         <Card>
           <CardHeader className="p-4 pb-0 sm:p-6 sm:pb-0">
             <CardTitle>Accesos rápidos</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-2 p-4 sm:p-6">
-            {QUICK_ACTIONS.map(({ href, label, icon: Icon }) => (
+          <CardContent className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-4 sm:gap-3 sm:p-6">
+            {QUICK_ACTIONS.map(({ href, label, description, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
-                className="flex flex-col items-start gap-1.5 rounded-xl border border-zinc-200 p-2.5 text-left transition-all hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.25)] sm:gap-2 sm:p-3"
+                className="flex flex-col items-start gap-1.5 rounded-xl border border-zinc-200 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.25)]"
               >
-                <Icon className="h-4 w-4 text-zinc-600" strokeWidth={1.75} />
-                <span className="text-xs font-medium text-zinc-700">{label}</span>
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+                  <Icon className="h-4 w-4" strokeWidth={1.75} />
+                </span>
+                <span className="text-xs font-semibold text-zinc-900">{label}</span>
+                <span className="text-[11px] leading-snug text-zinc-500">{description}</span>
               </Link>
             ))}
           </CardContent>

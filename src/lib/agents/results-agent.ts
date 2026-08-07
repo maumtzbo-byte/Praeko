@@ -75,3 +75,38 @@ export function summarizeInsights(results: PublishedPostInsightResult[]): Insigh
     totalShares: sumField(results, "shares"),
   };
 }
+
+export interface DailyInsightsPoint {
+  date: string;
+  alcance: number;
+  interacciones: number;
+}
+
+/**
+ * Aggregates real per-post insights by scheduled_date over the trailing
+ * `days` window, including days with zero published posts as real zeros.
+ * There's no daily-metrics table to read a time series from, so this is
+ * the only honest one available: real dates and real per-post sums, not a
+ * synthesized trend.
+ */
+export function buildDailyInsightsSeries(results: PublishedPostInsightResult[], days: number): DailyInsightsPoint[] {
+  const byDate = new Map<string, { alcance: number; interacciones: number }>();
+  for (const result of results) {
+    if (!result.insights) continue;
+    const entry = byDate.get(result.scheduledDate) ?? { alcance: 0, interacciones: 0 };
+    entry.alcance += result.insights.impressions ?? 0;
+    entry.interacciones += (result.insights.likes ?? 0) + (result.insights.comments ?? 0) + (result.insights.shares ?? 0);
+    byDate.set(result.scheduledDate, entry);
+  }
+
+  const points: DailyInsightsPoint[] = [];
+  const today = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const entry = byDate.get(dateStr);
+    points.push({ date: dateStr, alcance: entry?.alcance ?? 0, interacciones: entry?.interacciones ?? 0 });
+  }
+  return points;
+}

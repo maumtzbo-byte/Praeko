@@ -23,7 +23,7 @@ export interface ShopifyProduct {
 export interface DraftProductInput {
   title: string;
   descriptionHtml: string;
-  /** USD — converted to the shop's currency by Shopify's price list, same as manual entry in the admin. */
+  /** USD — ShopifyAdminClient.createDraftProduct converts this to the shop's own currency before sending it (Shopify's productSet mutation takes a plain decimal, no conversion). */
   priceUsd: number;
   tags?: string[];
 }

@@ -21,6 +21,36 @@ interface CachedToken {
 /** One cache per store domain — a client_id/client_secret pair gets one token per shop, and a warm serverless instance can serve more than one request. */
 const tokenCache = new Map<string, CachedToken>();
 
+interface CachedRates {
+  usdToOther: Record<string, number>;
+  expiresAt: number;
+}
+
+let ratesCache: CachedRates | null = null;
+
+/**
+ * USD -> other currency rates from a free, no-key endpoint (rates refresh
+ * once/day upstream; cached here for 12h). Needed because Shopify's
+ * `productSet` mutation takes the variant price as a plain decimal in
+ * whatever currency the shop is set to — it does NOT convert for you, so a
+ * USD-denominated price estimate has to be converted before it's sent.
+ */
+async function getUsdExchangeRates(): Promise<Record<string, number>> {
+  if (ratesCache && ratesCache.expiresAt > Date.now()) {
+    return ratesCache.usdToOther;
+  }
+  const res = await fetch("https://open.er-api.com/v6/latest/USD");
+  if (!res.ok) {
+    throw new Error(`Currency exchange rate lookup failed: ${res.status} ${await res.text()}`);
+  }
+  const data = (await res.json()) as { result: string; rates: Record<string, number> };
+  if (data.result !== "success") {
+    throw new Error("Currency exchange rate lookup returned a non-success result.");
+  }
+  ratesCache = { usdToOther: data.rates, expiresAt: Date.now() + 12 * 60 * 60 * 1000 };
+  return ratesCache.usdToOther;
+}
+
 /**
  * Talks to one Shopify store's Admin API (GraphQL) via the OAuth client
  * credentials grant — the auth model for custom apps created after
@@ -39,6 +69,7 @@ export class ShopifyAdminClient {
   private readonly endpoint: string;
   private readonly clientId: string;
   private readonly clientSecret: string;
+  private shopCurrencyCode: string | null = null;
 
   constructor() {
     const domain = process.env.SHOPIFY_STORE_DOMAIN;
@@ -200,6 +231,28 @@ export class ShopifyAdminClient {
     }));
   }
 
+  /** Cached for the lifetime of this client instance — a shop's currency doesn't change mid-request. */
+  private async getShopCurrencyCode(): Promise<string> {
+    if (!this.shopCurrencyCode) {
+      this.shopCurrencyCode = (await this.getShopInfo()).currencyCode;
+    }
+    return this.shopCurrencyCode;
+  }
+
+  /** Converts a USD estimate (what the product-research agent produces) into the shop's own currency, since Shopify does not do this for us. */
+  private async convertUsdToShopCurrency(amountUsd: number): Promise<string> {
+    const currencyCode = await this.getShopCurrencyCode();
+    if (currencyCode === "USD") {
+      return amountUsd.toFixed(2);
+    }
+    const rates = await getUsdExchangeRates();
+    const rate = rates[currencyCode];
+    if (!rate) {
+      throw new Error(`No hay tasa de cambio disponible para la moneda de la tienda (${currencyCode}).`);
+    }
+    return (amountUsd * rate).toFixed(2);
+  }
+
   /**
    * Creates a product as a DRAFT — never ACTIVE — so an agent proposing a
    * product never makes it visible in the storefront on its own; a human
@@ -227,6 +280,7 @@ export class ShopifyAdminClient {
         userErrors: { field: string[] | null; message: string }[];
       };
     }
+    const price = await this.convertUsdToShopCurrency(input.priceUsd);
     const data = await this.graphql<ProductSetResult>(
       `
         mutation CreateDraftProduct($input: ProductSetInput!) {
@@ -246,7 +300,7 @@ export class ShopifyAdminClient {
           variants: [
             {
               optionValues: [{ optionName: "Title", name: "Default Title" }],
-              price: input.priceUsd.toFixed(2),
+              price,
             },
           ],
         },

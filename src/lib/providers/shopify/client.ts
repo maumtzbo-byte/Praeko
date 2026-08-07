@@ -303,7 +303,14 @@ export class ShopifyAdminClient {
    */
   async updateProduct(
     productId: string,
-    input: { title?: string; descriptionHtml?: string; imageResourceUrl?: string; imageAlt?: string },
+    input: {
+      title?: string;
+      descriptionHtml?: string;
+      imageResourceUrl?: string;
+      imageAlt?: string;
+      seoTitle?: string;
+      seoDescription?: string;
+    },
   ): Promise<void> {
     interface ProductSetResult {
       productSet: {
@@ -318,6 +325,9 @@ export class ShopifyAdminClient {
       productSetInput.files = [
         { originalSource: input.imageResourceUrl, contentType: "IMAGE", alt: input.imageAlt ?? "" },
       ];
+    }
+    if (input.seoTitle !== undefined || input.seoDescription !== undefined) {
+      productSetInput.seo = { title: input.seoTitle, description: input.seoDescription };
     }
 
     const data = await this.graphql<ProductSetResult>(
@@ -335,6 +345,34 @@ export class ShopifyAdminClient {
     const { userErrors } = data.productSet;
     if (userErrors.length) {
       throw new Error(`Shopify rechazó la actualización del producto: ${userErrors.map((e) => e.message).join("; ")}`);
+    }
+  }
+
+  /** Permanently deletes a product — used to clear Shopify's default "Producto de ejemplo" placeholders. */
+  async deleteProduct(productId: string): Promise<void> {
+    interface ProductDeleteResult {
+      productDelete: {
+        deletedProductId: string | null;
+        userErrors: { field: string[] | null; message: string }[];
+      };
+    }
+    const data = await this.graphql<ProductDeleteResult>(
+      `
+        mutation DeleteProduct($input: ProductDeleteInput!) {
+          productDelete(input: $input) {
+            deletedProductId
+            userErrors { field message }
+          }
+        }
+      `,
+      { input: { id: productId } },
+    );
+    const { deletedProductId, userErrors } = data.productDelete;
+    if (userErrors.length) {
+      throw new Error(`Shopify rechazó borrar el producto: ${userErrors.map((e) => e.message).join("; ")}`);
+    }
+    if (!deletedProductId) {
+      throw new Error("Shopify no confirmó el borrado del producto.");
     }
   }
 

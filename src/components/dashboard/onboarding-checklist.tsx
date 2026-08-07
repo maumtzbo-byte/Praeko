@@ -18,7 +18,7 @@ export function OnboardingChecklist({ steps }: { steps: ChecklistStep[] }) {
 
   return (
     <Card className="border-accent/20 bg-accent/[0.04]">
-      <CardContent className="flex flex-col gap-4 p-5">
+      <CardContent className="flex flex-col gap-3 p-4 sm:gap-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-zinc-900">Primeros pasos</p>
@@ -31,13 +31,13 @@ export function OnboardingChecklist({ steps }: { steps: ChecklistStep[] }) {
           </span>
         </div>
         <Progress value={(doneCount / steps.length) * 100} />
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
           {steps.map((step) => (
             <Link
               key={step.href}
               href={step.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition-colors",
+                "flex items-center gap-3 rounded-lg px-2.5 py-1.5 text-sm transition-colors",
                 step.done ? "text-zinc-400" : "text-zinc-800 hover:bg-white",
               )}
             >

@@ -85,7 +85,7 @@ export default async function AnaliticasPage() {
     <div>
       <PageHeader title="Analíticas" description="Alcance, seguidores y engagement, traducidos a lenguaje de negocio." />
 
-      <div className="animate-fade-in-up stagger-1 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="animate-fade-in-up stagger-1 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard icon={Eye} label="Impresiones" value={formatInsightNumber(summary.totalImpressions)} sublabel={`${summary.totalPosts} publicaciones`} />
         <StatCard icon={Heart} label="Me gusta" value={formatInsightNumber(summary.totalLikes)} />
         <StatCard icon={MessageCircle} label="Comentarios" value={formatInsightNumber(summary.totalComments)} />

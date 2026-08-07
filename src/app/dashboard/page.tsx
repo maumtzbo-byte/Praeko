@@ -221,9 +221,9 @@ export default async function DashboardHomePage() {
   const imagesUsed = usage?.images_used ?? 0;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-5 sm:gap-8">
       <div className="animate-fade-in-up">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-950">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-950 sm:text-2xl">
           Hola{displayName ? `, ${displayName}` : ""} 👋
         </h1>
         <p className="mt-1 text-sm text-zinc-500">
@@ -256,21 +256,21 @@ export default async function DashboardHomePage() {
           lead the page instead of sharing a row with unrelated stats. */}
       <div className="animate-fade-in-up stagger-1">
         <Card>
-          <CardHeader className="flex-row items-center justify-between">
+          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
             <CardTitle>Rendimiento de publicaciones</CardTitle>
             <BarChart3 className="h-4 w-4 text-zinc-400" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6">
             {hasPublishedContent ? (
-              <div className="flex flex-col gap-4 py-2">
+              <div className="flex flex-col gap-3 py-1 sm:gap-4 sm:py-2">
                 {insightsSummary ? (
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
                     <div>
                       <div className="flex items-center gap-1.5 text-zinc-400">
                         <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
                         <span className="text-[10px] font-medium tracking-wide">IMPRESIONES</span>
                       </div>
-                      <p className="mt-1 text-xl font-semibold text-zinc-900">
+                      <p className="mt-1 text-lg font-semibold text-zinc-900 sm:text-xl">
                         {formatInsightNumber(insightsSummary.totalImpressions)}
                       </p>
                     </div>
@@ -279,7 +279,7 @@ export default async function DashboardHomePage() {
                         <Heart className="h-3.5 w-3.5" strokeWidth={1.75} />
                         <span className="text-[10px] font-medium tracking-wide">ME GUSTA</span>
                       </div>
-                      <p className="mt-1 text-xl font-semibold text-zinc-900">
+                      <p className="mt-1 text-lg font-semibold text-zinc-900 sm:text-xl">
                         {formatInsightNumber(insightsSummary.totalLikes)}
                       </p>
                     </div>
@@ -288,7 +288,7 @@ export default async function DashboardHomePage() {
                         <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
                         <span className="text-[10px] font-medium tracking-wide">COMENTARIOS</span>
                       </div>
-                      <p className="mt-1 text-xl font-semibold text-zinc-900">
+                      <p className="mt-1 text-lg font-semibold text-zinc-900 sm:text-xl">
                         {formatInsightNumber(insightsSummary.totalComments)}
                       </p>
                     </div>
@@ -297,7 +297,7 @@ export default async function DashboardHomePage() {
                         <Share2 className="h-3.5 w-3.5" strokeWidth={1.75} />
                         <span className="text-[10px] font-medium tracking-wide">COMPARTIDOS</span>
                       </div>
-                      <p className="mt-1 text-xl font-semibold text-zinc-900">
+                      <p className="mt-1 text-lg font-semibold text-zinc-900 sm:text-xl">
                         {formatInsightNumber(insightsSummary.totalShares)}
                       </p>
                     </div>
@@ -340,18 +340,18 @@ export default async function DashboardHomePage() {
       {/* One consistent stat rail — subscription status alongside the raw
           generation/queue numbers, all the same size/weight, instead of
           the previous mismatched 2-col-span + separate-row layout. */}
-      <div className="animate-fade-in-up stagger-2 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="animate-fade-in-up stagger-2 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Card className="bg-white/70">
-          <CardContent className="flex flex-col gap-3 p-5">
+          <CardContent className="flex flex-col gap-2 p-4 sm:gap-3 sm:p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium tracking-wide text-zinc-500">ESTADO DE SUSCRIPCIÓN</span>
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] ">
-                <Gem className="h-4 w-4 text-accent" strokeWidth={1.75} />
+              <span className="text-[11px] font-medium tracking-wide text-zinc-500 sm:text-xs">SUSCRIPCIÓN</span>
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
+                <Gem className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
               </span>
             </div>
             {subscription ? (
-              <div className="flex items-center gap-2">
-                <p className="text-xl font-semibold text-zinc-950">{subscription.plan_key}</p>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <p className="text-lg font-semibold text-zinc-950 sm:text-xl">{subscription.plan_key}</p>
                 <Badge variant={subscription.status === "active" ? "success" : "warning"}>
                   {subscription.status}
                 </Badge>
@@ -384,22 +384,22 @@ export default async function DashboardHomePage() {
         />
       </div>
 
-      <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card>
-            <CardHeader className="flex-row items-center justify-between">
+            <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
               <CardTitle>Actividad reciente</CardTitle>
               <Activity className="h-4 w-4 text-zinc-400" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
               {recentActivity && recentActivity.length > 0 ? (
                 <div className="flex flex-col divide-y divide-zinc-100">
                   {recentActivity.map((item) => {
                     const Icon = item.content_kind === "video" ? Clapperboard : ImageIcon;
                     return (
-                      <div key={item.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] ">
-                          <Icon className="h-4 w-4 text-accent" strokeWidth={1.75} />
+                      <div key={item.id} className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0 sm:gap-3 sm:py-3">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
+                          <Icon className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm text-zinc-700">
@@ -426,15 +426,15 @@ export default async function DashboardHomePage() {
         </div>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="p-4 pb-0 sm:p-6 sm:pb-0">
             <CardTitle>Accesos rápidos</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-2">
+          <CardContent className="grid grid-cols-2 gap-2 p-4 sm:p-6">
             {QUICK_ACTIONS.map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
-                className="flex flex-col items-start gap-2 rounded-xl border border-zinc-200 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.25)] "
+                className="flex flex-col items-start gap-1.5 rounded-xl border border-zinc-200 p-2.5 text-left transition-all hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.25)] sm:gap-2 sm:p-3"
               >
                 <Icon className="h-4 w-4 text-zinc-600" strokeWidth={1.75} />
                 <span className="text-xs font-medium text-zinc-700">{label}</span>

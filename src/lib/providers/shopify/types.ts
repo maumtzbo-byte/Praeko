@@ -19,3 +19,17 @@ export interface ShopifyProduct {
   maxPrice: string;
   currencyCode: string;
 }
+
+export interface DraftProductInput {
+  title: string;
+  descriptionHtml: string;
+  /** USD — converted to the shop's currency by Shopify's price list, same as manual entry in the admin. */
+  priceUsd: number;
+  tags?: string[];
+}
+
+export interface CreatedProduct {
+  id: string;
+  handle: string;
+  adminUrl: string;
+}

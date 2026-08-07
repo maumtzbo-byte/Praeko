@@ -1,4 +1,4 @@
-import type { ShopInfo, ShopifyProduct, ShopifyProductStatus } from "./types";
+import type { CreatedProduct, DraftProductInput, ShopInfo, ShopifyProduct, ShopifyProductStatus } from "./types";
 
 /**
  * Bumped roughly with Shopify's quarterly releases (YYYY-MM/YYYY-04/07/10).
@@ -20,6 +20,7 @@ interface GraphQLResponse<T> {
  * full Admin API credential and must never reach the browser bundle.
  */
 export class ShopifyAdminClient {
+  private readonly domain: string;
   private readonly endpoint: string;
   private readonly accessToken: string;
 
@@ -31,6 +32,7 @@ export class ShopifyAdminClient {
         "SHOPIFY_STORE_DOMAIN / SHOPIFY_ADMIN_ACCESS_TOKEN is not set — see .env.example. ShopifyAdminClient must only run server-side.",
       );
     }
+    this.domain = domain;
     this.endpoint = `https://${domain}/admin/api/${API_VERSION}/graphql.json`;
     this.accessToken = accessToken;
   }
@@ -142,5 +144,72 @@ export class ShopifyAdminClient {
       maxPrice: node.priceRangeV2.maxVariantPrice.amount,
       currencyCode: node.priceRangeV2.minVariantPrice.currencyCode,
     }));
+  }
+
+  /**
+   * Creates a product as a DRAFT — never ACTIVE — so an agent proposing a
+   * product never makes it visible in the storefront on its own; a human
+   * has to review it in the admin and publish it themselves. Single
+   * variant only (no size/color options), which covers the research
+   * agent's use case (one product idea, one price) without needing a
+   * variant-matrix UI on top of this yet.
+   *
+   * TODO(verify): productSet is the current Shopify-recommended mutation
+   * for setting a product + its variants/price in one call (replaces the
+   * old productCreate + separate productVariantsBulkCreate two-step), and
+   * the shape below (productOptions with a single "Title"/"Default Title"
+   * option, variants keyed by optionValues) matches Shopify's documented
+   * examples as of API 2025-10 — but this sandbox's network policy blocks
+   * fetching shopify.dev directly, so this hasn't been checked against a
+   * live call. Worth a real smoke test (create one throwaway draft) once
+   * SHOPIFY_ADMIN_ACCESS_TOKEN is set, same caveat as fal-provider.ts.
+   */
+  async createDraftProduct(input: DraftProductInput): Promise<CreatedProduct> {
+    interface ProductSetResult {
+      productSet: {
+        product: { id: string; handle: string } | null;
+        userErrors: { field: string[] | null; message: string }[];
+      };
+    }
+    const data = await this.graphql<ProductSetResult>(
+      `
+        mutation CreateDraftProduct($input: ProductSetInput!) {
+          productSet(synchronous: true, input: $input) {
+            product { id handle }
+            userErrors { field message }
+          }
+        }
+      `,
+      {
+        input: {
+          title: input.title,
+          descriptionHtml: input.descriptionHtml,
+          status: "DRAFT",
+          tags: input.tags ?? [],
+          productOptions: [{ name: "Title", values: [{ name: "Default Title" }] }],
+          variants: [
+            {
+              optionValues: [{ optionName: "Title", name: "Default Title" }],
+              price: input.priceUsd.toFixed(2),
+            },
+          ],
+        },
+      },
+    );
+
+    const { product, userErrors } = data.productSet;
+    if (userErrors.length) {
+      throw new Error(`Shopify rechazó la creación del producto: ${userErrors.map((e) => e.message).join("; ")}`);
+    }
+    if (!product) {
+      throw new Error("Shopify no devolvió el producto creado.");
+    }
+
+    const numericId = product.id.split("/").pop();
+    return {
+      id: product.id,
+      handle: product.handle,
+      adminUrl: `https://${this.domain}/admin/products/${numericId}`,
+    };
   }
 }

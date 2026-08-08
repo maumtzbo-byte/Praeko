@@ -33,7 +33,7 @@ import {
   type PublishedPostInsightResult,
 } from "@/lib/agents/results-agent";
 import { formatInsightNumber } from "@/lib/content/format-insights";
-import { PublicationsChart } from "@/components/dashboard/publications-chart";
+import { DualAreaChart } from "@/components/dashboard/dual-area-chart";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/social";
 import type { Tables } from "@/lib/supabase/types";
 
@@ -135,7 +135,7 @@ async function getPublishedInsightsResults(
 
   const { data: publishedItems } = await supabase
     .from("content_calendar")
-    .select("id, topic, scheduled_date, published_platform, external_post_id")
+    .select("id, topic, scheduled_date, published_platform, external_post_id, content_kind")
     .eq("business_id", businessId)
     .eq("status", "publicada")
     .not("external_post_id", "is", null)
@@ -175,6 +175,7 @@ async function getPublishedInsightsResults(
         topic: item.topic,
         scheduledDate: item.scheduled_date,
         platform: item.published_platform,
+        contentKind: item.content_kind,
         externalPostId: item.external_post_id,
         accessToken,
       };
@@ -435,7 +436,13 @@ export default async function DashboardHomePage() {
                         {formatInsightNumber(insightsSummary.totalShares)}
                       </p>
                     </div>
-                    <PublicationsChart data={chartData} />
+                    <DualAreaChart
+                      data={chartData}
+                      series={[
+                        { key: "alcance", label: "Alcance", color: "var(--accent)" },
+                        { key: "interacciones", label: "Interacciones", color: "var(--accent-strong)" },
+                      ]}
+                    />
                   </div>
                 ) : (
                   <p className="text-sm text-zinc-600">

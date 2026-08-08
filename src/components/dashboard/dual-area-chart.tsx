@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { cn } from "@/lib/utils";
-import type { DailyInsightsPoint } from "@/lib/agents/results-agent";
 
 const RANGES = [
   { label: "7D", days: 7 },
@@ -14,23 +13,38 @@ const RANGES = [
 const dateFormatter = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "short" });
 const compactNumberFormatter = new Intl.NumberFormat("es-MX", { notation: "compact", maximumFractionDigits: 1 });
 
-/** Client-side range filter only — the server already fetched the full
- * 30-day window once, so switching 7/14/30 never triggers another
- * Meta/TikTok call. */
-export function PublicationsChart({ data }: { data: DailyInsightsPoint[] }) {
-  const [rangeDays, setRangeDays] = useState<number>(14);
+export interface AreaSeriesConfig {
+  key: string;
+  label: string;
+  color: string;
+}
+
+/** Client-side range filter only — the server fetches the full window
+ * once, so switching 7/14/30 never triggers another API call. Generic
+ * over its series so both the dashboard-home "Rendimiento" chart
+ * (Alcance/Interacciones) and Analíticas' "Me gusta/Comentarios" chart
+ * share one implementation instead of two near-identical ones. */
+export function DualAreaChart<T extends { date: string }>({
+  data,
+  series,
+  defaultRangeDays = 14,
+}: {
+  data: T[];
+  series: [AreaSeriesConfig, AreaSeriesConfig];
+  defaultRangeDays?: number;
+}) {
+  const [rangeDays, setRangeDays] = useState(defaultRangeDays);
   const visible = useMemo(() => data.slice(-rangeDays), [data, rangeDays]);
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-3 text-xs text-zinc-500">
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-accent" /> Alcance
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-accent-strong" /> Interacciones
-          </span>
+          {series.map((s) => (
+            <span key={s.key} className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full" style={{ background: s.color }} /> {s.label}
+            </span>
+          ))}
         </div>
         <div className="flex gap-0.5 rounded-lg bg-zinc-100 p-0.5">
           {RANGES.map((r) => (
@@ -52,14 +66,12 @@ export function PublicationsChart({ data }: { data: DailyInsightsPoint[] }) {
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={visible} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <defs>
-              <linearGradient id="fillAlcance" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.35} />
-                <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="fillInteracciones" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--accent-strong)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="var(--accent-strong)" stopOpacity={0} />
-              </linearGradient>
+              {series.map((s) => (
+                <linearGradient key={s.key} id={`fill-${s.key}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={s.color} stopOpacity={0.35} />
+                  <stop offset="95%" stopColor={s.color} stopOpacity={0} />
+                </linearGradient>
+              ))}
             </defs>
             <CartesianGrid vertical={false} stroke="#e4e4e7" strokeDasharray="3 3" />
             <XAxis
@@ -82,15 +94,17 @@ export function PublicationsChart({ data }: { data: DailyInsightsPoint[] }) {
               labelFormatter={(value) => dateFormatter.format(new Date(String(value)))}
               contentStyle={{ borderRadius: 12, border: "1px solid #e4e4e7", fontSize: 12 }}
             />
-            <Area type="monotone" dataKey="alcance" name="Alcance" stroke="var(--accent)" fill="url(#fillAlcance)" strokeWidth={2} />
-            <Area
-              type="monotone"
-              dataKey="interacciones"
-              name="Interacciones"
-              stroke="var(--accent-strong)"
-              fill="url(#fillInteracciones)"
-              strokeWidth={2}
-            />
+            {series.map((s) => (
+              <Area
+                key={s.key}
+                type="monotone"
+                dataKey={s.key}
+                name={s.label}
+                stroke={s.color}
+                fill={`url(#fill-${s.key})`}
+                strokeWidth={2}
+              />
+            ))}
           </AreaChart>
         </ResponsiveContainer>
       </div>

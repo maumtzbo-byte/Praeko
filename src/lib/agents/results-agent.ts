@@ -1,11 +1,15 @@
 import { fetchPostInsights, type PostInsights } from "@/lib/social/insights";
 import type { SocialPlatform } from "@/lib/social";
+import type { Database } from "@/lib/supabase/types";
+
+type ContentKind = Database["public"]["Enums"]["content_kind"];
 
 export interface PublishedPostForInsights {
   itemId: string;
   topic: string;
   scheduledDate: string;
   platform: SocialPlatform;
+  contentKind: ContentKind;
   externalPostId: string;
   accessToken: string;
 }
@@ -15,6 +19,7 @@ export interface PublishedPostInsightResult {
   topic: string;
   scheduledDate: string;
   platform: SocialPlatform;
+  contentKind: ContentKind;
   insights: PostInsights | null;
 }
 
@@ -36,6 +41,7 @@ export async function gatherPublishedPostInsights(
           topic: post.topic,
           scheduledDate: post.scheduledDate,
           platform: post.platform,
+          contentKind: post.contentKind,
           insights,
         };
       } catch (err) {
@@ -45,6 +51,7 @@ export async function gatherPublishedPostInsights(
           topic: post.topic,
           scheduledDate: post.scheduledDate,
           platform: post.platform,
+          contentKind: post.contentKind,
           insights: null,
         };
       }
@@ -109,4 +116,108 @@ export function buildDailyInsightsSeries(results: PublishedPostInsightResult[], 
     points.push({ date: dateStr, alcance: entry?.alcance ?? 0, interacciones: entry?.interacciones ?? 0 });
   }
   return points;
+}
+
+export interface DailyEngagementBreakdown {
+  date: string;
+  likes: number;
+  comentarios: number;
+}
+
+/** Same trailing-window/real-zeros shape as buildDailyInsightsSeries, but
+ * split into likes vs. comments instead of one combined "interacciones" —
+ * Analíticas wants the more granular breakdown, the dashboard home teaser
+ * doesn't need the extra line. */
+export function buildDailyEngagementBreakdown(results: PublishedPostInsightResult[], days: number): DailyEngagementBreakdown[] {
+  const byDate = new Map<string, { likes: number; comentarios: number }>();
+  for (const result of results) {
+    if (!result.insights) continue;
+    const entry = byDate.get(result.scheduledDate) ?? { likes: 0, comentarios: 0 };
+    entry.likes += result.insights.likes ?? 0;
+    entry.comentarios += result.insights.comments ?? 0;
+    byDate.set(result.scheduledDate, entry);
+  }
+
+  const points: DailyEngagementBreakdown[] = [];
+  const today = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const entry = byDate.get(dateStr);
+    points.push({ date: dateStr, likes: entry?.likes ?? 0, comentarios: entry?.comentarios ?? 0 });
+  }
+  return points;
+}
+
+function engagementScore(insights: PostInsights | null): number | null {
+  if (!insights) return null;
+  const { likes, comments, shares } = insights;
+  if (likes === null && comments === null && shares === null) return null;
+  return (likes ?? 0) + (comments ?? 0) + (shares ?? 0);
+}
+
+export interface TopPost {
+  itemId: string;
+  topic: string;
+  platform: SocialPlatform;
+  scheduledDate: string;
+  engagement: number;
+  impressions: number | null;
+}
+
+/** Ranks by real engagement (likes+comments+shares), not impressions —
+ * "viral" reads as audience response, not just reach. Posts with no
+ * insights at all (fetch failed or platform doesn't return these fields)
+ * are excluded rather than ranked as 0, since 0 would misrepresent
+ * "unknown" as "nobody engaged". */
+export function rankTopPosts(
+  results: PublishedPostInsightResult[],
+  limit: number,
+  contentKind?: ContentKind,
+): TopPost[] {
+  return results
+    .filter((r) => (contentKind ? r.contentKind === contentKind : true))
+    .map((r) => ({ result: r, engagement: engagementScore(r.insights) }))
+    .filter((r): r is { result: PublishedPostInsightResult; engagement: number } => r.engagement !== null)
+    .sort((a, b) => b.engagement - a.engagement)
+    .slice(0, limit)
+    .map(({ result, engagement }) => ({
+      itemId: result.itemId,
+      topic: result.topic,
+      platform: result.platform,
+      scheduledDate: result.scheduledDate,
+      engagement,
+      impressions: result.insights?.impressions ?? null,
+    }));
+}
+
+export interface PlatformBreakdown {
+  platform: SocialPlatform;
+  engagement: number;
+  percentage: number;
+}
+
+/** Same engagement metric as rankTopPosts, summed per platform — "best
+ * network" means where the audience actually responds, not just where
+ * more was posted. Platforms with zero measurable engagement (no
+ * successful insights fetch) are left out rather than shown as 0%. */
+export function summarizeByPlatform(results: PublishedPostInsightResult[]): PlatformBreakdown[] {
+  const byPlatform = new Map<SocialPlatform, number>();
+  for (const result of results) {
+    const score = engagementScore(result.insights);
+    if (score === null) continue;
+    byPlatform.set(result.platform, (byPlatform.get(result.platform) ?? 0) + score);
+  }
+
+  const total = Array.from(byPlatform.values()).reduce((a, b) => a + b, 0);
+  if (total === 0) return [];
+
+  return Array.from(byPlatform.entries())
+    .map(([platform, engagement]) => ({
+      platform,
+      engagement,
+      percentage: Math.round((engagement / total) * 100),
+    }))
+    .sort((a, b) => b.engagement - a.engagement);
 }

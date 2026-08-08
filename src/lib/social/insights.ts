@@ -142,3 +142,56 @@ export async function fetchPostInsights(
       throw new Error("Google Business Profile no publica posts — usa fetchGoogleReviews.");
   }
 }
+
+async function fetchFacebookPageFollowers(pageAccessToken: string, pageId: string): Promise<number | null> {
+  const url = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${pageId}`);
+  url.searchParams.set("fields", "fan_count");
+  url.searchParams.set("access_token", pageAccessToken);
+  const res = await fetch(url.toString());
+  if (!res.ok) return null;
+  const data = (await res.json()) as { fan_count?: number };
+  return data.fan_count ?? null;
+}
+
+async function fetchInstagramFollowers(pageAccessToken: string, igUserId: string): Promise<number | null> {
+  const url = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${igUserId}`);
+  url.searchParams.set("fields", "followers_count");
+  url.searchParams.set("access_token", pageAccessToken);
+  const res = await fetch(url.toString());
+  if (!res.ok) return null;
+  const data = (await res.json()) as { followers_count?: number };
+  return data.followers_count ?? null;
+}
+
+async function fetchTikTokFollowers(accessToken: string): Promise<number | null> {
+  const res = await fetch("https://open.tiktokapis.com/v2/user/info/?fields=follower_count", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) return null;
+  const data = (await res.json()) as { data?: { user?: { follower_count?: number } } };
+  return data.data?.user?.follower_count ?? null;
+}
+
+/**
+ * Agente de Resultados — current follower count for a connected account.
+ * Returns null (not 0) on any failure so a bad fetch never gets stored as
+ * "lost every follower" in social_follower_snapshots; the caller should
+ * skip writing a snapshot row entirely when this is null rather than
+ * record a false number.
+ */
+export async function fetchAccountFollowers(
+  platform: SocialPlatform,
+  accessToken: string,
+  externalAccountId: string,
+): Promise<number | null> {
+  switch (platform) {
+    case "facebook":
+      return fetchFacebookPageFollowers(accessToken, externalAccountId);
+    case "instagram":
+      return fetchInstagramFollowers(accessToken, externalAccountId);
+    case "tiktok":
+      return fetchTikTokFollowers(accessToken);
+    case "google_business":
+      return null;
+  }
+}

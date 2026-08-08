@@ -56,38 +56,6 @@ export type Database = {
           },
         ]
       }
-      feedback_submissions: {
-        Row: {
-          business_id: string
-          created_at: string
-          id: string
-          rating: number
-          recommendation: string | null
-        }
-        Insert: {
-          business_id: string
-          created_at?: string
-          id?: string
-          rating: number
-          recommendation?: string | null
-        }
-        Update: {
-          business_id?: string
-          created_at?: string
-          id?: string
-          rating?: number
-          recommendation?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "feedback_submissions_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       brand_profiles: {
         Row: {
           additional_info: string | null
@@ -256,7 +224,7 @@ export type Database = {
           contact_email?: string | null
           country?: string | null
           created_at?: string
-          customer_number?: number
+          customer_number?: never
           description?: string | null
           id?: string
           industry?: string | null
@@ -275,7 +243,7 @@ export type Database = {
           contact_email?: string | null
           country?: string | null
           created_at?: string
-          customer_number?: number
+          customer_number?: never
           description?: string | null
           id?: string
           industry?: string | null
@@ -343,10 +311,14 @@ export type Database = {
           external_post_id: string | null
           format: Database["public"]["Enums"]["content_format"]
           id: string
-          published_platform: Database["public"]["Enums"]["social_platform"] | null
+          published_platform:
+            | Database["public"]["Enums"]["social_platform"]
+            | null
           recommended_publish_time: string | null
           review_feedback: string | null
-          review_result: Database["public"]["Enums"]["quality_review_result"] | null
+          review_result:
+            | Database["public"]["Enums"]["quality_review_result"]
+            | null
           scheduled_date: string
           script: string | null
           status: Database["public"]["Enums"]["content_status"]
@@ -362,10 +334,14 @@ export type Database = {
           external_post_id?: string | null
           format: Database["public"]["Enums"]["content_format"]
           id?: string
-          published_platform?: Database["public"]["Enums"]["social_platform"] | null
+          published_platform?:
+            | Database["public"]["Enums"]["social_platform"]
+            | null
           recommended_publish_time?: string | null
           review_feedback?: string | null
-          review_result?: Database["public"]["Enums"]["quality_review_result"] | null
+          review_result?:
+            | Database["public"]["Enums"]["quality_review_result"]
+            | null
           scheduled_date: string
           script?: string | null
           status?: Database["public"]["Enums"]["content_status"]
@@ -381,10 +357,14 @@ export type Database = {
           external_post_id?: string | null
           format?: Database["public"]["Enums"]["content_format"]
           id?: string
-          published_platform?: Database["public"]["Enums"]["social_platform"] | null
+          published_platform?:
+            | Database["public"]["Enums"]["social_platform"]
+            | null
           recommended_publish_time?: string | null
           review_feedback?: string | null
-          review_result?: Database["public"]["Enums"]["quality_review_result"] | null
+          review_result?:
+            | Database["public"]["Enums"]["quality_review_result"]
+            | null
           scheduled_date?: string
           script?: string | null
           status?: Database["public"]["Enums"]["content_status"]
@@ -431,6 +411,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "content_generation_runs_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_submissions: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          rating: number
+          recommendation: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          rating: number
+          recommendation?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          rating?: number
+          recommendation?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_submissions_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
@@ -631,6 +643,51 @@ export type Database = {
           },
         ]
       }
+      social_follower_snapshots: {
+        Row: {
+          business_id: string
+          captured_date: string
+          connection_id: string
+          created_at: string
+          followers_count: number
+          id: string
+          platform: Database["public"]["Enums"]["social_platform"]
+        }
+        Insert: {
+          business_id: string
+          captured_date?: string
+          connection_id: string
+          created_at?: string
+          followers_count: number
+          id?: string
+          platform: Database["public"]["Enums"]["social_platform"]
+        }
+        Update: {
+          business_id?: string
+          captured_date?: string
+          connection_id?: string
+          created_at?: string
+          followers_count?: number
+          id?: string
+          platform?: Database["public"]["Enums"]["social_platform"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_follower_snapshots_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_follower_snapshots_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "social_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       social_interactions: {
         Row: {
           author_name: string | null
@@ -821,10 +878,12 @@ export type Database = {
           p_website_url: string
         }
         Returns: {
+          auto_reply_enabled: boolean
           city: string | null
           contact_email: string | null
           country: string | null
           created_at: string
+          customer_number: number
           description: string | null
           id: string
           industry: string | null
@@ -844,19 +903,19 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      is_business_member: {
-        Args: { target_business_id: string }
-        Returns: boolean
-      }
       increment_usage_counters: {
         Args: {
           p_business_id: string
-          p_period_month: string
           p_images_delta?: number
-          p_videos_delta?: number
+          p_period_month: string
           p_video_seconds_delta?: number
+          p_videos_delta?: number
         }
         Returns: undefined
+      }
+      is_business_member: {
+        Args: { target_business_id: string }
+        Returns: boolean
       }
     }
     Enums: {
@@ -1020,6 +1079,8 @@ export const Constants = {
         "publicada",
         "fallida",
       ],
+      interaction_reply_status: ["respondido", "necesita_revision", "fallido"],
+      interaction_type: ["comentario", "mensaje_directo", "reseña"],
       plan_key: ["basico", "pro", "max"],
       quality_review_result: [
         "aprobado",

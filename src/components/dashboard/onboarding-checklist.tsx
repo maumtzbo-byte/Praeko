@@ -21,7 +21,7 @@ export function OnboardingChecklist({ steps }: { steps: ChecklistStep[] }) {
   if (doneCount === steps.length) return null;
 
   return (
-    <Card className="border-accent/20 bg-accent/[0.04]">
+    <Card mobileFlat className="border-accent/20 bg-accent/[0.04]">
       <CardContent className="flex flex-col gap-3 p-4 sm:gap-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <div>

@@ -31,23 +31,42 @@ export function StatSparkCard({
 }) {
   const gradientId = useId();
   const data = sparkline.map((v, i) => ({ i, v }));
+  const trendBadgeClass = changePct !== null && changePct >= 0 ? "text-emerald-600" : "text-red-600";
 
   return (
-    <Card className="bg-white/70">
-      <CardContent className="flex flex-col gap-2 p-4 sm:gap-3 sm:p-5">
+    <Card mobileFlat className="bg-white/70">
+      {/* Mobile: a flat list row (icon, label + value, change% at the end,
+          no sparkline) — Shopify's mobile stat rows keep it this simple.
+          Desktop keeps the original stacked tile with its sparkline below. */}
+      <CardContent className="flex items-center gap-3 p-4 sm:hidden">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+          {icon}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-medium text-zinc-500">{label}</p>
+          <p className="truncate text-lg font-semibold tracking-tight text-zinc-950">{value}</p>
+        </div>
+        {showTrend && changePct !== null && (
+          <span className={cn("shrink-0 text-xs font-medium", trendBadgeClass)}>
+            {changePct >= 0 ? "↑" : "↓"} {Math.abs(changePct)}%
+          </span>
+        )}
+      </CardContent>
+
+      <CardContent className="hidden flex-col gap-3 p-5 sm:flex">
         <div className="flex items-center justify-between">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
             {icon}
           </span>
           {showTrend && changePct !== null && (
-            <span className={cn("text-xs font-medium", changePct >= 0 ? "text-emerald-600" : "text-red-600")}>
+            <span className={cn("text-xs font-medium", trendBadgeClass)}>
               {changePct >= 0 ? "↑" : "↓"} {Math.abs(changePct)}%
             </span>
           )}
         </div>
         <div>
           <p className="text-xs font-medium text-zinc-500">{label}</p>
-          <p className="text-xl font-semibold tracking-tight text-zinc-950 sm:text-2xl">{value}</p>
+          <p className="text-2xl font-semibold tracking-tight text-zinc-950">{value}</p>
         </div>
         {showTrend && (
           <div className="h-8 w-full">

@@ -621,7 +621,7 @@ export default async function DashboardHomePage() {
           know "is this working", not the raw generation count, so results
           lead the page instead of sharing a row with unrelated stats. */}
       {hasPublishedContent || allConnections.length > 0 ? (
-        <div className="animate-fade-in-up stagger-1 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="animate-fade-in-up stagger-1 flex flex-col gap-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           <StatSparkCard
             icon={<Users className="h-4 w-4" strokeWidth={1.75} />}
             label="Seguidores"
@@ -657,7 +657,7 @@ export default async function DashboardHomePage() {
         </div>
       ) : (
         <div className="animate-fade-in-up stagger-1">
-          <Card>
+          <Card mobileFlat>
             <CardContent className="p-4 sm:p-6">
               <EmptyState
                 icon={BarChart3}
@@ -681,7 +681,7 @@ export default async function DashboardHomePage() {
           shown when it actually needs attention) — repeating it here as a
           stat tile when everything's fine was just noise. These 4 tiles are
           the same size/weight, all real counts already queried above. */}
-      <div className="animate-fade-in-up stagger-2 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <div className="animate-fade-in-up stagger-2 flex flex-col gap-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <StatCard
           icon={Clapperboard}
           label="VIDEOS GENERADOS"
@@ -711,7 +711,7 @@ export default async function DashboardHomePage() {
       {(allConnections.length > 0 || hasPublishedContent) && (
         <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
           {allConnections.length > 0 && (
-            <Card>
+            <Card mobileFlat>
               <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
                 <CardTitle>Crecimiento de seguidores</CardTitle>
                 <TrendingUp className="h-4 w-4 text-accent" />
@@ -723,7 +723,7 @@ export default async function DashboardHomePage() {
           )}
 
           {hasPublishedContent && (
-            <Card>
+            <Card mobileFlat>
               <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
                 <CardTitle>Rendimiento por red social</CardTitle>
                 <PieChartIcon className="h-4 w-4 text-accent" />
@@ -738,7 +738,7 @@ export default async function DashboardHomePage() {
 
       {hasPublishedContent && (
         <div className="animate-fade-in-up stagger-3">
-          <Card>
+          <Card mobileFlat>
             <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
               <CardTitle>Top 3 videos más virales</CardTitle>
               <Trophy className="h-4 w-4 text-accent" />
@@ -753,7 +753,7 @@ export default async function DashboardHomePage() {
       {(hasPublishedContent || upcomingContent.length > 0) && (
         <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
           {hasPublishedContent && (
-            <Card>
+            <Card mobileFlat>
               <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
                 <CardTitle>Insights de tu Agente Creativo</CardTitle>
                 <Lightbulb className="h-4 w-4 text-accent" />
@@ -764,7 +764,7 @@ export default async function DashboardHomePage() {
             </Card>
           )}
 
-          <Card>
+          <Card mobileFlat>
             <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
               <CardTitle>Próximas publicaciones</CardTitle>
               <Link href="/dashboard/calendario" className="text-xs font-medium text-accent hover:underline">
@@ -779,7 +779,7 @@ export default async function DashboardHomePage() {
       )}
 
       <div className="animate-fade-in-up stagger-4">
-        <Card>
+        <Card mobileFlat>
           <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
             <CardTitle>Actividad reciente</CardTitle>
             <Activity className="h-4 w-4 text-accent" />

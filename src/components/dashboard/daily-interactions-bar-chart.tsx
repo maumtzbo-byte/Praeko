@@ -15,7 +15,7 @@ export function DailyInteractionsBarChart({ points }: { points: DailyInsightsPoi
   }
 
   return (
-    <div className="h-40 w-full">
+    <div className="h-32 w-full sm:h-40">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={points} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
           <XAxis

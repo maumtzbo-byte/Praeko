@@ -16,7 +16,7 @@ export function PlatformShareDonut({ data }: { data: PlatformInteractionShare[] 
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="h-40 w-full">
+      <div className="h-32 w-full sm:h-40">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie data={data} dataKey="interactions" nameKey="platform" innerRadius={45} outerRadius={70} paddingAngle={2}>

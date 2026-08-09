@@ -21,7 +21,7 @@ export interface MobileStatRow {
  */
 export function MobileStatList({ rows }: { rows: MobileStatRow[] }) {
   return (
-    <Card className="sm:hidden">
+    <Card className="lg:hidden">
       <CardContent className="flex flex-col divide-y divide-zinc-100 p-4">
         {rows.map((row) => (
           <div key={row.label} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">

@@ -35,7 +35,7 @@ export function OnboardingChecklist({ steps, className }: { steps: ChecklistStep
           </span>
         </div>
         <Progress value={(doneCount / steps.length) * 100} />
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
           {steps.map((step) => {
             const Icon = step.icon;
             return (

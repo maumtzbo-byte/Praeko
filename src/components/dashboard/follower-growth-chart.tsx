@@ -118,7 +118,7 @@ export function FollowerGrowthChart({ series }: { series: FollowerSeries[] }) {
         </div>
       </div>
 
-      <div className="h-52 w-full sm:h-64">
+      <div className="h-40 w-full sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="#e4e4e7" strokeDasharray="3 3" />

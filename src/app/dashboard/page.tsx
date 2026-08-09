@@ -531,9 +531,22 @@ export default async function DashboardHomePage() {
   // Resultados first — a business owner opening the dashboard wants to
   // know "is this working", not the raw generation count, so results
   // lead the page instead of sharing a row with unrelated stats.
+  const hasResultStats = hasPublishedContent || allConnections.length > 0;
+
+  // One shared row list on mobile — results + production in a single card
+  // instead of two, so the divider pattern isn't paying for a second
+  // card's padding/border just to group them conceptually. Desktop keeps
+  // them as two separate tile grids since space isn't the constraint there.
+  const productionStatRows = [
+    { icon: <Clapperboard className="h-4 w-4" strokeWidth={1.75} />, label: "Videos generados", value: `${videosCount ?? 0} · ${videosUsed} este mes` },
+    { icon: <ImageIcon className="h-4 w-4" strokeWidth={1.75} />, label: "Imágenes generadas", value: `${imagesCount ?? 0} · ${imagesUsed} este mes` },
+    { icon: <Send className="h-4 w-4" strokeWidth={1.75} />, label: "Programadas", value: String(scheduledCount ?? 0) },
+    { icon: <Share2 className="h-4 w-4" strokeWidth={1.75} />, label: "Redes conectadas", value: String(connectionsCount ?? 0) },
+  ];
+
   const statsSection = (
     <>
-      {hasPublishedContent || allConnections.length > 0 ? (
+      {hasResultStats ? (
         <div>
           <MobileStatList
             rows={[
@@ -565,9 +578,10 @@ export default async function DashboardHomePage() {
                 changePct: alcanceChangePct,
                 showTrend: hasPublishedContent,
               },
+              ...productionStatRows,
             ]}
           />
-          <div className="hidden sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <div className="hidden lg:grid lg:grid-cols-4 lg:gap-4">
             <StatSparkCard
               label="Seguidores"
               value={totalFollowersToday.toLocaleString("es-MX")}
@@ -595,52 +609,45 @@ export default async function DashboardHomePage() {
           </div>
         </div>
       ) : (
-        <Card>
-          <CardContent className="p-4 sm:p-6">
-            <EmptyState
-              icon={BarChart3}
-              title="Todavía no hay datos que mostrar"
-              description="Conecta tus redes sociales y publica tu primera pieza para empezar a ver alcance y engagement aquí."
-              action={
-                <Link href="/dashboard/redes-sociales">
-                  <Button size="sm">
-                    <Share2 className="h-4 w-4" />
-                    Conectar redes sociales
-                  </Button>
-                </Link>
-              }
-            />
-          </CardContent>
-        </Card>
+        <>
+          <Card>
+            <CardContent className="p-4 sm:p-6">
+              <EmptyState
+                icon={BarChart3}
+                title="Todavía no hay datos que mostrar"
+                description="Conecta tus redes sociales y publica tu primera pieza para empezar a ver alcance y engagement aquí."
+                action={
+                  <Link href="/dashboard/redes-sociales">
+                    <Button size="sm">
+                      <Share2 className="h-4 w-4" />
+                      Conectar redes sociales
+                    </Button>
+                  </Link>
+                }
+              />
+            </CardContent>
+          </Card>
+          <MobileStatList rows={productionStatRows} />
+        </>
       )}
 
       {/* Subscription status now lives only in PlanBanner (dashboard/layout.tsx,
           shown when it actually needs attention) — repeating it here as a
           stat tile when everything's fine was just noise. These 4 tiles are
           the same size/weight, all real counts already queried above. */}
-      <div>
-        <MobileStatList
-          rows={[
-            { icon: <Clapperboard className="h-4 w-4" strokeWidth={1.75} />, label: "Videos generados", value: `${videosCount ?? 0} · ${videosUsed} este mes` },
-            { icon: <ImageIcon className="h-4 w-4" strokeWidth={1.75} />, label: "Imágenes generadas", value: `${imagesCount ?? 0} · ${imagesUsed} este mes` },
-            { icon: <Send className="h-4 w-4" strokeWidth={1.75} />, label: "Programadas", value: String(scheduledCount ?? 0) },
-            { icon: <Share2 className="h-4 w-4" strokeWidth={1.75} />, label: "Redes conectadas", value: String(connectionsCount ?? 0) },
-          ]}
+      <div className="hidden lg:grid lg:grid-cols-4 lg:gap-4">
+        <StatCard label="Videos generados" value={String(videosCount ?? 0)} sublabel={`${videosUsed} este mes`} />
+        <StatCard label="Imágenes generadas" value={String(imagesCount ?? 0)} sublabel={`${imagesUsed} este mes`} />
+        <StatCard
+          label="Programadas"
+          value={String(scheduledCount ?? 0)}
+          sublabel={scheduledCount ? "en camino" : "sin piezas en cola"}
         />
-        <div className="hidden sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-          <StatCard label="Videos generados" value={String(videosCount ?? 0)} sublabel={`${videosUsed} este mes`} />
-          <StatCard label="Imágenes generadas" value={String(imagesCount ?? 0)} sublabel={`${imagesUsed} este mes`} />
-          <StatCard
-            label="Programadas"
-            value={String(scheduledCount ?? 0)}
-            sublabel={scheduledCount ? "en camino" : "sin piezas en cola"}
-          />
-          <StatCard
-            label="Redes conectadas"
-            value={String(connectionsCount ?? 0)}
-            sublabel={connectionsCount ? "activas" : "sin conectar"}
-          />
-        </div>
+        <StatCard
+          label="Redes conectadas"
+          value={String(connectionsCount ?? 0)}
+          sublabel={connectionsCount ? "activas" : "sin conectar"}
+        />
       </div>
     </>
   );
@@ -793,7 +800,7 @@ export default async function DashboardHomePage() {
   );
 
   return (
-    <div className="flex flex-col gap-5 sm:gap-8">
+    <div className="flex flex-col gap-4 sm:gap-8">
       <div className="animate-fade-in-up flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)]">

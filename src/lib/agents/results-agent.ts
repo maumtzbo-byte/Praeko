@@ -118,38 +118,6 @@ export function buildDailyInsightsSeries(results: PublishedPostInsightResult[], 
   return points;
 }
 
-export interface DailyEngagementBreakdown {
-  date: string;
-  likes: number;
-  comentarios: number;
-}
-
-/** Same trailing-window/real-zeros shape as buildDailyInsightsSeries, but
- * split into likes vs. comments instead of one combined "interacciones" —
- * a more granular breakdown for the dashboard's dedicated engagement chart,
- * separate from the compact Alcance/Interacciones summary chart. */
-export function buildDailyEngagementBreakdown(results: PublishedPostInsightResult[], days: number): DailyEngagementBreakdown[] {
-  const byDate = new Map<string, { likes: number; comentarios: number }>();
-  for (const result of results) {
-    if (!result.insights) continue;
-    const entry = byDate.get(result.scheduledDate) ?? { likes: 0, comentarios: 0 };
-    entry.likes += result.insights.likes ?? 0;
-    entry.comentarios += result.insights.comments ?? 0;
-    byDate.set(result.scheduledDate, entry);
-  }
-
-  const points: DailyEngagementBreakdown[] = [];
-  const today = new Date();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().slice(0, 10);
-    const entry = byDate.get(dateStr);
-    points.push({ date: dateStr, likes: entry?.likes ?? 0, comentarios: entry?.comentarios ?? 0 });
-  }
-  return points;
-}
-
 function engagementScore(insights: PostInsights | null): number | null {
   if (!insights) return null;
   const { likes, comments, shares } = insights;

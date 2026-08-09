@@ -33,13 +33,11 @@ import {
   gatherPublishedPostInsights,
   summarizeInsights,
   buildDailyInsightsSeries,
-  buildDailyEngagementBreakdown,
   rankTopPosts,
   summarizeByPlatform,
   type PublishedPostInsightResult,
 } from "@/lib/agents/results-agent";
 import { formatInsightNumber } from "@/lib/content/format-insights";
-import { formatScheduledDate } from "@/lib/content/labels";
 import { DualAreaChart } from "@/components/dashboard/dual-area-chart";
 import { TopVideosList } from "@/components/dashboard/top-videos-list";
 import { PlatformBreakdownDonut } from "@/components/dashboard/platform-breakdown-donut";
@@ -408,7 +406,6 @@ export default async function DashboardHomePage() {
   ]);
   const insightsSummary = insightsResults.length > 0 ? summarizeInsights(insightsResults) : null;
   const chartData = buildDailyInsightsSeries(insightsResults, INSIGHTS_WINDOW_DAYS);
-  const engagementSeries = buildDailyEngagementBreakdown(insightsResults, INSIGHTS_WINDOW_DAYS);
   const topVideos = rankTopPosts(insightsResults, 3, "video");
   const platformBreakdown = summarizeByPlatform(insightsResults);
 
@@ -607,26 +604,7 @@ export default async function DashboardHomePage() {
         </div>
       )}
 
-      {insightsSummary && (
-        <div className="animate-fade-in-up stagger-3">
-          <Card>
-            <CardHeader className="p-4 pb-0 sm:p-6 sm:pb-0">
-              <CardTitle>Me gusta y comentarios en el tiempo</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <DualAreaChart
-                data={engagementSeries}
-                series={[
-                  { key: "likes", label: "Me gusta", color: "var(--accent)" },
-                  { key: "comentarios", label: "Comentarios", color: "var(--accent-strong)" },
-                ]}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {insightsSummary && (
+      {hasPublishedContent && (
         <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
           <Card>
             <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
@@ -649,39 +627,6 @@ export default async function DashboardHomePage() {
               ) : (
                 <p className="text-sm text-zinc-500">Sin datos de engagement por red todavía.</p>
               )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {insightsResults.length > 0 && (
-        <div className="animate-fade-in-up stagger-3">
-          <Card>
-            <CardHeader className="p-4 pb-0 sm:p-6 sm:pb-0">
-              <CardTitle>Detalle por publicación</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3 p-4 sm:p-6">
-              {insightsResults.map((result) => (
-                <Card key={result.itemId} className="bg-white/70">
-                  <CardContent className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-zinc-900">{result.topic}</p>
-                      <p className="text-xs text-zinc-500">
-                        {formatScheduledDate(result.scheduledDate)} · {SOCIAL_PLATFORM_LABELS[result.platform]}
-                      </p>
-                    </div>
-                    {result.insights ? (
-                      <div className="flex shrink-0 gap-4 text-xs text-zinc-600">
-                        <span>{formatInsightNumber(result.insights.impressions)} impresiones</span>
-                        <span>{formatInsightNumber(result.insights.likes)} me gusta</span>
-                        <span>{formatInsightNumber(result.insights.comments)} comentarios</span>
-                      </div>
-                    ) : (
-                      <span className="shrink-0 text-xs text-zinc-400">Sin datos por ahora</span>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
             </CardContent>
           </Card>
         </div>

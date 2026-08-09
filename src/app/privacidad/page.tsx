@@ -82,7 +82,7 @@ export default function PrivacidadPage() {
                 </li>
                 <li>
                   <strong>Leer métricas básicas</strong> (<code>pages_read_engagement</code>,
-                  <code> instagram_basic</code>) — para mostrarte en tu panel de Analíticas cómo le
+                  <code> instagram_basic</code>) — para mostrarte en tu Dashboard cómo le
                   fue a lo que publicaste (alcance, likes, comentarios).
                 </li>
               </ul>

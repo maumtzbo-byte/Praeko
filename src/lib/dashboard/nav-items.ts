@@ -6,7 +6,6 @@ import {
   Images,
   Share2,
   Send,
-  BarChart3,
   Bot,
   Palette,
   Settings,
@@ -52,7 +51,6 @@ export const PRIMARY_NAV_GROUPS: NavGroup[] = [
     label: "Crecimiento",
     items: [
       { href: "/dashboard/redes-sociales", label: "Redes sociales", icon: Share2 },
-      { href: "/dashboard/analiticas", label: "Analíticas", icon: BarChart3 },
       { href: "/dashboard/galeria", label: "Galería", icon: Images },
     ],
   },

@@ -21,9 +21,9 @@ export interface AreaSeriesConfig {
 
 /** Client-side range filter only — the server fetches the full window
  * once, so switching 7/14/30 never triggers another API call. Generic
- * over its series so both the dashboard-home "Rendimiento" chart
- * (Alcance/Interacciones) and Analíticas' "Me gusta/Comentarios" chart
- * share one implementation instead of two near-identical ones. */
+ * over its series so the dashboard's "Rendimiento" chart (Alcance/
+ * Interacciones) and its "Me gusta/Comentarios" chart share one
+ * implementation instead of two near-identical ones. */
 export function DualAreaChart<T extends { date: string }>({
   data,
   series,

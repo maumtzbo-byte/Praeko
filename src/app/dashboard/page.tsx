@@ -15,6 +15,9 @@ import {
   MessageCircle,
   AlertTriangle,
   XCircle,
+  TrendingUp,
+  Trophy,
+  PieChart as PieChartIcon,
 } from "lucide-react";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
@@ -30,10 +33,18 @@ import {
   gatherPublishedPostInsights,
   summarizeInsights,
   buildDailyInsightsSeries,
+  buildDailyEngagementBreakdown,
+  rankTopPosts,
+  summarizeByPlatform,
   type PublishedPostInsightResult,
 } from "@/lib/agents/results-agent";
 import { formatInsightNumber } from "@/lib/content/format-insights";
+import { formatScheduledDate } from "@/lib/content/labels";
 import { DualAreaChart } from "@/components/dashboard/dual-area-chart";
+import { TopVideosList } from "@/components/dashboard/top-videos-list";
+import { PlatformBreakdownDonut } from "@/components/dashboard/platform-breakdown-donut";
+import { FollowerGrowthChart, type FollowerSeries } from "@/components/dashboard/follower-growth-chart";
+import { fetchAccountFollowers } from "@/lib/social/insights";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/social";
 import type { Tables } from "@/lib/supabase/types";
 
@@ -118,13 +129,13 @@ const LOW_PHOTO_THRESHOLD = 3;
 // The dashboard home draws its stat tiles AND its chart from one fetch —
 // no reason to pay the Meta/TikTok API cost twice. Bounded to the trailing
 // 30 days (matches the chart's widest range option) with a hard cap on
-// post count, same rate-limit caution already documented in Analíticas.
+// post count to stay well under any platform rate limit.
 const INSIGHTS_WINDOW_DAYS = 30;
 const MAX_POSTS_FOR_INSIGHTS = 40;
+const FOLLOWER_HISTORY_DAYS = 30;
 
-/** Same fetch shape as /dashboard/analiticas (gatherPublishedPostInsights),
- * bounded to a trailing window instead of a flat post count so the results
- * can also be aggregated into a daily chart series. */
+/** Bounded to a trailing window instead of a flat post count so the
+ * results can also be aggregated into a daily chart series. */
 async function getPublishedInsightsResults(
   supabase: Awaited<ReturnType<typeof createClient>>,
   businessId: string,
@@ -185,6 +196,76 @@ async function getPublishedInsightsResults(
   if (postsToFetch.length === 0) return [];
 
   return gatherPublishedPostInsights(postsToFetch);
+}
+
+/**
+ * Captures today's follower count for every connection (best-effort, one
+ * bad platform call doesn't block the others) and reads back the real
+ * history accumulated so far. There's no way to backfill past counts —
+ * Meta/TikTok don't expose that — so this only ever grows forward from
+ * whenever a business first loads the dashboard.
+ */
+async function captureAndFetchFollowerSeries(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  businessId: string,
+  connections: { id: string; platform: SocialPlatform; external_account_id: string }[],
+): Promise<FollowerSeries[]> {
+  if (connections.length === 0) return [];
+
+  const serviceRole = createServiceRoleClient();
+  const connectionIds = connections.map((c) => c.id);
+  const { data: tokenRows } = await serviceRole
+    .from("social_connection_tokens")
+    .select("connection_id, access_token")
+    .in("connection_id", connectionIds);
+  const tokenByConnectionId = new Map((tokenRows ?? []).map((t) => [t.connection_id, t.access_token]));
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  await Promise.all(
+    connections.map(async (conn) => {
+      const accessToken = tokenByConnectionId.get(conn.id);
+      if (!accessToken) return;
+      try {
+        const followers = await fetchAccountFollowers(conn.platform, accessToken, conn.external_account_id);
+        if (followers === null) return;
+        await serviceRole.from("social_follower_snapshots").upsert(
+          {
+            business_id: businessId,
+            connection_id: conn.id,
+            platform: conn.platform,
+            followers_count: followers,
+            captured_date: todayStr,
+          },
+          { onConflict: "connection_id,captured_date" },
+        );
+      } catch (err) {
+        console.error(`fetchAccountFollowers failed for connection ${conn.id}`, err);
+      }
+    }),
+  );
+
+  const windowStart = new Date();
+  windowStart.setDate(windowStart.getDate() - FOLLOWER_HISTORY_DAYS);
+  const { data: snapshots } = await supabase
+    .from("social_follower_snapshots")
+    .select("platform, followers_count, captured_date")
+    .eq("business_id", businessId)
+    .gte("captured_date", windowStart.toISOString().slice(0, 10))
+    .order("captured_date", { ascending: true });
+
+  const byPlatform = new Map<SocialPlatform, { date: string; followers: number }[]>();
+  for (const row of snapshots ?? []) {
+    const arr = byPlatform.get(row.platform) ?? [];
+    arr.push({ date: row.captured_date, followers: row.followers_count });
+    byPlatform.set(row.platform, arr);
+  }
+
+  return connections.map((conn) => {
+    const points = byPlatform.get(conn.platform) ?? [];
+    const currentFollowers = points.length > 0 ? points[points.length - 1].followers : 0;
+    return { platform: conn.platform, currentFollowers, points };
+  });
 }
 
 function firstNameFromEmail(email: string | undefined) {
@@ -259,7 +340,7 @@ export default async function DashboardHomePage() {
     { count: imagesCount },
     { count: scheduledCount },
     { data: recentActivity },
-    { count: connectionsCount },
+    { data: connections },
     { count: anyContentCount },
     { count: publishedCount },
     { count: photoCount },
@@ -294,7 +375,7 @@ export default async function DashboardHomePage() {
       .limit(6),
     supabase
       .from("social_connections")
-      .select("id", { count: "exact", head: true })
+      .select("id, platform, external_account_id")
       .eq("business_id", business.id),
     supabase
       .from("content_calendar")
@@ -312,18 +393,24 @@ export default async function DashboardHomePage() {
       .eq("asset_type", "photo"),
   ]);
 
-  const hasNoConnections = (connectionsCount ?? 0) === 0;
+  const allConnections = connections ?? [];
+  const connectionsCount = allConnections.length;
+  const hasNoConnections = connectionsCount === 0;
   const hasPublishedContent = (publishedCount ?? 0) > 0;
   const hasLowPhotoCount = (photoCount ?? 0) < LOW_PHOTO_THRESHOLD;
 
   // Only worth the live Meta/TikTok calls when there's actually something
   // published to ask about.
-  const [insightsResults, attentionItems] = await Promise.all([
+  const [insightsResults, attentionItems, followerSeries] = await Promise.all([
     hasPublishedContent ? getPublishedInsightsResults(supabase, business.id) : Promise.resolve([]),
     getAttentionItems(supabase, business.id, subscription),
+    captureAndFetchFollowerSeries(supabase, business.id, allConnections),
   ]);
   const insightsSummary = insightsResults.length > 0 ? summarizeInsights(insightsResults) : null;
   const chartData = buildDailyInsightsSeries(insightsResults, INSIGHTS_WINDOW_DAYS);
+  const engagementSeries = buildDailyEngagementBreakdown(insightsResults, INSIGHTS_WINDOW_DAYS);
+  const topVideos = rankTopPosts(insightsResults, 3, "video");
+  const platformBreakdown = summarizeByPlatform(insightsResults);
 
   const onboardingSteps = [
     { label: "Elige tu plan", href: "/dashboard/plan", done: Boolean(subscription), icon: Gem },
@@ -436,13 +523,6 @@ export default async function DashboardHomePage() {
                         {formatInsightNumber(insightsSummary.totalShares)}
                       </p>
                     </div>
-                    <DualAreaChart
-                      data={chartData}
-                      series={[
-                        { key: "alcance", label: "Alcance", color: "var(--accent)" },
-                        { key: "interacciones", label: "Interacciones", color: "var(--accent-strong)" },
-                      ]}
-                    />
                   </div>
                 ) : (
                   <p className="text-sm text-zinc-600">
@@ -451,12 +531,15 @@ export default async function DashboardHomePage() {
                     ahora.
                   </p>
                 )}
-                <Link href="/dashboard/analiticas" className="w-fit">
-                  <Button size="sm" variant="secondary">
-                    <BarChart3 className="h-4 w-4" />
-                    Ver el detalle completo
-                  </Button>
-                </Link>
+                {insightsSummary && (
+                  <DualAreaChart
+                    data={chartData}
+                    series={[
+                      { key: "alcance", label: "Alcance", color: "var(--accent)" },
+                      { key: "interacciones", label: "Interacciones", color: "var(--accent-strong)" },
+                    ]}
+                  />
+                )}
               </div>
             ) : (
               <EmptyState
@@ -510,7 +593,101 @@ export default async function DashboardHomePage() {
         />
       </div>
 
-      <div className="animate-fade-in-up stagger-3">
+      {allConnections.length > 0 && (
+        <div className="animate-fade-in-up stagger-3">
+          <Card>
+            <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+              <CardTitle>Crecimiento de seguidores</CardTitle>
+              <TrendingUp className="h-4 w-4 text-accent" />
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <FollowerGrowthChart series={followerSeries} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {insightsSummary && (
+        <div className="animate-fade-in-up stagger-3">
+          <Card>
+            <CardHeader className="p-4 pb-0 sm:p-6 sm:pb-0">
+              <CardTitle>Me gusta y comentarios en el tiempo</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <DualAreaChart
+                data={engagementSeries}
+                series={[
+                  { key: "likes", label: "Me gusta", color: "var(--accent)" },
+                  { key: "comentarios", label: "Comentarios", color: "var(--accent-strong)" },
+                ]}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {insightsSummary && (
+        <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+              <CardTitle>Top 3 videos más virales</CardTitle>
+              <Trophy className="h-4 w-4 text-accent" />
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <TopVideosList posts={topVideos} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+              <CardTitle>Mejor red social</CardTitle>
+              <PieChartIcon className="h-4 w-4 text-accent" />
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              {platformBreakdown.length > 0 ? (
+                <PlatformBreakdownDonut data={platformBreakdown} />
+              ) : (
+                <p className="text-sm text-zinc-500">Sin datos de engagement por red todavía.</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {insightsResults.length > 0 && (
+        <div className="animate-fade-in-up stagger-3">
+          <Card>
+            <CardHeader className="p-4 pb-0 sm:p-6 sm:pb-0">
+              <CardTitle>Detalle por publicación</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 p-4 sm:p-6">
+              {insightsResults.map((result) => (
+                <Card key={result.itemId} className="bg-white/70">
+                  <CardContent className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-zinc-900">{result.topic}</p>
+                      <p className="text-xs text-zinc-500">
+                        {formatScheduledDate(result.scheduledDate)} · {SOCIAL_PLATFORM_LABELS[result.platform]}
+                      </p>
+                    </div>
+                    {result.insights ? (
+                      <div className="flex shrink-0 gap-4 text-xs text-zinc-600">
+                        <span>{formatInsightNumber(result.insights.impressions)} impresiones</span>
+                        <span>{formatInsightNumber(result.insights.likes)} me gusta</span>
+                        <span>{formatInsightNumber(result.insights.comments)} comentarios</span>
+                      </div>
+                    ) : (
+                      <span className="shrink-0 text-xs text-zinc-400">Sin datos por ahora</span>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <div className="animate-fade-in-up stagger-4">
         <Card>
           <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
             <CardTitle>Actividad reciente</CardTitle>
@@ -582,7 +759,7 @@ export default async function DashboardHomePage() {
         </Card>
       </div>
 
-      <div className="animate-fade-in-up stagger-4">
+      <div className="animate-fade-in-up stagger-5">
         <Card>
           <CardHeader className="p-4 pb-0 sm:p-6 sm:pb-0">
             <CardTitle>Accesos rápidos</CardTitle>

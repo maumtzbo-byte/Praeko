@@ -148,6 +148,9 @@ body {
 .stagger-4 {
   animation-delay: 0.26s;
 }
+.stagger-5 {
+  animation-delay: 0.33s;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .marquee-track {

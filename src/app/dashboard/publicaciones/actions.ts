@@ -410,7 +410,7 @@ export interface ContentDetail {
 /** Backs the click-into-a-piece detail view (ContentDetailModal) — the
  * per-post twin of gatherPublishedPostInsights/summarizeInsights
  * (results-agent.ts), fetched on demand for exactly one piece instead of
- * the bounded batch those two power on /dashboard and /dashboard/analiticas. */
+ * the bounded batch those two power on /dashboard. */
 export async function getContentDetail(itemId: string): Promise<ActionResult<ContentDetail>> {
   try {
     const supabase = await createClient();

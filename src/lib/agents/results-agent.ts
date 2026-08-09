@@ -126,8 +126,8 @@ export interface DailyEngagementBreakdown {
 
 /** Same trailing-window/real-zeros shape as buildDailyInsightsSeries, but
  * split into likes vs. comments instead of one combined "interacciones" —
- * Analíticas wants the more granular breakdown, the dashboard home teaser
- * doesn't need the extra line. */
+ * a more granular breakdown for the dashboard's dedicated engagement chart,
+ * separate from the compact Alcance/Interacciones summary chart. */
 export function buildDailyEngagementBreakdown(results: PublishedPostInsightResult[], days: number): DailyEngagementBreakdown[] {
   const byDate = new Map<string, { likes: number; comentarios: number }>();
   for (const result of results) {

@@ -190,6 +190,39 @@ export function summarizePlatformEngagementRates(results: PublishedPostInsightRe
     .sort((a, b) => b.engagementRatePct - a.engagementRatePct);
 }
 
+export interface PlatformInteractionShare {
+  platform: SocialPlatform;
+  interactions: number;
+  sharePct: number;
+}
+
+/** Unlike `summarizePlatformEngagementRates` (independent rates that don't
+ * sum to 100), this is a genuine share of a real whole — each platform's
+ * interactions divided by the total interactions across all platforms —
+ * so it's honest to show as a donut/pie. Platforms with zero interactions
+ * are left out rather than shown as a 0% slice. */
+export function summarizePlatformInteractionShare(results: PublishedPostInsightResult[]): PlatformInteractionShare[] {
+  const byPlatform = new Map<SocialPlatform, number>();
+  let total = 0;
+  for (const result of results) {
+    if (!result.insights) continue;
+    const { likes, comments, shares } = result.insights;
+    const interactions = (likes ?? 0) + (comments ?? 0) + (shares ?? 0);
+    if (interactions === 0) continue;
+    byPlatform.set(result.platform, (byPlatform.get(result.platform) ?? 0) + interactions);
+    total += interactions;
+  }
+  if (total === 0) return [];
+
+  return Array.from(byPlatform.entries())
+    .map(([platform, interactions]) => ({
+      platform,
+      interactions,
+      sharePct: Math.round((interactions / total) * 1000) / 10,
+    }))
+    .sort((a, b) => b.interactions - a.interactions);
+}
+
 export interface CreativeInsight {
   kind: "content_kind" | "weekday" | "recommendation";
   title: string;

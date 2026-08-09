@@ -38,13 +38,14 @@ import {
   summarizeInsights,
   buildDailyInsightsSeries,
   rankTopPosts,
-  summarizePlatformEngagementRates,
+  summarizePlatformInteractionShare,
   generateCreativeInsights,
   type PublishedPostInsightResult,
 } from "@/lib/agents/results-agent";
 import { formatInsightNumber } from "@/lib/content/format-insights";
 import { TopVideosList, type TopVideoWithMedia } from "@/components/dashboard/top-videos-list";
-import { EngagementRateRings, type PlatformRingData } from "@/components/dashboard/engagement-rate-rings";
+import { PlatformShareDonut } from "@/components/dashboard/platform-share-donut";
+import { DailyInteractionsBarChart } from "@/components/dashboard/daily-interactions-bar-chart";
 import { FollowerGrowthChart, type FollowerSeries } from "@/components/dashboard/follower-growth-chart";
 import { CreativeInsightsList } from "@/components/dashboard/creative-insights-list";
 import { UpcomingPublications, type UpcomingItem } from "@/components/dashboard/upcoming-publications";
@@ -272,16 +273,6 @@ async function captureAndFetchFollowerSeries(
   });
 }
 
-/** Real week-over-week follower growth for one platform — null (not 0)
- * when there's no snapshot from 7 days ago yet, since "no data" and "no
- * growth" are different claims. */
-function weeklyFollowerGrowthPct(series: FollowerSeries): number | null {
-  const weekAgoStr = new Date(Date.now() - 7 * 86_400_000).toISOString().slice(0, 10);
-  const weekAgoPoint = series.points.find((p) => p.date === weekAgoStr);
-  if (!weekAgoPoint || weekAgoPoint.followers === 0) return null;
-  return Math.round(((series.currentFollowers - weekAgoPoint.followers) / weekAgoPoint.followers) * 1000) / 10;
-}
-
 function daysAgoStr(days: number) {
   const d = new Date();
   d.setDate(d.getDate() - days);
@@ -291,29 +282,6 @@ function daysAgoStr(days: number) {
 function weeklyChangePct(current: number, weekAgo: number | null): number | null {
   if (weekAgo === null || weekAgo === 0) return null;
   return Math.round(((current - weekAgo) / weekAgo) * 1000) / 10;
-}
-
-/** Total followers across every connected platform per day, forward-filled
- * between snapshots (a day without a fresh snapshot didn't necessarily
- * lose followers — carrying the last known real value forward is closer
- * to the truth than dropping to zero). Days before the very first
- * snapshot stay at 0, which the caller only renders once there are 2+
- * real snapshot dates to begin with. */
-function buildFollowersDailySparkline(followerSeries: FollowerSeries[], days: number): number[] {
-  const totalsByDate = new Map<string, number>();
-  for (const s of followerSeries) {
-    for (const p of s.points) {
-      totalsByDate.set(p.date, (totalsByDate.get(p.date) ?? 0) + p.followers);
-    }
-  }
-  const points: number[] = [];
-  let lastKnown = 0;
-  for (let i = days - 1; i >= 0; i--) {
-    const key = daysAgoStr(i);
-    lastKnown = totalsByDate.get(key) ?? lastKnown;
-    points.push(lastKnown);
-  }
-  return points;
 }
 
 /** Real per-day sum of one insights field across every published post —
@@ -531,12 +499,7 @@ export default async function DashboardHomePage() {
   const topVideosWithMedia: TopVideoWithMedia[] = topVideos.map((v) => ({ ...v, mediaUrl: topVideoMedia.get(v.itemId) ?? null }));
   const creativeInsights = generateCreativeInsights(insightsResults, topVideos[0] ?? null);
 
-  const platformEngagementRates = summarizePlatformEngagementRates(insightsResults);
-  const followerGrowthByPlatform = new Map(followerSeries.map((s) => [s.platform, weeklyFollowerGrowthPct(s)]));
-  const platformRings: PlatformRingData[] = platformEngagementRates.map((rate) => ({
-    ...rate,
-    followerGrowthPct: followerGrowthByPlatform.get(rate.platform) ?? null,
-  }));
+  const platformInteractionShare = summarizePlatformInteractionShare(insightsResults);
 
   // Top stat row: real daily sparklines + a real week-over-week % change,
   // each only shown once there's enough real history to make the
@@ -549,7 +512,6 @@ export default async function DashboardHomePage() {
     : null;
   const followersChangePct = weeklyChangePct(totalFollowersToday, totalFollowersWeekAgo);
   const followersShowTrend = followerSeries.some((s) => new Set(s.points.map((p) => p.date)).size >= 2);
-  const followersSparkline = buildFollowersDailySparkline(followerSeries, INSIGHTS_WINDOW_DAYS);
 
   const likesSparkline = buildDailyMetricSparkline(insightsResults, INSIGHTS_WINDOW_DAYS, (i) => i.likes);
   const commentsSparkline = buildDailyMetricSparkline(insightsResults, INSIGHTS_WINDOW_DAYS, (i) => i.comments);
@@ -615,34 +577,26 @@ export default async function DashboardHomePage() {
           />
           <div className="hidden sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             <StatSparkCard
-              icon={<Users className="h-4 w-4" strokeWidth={1.75} />}
               label="Seguidores"
               value={totalFollowersToday.toLocaleString("es-MX")}
-              sparkline={followersSparkline}
               changePct={followersChangePct}
               showTrend={followersShowTrend}
             />
             <StatSparkCard
-              icon={<Heart className="h-4 w-4" strokeWidth={1.75} />}
               label="Likes"
               value={formatInsightNumber(insightsSummary?.totalLikes ?? null)}
-              sparkline={likesSparkline}
               changePct={likesChangePct}
               showTrend={hasPublishedContent}
             />
             <StatSparkCard
-              icon={<MessageCircle className="h-4 w-4" strokeWidth={1.75} />}
               label="Comentarios"
               value={formatInsightNumber(insightsSummary?.totalComments ?? null)}
-              sparkline={commentsSparkline}
               changePct={commentsChangePct}
               showTrend={hasPublishedContent}
             />
             <StatSparkCard
-              icon={<Eye className="h-4 w-4" strokeWidth={1.75} />}
               label="Alcance"
               value={formatInsightNumber(insightsSummary?.totalImpressions ?? null)}
-              sparkline={alcanceSparkline}
               changePct={alcanceChangePct}
               showTrend={hasPublishedContent}
             />
@@ -682,27 +636,15 @@ export default async function DashboardHomePage() {
           ]}
         />
         <div className="hidden sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <StatCard label="Videos generados" value={String(videosCount ?? 0)} sublabel={`${videosUsed} este mes`} />
+          <StatCard label="Imágenes generadas" value={String(imagesCount ?? 0)} sublabel={`${imagesUsed} este mes`} />
           <StatCard
-            icon={Clapperboard}
-            label="VIDEOS GENERADOS"
-            value={String(videosCount ?? 0)}
-            sublabel={`${videosUsed} este mes`}
-          />
-          <StatCard
-            icon={ImageIcon}
-            label="IMÁGENES GENERADAS"
-            value={String(imagesCount ?? 0)}
-            sublabel={`${imagesUsed} este mes`}
-          />
-          <StatCard
-            icon={Send}
-            label="PROGRAMADAS"
+            label="Programadas"
             value={String(scheduledCount ?? 0)}
             sublabel={scheduledCount ? "en camino" : "sin piezas en cola"}
           />
           <StatCard
-            icon={Share2}
-            label="REDES CONECTADAS"
+            label="Redes conectadas"
             value={String(connectionsCount ?? 0)}
             sublabel={connectionsCount ? "activas" : "sin conectar"}
           />
@@ -717,9 +659,9 @@ export default async function DashboardHomePage() {
   // tab) instead of always being on-screen. Desktop is unaffected: these
   // same elements are reused as-is in the unconditional flow below.
   const chartsRow = (allConnections.length > 0 || hasPublishedContent) && (
-    <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-4">
       {allConnections.length > 0 && (
-        <Card>
+        <Card className="lg:col-span-2">
           <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
             <CardTitle>Crecimiento de seguidores</CardTitle>
             <TrendingUp className="h-4 w-4 text-accent" />
@@ -733,11 +675,23 @@ export default async function DashboardHomePage() {
       {hasPublishedContent && (
         <Card>
           <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-            <CardTitle>Rendimiento por red social</CardTitle>
+            <CardTitle>Interacciones por día</CardTitle>
+            <BarChart3 className="h-4 w-4 text-accent" />
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            <DailyInteractionsBarChart points={chartData.slice(-14)} />
+          </CardContent>
+        </Card>
+      )}
+
+      {hasPublishedContent && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+            <CardTitle>Distribución por red</CardTitle>
             <PieChartIcon className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
-            <EngagementRateRings data={platformRings} />
+            <PlatformShareDonut data={platformInteractionShare} />
           </CardContent>
         </Card>
       )}
@@ -802,7 +756,7 @@ export default async function DashboardHomePage() {
           <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
             <table className="w-full min-w-[480px] text-left text-sm">
               <thead>
-                <tr className="text-xs font-medium uppercase tracking-wide text-zinc-400">
+                <tr className="text-xs font-medium text-zinc-400">
                   <th className="pb-2 pr-4 font-medium">Contenido</th>
                   <th className="pb-2 pr-4 font-medium">Tipo</th>
                   <th className="pb-2 pr-4 font-medium">Estado</th>

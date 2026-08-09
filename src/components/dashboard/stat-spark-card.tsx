@@ -31,35 +31,18 @@ export function StatSparkCard({
 }) {
   const gradientId = useId();
   const data = sparkline.map((v, i) => ({ i, v }));
-  const trendBadgeClass = changePct !== null && changePct >= 0 ? "text-emerald-600" : "text-red-600";
 
+  // Only ever rendered inside the desktop tile grid (mobile shows
+  // MobileStatList instead), so this stays a single stacked tile.
   return (
-    <Card mobileFlat className="bg-white/70">
-      {/* Mobile: a flat list row (icon, label + value, change% at the end,
-          no sparkline) — Shopify's mobile stat rows keep it this simple.
-          Desktop keeps the original stacked tile with its sparkline below. */}
-      <CardContent className="flex items-center gap-3 p-4 sm:hidden">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
-          {icon}
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium text-zinc-500">{label}</p>
-          <p className="truncate text-lg font-semibold tracking-tight text-zinc-950">{value}</p>
-        </div>
-        {showTrend && changePct !== null && (
-          <span className={cn("shrink-0 text-xs font-medium", trendBadgeClass)}>
-            {changePct >= 0 ? "↑" : "↓"} {Math.abs(changePct)}%
-          </span>
-        )}
-      </CardContent>
-
-      <CardContent className="hidden flex-col gap-3 p-5 sm:flex">
+    <Card className="bg-white/70">
+      <CardContent className="flex flex-col gap-3 p-5">
         <div className="flex items-center justify-between">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
             {icon}
           </span>
           {showTrend && changePct !== null && (
-            <span className={cn("text-xs font-medium", trendBadgeClass)}>
+            <span className={cn("text-xs font-medium", changePct >= 0 ? "text-emerald-600" : "text-red-600")}>
               {changePct >= 0 ? "↑" : "↓"} {Math.abs(changePct)}%
             </span>
           )}

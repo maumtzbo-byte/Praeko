@@ -25,6 +25,7 @@ import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { FramesMark } from "@/components/brand/FramesMark";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { StatSparkCard } from "@/components/dashboard/stat-spark-card";
+import { MobileStatList } from "@/components/dashboard/mobile-stat-list";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { NotificationBell, type AttentionItem } from "@/components/dashboard/notification-bell";
@@ -621,39 +622,73 @@ export default async function DashboardHomePage() {
           know "is this working", not the raw generation count, so results
           lead the page instead of sharing a row with unrelated stats. */}
       {hasPublishedContent || allConnections.length > 0 ? (
-        <div className="animate-fade-in-up stagger-1 flex flex-col gap-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-          <StatSparkCard
-            icon={<Users className="h-4 w-4" strokeWidth={1.75} />}
-            label="Seguidores"
-            value={totalFollowersToday.toLocaleString("es-MX")}
-            sparkline={followersSparkline}
-            changePct={followersChangePct}
-            showTrend={followersShowTrend}
+        <div className="animate-fade-in-up stagger-1">
+          <MobileStatList
+            rows={[
+              {
+                icon: <Users className="h-4 w-4" strokeWidth={1.75} />,
+                label: "Seguidores",
+                value: totalFollowersToday.toLocaleString("es-MX"),
+                changePct: followersChangePct,
+                showTrend: followersShowTrend,
+              },
+              {
+                icon: <Heart className="h-4 w-4" strokeWidth={1.75} />,
+                label: "Likes",
+                value: formatInsightNumber(insightsSummary?.totalLikes ?? null),
+                changePct: likesChangePct,
+                showTrend: hasPublishedContent,
+              },
+              {
+                icon: <MessageCircle className="h-4 w-4" strokeWidth={1.75} />,
+                label: "Comentarios",
+                value: formatInsightNumber(insightsSummary?.totalComments ?? null),
+                changePct: commentsChangePct,
+                showTrend: hasPublishedContent,
+              },
+              {
+                icon: <Eye className="h-4 w-4" strokeWidth={1.75} />,
+                label: "Alcance",
+                value: formatInsightNumber(insightsSummary?.totalImpressions ?? null),
+                changePct: alcanceChangePct,
+                showTrend: hasPublishedContent,
+              },
+            ]}
           />
-          <StatSparkCard
-            icon={<Heart className="h-4 w-4" strokeWidth={1.75} />}
-            label="Likes"
-            value={formatInsightNumber(insightsSummary?.totalLikes ?? null)}
-            sparkline={likesSparkline}
-            changePct={likesChangePct}
-            showTrend={hasPublishedContent}
-          />
-          <StatSparkCard
-            icon={<MessageCircle className="h-4 w-4" strokeWidth={1.75} />}
-            label="Comentarios"
-            value={formatInsightNumber(insightsSummary?.totalComments ?? null)}
-            sparkline={commentsSparkline}
-            changePct={commentsChangePct}
-            showTrend={hasPublishedContent}
-          />
-          <StatSparkCard
-            icon={<Eye className="h-4 w-4" strokeWidth={1.75} />}
-            label="Alcance"
-            value={formatInsightNumber(insightsSummary?.totalImpressions ?? null)}
-            sparkline={alcanceSparkline}
-            changePct={alcanceChangePct}
-            showTrend={hasPublishedContent}
-          />
+          <div className="hidden sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+            <StatSparkCard
+              icon={<Users className="h-4 w-4" strokeWidth={1.75} />}
+              label="Seguidores"
+              value={totalFollowersToday.toLocaleString("es-MX")}
+              sparkline={followersSparkline}
+              changePct={followersChangePct}
+              showTrend={followersShowTrend}
+            />
+            <StatSparkCard
+              icon={<Heart className="h-4 w-4" strokeWidth={1.75} />}
+              label="Likes"
+              value={formatInsightNumber(insightsSummary?.totalLikes ?? null)}
+              sparkline={likesSparkline}
+              changePct={likesChangePct}
+              showTrend={hasPublishedContent}
+            />
+            <StatSparkCard
+              icon={<MessageCircle className="h-4 w-4" strokeWidth={1.75} />}
+              label="Comentarios"
+              value={formatInsightNumber(insightsSummary?.totalComments ?? null)}
+              sparkline={commentsSparkline}
+              changePct={commentsChangePct}
+              showTrend={hasPublishedContent}
+            />
+            <StatSparkCard
+              icon={<Eye className="h-4 w-4" strokeWidth={1.75} />}
+              label="Alcance"
+              value={formatInsightNumber(insightsSummary?.totalImpressions ?? null)}
+              sparkline={alcanceSparkline}
+              changePct={alcanceChangePct}
+              showTrend={hasPublishedContent}
+            />
+          </div>
         </div>
       ) : (
         <div className="animate-fade-in-up stagger-1">
@@ -681,31 +716,41 @@ export default async function DashboardHomePage() {
           shown when it actually needs attention) — repeating it here as a
           stat tile when everything's fine was just noise. These 4 tiles are
           the same size/weight, all real counts already queried above. */}
-      <div className="animate-fade-in-up stagger-2 flex flex-col gap-2 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-        <StatCard
-          icon={Clapperboard}
-          label="VIDEOS GENERADOS"
-          value={String(videosCount ?? 0)}
-          sublabel={`${videosUsed} este mes`}
+      <div className="animate-fade-in-up stagger-2">
+        <MobileStatList
+          rows={[
+            { icon: <Clapperboard className="h-4 w-4" strokeWidth={1.75} />, label: "Videos generados", value: `${videosCount ?? 0} · ${videosUsed} este mes` },
+            { icon: <ImageIcon className="h-4 w-4" strokeWidth={1.75} />, label: "Imágenes generadas", value: `${imagesCount ?? 0} · ${imagesUsed} este mes` },
+            { icon: <Send className="h-4 w-4" strokeWidth={1.75} />, label: "Programadas", value: String(scheduledCount ?? 0) },
+            { icon: <Share2 className="h-4 w-4" strokeWidth={1.75} />, label: "Redes conectadas", value: String(connectionsCount ?? 0) },
+          ]}
         />
-        <StatCard
-          icon={ImageIcon}
-          label="IMÁGENES GENERADAS"
-          value={String(imagesCount ?? 0)}
-          sublabel={`${imagesUsed} este mes`}
-        />
-        <StatCard
-          icon={Send}
-          label="PROGRAMADAS"
-          value={String(scheduledCount ?? 0)}
-          sublabel={scheduledCount ? "en camino" : "sin piezas en cola"}
-        />
-        <StatCard
-          icon={Share2}
-          label="REDES CONECTADAS"
-          value={String(connectionsCount ?? 0)}
-          sublabel={connectionsCount ? "activas" : "sin conectar"}
-        />
+        <div className="hidden sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <StatCard
+            icon={Clapperboard}
+            label="VIDEOS GENERADOS"
+            value={String(videosCount ?? 0)}
+            sublabel={`${videosUsed} este mes`}
+          />
+          <StatCard
+            icon={ImageIcon}
+            label="IMÁGENES GENERADAS"
+            value={String(imagesCount ?? 0)}
+            sublabel={`${imagesUsed} este mes`}
+          />
+          <StatCard
+            icon={Send}
+            label="PROGRAMADAS"
+            value={String(scheduledCount ?? 0)}
+            sublabel={scheduledCount ? "en camino" : "sin piezas en cola"}
+          />
+          <StatCard
+            icon={Share2}
+            label="REDES CONECTADAS"
+            value={String(connectionsCount ?? 0)}
+            sublabel={connectionsCount ? "activas" : "sin conectar"}
+          />
+        </div>
       </div>
 
       {(allConnections.length > 0 || hasPublishedContent) && (

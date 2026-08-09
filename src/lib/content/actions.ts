@@ -29,3 +29,30 @@ export async function retryFailedContent(itemId: string): Promise<ActionResult> 
     return { success: false, error: "No se pudo reintentar. Intenta de nuevo." };
   }
 }
+
+/** The Agente Revisor de Marca flags a piece as "en_revision" (either
+ * "necesita_revision_humana" or "rechazado") but nothing ever moved it back
+ * out of that state — it was a dead end with no resolution path. This is
+ * the owner manually overriding the review after reading its feedback,
+ * same minimal "reset to pendiente" pattern as retryFailedContent. */
+export async function approveReviewedContent(itemId: string): Promise<ActionResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "No autenticado." };
+
+    const { error } = await supabase
+      .from("content_calendar")
+      .update({ status: "pendiente" })
+      .eq("id", itemId)
+      .eq("status", "en_revision");
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (err) {
+    console.error("approveReviewedContent failed", err);
+    return { success: false, error: "No se pudo aprobar. Intenta de nuevo." };
+  }
+}

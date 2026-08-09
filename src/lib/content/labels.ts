@@ -25,6 +25,16 @@ export const STATUS_LABELS: Record<ContentCalendarRow["status"], string> = {
   fallida: "Fallida",
 };
 
+// "rechazado" is more serious than "necesita_revision_humana" (the Agente
+// Revisor de Marca thinks it contradicts the brand or invents specifics
+// like prices/hours, not just a weak hook) — labeled distinctly so the
+// owner knows how much scrutiny to give it before approving.
+export const REVIEW_RESULT_LABELS: Record<NonNullable<ContentCalendarRow["review_result"]>, string> = {
+  aprobado: "Aprobado",
+  necesita_revision_humana: "Revisar antes de aprobar",
+  rechazado: "Rechazado por el revisor",
+};
+
 const dateFormatter = new Intl.DateTimeFormat("es-MX", {
   weekday: "short",
   day: "numeric",

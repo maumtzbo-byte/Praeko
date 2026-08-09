@@ -11,6 +11,13 @@ import { cn } from "@/lib/utils";
 
 const TRIAL_END_FORMATTER = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "long" });
 
+const SUBSCRIPTION_STATUS_LABELS: Record<"active" | "past_due" | "canceled" | "incomplete", string> = {
+  active: "activo",
+  past_due: "con pago pendiente",
+  canceled: "cancelado",
+  incomplete: "incompleto",
+};
+
 export default async function PlanPage() {
   const { business } = await getCurrentBusiness();
   const supabase = await createClient();
@@ -25,6 +32,7 @@ export default async function PlanPage() {
       ? TRIAL_END_FORMATTER.format(new Date(subscription.current_period_end))
       : null;
   const trialPlan = trialEndLabel ? (plans ?? []).find((p) => p.key === subscription!.plan_key) : null;
+  const currentPlan = subscription ? (plans ?? []).find((p) => p.key === subscription.plan_key) : null;
 
   return (
     <div>
@@ -34,7 +42,7 @@ export default async function PlanPage() {
           trialEndLabel
             ? "Cuando quieras más que el plan Básico, solicita Pro o Max abajo."
             : subscription
-              ? `Tu plan actual es ${subscription.plan_key} (${subscription.status}).`
+              ? `Tu plan actual es ${currentPlan?.display_name ?? subscription.plan_key} (${SUBSCRIPTION_STATUS_LABELS[subscription.status]}).`
               : "Todavía no tienes una suscripción activa — elige un plan para empezar a generar contenido."
         }
       />

@@ -3,14 +3,14 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Clapperboard, ImageIcon, Clock, Send, RotateCcw, Wand2, Megaphone } from "lucide-react";
+import { Clapperboard, ImageIcon, Clock, Send, RotateCcw, Wand2, Megaphone, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { UpgradePlanModal } from "@/components/dashboard/upgrade-plan-modal";
 import { ContentDetailModal } from "@/components/content/content-detail-modal";
-import { retryFailedContent } from "@/lib/content/actions";
+import { retryFailedContent, approveReviewedContent } from "@/lib/content/actions";
 import {
   generateMediaForContent,
   refreshMediaGenerationStatus,
@@ -18,7 +18,7 @@ import {
   getPromoteLink,
 } from "@/app/dashboard/publicaciones/actions";
 import { cn } from "@/lib/utils";
-import { FORMAT_LABELS, STATUS_VARIANTS, STATUS_LABELS, formatScheduledDate } from "@/lib/content/labels";
+import { FORMAT_LABELS, STATUS_VARIANTS, STATUS_LABELS, REVIEW_RESULT_LABELS, formatScheduledDate } from "@/lib/content/labels";
 import { SOCIAL_PLATFORM_LABELS } from "@/lib/social";
 import { InstagramIcon, FacebookIcon, TikTokIcon } from "@/components/dashboard/social-icons";
 import type { Tables } from "@/lib/supabase/types";
@@ -56,6 +56,34 @@ function RetryButton({ itemId }: { itemId: string }) {
     <Button variant="secondary" size="sm" onClick={handleRetry} loading={retrying}>
       <RotateCcw className="h-3.5 w-3.5" />
       Reintentar
+    </Button>
+  );
+}
+
+/** "en_revision" used to be a dead end — the Agente Revisor de Marca flags
+ * a piece for the owner to look at, but nothing ever moved it forward.
+ * This lets the owner read the feedback and, if they're fine with it,
+ * clear it back to "pendiente" themselves. */
+function ApproveButton({ itemId }: { itemId: string }) {
+  const router = useRouter();
+  const [approving, setApproving] = useState(false);
+
+  async function handleApprove() {
+    setApproving(true);
+    const res = await approveReviewedContent(itemId);
+    if (!res.success) {
+      toast.error(res.error);
+      setApproving(false);
+      return;
+    }
+    toast.success("Aprobado — ya puedes generar y publicar esta pieza.");
+    router.refresh();
+  }
+
+  return (
+    <Button variant="secondary" size="sm" onClick={handleApprove} loading={approving}>
+      <Check className="h-3.5 w-3.5" />
+      Aprobar
     </Button>
   );
 }
@@ -295,9 +323,10 @@ export function PublicationsList({
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-zinc-900">{item.topic}</p>
                     {item.script && <p className="line-clamp-1 text-sm text-zinc-500">{item.script}</p>}
-                    {item.status === "en_revision" && item.review_feedback && (
+                    {item.status === "en_revision" && (
                       <p className="mt-1 line-clamp-2 text-xs text-amber-700">
-                        Agente revisor: {item.review_feedback}
+                        {item.review_result && <span className="font-medium">{REVIEW_RESULT_LABELS[item.review_result]}: </span>}
+                        {item.review_feedback ?? "El Agente Revisor de Marca marcó esta pieza para tu revisión."}
                       </p>
                     )}
                   </div>
@@ -314,6 +343,7 @@ export function PublicationsList({
                       </div>
                     )}
                     {item.status === "fallida" && <RetryButton itemId={item.id} />}
+                    {item.status === "en_revision" && <ApproveButton itemId={item.id} />}
                     {item.status === "pendiente" &&
                       (inFlightByItemId?.get(item.id) ? (
                         <RefreshStatusButton generationId={inFlightByItemId.get(item.id)!} />

@@ -67,7 +67,7 @@ export const PRIMARY_NAV_GROUPS: NavGroup[] = [
 
 export const SECONDARY_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/configuracion", label: "Configuración", icon: Settings },
-  { href: "/dashboard/facturacion", label: "Facturación", icon: CreditCard },
+  { href: "/dashboard/facturacion", label: "Facturación", icon: CreditCard, comingSoon: true },
   { href: "/dashboard/plan", label: "Mi plan", icon: Gem },
   { href: "/dashboard/ayuda", label: "Ayuda", icon: LifeBuoy },
 ];

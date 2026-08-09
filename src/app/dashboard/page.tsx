@@ -414,12 +414,12 @@ function firstNameFromEmail(email: string | undefined) {
   return email.split("@")[0];
 }
 
-const ACTIVITY_VERBS: Record<Tables<"content_calendar">["status"], string> = {
-  pendiente: "Se generó un guion para",
-  generada: "Se generó la pieza",
-  en_revision: "Está en revisión:",
-  publicada: "Se publicó",
-  fallida: "Falló la generación de",
+const ACTIVITY_STATUS_STYLES: Record<Tables<"content_calendar">["status"], { label: string; className: string }> = {
+  pendiente: { label: "Pendiente", className: "bg-zinc-100 text-zinc-600" },
+  generada: { label: "Generada", className: "bg-blue-50 text-blue-700" },
+  en_revision: { label: "En revisión", className: "bg-amber-50 text-amber-700" },
+  publicada: { label: "Publicada", className: "bg-emerald-50 text-emerald-700" },
+  fallida: { label: "Fallida", className: "bg-red-50 text-red-700" },
 };
 
 const activityDateFormatter = new Intl.DateTimeFormat("es-MX", {
@@ -799,26 +799,34 @@ export default async function DashboardHomePage() {
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
         {recentActivity && recentActivity.length > 0 ? (
-          <div className="flex flex-col divide-y divide-zinc-100">
-            {recentActivity.map((item) => {
-              const Icon = item.content_kind === "video" ? Clapperboard : ImageIcon;
-              return (
-                <div key={item.id} className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0 sm:gap-3 sm:py-3">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
-                    <Icon className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm text-zinc-700">
-                      {ACTIVITY_VERBS[item.status]}{" "}
-                      <span className="font-medium text-zinc-900">&ldquo;{item.topic}&rdquo;</span>
-                    </p>
-                    <p className="text-xs text-zinc-400">
-                      {activityDateFormatter.format(new Date(item.created_at))}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+            <table className="w-full min-w-[480px] text-left text-sm">
+              <thead>
+                <tr className="text-xs font-medium uppercase tracking-wide text-zinc-400">
+                  <th className="pb-2 pr-4 font-medium">Contenido</th>
+                  <th className="pb-2 pr-4 font-medium">Tipo</th>
+                  <th className="pb-2 pr-4 font-medium">Estado</th>
+                  <th className="pb-2 font-medium">Fecha</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-100">
+                {recentActivity.map((item) => {
+                  const status = ACTIVITY_STATUS_STYLES[item.status];
+                  return (
+                    <tr key={item.id}>
+                      <td className="max-w-[220px] truncate py-2.5 pr-4 font-medium text-zinc-900">{item.topic}</td>
+                      <td className="py-2.5 pr-4 text-zinc-500">{item.content_kind === "video" ? "Video" : "Imagen"}</td>
+                      <td className="py-2.5 pr-4">
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${status.className}`}>{status.label}</span>
+                      </td>
+                      <td className="whitespace-nowrap py-2.5 text-zinc-500">
+                        {activityDateFormatter.format(new Date(item.created_at))}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         ) : (
           /* Fixed, honest tips instead of a generic EmptyState block —

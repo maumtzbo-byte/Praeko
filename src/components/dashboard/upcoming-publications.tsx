@@ -32,12 +32,12 @@ export function UpcomingPublications({ items }: { items: UpcomingItem[] }) {
   }
 
   return (
-    <div className="flex flex-col divide-y divide-zinc-100">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {items.map((item) => {
         const Icon = item.contentKind === "video" ? Clapperboard : ImageIcon;
         const time = formatTime(item.recommendedPublishTime);
         return (
-          <div key={item.id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
+          <div key={item.id} className="flex items-center gap-3">
             <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-900">
               {item.mediaUrl ? (
                 item.contentKind === "video" ? (

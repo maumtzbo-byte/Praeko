@@ -2,8 +2,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 /** No icon, no badge — just label, big value, optional sublabel. Only
- * ever rendered inside the desktop tile grid (mobile shows
- * MobileStatList instead). */
+ * ever rendered inside the desktop tile grid (mobile uses StatIconCard
+ * instead). */
 export function StatCard({
   label,
   value,

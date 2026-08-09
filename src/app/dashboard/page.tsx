@@ -24,7 +24,7 @@ import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { FramesMark } from "@/components/brand/FramesMark";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { StatSparkCard } from "@/components/dashboard/stat-spark-card";
-import { MobileStatList } from "@/components/dashboard/mobile-stat-list";
+import { StatIconCard } from "@/components/dashboard/stat-icon-card";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { NotificationBell, type AttentionItem } from "@/components/dashboard/notification-bell";
@@ -533,10 +533,37 @@ export default async function DashboardHomePage() {
   // lead the page instead of sharing a row with unrelated stats.
   const hasResultStats = hasPublishedContent || allConnections.length > 0;
 
-  // One shared row list on mobile — results + production in a single card
-  // instead of two, so the divider pattern isn't paying for a second
-  // card's padding/border just to group them conceptually. Desktop keeps
-  // them as two separate tile grids since space isn't the constraint there.
+  const resultStatItems = [
+    {
+      icon: <Users className="h-4 w-4" strokeWidth={1.75} />,
+      label: "Seguidores",
+      value: totalFollowersToday.toLocaleString("es-MX"),
+      changePct: followersChangePct,
+      showTrend: followersShowTrend,
+    },
+    {
+      icon: <Heart className="h-4 w-4" strokeWidth={1.75} />,
+      label: "Likes",
+      value: formatInsightNumber(insightsSummary?.totalLikes ?? null),
+      changePct: likesChangePct,
+      showTrend: hasPublishedContent,
+    },
+    {
+      icon: <MessageCircle className="h-4 w-4" strokeWidth={1.75} />,
+      label: "Comentarios",
+      value: formatInsightNumber(insightsSummary?.totalComments ?? null),
+      changePct: commentsChangePct,
+      showTrend: hasPublishedContent,
+    },
+    {
+      icon: <Eye className="h-4 w-4" strokeWidth={1.75} />,
+      label: "Alcance",
+      value: formatInsightNumber(insightsSummary?.totalImpressions ?? null),
+      changePct: alcanceChangePct,
+      showTrend: hasPublishedContent,
+    },
+  ];
+
   const productionStatRows = [
     { icon: <Clapperboard className="h-4 w-4" strokeWidth={1.75} />, label: "Videos generados", value: `${videosCount ?? 0} · ${videosUsed} este mes` },
     { icon: <ImageIcon className="h-4 w-4" strokeWidth={1.75} />, label: "Imágenes generadas", value: `${imagesCount ?? 0} · ${imagesUsed} este mes` },
@@ -544,44 +571,71 @@ export default async function DashboardHomePage() {
     { icon: <Share2 className="h-4 w-4" strokeWidth={1.75} />, label: "Redes conectadas", value: String(connectionsCount ?? 0) },
   ];
 
+  const emptyStatsCard = (
+    <Card>
+      <CardContent className="p-4 sm:p-6">
+        <EmptyState
+          icon={BarChart3}
+          title="Todavía no hay datos que mostrar"
+          description="Conecta tus redes sociales y publica tu primera pieza para empezar a ver alcance y engagement aquí."
+          action={
+            <Link href="/dashboard/redes-sociales">
+              <Button size="sm">
+                <Share2 className="h-4 w-4" />
+                Conectar redes sociales
+              </Button>
+            </Link>
+          }
+        />
+      </CardContent>
+    </Card>
+  );
+
+  // "Contenido generado": one card, compact icon+label+value items in a
+  // grid — real counts already queried above, subscription status stays
+  // in PlanBanner (dashboard/layout.tsx) instead of repeating here.
+  const productionStatsCard = (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+        <CardTitle>Contenido generado</CardTitle>
+        <Sparkles className="h-4 w-4 text-accent" />
+      </CardHeader>
+      <CardContent className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-4 sm:p-6">
+        {productionStatRows.map((row) => (
+          <div key={row.label} className="flex items-center gap-2">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+              {row.icon}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-[11px] text-zinc-500">{row.label}</p>
+              <p className="truncate text-sm font-semibold text-zinc-950">{row.value}</p>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+
   const statsSection = (
     <>
-      {hasResultStats ? (
-        <div>
-          <MobileStatList
-            rows={[
-              {
-                icon: <Users className="h-4 w-4" strokeWidth={1.75} />,
-                label: "Seguidores",
-                value: totalFollowersToday.toLocaleString("es-MX"),
-                changePct: followersChangePct,
-                showTrend: followersShowTrend,
-              },
-              {
-                icon: <Heart className="h-4 w-4" strokeWidth={1.75} />,
-                label: "Likes",
-                value: formatInsightNumber(insightsSummary?.totalLikes ?? null),
-                changePct: likesChangePct,
-                showTrend: hasPublishedContent,
-              },
-              {
-                icon: <MessageCircle className="h-4 w-4" strokeWidth={1.75} />,
-                label: "Comentarios",
-                value: formatInsightNumber(insightsSummary?.totalComments ?? null),
-                changePct: commentsChangePct,
-                showTrend: hasPublishedContent,
-              },
-              {
-                icon: <Eye className="h-4 w-4" strokeWidth={1.75} />,
-                label: "Alcance",
-                value: formatInsightNumber(insightsSummary?.totalImpressions ?? null),
-                changePct: alcanceChangePct,
-                showTrend: hasPublishedContent,
-              },
-              ...productionStatRows,
-            ]}
-          />
-          <div className="hidden lg:grid lg:grid-cols-4 lg:gap-4">
+      {/* Mobile: 2-column icon-card grid + one "Contenido generado" card. */}
+      <div className="flex flex-col gap-3 lg:hidden">
+        {hasResultStats ? (
+          <div className="grid grid-cols-2 gap-3">
+            {resultStatItems.map((item) => (
+              <StatIconCard key={item.label} {...item} />
+            ))}
+          </div>
+        ) : (
+          emptyStatsCard
+        )}
+        {productionStatsCard}
+      </div>
+
+      {/* Desktop: unchanged tile grids from the Orion-reference redesign. */}
+      <div className="hidden lg:flex lg:flex-col lg:gap-6">
+        {hasResultStats ? (
+          <div className="grid grid-cols-4 gap-4">
             <StatSparkCard
               label="Seguidores"
               value={totalFollowersToday.toLocaleString("es-MX")}
@@ -607,95 +661,67 @@ export default async function DashboardHomePage() {
               showTrend={hasPublishedContent}
             />
           </div>
+        ) : (
+          emptyStatsCard
+        )}
+        <div className="grid grid-cols-4 gap-4">
+          <StatCard label="Videos generados" value={String(videosCount ?? 0)} sublabel={`${videosUsed} este mes`} />
+          <StatCard label="Imágenes generadas" value={String(imagesCount ?? 0)} sublabel={`${imagesUsed} este mes`} />
+          <StatCard
+            label="Programadas"
+            value={String(scheduledCount ?? 0)}
+            sublabel={scheduledCount ? "en camino" : "sin piezas en cola"}
+          />
+          <StatCard
+            label="Redes conectadas"
+            value={String(connectionsCount ?? 0)}
+            sublabel={connectionsCount ? "activas" : "sin conectar"}
+          />
         </div>
-      ) : (
-        <>
-          <Card>
-            <CardContent className="p-4 sm:p-6">
-              <EmptyState
-                icon={BarChart3}
-                title="Todavía no hay datos que mostrar"
-                description="Conecta tus redes sociales y publica tu primera pieza para empezar a ver alcance y engagement aquí."
-                action={
-                  <Link href="/dashboard/redes-sociales">
-                    <Button size="sm">
-                      <Share2 className="h-4 w-4" />
-                      Conectar redes sociales
-                    </Button>
-                  </Link>
-                }
-              />
-            </CardContent>
-          </Card>
-          <MobileStatList rows={productionStatRows} />
-        </>
-      )}
-
-      {/* Subscription status now lives only in PlanBanner (dashboard/layout.tsx,
-          shown when it actually needs attention) — repeating it here as a
-          stat tile when everything's fine was just noise. These 4 tiles are
-          the same size/weight, all real counts already queried above. */}
-      <div className="hidden lg:grid lg:grid-cols-4 lg:gap-4">
-        <StatCard label="Videos generados" value={String(videosCount ?? 0)} sublabel={`${videosUsed} este mes`} />
-        <StatCard label="Imágenes generadas" value={String(imagesCount ?? 0)} sublabel={`${imagesUsed} este mes`} />
-        <StatCard
-          label="Programadas"
-          value={String(scheduledCount ?? 0)}
-          sublabel={scheduledCount ? "en camino" : "sin piezas en cola"}
-        />
-        <StatCard
-          label="Redes conectadas"
-          value={String(connectionsCount ?? 0)}
-          sublabel={connectionsCount ? "activas" : "sin conectar"}
-        />
       </div>
     </>
   );
 
-  const chartsRow = (allConnections.length > 0 || hasPublishedContent) && (
-    <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-4">
-      {allConnections.length > 0 && (
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-            <CardTitle>Crecimiento de seguidores</CardTitle>
-            <TrendingUp className="h-4 w-4 text-accent" />
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            <FollowerGrowthChart series={followerSeries} />
-          </CardContent>
-        </Card>
-      )}
+  const followerGrowthCard = allConnections.length > 0 && (
+    <Card className="lg:col-span-2">
+      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+        <CardTitle className="text-sm sm:text-base">Crecimiento de seguidores</CardTitle>
+        <TrendingUp className="h-4 w-4 text-accent" />
+      </CardHeader>
+      <CardContent className="p-4 sm:p-6">
+        <FollowerGrowthChart series={followerSeries} />
+      </CardContent>
+    </Card>
+  );
 
-      {hasPublishedContent && (
-        <Card>
-          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-            <CardTitle>Interacciones por día</CardTitle>
-            <BarChart3 className="h-4 w-4 text-accent" />
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            <DailyInteractionsBarChart points={chartData.slice(-14)} />
-          </CardContent>
-        </Card>
-      )}
+  const dailyInteractionsCard = hasPublishedContent && (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+        <CardTitle className="text-sm sm:text-base">Interacciones por día</CardTitle>
+        <BarChart3 className="h-4 w-4 text-accent" />
+      </CardHeader>
+      <CardContent className="p-4 sm:p-6">
+        <DailyInteractionsBarChart points={chartData.slice(-14)} />
+      </CardContent>
+    </Card>
+  );
 
-      {hasPublishedContent && (
-        <Card>
-          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-            <CardTitle>Distribución por red</CardTitle>
-            <PieChartIcon className="h-4 w-4 text-accent" />
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            <PlatformShareDonut data={platformInteractionShare} />
-          </CardContent>
-        </Card>
-      )}
-    </div>
+  const platformShareCard = hasPublishedContent && (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+        <CardTitle className="text-sm sm:text-base">Distribución por red</CardTitle>
+        <PieChartIcon className="h-4 w-4 text-accent" />
+      </CardHeader>
+      <CardContent className="p-4 sm:p-6">
+        <PlatformShareDonut data={platformInteractionShare} />
+      </CardContent>
+    </Card>
   );
 
   const creativeInsightsCard = hasPublishedContent && (
     <Card>
       <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-        <CardTitle>Insights de tu Agente Creativo</CardTitle>
+        <CardTitle className="text-sm sm:text-base">Insights de tu Agente Creativo</CardTitle>
         <Lightbulb className="h-4 w-4 text-accent" />
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
@@ -718,8 +744,36 @@ export default async function DashboardHomePage() {
     </Card>
   );
 
+  // Mobile pairs charts differently than desktop (growth+interactions,
+  // then share+insights, upcoming publications gets its own full-width
+  // row) to match the reference layout exactly instead of stacking every
+  // card full-width.
+  const chartsRow = (allConnections.length > 0 || hasPublishedContent) && (
+    <>
+      <div className="flex flex-col gap-3 lg:hidden">
+        {(followerGrowthCard || dailyInteractionsCard) && (
+          <div className="grid grid-cols-2 gap-3">
+            {followerGrowthCard}
+            {dailyInteractionsCard}
+          </div>
+        )}
+        {(platformShareCard || creativeInsightsCard) && (
+          <div className="grid grid-cols-2 gap-3">
+            {platformShareCard}
+            {creativeInsightsCard}
+          </div>
+        )}
+      </div>
+      <div className="hidden lg:grid lg:grid-cols-4 lg:gap-4">
+        {followerGrowthCard}
+        {dailyInteractionsCard}
+        {platformShareCard}
+      </div>
+    </>
+  );
+
   const insightsRow = (hasPublishedContent || upcomingContent.length > 0) && (
-    <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
+    <div className="hidden lg:grid lg:grid-cols-2 lg:gap-4">
       {creativeInsightsCard}
       {upcomingPublicationsCard}
     </div>
@@ -843,9 +897,13 @@ export default async function DashboardHomePage() {
       )}
 
       {/* One continuous flow at every breakpoint — same section order on
-          phone and on desktop, no separate mobile tabs. */}
-      <div className="animate-fade-in-up stagger-1 flex flex-col gap-4 sm:gap-6">{statsSection}</div>
-      <div className="animate-fade-in-up stagger-2">{chartsRow}</div>
+          phone and on desktop, no separate mobile tabs. Mobile pairs cards
+          differently than desktop (see chartsRow/insightsRow above), so
+          "Próximas publicaciones" gets its own full-width row on mobile
+          instead of sharing insightsRow's desktop-only pairing. */}
+      <div className="animate-fade-in-up stagger-1 flex flex-col gap-3 sm:gap-6">{statsSection}</div>
+      <div className="animate-fade-in-up stagger-2 flex flex-col gap-3 sm:gap-4">{chartsRow}</div>
+      <div className="animate-fade-in-up stagger-2 lg:hidden">{upcomingPublicationsCard}</div>
       <div className="animate-fade-in-up stagger-3">{insightsRow}</div>
       <div className="animate-fade-in-up stagger-4">{actividadReciente}</div>
     </div>

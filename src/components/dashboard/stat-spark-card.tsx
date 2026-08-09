@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
  * The % change badge is opt-in via `showTrend`: a metric with under 2
  * real days of history renders as a plain number instead of implying a
  * trend that doesn't exist yet. Only ever rendered inside the desktop
- * tile grid (mobile shows MobileStatList instead). */
+ * tile grid (mobile uses StatIconCard instead). */
 export function StatSparkCard({
   label,
   value,

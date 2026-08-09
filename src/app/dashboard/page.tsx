@@ -9,7 +9,6 @@ import {
   Sparkles,
   CalendarDays,
   Share2,
-  Settings,
   Eye,
   Heart,
   MessageCircle,
@@ -434,33 +433,6 @@ const todayFormatter = new Intl.DateTimeFormat("es-MX", {
   month: "long",
 });
 
-const QUICK_ACTIONS = [
-  {
-    href: "/dashboard/generar-contenido",
-    label: "Generar contenido",
-    description: "Crea un video o imagen nuevo con IA",
-    icon: Sparkles,
-  },
-  {
-    href: "/dashboard/calendario",
-    label: "Ver calendario",
-    description: "Revisa lo que está programado esta semana",
-    icon: CalendarDays,
-  },
-  {
-    href: "/dashboard/redes-sociales",
-    label: "Conectar redes",
-    description: "Vincula Instagram, Facebook o TikTok",
-    icon: Share2,
-  },
-  {
-    href: "/dashboard/configuracion",
-    label: "Configuración",
-    description: "Ajusta el perfil de marca de tu negocio",
-    icon: Settings,
-  },
-];
-
 export default async function DashboardHomePage() {
   const { business } = await getCurrentBusiness();
   const supabase = await createClient();
@@ -556,18 +528,6 @@ export default async function DashboardHomePage() {
   );
   const topVideosWithMedia: TopVideoWithMedia[] = topVideos.map((v) => ({ ...v, mediaUrl: topVideoMedia.get(v.itemId) ?? null }));
   const creativeInsights = generateCreativeInsights(insightsResults, topVideos[0] ?? null);
-
-  // Blended across every platform, distinct from the per-platform rings —
-  // and average reach per post, a number the top row doesn't show at all.
-  const totalInteractions = (insightsSummary?.totalLikes ?? 0) + (insightsSummary?.totalComments ?? 0) + (insightsSummary?.totalShares ?? 0);
-  const blendedEngagementRatePct =
-    insightsSummary?.totalImpressions && insightsSummary.totalImpressions > 0
-      ? Math.round((totalInteractions / insightsSummary.totalImpressions) * 1000) / 10
-      : null;
-  const avgImpressionsPerPost =
-    insightsSummary?.totalImpressions !== null && insightsSummary?.totalImpressions !== undefined && insightsSummary.totalPosts > 0
-      ? Math.round(insightsSummary.totalImpressions / insightsSummary.totalPosts)
-      : null;
 
   const platformEngagementRates = summarizePlatformEngagementRates(insightsResults);
   const followerGrowthByPlatform = new Map(followerSeries.map((s) => [s.platform, weeklyFollowerGrowthPct(s)]));
@@ -818,42 +778,6 @@ export default async function DashboardHomePage() {
         </div>
       )}
 
-      {hasPublishedContent && (
-        <div className="animate-fade-in-up stagger-3">
-          <Card>
-            <CardHeader className="p-4 pb-0 sm:p-6 sm:pb-0">
-              <CardTitle>Resumen de analíticas</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
-                <div className="w-40 shrink-0 sm:w-auto">
-                  <StatCard icon={Share2} label="COMPARTIDOS" value={formatInsightNumber(insightsSummary?.totalShares ?? null)} />
-                </div>
-                <div className="w-40 shrink-0 sm:w-auto">
-                  <StatCard
-                    icon={TrendingUp}
-                    label="TASA DE ENGAGEMENT"
-                    value={blendedEngagementRatePct !== null ? `${blendedEngagementRatePct}%` : "—"}
-                    sublabel="interacciones / alcance"
-                  />
-                </div>
-                <div className="w-40 shrink-0 sm:w-auto">
-                  <StatCard icon={Send} label="PUBLICACIONES" value={String(publishedCount ?? 0)} sublabel="piezas publicadas" />
-                </div>
-                <div className="w-40 shrink-0 sm:w-auto">
-                  <StatCard
-                    icon={Eye}
-                    label="ALCANCE PROMEDIO"
-                    value={avgImpressionsPerPost !== null ? formatInsightNumber(avgImpressionsPerPost) : "—"}
-                    sublabel="por publicación"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       <div className="animate-fade-in-up stagger-4">
         <Card>
           <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
@@ -922,29 +846,6 @@ export default async function DashboardHomePage() {
                 )}
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="animate-fade-in-up stagger-5">
-        <Card>
-          <CardHeader className="p-4 pb-0 sm:p-6 sm:pb-0">
-            <CardTitle>Accesos rápidos</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-4 sm:gap-3 sm:p-6">
-            {QUICK_ACTIONS.map(({ href, label, description, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex flex-col items-start gap-1.5 rounded-xl border border-zinc-200 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-zinc-300 hover:bg-zinc-50 hover:shadow-[0_8px_20px_-12px_rgba(0,0,0,0.25)]"
-              >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
-                  <Icon className="h-4 w-4" strokeWidth={1.75} />
-                </span>
-                <span className="text-xs font-semibold text-zinc-900">{label}</span>
-                <span className="text-[11px] leading-snug text-zinc-500">{description}</span>
-              </Link>
-            ))}
           </CardContent>
         </Card>
       </div>

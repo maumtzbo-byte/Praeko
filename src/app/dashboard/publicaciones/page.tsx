@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/dashboard/page-header";
-import { PublicationsList } from "@/components/content/publications-list";
+import { PublicationsView } from "@/components/content/publications-view";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { createClient } from "@/lib/supabase/server";
 import { isPublishablePlatform } from "@/lib/social";
@@ -55,8 +55,9 @@ export default async function PublicacionesPage() {
 
   return (
     <div>
-      <PageHeader title="Publicaciones programadas" description="Qué está a punto de publicarse y cuándo." />
-      <PublicationsList
+      <PageHeader title="Publicaciones" description="Genera, revisa y publica tu contenido — en lista o por fecha." />
+      <PublicationsView
+        businessId={business.id}
         initialItems={calendarItems ?? []}
         inFlightByItemId={inFlightByItemId}
         connections={publishableConnections}

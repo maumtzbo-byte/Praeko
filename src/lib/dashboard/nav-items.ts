@@ -1,8 +1,6 @@
 import {
   LayoutDashboard,
-  Sparkles,
   Megaphone,
-  CalendarDays,
   Images,
   Share2,
   Send,
@@ -35,16 +33,20 @@ export interface NavGroup {
 /** Grouped instead of one flat 11-item list — the old version read as a
  * wall of text with no hierarchy. Three groups map to how a business owner
  * actually thinks about the product: plan/make/publish content, grow reach,
- * keep the AI on-brand. */
+ * keep the AI on-brand.
+ *
+ * "Generar contenido" and "Calendario" used to be separate nav items —
+ * both just re-rendered the same content_calendar data Publicaciones
+ * already showed (a grid with a generate button, and a read-only month
+ * view). Merged into Publicaciones itself (list/calendar toggle +
+ * "Generar plan de 7 días" button), so the group is down to 2 items. */
 export const PRIMARY_NAV_GROUPS: NavGroup[] = [
   { items: [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }] },
   {
     label: "Contenido",
     items: [
-      { href: "/dashboard/generar-contenido", label: "Generar contenido", icon: Sparkles },
       { href: "/dashboard/campanas", label: "Campañas", icon: Megaphone },
-      { href: "/dashboard/calendario", label: "Calendario", icon: CalendarDays },
-      { href: "/dashboard/publicaciones", label: "Publicaciones programadas", icon: Send },
+      { href: "/dashboard/publicaciones", label: "Publicaciones", icon: Send },
     ],
   },
   {

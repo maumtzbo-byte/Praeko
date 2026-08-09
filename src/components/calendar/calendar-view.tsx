@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Clapperboard, ImageIcon, Clock, CalendarDays, Sparkles, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clapperboard, ImageIcon, Clock, CalendarDays, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -62,7 +61,13 @@ function RetryButton({ itemId }: { itemId: string }) {
   );
 }
 
-export function CalendarView({ initialItems }: { initialItems: ContentCalendarRow[] }) {
+export function CalendarView({
+  initialItems,
+  generateAction,
+}: {
+  initialItems: ContentCalendarRow[];
+  generateAction?: ReactNode;
+}) {
   const today = useMemo(() => new Date(), []);
 
   const defaultSelectedDate = useMemo(() => {
@@ -94,15 +99,8 @@ export function CalendarView({ initialItems }: { initialItems: ContentCalendarRo
       <EmptyState
         icon={CalendarDays}
         title="Todavía no hay nada en tu calendario"
-        description="En cuanto generes contenido desde “Generar contenido”, vas a poder verlo organizado aquí por fecha."
-        action={
-          <Link href="/dashboard/generar-contenido">
-            <Button size="sm">
-              <Sparkles className="h-4 w-4" />
-              Generar contenido
-            </Button>
-          </Link>
-        }
+        description="Genera contenido para verlo organizado aquí por fecha."
+        action={generateAction}
       />
     );
   }

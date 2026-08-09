@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Sparkles, CalendarDays, Share2, Menu } from "lucide-react";
+import { LayoutDashboard, Send, Megaphone, Share2, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Four fixed shortcuts, not a full copy of the sidebar — "Más" opens the
 // same drawer the header hamburger already does, so nothing is lost, it's
-// just reachable from the thumb-zone instead of a top corner.
+// just reachable from the thumb-zone instead of a top corner. Generar
+// contenido and Calendario used to each have their own tab here — both
+// merged into Publicaciones (see nav-items.ts), so this points there now.
 const TABS = [
   { href: "/dashboard", label: "Resumen", icon: LayoutDashboard },
-  { href: "/dashboard/generar-contenido", label: "Generar", icon: Sparkles },
-  { href: "/dashboard/calendario", label: "Calendario", icon: CalendarDays },
+  { href: "/dashboard/publicaciones", label: "Publicaciones", icon: Send },
+  { href: "/dashboard/campanas", label: "Campañas", icon: Megaphone },
   { href: "/dashboard/redes-sociales", label: "Redes", icon: Share2 },
 ] as const;
 

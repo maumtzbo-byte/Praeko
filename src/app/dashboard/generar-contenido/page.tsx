@@ -1,25 +1,9 @@
-import { PageHeader } from "@/components/dashboard/page-header";
-import { GenerateContentPanel } from "@/components/content/generate-content-panel";
-import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
-import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
-export default async function GenerarContenidoPage() {
-  const { business } = await getCurrentBusiness();
-  const supabase = await createClient();
-
-  const { data: calendarItems } = await supabase
-    .from("content_calendar")
-    .select("*")
-    .eq("business_id", business.id)
-    .order("scheduled_date", { ascending: true });
-
-  return (
-    <div>
-      <PageHeader
-        title="Generar contenido"
-        description="Tus agentes de estrategia y guionista proponen el contenido de los próximos días."
-      />
-      <GenerateContentPanel businessId={business.id} initialItems={calendarItems ?? []} />
-    </div>
-  );
+// "Generar plan de 7 días" (this page's only real action) moved into
+// /dashboard/publicaciones — its actions.ts stays at this path since
+// onboarding-reveal.tsx still imports generateContentPlan from here. Kept
+// as a redirect instead of a 404 for anyone with the old URL bookmarked.
+export default function GenerarContenidoPage() {
+  redirect("/dashboard/publicaciones");
 }

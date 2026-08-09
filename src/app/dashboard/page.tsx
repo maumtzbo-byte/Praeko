@@ -18,6 +18,7 @@ import {
   PieChart as PieChartIcon,
   Users,
   Lightbulb,
+  ChevronRight,
 } from "lucide-react";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
@@ -44,8 +45,8 @@ import { formatInsightNumber } from "@/lib/content/format-insights";
 import { PlatformShareDonut } from "@/components/dashboard/platform-share-donut";
 import { DailyInteractionsBarChart } from "@/components/dashboard/daily-interactions-bar-chart";
 import { FollowerGrowthChart, type FollowerSeries } from "@/components/dashboard/follower-growth-chart";
+import { FollowerGrowthHero } from "@/components/dashboard/follower-growth-hero";
 import { CreativeInsightsList } from "@/components/dashboard/creative-insights-list";
-import { UpcomingPublications, type UpcomingItem } from "@/components/dashboard/upcoming-publications";
 import { fetchAccountFollowers } from "@/lib/social/insights";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/social";
 import type { Tables } from "@/lib/supabase/types";
@@ -134,7 +135,10 @@ const LOW_PHOTO_THRESHOLD = 3;
 // post count to stay well under any platform rate limit.
 const INSIGHTS_WINDOW_DAYS = 30;
 const MAX_POSTS_FOR_INSIGHTS = 40;
-const FOLLOWER_HISTORY_DAYS = 30;
+// Wide enough to cover the mobile hero chart's "Este año" range option —
+// this is just a bound on a Supabase read (real snapshots already
+// accumulated), not another Meta/TikTok API call, so widening it is free.
+const FOLLOWER_HISTORY_DAYS = 370;
 
 /** Bounded to a trailing window instead of a flat post count so the
  * results can also be aggregated into a daily chart series. */
@@ -314,66 +318,6 @@ function weekOverWeekSumChangePct(daily: number[]): number | null {
   return Math.round(((last7 - prev7) / prev7) * 1000) / 10;
 }
 
-/** Real generated media (fal.ai output URL) for a batch of content_calendar
- * rows — same job-status/ordering pattern getContentDetail already uses
- * (publicaciones/actions.ts), just batched across a few items at once
- * instead of fetched one at a time. Used for both the top-videos thumbnails
- * and the upcoming-publications previews. */
-async function getMediaUrlsForItems(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  itemIds: string[],
-): Promise<Map<string, string>> {
-  if (itemIds.length === 0) return new Map();
-  const { data } = await supabase
-    .from("generations")
-    .select("content_calendar_id, storage_path, created_at")
-    .in("content_calendar_id", itemIds)
-    .eq("job_status", "completed")
-    .not("storage_path", "is", null)
-    .order("created_at", { ascending: false });
-
-  const media = new Map<string, string>();
-  for (const row of data ?? []) {
-    if (row.content_calendar_id && row.storage_path && !media.has(row.content_calendar_id)) {
-      media.set(row.content_calendar_id, row.storage_path);
-    }
-  }
-  return media;
-}
-
-const MAX_UPCOMING_ITEMS = 4;
-
-async function getUpcomingContent(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  businessId: string,
-): Promise<UpcomingItem[]> {
-  const { data } = await supabase
-    .from("content_calendar")
-    .select("id, topic, content_kind, scheduled_date, recommended_publish_time")
-    .eq("business_id", businessId)
-    .in("status", ["pendiente", "generada"])
-    .gte("scheduled_date", daysAgoStr(0))
-    .order("scheduled_date", { ascending: true })
-    .limit(MAX_UPCOMING_ITEMS);
-
-  const items = data ?? [];
-  if (items.length === 0) return [];
-
-  const media = await getMediaUrlsForItems(
-    supabase,
-    items.map((i) => i.id),
-  );
-
-  return items.map((item) => ({
-    id: item.id,
-    topic: item.topic,
-    contentKind: item.content_kind,
-    scheduledDate: item.scheduled_date,
-    recommendedPublishTime: item.recommended_publish_time,
-    mediaUrl: media.get(item.id) ?? null,
-  }));
-}
-
 function firstNameFromEmail(email: string | undefined) {
   if (!email) return "";
   return email.split("@")[0];
@@ -480,11 +424,10 @@ export default async function DashboardHomePage() {
 
   // Only worth the live Meta/TikTok calls when there's actually something
   // published to ask about.
-  const [insightsResults, attentionItems, followerSeries, upcomingContent] = await Promise.all([
+  const [insightsResults, attentionItems, followerSeries] = await Promise.all([
     hasPublishedContent ? getPublishedInsightsResults(supabase, business.id) : Promise.resolve([]),
     getAttentionItems(supabase, business.id, subscription),
     captureAndFetchFollowerSeries(supabase, business.id, allConnections),
-    getUpcomingContent(supabase, business.id),
   ]);
   const insightsSummary = insightsResults.length > 0 ? summarizeInsights(insightsResults) : null;
   const chartData = buildDailyInsightsSeries(insightsResults, INSIGHTS_WINDOW_DAYS);
@@ -517,7 +460,7 @@ export default async function DashboardHomePage() {
     { label: "Conecta una red social", href: "/dashboard/redes-sociales", done: !hasNoConnections, icon: Share2 },
     {
       label: "Genera tu primer contenido",
-      href: "/dashboard/generar-contenido",
+      href: "/dashboard/publicaciones",
       done: (anyContentCount ?? 0) > 0,
       icon: Sparkles,
     },
@@ -533,20 +476,16 @@ export default async function DashboardHomePage() {
   // lead the page instead of sharing a row with unrelated stats.
   const hasResultStats = hasPublishedContent || allConnections.length > 0;
 
+  // Seguidores now leads via the mobile hero chart above this grid, so the
+  // grid itself starts with Likes instead of repeating it first.
   const resultStatItems = [
-    {
-      icon: <Users className="h-4 w-4" strokeWidth={1.75} />,
-      label: "Seguidores",
-      value: totalFollowersToday.toLocaleString("es-MX"),
-      changePct: followersChangePct,
-      showTrend: followersShowTrend,
-    },
     {
       icon: <Heart className="h-4 w-4" strokeWidth={1.75} />,
       label: "Likes",
       value: formatInsightNumber(insightsSummary?.totalLikes ?? null),
       changePct: likesChangePct,
       showTrend: hasPublishedContent,
+      tone: "violet" as const,
     },
     {
       icon: <MessageCircle className="h-4 w-4" strokeWidth={1.75} />,
@@ -554,6 +493,7 @@ export default async function DashboardHomePage() {
       value: formatInsightNumber(insightsSummary?.totalComments ?? null),
       changePct: commentsChangePct,
       showTrend: hasPublishedContent,
+      tone: "emerald" as const,
     },
     {
       icon: <Eye className="h-4 w-4" strokeWidth={1.75} />,
@@ -561,14 +501,23 @@ export default async function DashboardHomePage() {
       value: formatInsightNumber(insightsSummary?.totalImpressions ?? null),
       changePct: alcanceChangePct,
       showTrend: hasPublishedContent,
+      tone: "amber" as const,
+    },
+    {
+      icon: <Users className="h-4 w-4" strokeWidth={1.75} />,
+      label: "Seguidores",
+      value: totalFollowersToday.toLocaleString("es-MX"),
+      changePct: followersChangePct,
+      showTrend: followersShowTrend,
+      tone: "blue" as const,
     },
   ];
 
   const productionStatRows = [
-    { icon: <Clapperboard className="h-4 w-4" strokeWidth={1.75} />, label: "Videos generados", value: `${videosCount ?? 0} · ${videosUsed} este mes` },
-    { icon: <ImageIcon className="h-4 w-4" strokeWidth={1.75} />, label: "Imágenes generadas", value: `${imagesCount ?? 0} · ${imagesUsed} este mes` },
-    { icon: <Send className="h-4 w-4" strokeWidth={1.75} />, label: "Programadas", value: String(scheduledCount ?? 0) },
-    { icon: <Share2 className="h-4 w-4" strokeWidth={1.75} />, label: "Redes conectadas", value: String(connectionsCount ?? 0) },
+    { icon: <Clapperboard className="h-4 w-4" strokeWidth={1.75} />, label: "Videos generados", value: String(videosCount ?? 0), caption: `${videosUsed} este mes` },
+    { icon: <ImageIcon className="h-4 w-4" strokeWidth={1.75} />, label: "Imágenes generadas", value: String(imagesCount ?? 0), caption: `${imagesUsed} este mes` },
+    { icon: <Send className="h-4 w-4" strokeWidth={1.75} />, label: "Programadas", value: String(scheduledCount ?? 0), caption: null },
+    { icon: <Share2 className="h-4 w-4" strokeWidth={1.75} />, label: "Redes conectadas", value: String(connectionsCount ?? 0), caption: null },
   ];
 
   const emptyStatsCard = (
@@ -592,47 +541,32 @@ export default async function DashboardHomePage() {
   );
 
   // "Contenido generado": one card, compact icon+label+value items in a
-  // grid — real counts already queried above, subscription status stays
-  // in PlanBanner (dashboard/layout.tsx) instead of repeating here.
+  // single row — real counts already queried above, subscription status
+  // stays in PlanBanner (dashboard/layout.tsx) instead of repeating here.
   const productionStatsCard = (
     <Card>
-      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+      <CardHeader className="flex-row items-center justify-between p-4 pb-0">
         <CardTitle>Contenido generado</CardTitle>
-        <Sparkles className="h-4 w-4 text-accent" />
+        <ChevronRight className="h-4 w-4 text-zinc-400" />
       </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-4 sm:p-6">
+      <CardContent className="grid grid-cols-4 gap-3 p-4">
         {productionStatRows.map((row) => (
-          <div key={row.label} className="flex items-center gap-2">
+          <div key={row.label} className="flex flex-col gap-1">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
               {row.icon}
             </span>
-            <div className="min-w-0">
-              <p className="truncate text-[11px] text-zinc-500">{row.label}</p>
-              <p className="truncate text-sm font-semibold text-zinc-950">{row.value}</p>
-            </div>
+            <p className="text-xs text-zinc-500">{row.label}</p>
+            <p className="text-base font-semibold text-zinc-950">{row.value}</p>
+            {row.caption && <p className="text-xs text-zinc-400">• {row.caption}</p>}
           </div>
         ))}
       </CardContent>
     </Card>
   );
 
+  // Desktop only — mobile's stat grid, "Contenido generado" card, and
+  // ordering live in mobileFlow below (matches the reference layout).
   const statsSection = (
-    <>
-      {/* Mobile: 2-column icon-card grid + one "Contenido generado" card. */}
-      <div className="flex flex-col gap-3 lg:hidden">
-        {hasResultStats ? (
-          <div className="grid grid-cols-2 gap-3">
-            {resultStatItems.map((item) => (
-              <StatIconCard key={item.label} {...item} />
-            ))}
-          </div>
-        ) : (
-          emptyStatsCard
-        )}
-        {productionStatsCard}
-      </div>
-
-      {/* Desktop: unchanged tile grids from the Orion-reference redesign. */}
       <div className="hidden lg:flex lg:flex-col lg:gap-6">
         {hasResultStats ? (
           <div className="grid grid-cols-4 gap-4">
@@ -679,7 +613,6 @@ export default async function DashboardHomePage() {
           />
         </div>
       </div>
-    </>
   );
 
   const followerGrowthCard = allConnections.length > 0 && (
@@ -730,60 +663,26 @@ export default async function DashboardHomePage() {
     </Card>
   );
 
-  const upcomingPublicationsCard = (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-        <CardTitle>Próximas publicaciones</CardTitle>
-        <Link href="/dashboard/calendario" className="text-xs font-medium text-accent hover:underline">
-          Ver calendario
-        </Link>
-      </CardHeader>
-      <CardContent className="p-4 sm:p-6">
-        <UpcomingPublications items={upcomingContent} />
-      </CardContent>
-    </Card>
-  );
-
-  // Mobile pairs charts differently than desktop (growth+interactions,
-  // then share+insights, upcoming publications gets its own full-width
-  // row) to match the reference layout exactly instead of stacking every
-  // card full-width.
+  // Desktop only — the mobile hero chart, donut, and stat grid live in
+  // mobileFlow below (matches the reference layout exactly).
   const chartsRow = (allConnections.length > 0 || hasPublishedContent) && (
-    <>
-      <div className="flex flex-col gap-3 lg:hidden">
-        {(followerGrowthCard || dailyInteractionsCard) && (
-          <div className="grid grid-cols-2 gap-3">
-            {followerGrowthCard}
-            {dailyInteractionsCard}
-          </div>
-        )}
-        {(platformShareCard || creativeInsightsCard) && (
-          <div className="grid grid-cols-2 gap-3">
-            {platformShareCard}
-            {creativeInsightsCard}
-          </div>
-        )}
-      </div>
-      <div className="hidden lg:grid lg:grid-cols-4 lg:gap-4">
-        {followerGrowthCard}
-        {dailyInteractionsCard}
-        {platformShareCard}
-      </div>
-    </>
-  );
-
-  const insightsRow = (hasPublishedContent || upcomingContent.length > 0) && (
-    <div className="hidden lg:grid lg:grid-cols-2 lg:gap-4">
-      {creativeInsightsCard}
-      {upcomingPublicationsCard}
+    <div className="hidden lg:grid lg:grid-cols-4 lg:gap-4">
+      {followerGrowthCard}
+      {dailyInteractionsCard}
+      {platformShareCard}
     </div>
   );
+
+  const insightsRow = hasPublishedContent && <div className="hidden lg:block">{creativeInsightsCard}</div>;
 
   const actividadReciente = (
     <Card>
       <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
         <CardTitle>Actividad reciente</CardTitle>
-        <Activity className="h-4 w-4 text-accent" />
+        <span className="flex items-center">
+          <Activity className="hidden h-4 w-4 text-accent lg:block" />
+          <ChevronRight className="h-4 w-4 text-zinc-400 lg:hidden" />
+        </span>
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
         {recentActivity && recentActivity.length > 0 ? (
@@ -840,7 +739,7 @@ export default async function DashboardHomePage() {
               </Link>
             )}
             {(anyContentCount ?? 0) === 0 && (
-              <Link href="/dashboard/generar-contenido" className="flex items-center gap-2.5 py-2.5 last:pb-0 sm:gap-3 sm:py-3">
+              <Link href="/dashboard/publicaciones" className="flex items-center gap-2.5 py-2.5 last:pb-0 sm:gap-3 sm:py-3">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
                   <Sparkles className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
                 </span>
@@ -851,6 +750,50 @@ export default async function DashboardHomePage() {
         )}
       </CardContent>
     </Card>
+  );
+
+  // Mobile: exact reference order — hero follower chart, stat grid,
+  // donut (chart+legend side by side), "Contenido generado", then the
+  // shared actividadReciente table below. Desktop is untouched —
+  // statsSection/chartsRow/insightsRow above keep the Orion-reference
+  // layout already approved for larger screens.
+  const mobileFlow = (
+    <div className="flex flex-col gap-4 lg:hidden">
+      {allConnections.length > 0 && (
+        <Card>
+          <CardHeader className="p-4 pb-0">
+            <CardTitle>Crecimiento de seguidores</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <FollowerGrowthHero series={followerSeries} />
+          </CardContent>
+        </Card>
+      )}
+
+      {hasResultStats ? (
+        <div className="grid grid-cols-2 gap-3">
+          {resultStatItems.map((item) => (
+            <StatIconCard key={item.label} {...item} />
+          ))}
+        </div>
+      ) : (
+        emptyStatsCard
+      )}
+
+      {hasPublishedContent && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between p-4 pb-0">
+            <CardTitle>Distribución por red</CardTitle>
+            <ChevronRight className="h-4 w-4 text-zinc-400" />
+          </CardHeader>
+          <CardContent className="p-4">
+            <PlatformShareDonut data={platformInteractionShare} layout="side-by-side" />
+          </CardContent>
+        </Card>
+      )}
+
+      {productionStatsCard}
+    </div>
   );
 
   return (
@@ -896,14 +839,12 @@ export default async function DashboardHomePage() {
         </Alert>
       )}
 
-      {/* One continuous flow at every breakpoint — same section order on
-          phone and on desktop, no separate mobile tabs. Mobile pairs cards
-          differently than desktop (see chartsRow/insightsRow above), so
-          "Próximas publicaciones" gets its own full-width row on mobile
-          instead of sharing insightsRow's desktop-only pairing. */}
-      <div className="animate-fade-in-up stagger-1 flex flex-col gap-3 sm:gap-6">{statsSection}</div>
-      <div className="animate-fade-in-up stagger-2 flex flex-col gap-3 sm:gap-4">{chartsRow}</div>
-      <div className="animate-fade-in-up stagger-2 lg:hidden">{upcomingPublicationsCard}</div>
+      <div className="animate-fade-in-up stagger-1">{mobileFlow}</div>
+
+      {/* Desktop: same continuous flow as before, unchanged (statsSection/
+          chartsRow/insightsRow are each already gated to lg: internally). */}
+      <div className="animate-fade-in-up stagger-1">{statsSection}</div>
+      <div className="animate-fade-in-up stagger-2">{chartsRow}</div>
       <div className="animate-fade-in-up stagger-3">{insightsRow}</div>
       <div className="animate-fade-in-up stagger-4">{actividadReciente}</div>
     </div>

@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useMemo, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Clapperboard, ImageIcon, Clock, Send, Sparkles, RotateCcw, Wand2, Megaphone } from "lucide-react";
+import { Clapperboard, ImageIcon, Clock, Send, RotateCcw, Wand2, Megaphone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -206,10 +205,12 @@ export function PublicationsList({
   initialItems,
   inFlightByItemId,
   connections = [],
+  generateAction,
 }: {
   initialItems: ContentCalendarRow[];
   inFlightByItemId?: Map<string, string>;
   connections?: SocialConnection[];
+  generateAction?: ReactNode;
 }) {
   const [filter, setFilter] = useState<ContentStatus | "todas">("todas");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -238,14 +239,7 @@ export function PublicationsList({
         icon={Send}
         title="Todavía no tienes publicaciones en cola"
         description="En cuanto generes contenido, cada pieza va a aparecer aquí con su estado hasta que se publique."
-        action={
-          <Link href="/dashboard/generar-contenido">
-            <Button size="sm">
-              <Sparkles className="h-4 w-4" />
-              Generar contenido
-            </Button>
-          </Link>
-        }
+        action={generateAction}
       />
     );
   }

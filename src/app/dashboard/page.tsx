@@ -26,6 +26,7 @@ import { FramesMark } from "@/components/brand/FramesMark";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { StatSparkCard } from "@/components/dashboard/stat-spark-card";
 import { MobileStatList } from "@/components/dashboard/mobile-stat-list";
+import { DashboardMobileTabs } from "@/components/dashboard/dashboard-mobile-tabs";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { NotificationBell, type AttentionItem } from "@/components/dashboard/notification-bell";
@@ -573,6 +574,145 @@ export default async function DashboardHomePage() {
   const videosUsed = usage?.videos_used ?? 0;
   const imagesUsed = usage?.images_used ?? 0;
 
+  // Chart/video/insight sections are heavy (recharts, video thumbnails) and
+  // are the reason the mobile page needed so much scroll — on mobile they
+  // live behind the "Analíticas" tab (DashboardMobileTabs only mounts the
+  // active tab) instead of always being on-screen. Desktop is unaffected:
+  // these same elements are reused as-is in the unconditional flow below.
+  const chartsRow = (allConnections.length > 0 || hasPublishedContent) && (
+    <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
+      {allConnections.length > 0 && (
+        <Card mobileFlat>
+          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+            <CardTitle>Crecimiento de seguidores</CardTitle>
+            <TrendingUp className="h-4 w-4 text-accent" />
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            <FollowerGrowthChart series={followerSeries} />
+          </CardContent>
+        </Card>
+      )}
+
+      {hasPublishedContent && (
+        <Card mobileFlat>
+          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+            <CardTitle>Rendimiento por red social</CardTitle>
+            <PieChartIcon className="h-4 w-4 text-accent" />
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            <EngagementRateRings data={platformRings} />
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+
+  const topVideosSection = hasPublishedContent && (
+    <Card mobileFlat>
+      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+        <CardTitle>Top 3 videos más virales</CardTitle>
+        <Trophy className="h-4 w-4 text-accent" />
+      </CardHeader>
+      <CardContent className="p-4 sm:p-6">
+        <TopVideosList posts={topVideosWithMedia} />
+      </CardContent>
+    </Card>
+  );
+
+  const insightsRow = (hasPublishedContent || upcomingContent.length > 0) && (
+    <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
+      {hasPublishedContent && (
+        <Card mobileFlat>
+          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+            <CardTitle>Insights de tu Agente Creativo</CardTitle>
+            <Lightbulb className="h-4 w-4 text-accent" />
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            <CreativeInsightsList insights={creativeInsights} />
+          </CardContent>
+        </Card>
+      )}
+
+      <Card mobileFlat>
+        <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+          <CardTitle>Próximas publicaciones</CardTitle>
+          <Link href="/dashboard/calendario" className="text-xs font-medium text-accent hover:underline">
+            Ver calendario
+          </Link>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6">
+          <UpcomingPublications items={upcomingContent} />
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const actividadReciente = (
+    <Card mobileFlat>
+      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+        <CardTitle>Actividad reciente</CardTitle>
+        <Activity className="h-4 w-4 text-accent" />
+      </CardHeader>
+      <CardContent className="p-4 sm:p-6">
+        {recentActivity && recentActivity.length > 0 ? (
+          <div className="flex flex-col divide-y divide-zinc-100">
+            {recentActivity.map((item) => {
+              const Icon = item.content_kind === "video" ? Clapperboard : ImageIcon;
+              return (
+                <div key={item.id} className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0 sm:gap-3 sm:py-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
+                    <Icon className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-zinc-700">
+                      {ACTIVITY_VERBS[item.status]}{" "}
+                      <span className="font-medium text-zinc-900">&ldquo;{item.topic}&rdquo;</span>
+                    </p>
+                    <p className="text-xs text-zinc-400">
+                      {activityDateFormatter.format(new Date(item.created_at))}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* Fixed, honest tips instead of a generic EmptyState block —
+             same two things onboarding already asks for, just surfaced
+             here too since this is the first thing a new owner sees. */
+          <div className="flex flex-col divide-y divide-zinc-100">
+            <div className="flex items-center gap-2.5 py-2.5 first:pt-0 sm:gap-3 sm:py-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
+                <Activity className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
+              </span>
+              <p className="text-sm text-zinc-500">
+                Aún no hay actividad — aquí vas a ver cada generación, publicación y revisión.
+              </p>
+            </div>
+            {hasNoConnections && (
+              <Link href="/dashboard/redes-sociales" className="flex items-center gap-2.5 py-2.5 sm:gap-3 sm:py-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
+                  <Share2 className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
+                </span>
+                <p className="text-sm text-zinc-700">
+                  Conecta tus redes sociales — así podemos publicar por ti automáticamente.
+                </p>
+              </Link>
+            )}
+            {(anyContentCount ?? 0) === 0 && (
+              <Link href="/dashboard/generar-contenido" className="flex items-center gap-2.5 py-2.5 last:pb-0 sm:gap-3 sm:py-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
+                  <Sparkles className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
+                </span>
+                <p className="text-sm text-zinc-700">Genera tu primer contenido con el Agente Creativo.</p>
+              </Link>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="flex flex-col gap-5 sm:gap-8">
       <div className="animate-fade-in-up flex items-start justify-between gap-3">
@@ -753,146 +893,28 @@ export default async function DashboardHomePage() {
         </div>
       </div>
 
-      {(allConnections.length > 0 || hasPublishedContent) && (
-        <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
-          {allConnections.length > 0 && (
-            <Card mobileFlat>
-              <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-                <CardTitle>Crecimiento de seguidores</CardTitle>
-                <TrendingUp className="h-4 w-4 text-accent" />
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6">
-                <FollowerGrowthChart series={followerSeries} />
-              </CardContent>
-            </Card>
-          )}
+      {/* Mobile: tabbed so the default view (Resumen) stays short — the
+          chart/videos/insights group only mounts once someone taps
+          Analíticas. Desktop below is unaffected, same linear flow as
+          always (DashboardMobileTabs hides itself at sm and up). */}
+      <DashboardMobileTabs
+        resumenLabel="Resumen"
+        resumen={<div className="animate-fade-in-up">{actividadReciente}</div>}
+        analiticasLabel="Analíticas"
+        analiticas={
+          <div className="flex flex-col gap-4">
+            {chartsRow}
+            {topVideosSection}
+            {insightsRow}
+          </div>
+        }
+      />
 
-          {hasPublishedContent && (
-            <Card mobileFlat>
-              <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-                <CardTitle>Rendimiento por red social</CardTitle>
-                <PieChartIcon className="h-4 w-4 text-accent" />
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6">
-                <EngagementRateRings data={platformRings} />
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      )}
-
-      {hasPublishedContent && (
-        <div className="animate-fade-in-up stagger-3">
-          <Card mobileFlat>
-            <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-              <CardTitle>Top 3 videos más virales</CardTitle>
-              <Trophy className="h-4 w-4 text-accent" />
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <TopVideosList posts={topVideosWithMedia} />
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {(hasPublishedContent || upcomingContent.length > 0) && (
-        <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
-          {hasPublishedContent && (
-            <Card mobileFlat>
-              <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-                <CardTitle>Insights de tu Agente Creativo</CardTitle>
-                <Lightbulb className="h-4 w-4 text-accent" />
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6">
-                <CreativeInsightsList insights={creativeInsights} />
-              </CardContent>
-            </Card>
-          )}
-
-          <Card mobileFlat>
-            <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-              <CardTitle>Próximas publicaciones</CardTitle>
-              <Link href="/dashboard/calendario" className="text-xs font-medium text-accent hover:underline">
-                Ver calendario
-              </Link>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <UpcomingPublications items={upcomingContent} />
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <div className="animate-fade-in-up stagger-4">
-        <Card mobileFlat>
-          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-            <CardTitle>Actividad reciente</CardTitle>
-            <Activity className="h-4 w-4 text-accent" />
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            {recentActivity && recentActivity.length > 0 ? (
-              <div className="flex flex-col divide-y divide-zinc-100">
-                {recentActivity.map((item) => {
-                  const Icon = item.content_kind === "video" ? Clapperboard : ImageIcon;
-                  return (
-                    <div key={item.id} className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0 sm:gap-3 sm:py-3">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
-                        <Icon className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm text-zinc-700">
-                          {ACTIVITY_VERBS[item.status]}{" "}
-                          <span className="font-medium text-zinc-900">&ldquo;{item.topic}&rdquo;</span>
-                        </p>
-                        <p className="text-xs text-zinc-400">
-                          {activityDateFormatter.format(new Date(item.created_at))}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              /* Fixed, honest tips instead of a generic EmptyState block —
-                 same two things onboarding already asks for, just surfaced
-                 here too since this is the first thing a new owner sees. */
-              <div className="flex flex-col divide-y divide-zinc-100">
-                <div className="flex items-center gap-2.5 py-2.5 first:pt-0 sm:gap-3 sm:py-3">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
-                    <Activity className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
-                  </span>
-                  <p className="text-sm text-zinc-500">
-                    Aún no hay actividad — aquí vas a ver cada generación, publicación y revisión.
-                  </p>
-                </div>
-                {hasNoConnections && (
-                  <Link
-                    href="/dashboard/redes-sociales"
-                    className="flex items-center gap-2.5 py-2.5 sm:gap-3 sm:py-3"
-                  >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
-                      <Share2 className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
-                    </span>
-                    <p className="text-sm text-zinc-700">
-                      Conecta tus redes sociales — así podemos publicar por ti automáticamente.
-                    </p>
-                  </Link>
-                )}
-                {(anyContentCount ?? 0) === 0 && (
-                  <Link
-                    href="/dashboard/generar-contenido"
-                    className="flex items-center gap-2.5 py-2.5 last:pb-0 sm:gap-3 sm:py-3"
-                  >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-white to-zinc-200 shadow-[0_1px_2px_rgba(0,0,0,0.15)_inset,0_2px_6px_rgba(0,0,0,0.06)] sm:h-8 sm:w-8">
-                      <Sparkles className="h-3.5 w-3.5 text-accent sm:h-4 sm:w-4" strokeWidth={1.75} />
-                    </span>
-                    <p className="text-sm text-zinc-700">Genera tu primer contenido con el Agente Creativo.</p>
-                  </Link>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="hidden sm:flex sm:flex-col sm:gap-8">
+        <div className="animate-fade-in-up stagger-3">{chartsRow}</div>
+        <div className="animate-fade-in-up stagger-3">{topVideosSection}</div>
+        <div className="animate-fade-in-up stagger-3">{insightsRow}</div>
+        <div className="animate-fade-in-up stagger-4">{actividadReciente}</div>
       </div>
     </div>
   );

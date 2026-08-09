@@ -25,7 +25,6 @@ import { FramesMark } from "@/components/brand/FramesMark";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { StatSparkCard } from "@/components/dashboard/stat-spark-card";
 import { MobileStatList } from "@/components/dashboard/mobile-stat-list";
-import { DashboardMobileTabs } from "@/components/dashboard/dashboard-mobile-tabs";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { NotificationBell, type AttentionItem } from "@/components/dashboard/notification-bell";
@@ -646,11 +645,6 @@ export default async function DashboardHomePage() {
     </>
   );
 
-  // Chart/video/insight sections are heavy (recharts, video thumbnails) and
-  // are the reason the mobile page needed so much scroll — on mobile each
-  // lives behind its own tab (DashboardMobileTabs only mounts the active
-  // tab) instead of always being on-screen. Desktop is unaffected: these
-  // same elements are reused as-is in the unconditional flow below.
   const chartsRow = (allConnections.length > 0 || hasPublishedContent) && (
     <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-4">
       {allConnections.length > 0 && (
@@ -717,8 +711,6 @@ export default async function DashboardHomePage() {
     </Card>
   );
 
-  // Desktop keeps these two side by side (unchanged); mobile regroups them
-  // into different tabs below, so this pairing is desktop-only now.
   const insightsRow = (hasPublishedContent || upcomingContent.length > 0) && (
     <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
       {creativeInsightsCard}
@@ -843,42 +835,12 @@ export default async function DashboardHomePage() {
         </Alert>
       )}
 
-      {/* Mobile: 2 tabs — Resumen (stats + recent activity) and Analíticas
-          (chart, top videos, insights, upcoming) — both live inside this
-          same /dashboard page, not a separate route. Desktop below is
-          unaffected, same linear flow as always. */}
-      <DashboardMobileTabs
-        tabs={[
-          {
-            key: "resumen",
-            label: "Resumen",
-            content: (
-              <div className="flex flex-col gap-4">
-                {statsSection}
-                {actividadReciente}
-              </div>
-            ),
-          },
-          {
-            key: "analiticas",
-            label: "Analíticas",
-            content: (
-              <div className="flex flex-col gap-4">
-                {chartsRow}
-                {creativeInsightsCard}
-                {upcomingPublicationsCard}
-              </div>
-            ),
-          },
-        ]}
-      />
-
-      <div className="hidden sm:flex sm:flex-col sm:gap-8">
-        <div className="animate-fade-in-up stagger-1">{statsSection}</div>
-        <div className="animate-fade-in-up stagger-3">{chartsRow}</div>
-        <div className="animate-fade-in-up stagger-3">{insightsRow}</div>
-        <div className="animate-fade-in-up stagger-4">{actividadReciente}</div>
-      </div>
+      {/* One continuous flow at every breakpoint — same section order on
+          phone and on desktop, no separate mobile tabs. */}
+      <div className="animate-fade-in-up stagger-1 flex flex-col gap-4 sm:gap-6">{statsSection}</div>
+      <div className="animate-fade-in-up stagger-2">{chartsRow}</div>
+      <div className="animate-fade-in-up stagger-3">{insightsRow}</div>
+      <div className="animate-fade-in-up stagger-4">{actividadReciente}</div>
     </div>
   );
 }

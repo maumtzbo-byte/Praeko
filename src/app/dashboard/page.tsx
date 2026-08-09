@@ -649,7 +649,7 @@ export default async function DashboardHomePage() {
           </div>
         </div>
       ) : (
-        <Card mobileFlat>
+        <Card>
           <CardContent className="p-4 sm:p-6">
             <EmptyState
               icon={BarChart3}
@@ -717,26 +717,26 @@ export default async function DashboardHomePage() {
   // tab) instead of always being on-screen. Desktop is unaffected: these
   // same elements are reused as-is in the unconditional flow below.
   const chartsRow = (allConnections.length > 0 || hasPublishedContent) && (
-    <div className="grid grid-cols-1 gap-2 sm:gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
       {allConnections.length > 0 && (
-        <Card mobileFlat>
-          <CardHeader className="flex-row items-center justify-between p-3 pb-0 sm:p-6 sm:pb-0">
+        <Card>
+          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
             <CardTitle>Crecimiento de seguidores</CardTitle>
             <TrendingUp className="h-4 w-4 text-accent" />
           </CardHeader>
-          <CardContent className="p-3 sm:p-6">
+          <CardContent className="p-4 sm:p-6">
             <FollowerGrowthChart series={followerSeries} />
           </CardContent>
         </Card>
       )}
 
       {hasPublishedContent && (
-        <Card mobileFlat>
-          <CardHeader className="flex-row items-center justify-between p-3 pb-0 sm:p-6 sm:pb-0">
+        <Card>
+          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
             <CardTitle>Rendimiento por red social</CardTitle>
             <PieChartIcon className="h-4 w-4 text-accent" />
           </CardHeader>
-          <CardContent className="p-3 sm:p-6">
+          <CardContent className="p-4 sm:p-6">
             <EngagementRateRings data={platformRings} />
           </CardContent>
         </Card>
@@ -745,19 +745,19 @@ export default async function DashboardHomePage() {
   );
 
   const topVideosSection = hasPublishedContent && (
-    <Card mobileFlat>
-      <CardHeader className="flex-row items-center justify-between p-3 pb-0 sm:p-6 sm:pb-0">
+    <Card>
+      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
         <CardTitle>Top 3 videos más virales</CardTitle>
         <Trophy className="h-4 w-4 text-accent" />
       </CardHeader>
-      <CardContent className="p-3 sm:p-6">
+      <CardContent className="p-4 sm:p-6">
         <TopVideosList posts={topVideosWithMedia} />
       </CardContent>
     </Card>
   );
 
   const creativeInsightsCard = hasPublishedContent && (
-    <Card mobileFlat>
+    <Card>
       <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
         <CardTitle>Insights de tu Agente Creativo</CardTitle>
         <Lightbulb className="h-4 w-4 text-accent" />
@@ -769,7 +769,7 @@ export default async function DashboardHomePage() {
   );
 
   const upcomingPublicationsCard = (
-    <Card mobileFlat>
+    <Card>
       <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
         <CardTitle>Próximas publicaciones</CardTitle>
         <Link href="/dashboard/calendario" className="text-xs font-medium text-accent hover:underline">
@@ -792,7 +792,7 @@ export default async function DashboardHomePage() {
   );
 
   const actividadReciente = (
-    <Card mobileFlat>
+    <Card>
       <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
         <CardTitle>Actividad reciente</CardTitle>
         <Activity className="h-4 w-4 text-accent" />
@@ -900,18 +900,34 @@ export default async function DashboardHomePage() {
         </Alert>
       )}
 
-      {/* Mobile: 4 tabs, each sized to fit one phone screen on its own —
-          the stats alone plus any of the chart/videos/insights groups
-          together would still need scrolling, so every group (including
-          the stat tiles) gets its own tab. Desktop below is unaffected,
-          same linear flow as always (DashboardMobileTabs hides itself at
-          sm+, so this whole component contributes nothing there). */}
+      {/* Mobile: 2 tabs — Resumen (stats + recent activity) and Analíticas
+          (chart, top videos, insights, upcoming) — both live inside this
+          same /dashboard page, not a separate route. Desktop below is
+          unaffected, same linear flow as always. */}
       <DashboardMobileTabs
         tabs={[
-          { key: "resumen", label: "Resumen", content: <div className="flex flex-col gap-4">{statsSection}</div> },
-          { key: "crecimiento", label: "Crecimiento", content: <div className="flex flex-col gap-4">{chartsRow}</div> },
-          { key: "contenido", label: "Contenido", content: <div className="flex flex-col gap-4">{topVideosSection}{upcomingPublicationsCard}</div> },
-          { key: "actividad", label: "Actividad", content: <div className="flex flex-col gap-4">{creativeInsightsCard}{actividadReciente}</div> },
+          {
+            key: "resumen",
+            label: "Resumen",
+            content: (
+              <div className="flex flex-col gap-4">
+                {statsSection}
+                {actividadReciente}
+              </div>
+            ),
+          },
+          {
+            key: "analiticas",
+            label: "Analíticas",
+            content: (
+              <div className="flex flex-col gap-4">
+                {chartsRow}
+                {topVideosSection}
+                {creativeInsightsCard}
+                {upcomingPublicationsCard}
+              </div>
+            ),
+          },
         ]}
       />
 

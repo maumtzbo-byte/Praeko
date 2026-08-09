@@ -10,15 +10,10 @@ export interface DashboardMobileTab {
 }
 
 /**
- * Mobile-only. Splitting the dashboard into tabs (only the active one
- * ever mounts) isn't just to avoid one long scroll — each tab's content
- * is sized to fit a single phone screen on its own, so switching tabs is
- * the only navigation needed; nothing inside a tab should need scrolling.
- * That's why there are four tabs here instead of two: "Resumen" +
- * "Analíticas" together were still one long scroll, because a growth
- * chart, video thumbnails, and insight lists don't fit one screen
- * combined. Desktop is unaffected — it keeps the original unconditional
- * flow, since there's no scroll problem on a wide screen.
+ * Mobile-only, two tabs (Resumen / Analíticas) — only the active tab's
+ * content ever mounts, both live on this same /dashboard page. Desktop
+ * is unaffected — it keeps the original unconditional flow, since
+ * there's no scroll problem on a wide screen.
  */
 export function DashboardMobileTabs({ tabs }: { tabs: DashboardMobileTab[] }) {
   const [active, setActive] = useState(tabs[0]?.key);

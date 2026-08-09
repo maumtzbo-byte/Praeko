@@ -825,21 +825,29 @@ export default async function DashboardHomePage() {
               <CardTitle>Resumen de analíticas</CardTitle>
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-                <StatCard icon={Share2} label="COMPARTIDOS" value={formatInsightNumber(insightsSummary?.totalShares ?? null)} />
-                <StatCard
-                  icon={TrendingUp}
-                  label="TASA DE ENGAGEMENT"
-                  value={blendedEngagementRatePct !== null ? `${blendedEngagementRatePct}%` : "—"}
-                  sublabel="interacciones / alcance"
-                />
-                <StatCard icon={Send} label="PUBLICACIONES" value={String(publishedCount ?? 0)} sublabel="piezas publicadas" />
-                <StatCard
-                  icon={Eye}
-                  label="ALCANCE PROMEDIO"
-                  value={avgImpressionsPerPost !== null ? formatInsightNumber(avgImpressionsPerPost) : "—"}
-                  sublabel="por publicación"
-                />
+              <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
+                <div className="w-40 shrink-0 sm:w-auto">
+                  <StatCard icon={Share2} label="COMPARTIDOS" value={formatInsightNumber(insightsSummary?.totalShares ?? null)} />
+                </div>
+                <div className="w-40 shrink-0 sm:w-auto">
+                  <StatCard
+                    icon={TrendingUp}
+                    label="TASA DE ENGAGEMENT"
+                    value={blendedEngagementRatePct !== null ? `${blendedEngagementRatePct}%` : "—"}
+                    sublabel="interacciones / alcance"
+                  />
+                </div>
+                <div className="w-40 shrink-0 sm:w-auto">
+                  <StatCard icon={Send} label="PUBLICACIONES" value={String(publishedCount ?? 0)} sublabel="piezas publicadas" />
+                </div>
+                <div className="w-40 shrink-0 sm:w-auto">
+                  <StatCard
+                    icon={Eye}
+                    label="ALCANCE PROMEDIO"
+                    value={avgImpressionsPerPost !== null ? formatInsightNumber(avgImpressionsPerPost) : "—"}
+                    sublabel="por publicación"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -30,11 +30,11 @@ export function TopVideosList({ posts }: { posts: TopVideoWithMedia[] }) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0">
       {posts.map((post, i) => {
         const PlatformIcon = PLATFORM_ICONS[post.platform];
         return (
-          <div key={post.itemId} className="flex flex-col gap-2">
+          <div key={post.itemId} className="flex w-36 shrink-0 flex-col gap-2 sm:w-auto">
             <div className="relative aspect-[9/16] w-full overflow-hidden rounded-2xl bg-zinc-900">
               {post.mediaUrl ? (
                 <video

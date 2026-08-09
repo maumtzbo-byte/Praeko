@@ -6,6 +6,7 @@ import { Menu, X, Sparkles, TrendingUp, AlertTriangle } from "lucide-react";
 import { FramesMark } from "@/components/brand/FramesMark";
 import { SidebarNav } from "./sidebar-nav";
 import { FeedbackModal } from "./feedback-modal";
+import { MobileBottomNav } from "./mobile-bottom-nav";
 
 export type PlanBannerInfo =
   | { kind: "no_plan" }
@@ -135,11 +136,13 @@ export function DashboardShell({
           </span>
         </header>
 
-        <main className="px-4 py-8 sm:px-6 lg:px-10">
+        <main className="px-4 py-8 pb-24 sm:px-6 lg:px-10 lg:pb-8">
           {planBanner && <PlanBanner info={planBanner} />}
           {children}
         </main>
       </div>
+
+      <MobileBottomNav onOpenMore={() => setMobileOpen(true)} />
     </div>
   );
 }

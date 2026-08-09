@@ -18,11 +18,14 @@ import {
   TrendingUp,
   Trophy,
   PieChart as PieChartIcon,
+  Users,
+  Lightbulb,
 } from "lucide-react";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { FramesMark } from "@/components/brand/FramesMark";
 import { StatCard } from "@/components/dashboard/stat-card";
+import { StatSparkCard } from "@/components/dashboard/stat-spark-card";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { NotificationBell, type AttentionItem } from "@/components/dashboard/notification-bell";
@@ -34,14 +37,16 @@ import {
   summarizeInsights,
   buildDailyInsightsSeries,
   rankTopPosts,
-  summarizeByPlatform,
+  summarizePlatformEngagementRates,
+  generateCreativeInsights,
   type PublishedPostInsightResult,
 } from "@/lib/agents/results-agent";
 import { formatInsightNumber } from "@/lib/content/format-insights";
-import { DualAreaChart } from "@/components/dashboard/dual-area-chart";
-import { TopVideosList } from "@/components/dashboard/top-videos-list";
-import { PlatformBreakdownDonut } from "@/components/dashboard/platform-breakdown-donut";
+import { TopVideosList, type TopVideoWithMedia } from "@/components/dashboard/top-videos-list";
+import { EngagementRateRings, type PlatformRingData } from "@/components/dashboard/engagement-rate-rings";
 import { FollowerGrowthChart, type FollowerSeries } from "@/components/dashboard/follower-growth-chart";
+import { CreativeInsightsList } from "@/components/dashboard/creative-insights-list";
+import { UpcomingPublications, type UpcomingItem } from "@/components/dashboard/upcoming-publications";
 import { fetchAccountFollowers } from "@/lib/social/insights";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/social";
 import type { Tables } from "@/lib/supabase/types";
@@ -266,6 +271,143 @@ async function captureAndFetchFollowerSeries(
   });
 }
 
+/** Real week-over-week follower growth for one platform — null (not 0)
+ * when there's no snapshot from 7 days ago yet, since "no data" and "no
+ * growth" are different claims. */
+function weeklyFollowerGrowthPct(series: FollowerSeries): number | null {
+  const weekAgoStr = new Date(Date.now() - 7 * 86_400_000).toISOString().slice(0, 10);
+  const weekAgoPoint = series.points.find((p) => p.date === weekAgoStr);
+  if (!weekAgoPoint || weekAgoPoint.followers === 0) return null;
+  return Math.round(((series.currentFollowers - weekAgoPoint.followers) / weekAgoPoint.followers) * 1000) / 10;
+}
+
+function daysAgoStr(days: number) {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
+}
+
+function weeklyChangePct(current: number, weekAgo: number | null): number | null {
+  if (weekAgo === null || weekAgo === 0) return null;
+  return Math.round(((current - weekAgo) / weekAgo) * 1000) / 10;
+}
+
+/** Total followers across every connected platform per day, forward-filled
+ * between snapshots (a day without a fresh snapshot didn't necessarily
+ * lose followers — carrying the last known real value forward is closer
+ * to the truth than dropping to zero). Days before the very first
+ * snapshot stay at 0, which the caller only renders once there are 2+
+ * real snapshot dates to begin with. */
+function buildFollowersDailySparkline(followerSeries: FollowerSeries[], days: number): number[] {
+  const totalsByDate = new Map<string, number>();
+  for (const s of followerSeries) {
+    for (const p of s.points) {
+      totalsByDate.set(p.date, (totalsByDate.get(p.date) ?? 0) + p.followers);
+    }
+  }
+  const points: number[] = [];
+  let lastKnown = 0;
+  for (let i = days - 1; i >= 0; i--) {
+    const key = daysAgoStr(i);
+    lastKnown = totalsByDate.get(key) ?? lastKnown;
+    points.push(lastKnown);
+  }
+  return points;
+}
+
+/** Real per-day sum of one insights field across every published post —
+ * zero-filled honestly, since a day with no posts really did have zero
+ * likes/comments/impressions that day. */
+function buildDailyMetricSparkline(
+  results: PublishedPostInsightResult[],
+  days: number,
+  pick: (insights: { likes: number | null; comments: number | null; impressions: number | null; shares: number | null }) => number | null,
+): number[] {
+  const byDate = new Map<string, number>();
+  for (const result of results) {
+    if (!result.insights) continue;
+    const value = pick(result.insights);
+    if (value === null) continue;
+    byDate.set(result.scheduledDate, (byDate.get(result.scheduledDate) ?? 0) + value);
+  }
+  const points: number[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    points.push(byDate.get(daysAgoStr(i)) ?? 0);
+  }
+  return points;
+}
+
+/** Compares the sum of the trailing 7 days to the 7 days before that —
+ * null when there isn't a full two-week window yet, or when the prior
+ * week was entirely zero (a percentage against zero isn't a real number). */
+function weekOverWeekSumChangePct(daily: number[]): number | null {
+  if (daily.length < 14) return null;
+  const last7 = daily.slice(-7).reduce((a, b) => a + b, 0);
+  const prev7 = daily.slice(-14, -7).reduce((a, b) => a + b, 0);
+  if (prev7 === 0) return null;
+  return Math.round(((last7 - prev7) / prev7) * 1000) / 10;
+}
+
+/** Real generated media (fal.ai output URL) for a batch of content_calendar
+ * rows — same job-status/ordering pattern getContentDetail already uses
+ * (publicaciones/actions.ts), just batched across a few items at once
+ * instead of fetched one at a time. Used for both the top-videos thumbnails
+ * and the upcoming-publications previews. */
+async function getMediaUrlsForItems(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  itemIds: string[],
+): Promise<Map<string, string>> {
+  if (itemIds.length === 0) return new Map();
+  const { data } = await supabase
+    .from("generations")
+    .select("content_calendar_id, storage_path, created_at")
+    .in("content_calendar_id", itemIds)
+    .eq("job_status", "completed")
+    .not("storage_path", "is", null)
+    .order("created_at", { ascending: false });
+
+  const media = new Map<string, string>();
+  for (const row of data ?? []) {
+    if (row.content_calendar_id && row.storage_path && !media.has(row.content_calendar_id)) {
+      media.set(row.content_calendar_id, row.storage_path);
+    }
+  }
+  return media;
+}
+
+const MAX_UPCOMING_ITEMS = 4;
+
+async function getUpcomingContent(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  businessId: string,
+): Promise<UpcomingItem[]> {
+  const { data } = await supabase
+    .from("content_calendar")
+    .select("id, topic, content_kind, scheduled_date, recommended_publish_time")
+    .eq("business_id", businessId)
+    .in("status", ["pendiente", "generada"])
+    .gte("scheduled_date", daysAgoStr(0))
+    .order("scheduled_date", { ascending: true })
+    .limit(MAX_UPCOMING_ITEMS);
+
+  const items = data ?? [];
+  if (items.length === 0) return [];
+
+  const media = await getMediaUrlsForItems(
+    supabase,
+    items.map((i) => i.id),
+  );
+
+  return items.map((item) => ({
+    id: item.id,
+    topic: item.topic,
+    contentKind: item.content_kind,
+    scheduledDate: item.scheduled_date,
+    recommendedPublishTime: item.recommended_publish_time,
+    mediaUrl: media.get(item.id) ?? null,
+  }));
+}
+
 function firstNameFromEmail(email: string | undefined) {
   if (!email) return "";
   return email.split("@")[0];
@@ -399,15 +541,60 @@ export default async function DashboardHomePage() {
 
   // Only worth the live Meta/TikTok calls when there's actually something
   // published to ask about.
-  const [insightsResults, attentionItems, followerSeries] = await Promise.all([
+  const [insightsResults, attentionItems, followerSeries, upcomingContent] = await Promise.all([
     hasPublishedContent ? getPublishedInsightsResults(supabase, business.id) : Promise.resolve([]),
     getAttentionItems(supabase, business.id, subscription),
     captureAndFetchFollowerSeries(supabase, business.id, allConnections),
+    getUpcomingContent(supabase, business.id),
   ]);
   const insightsSummary = insightsResults.length > 0 ? summarizeInsights(insightsResults) : null;
   const chartData = buildDailyInsightsSeries(insightsResults, INSIGHTS_WINDOW_DAYS);
   const topVideos = rankTopPosts(insightsResults, 3, "video");
-  const platformBreakdown = summarizeByPlatform(insightsResults);
+  const topVideoMedia = await getMediaUrlsForItems(
+    supabase,
+    topVideos.map((v) => v.itemId),
+  );
+  const topVideosWithMedia: TopVideoWithMedia[] = topVideos.map((v) => ({ ...v, mediaUrl: topVideoMedia.get(v.itemId) ?? null }));
+  const creativeInsights = generateCreativeInsights(insightsResults, topVideos[0] ?? null);
+
+  // Blended across every platform, distinct from the per-platform rings —
+  // and average reach per post, a number the top row doesn't show at all.
+  const totalInteractions = (insightsSummary?.totalLikes ?? 0) + (insightsSummary?.totalComments ?? 0) + (insightsSummary?.totalShares ?? 0);
+  const blendedEngagementRatePct =
+    insightsSummary?.totalImpressions && insightsSummary.totalImpressions > 0
+      ? Math.round((totalInteractions / insightsSummary.totalImpressions) * 1000) / 10
+      : null;
+  const avgImpressionsPerPost =
+    insightsSummary?.totalImpressions !== null && insightsSummary?.totalImpressions !== undefined && insightsSummary.totalPosts > 0
+      ? Math.round(insightsSummary.totalImpressions / insightsSummary.totalPosts)
+      : null;
+
+  const platformEngagementRates = summarizePlatformEngagementRates(insightsResults);
+  const followerGrowthByPlatform = new Map(followerSeries.map((s) => [s.platform, weeklyFollowerGrowthPct(s)]));
+  const platformRings: PlatformRingData[] = platformEngagementRates.map((rate) => ({
+    ...rate,
+    followerGrowthPct: followerGrowthByPlatform.get(rate.platform) ?? null,
+  }));
+
+  // Top stat row: real daily sparklines + a real week-over-week % change,
+  // each only shown once there's enough real history to make the
+  // comparison honest (see showTrend / the null-guards in the helpers).
+  const totalFollowersToday = followerSeries.reduce((sum, s) => sum + s.currentFollowers, 0);
+  const followersWeekAgoStr = daysAgoStr(7);
+  const followersWeekAgoValues = followerSeries.map((s) => s.points.find((p) => p.date === followersWeekAgoStr)?.followers);
+  const totalFollowersWeekAgo = followersWeekAgoValues.every((v) => v !== undefined)
+    ? followersWeekAgoValues.reduce<number>((sum, v) => sum + (v ?? 0), 0)
+    : null;
+  const followersChangePct = weeklyChangePct(totalFollowersToday, totalFollowersWeekAgo);
+  const followersShowTrend = followerSeries.some((s) => new Set(s.points.map((p) => p.date)).size >= 2);
+  const followersSparkline = buildFollowersDailySparkline(followerSeries, INSIGHTS_WINDOW_DAYS);
+
+  const likesSparkline = buildDailyMetricSparkline(insightsResults, INSIGHTS_WINDOW_DAYS, (i) => i.likes);
+  const commentsSparkline = buildDailyMetricSparkline(insightsResults, INSIGHTS_WINDOW_DAYS, (i) => i.comments);
+  const alcanceSparkline = chartData.map((d) => d.alcance);
+  const likesChangePct = weekOverWeekSumChangePct(likesSparkline);
+  const commentsChangePct = weekOverWeekSumChangePct(commentsSparkline);
+  const alcanceChangePct = weekOverWeekSumChangePct(alcanceSparkline);
 
   const onboardingSteps = [
     { label: "Elige tu plan", href: "/dashboard/plan", done: Boolean(subscription), icon: Gem },
@@ -473,91 +660,62 @@ export default async function DashboardHomePage() {
       {/* Resultados first — a business owner opening the dashboard wants to
           know "is this working", not the raw generation count, so results
           lead the page instead of sharing a row with unrelated stats. */}
-      <div className="animate-fade-in-up stagger-1">
-        <Card>
-          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-            <CardTitle>Rendimiento de publicaciones</CardTitle>
-            <BarChart3 className="h-4 w-4 text-accent" />
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            {hasPublishedContent ? (
-              <div className="flex flex-col gap-3 py-1 sm:gap-4 sm:py-2">
-                {insightsSummary ? (
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
-                    <div>
-                      <div className="flex items-center gap-1.5 text-zinc-400">
-                        <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
-                        <span className="text-[10px] font-medium tracking-wide">IMPRESIONES</span>
-                      </div>
-                      <p className="mt-1 text-lg font-semibold text-zinc-900 sm:text-xl">
-                        {formatInsightNumber(insightsSummary.totalImpressions)}
-                      </p>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5 text-zinc-400">
-                        <Heart className="h-3.5 w-3.5" strokeWidth={1.75} />
-                        <span className="text-[10px] font-medium tracking-wide">ME GUSTA</span>
-                      </div>
-                      <p className="mt-1 text-lg font-semibold text-zinc-900 sm:text-xl">
-                        {formatInsightNumber(insightsSummary.totalLikes)}
-                      </p>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5 text-zinc-400">
-                        <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
-                        <span className="text-[10px] font-medium tracking-wide">COMENTARIOS</span>
-                      </div>
-                      <p className="mt-1 text-lg font-semibold text-zinc-900 sm:text-xl">
-                        {formatInsightNumber(insightsSummary.totalComments)}
-                      </p>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5 text-zinc-400">
-                        <Share2 className="h-3.5 w-3.5" strokeWidth={1.75} />
-                        <span className="text-[10px] font-medium tracking-wide">COMPARTIDOS</span>
-                      </div>
-                      <p className="mt-1 text-lg font-semibold text-zinc-900 sm:text-xl">
-                        {formatInsightNumber(insightsSummary.totalShares)}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-sm text-zinc-600">
-                    Ya tienes <span className="font-semibold text-zinc-900">{publishedCount}</span>{" "}
-                    {publishedCount === 1 ? "pieza publicada" : "piezas publicadas"} — sin datos de alcance por
-                    ahora.
-                  </p>
-                )}
-                {insightsSummary && (
-                  <DualAreaChart
-                    data={chartData}
-                    series={[
-                      { key: "alcance", label: "Alcance", color: "var(--accent)" },
-                      { key: "interacciones", label: "Interacciones", color: "var(--accent-strong)" },
-                    ]}
-                  />
-                )}
-              </div>
-            ) : (
+      {hasPublishedContent || allConnections.length > 0 ? (
+        <div className="animate-fade-in-up stagger-1 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          <StatSparkCard
+            icon={<Users className="h-4 w-4" strokeWidth={1.75} />}
+            label="Seguidores"
+            value={totalFollowersToday.toLocaleString("es-MX")}
+            sparkline={followersSparkline}
+            changePct={followersChangePct}
+            showTrend={followersShowTrend}
+          />
+          <StatSparkCard
+            icon={<Heart className="h-4 w-4" strokeWidth={1.75} />}
+            label="Likes"
+            value={formatInsightNumber(insightsSummary?.totalLikes ?? null)}
+            sparkline={likesSparkline}
+            changePct={likesChangePct}
+            showTrend={hasPublishedContent}
+          />
+          <StatSparkCard
+            icon={<MessageCircle className="h-4 w-4" strokeWidth={1.75} />}
+            label="Comentarios"
+            value={formatInsightNumber(insightsSummary?.totalComments ?? null)}
+            sparkline={commentsSparkline}
+            changePct={commentsChangePct}
+            showTrend={hasPublishedContent}
+          />
+          <StatSparkCard
+            icon={<Eye className="h-4 w-4" strokeWidth={1.75} />}
+            label="Alcance"
+            value={formatInsightNumber(insightsSummary?.totalImpressions ?? null)}
+            sparkline={alcanceSparkline}
+            changePct={alcanceChangePct}
+            showTrend={hasPublishedContent}
+          />
+        </div>
+      ) : (
+        <div className="animate-fade-in-up stagger-1">
+          <Card>
+            <CardContent className="p-4 sm:p-6">
               <EmptyState
                 icon={BarChart3}
                 title="Todavía no hay datos que mostrar"
                 description="Conecta tus redes sociales y publica tu primera pieza para empezar a ver alcance y engagement aquí."
                 action={
-                  hasNoConnections ? (
-                    <Link href="/dashboard/redes-sociales">
-                      <Button size="sm">
-                        <Share2 className="h-4 w-4" />
-                        Conectar redes sociales
-                      </Button>
-                    </Link>
-                  ) : undefined
+                  <Link href="/dashboard/redes-sociales">
+                    <Button size="sm">
+                      <Share2 className="h-4 w-4" />
+                      Conectar redes sociales
+                    </Button>
+                  </Link>
                 }
               />
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Subscription status now lives only in PlanBanner (dashboard/layout.tsx,
           shown when it actually needs attention) — repeating it here as a
@@ -590,43 +748,99 @@ export default async function DashboardHomePage() {
         />
       </div>
 
-      {allConnections.length > 0 && (
-        <div className="animate-fade-in-up stagger-3">
-          <Card>
-            <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-              <CardTitle>Crecimiento de seguidores</CardTitle>
-              <TrendingUp className="h-4 w-4 text-accent" />
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <FollowerGrowthChart series={followerSeries} />
-            </CardContent>
-          </Card>
+      {(allConnections.length > 0 || hasPublishedContent) && (
+        <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
+          {allConnections.length > 0 && (
+            <Card>
+              <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+                <CardTitle>Crecimiento de seguidores</CardTitle>
+                <TrendingUp className="h-4 w-4 text-accent" />
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6">
+                <FollowerGrowthChart series={followerSeries} />
+              </CardContent>
+            </Card>
+          )}
+
+          {hasPublishedContent && (
+            <Card>
+              <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+                <CardTitle>Rendimiento por red social</CardTitle>
+                <PieChartIcon className="h-4 w-4 text-accent" />
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6">
+                <EngagementRateRings data={platformRings} />
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 
       {hasPublishedContent && (
-        <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
+        <div className="animate-fade-in-up stagger-3">
           <Card>
             <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
               <CardTitle>Top 3 videos más virales</CardTitle>
               <Trophy className="h-4 w-4 text-accent" />
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
-              <TopVideosList posts={topVideos} />
+              <TopVideosList posts={topVideosWithMedia} />
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {(hasPublishedContent || upcomingContent.length > 0) && (
+        <div className="animate-fade-in-up stagger-3 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
+          {hasPublishedContent && (
+            <Card>
+              <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+                <CardTitle>Insights de tu Agente Creativo</CardTitle>
+                <Lightbulb className="h-4 w-4 text-accent" />
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6">
+                <CreativeInsightsList insights={creativeInsights} />
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-              <CardTitle>Mejor red social</CardTitle>
-              <PieChartIcon className="h-4 w-4 text-accent" />
+              <CardTitle>Próximas publicaciones</CardTitle>
+              <Link href="/dashboard/calendario" className="text-xs font-medium text-accent hover:underline">
+                Ver calendario
+              </Link>
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
-              {platformBreakdown.length > 0 ? (
-                <PlatformBreakdownDonut data={platformBreakdown} />
-              ) : (
-                <p className="text-sm text-zinc-500">Sin datos de engagement por red todavía.</p>
-              )}
+              <UpcomingPublications items={upcomingContent} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {hasPublishedContent && (
+        <div className="animate-fade-in-up stagger-3">
+          <Card>
+            <CardHeader className="p-4 pb-0 sm:p-6 sm:pb-0">
+              <CardTitle>Resumen de analíticas</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                <StatCard icon={Share2} label="COMPARTIDOS" value={formatInsightNumber(insightsSummary?.totalShares ?? null)} />
+                <StatCard
+                  icon={TrendingUp}
+                  label="TASA DE ENGAGEMENT"
+                  value={blendedEngagementRatePct !== null ? `${blendedEngagementRatePct}%` : "—"}
+                  sublabel="interacciones / alcance"
+                />
+                <StatCard icon={Send} label="PUBLICACIONES" value={String(publishedCount ?? 0)} sublabel="piezas publicadas" />
+                <StatCard
+                  icon={Eye}
+                  label="ALCANCE PROMEDIO"
+                  value={avgImpressionsPerPost !== null ? formatInsightNumber(avgImpressionsPerPost) : "—"}
+                  sublabel="por publicación"
+                />
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -160,32 +160,106 @@ export function rankTopPosts(
     }));
 }
 
-export interface PlatformBreakdown {
+export interface PlatformEngagementRate {
   platform: SocialPlatform;
-  engagement: number;
-  percentage: number;
+  engagementRatePct: number;
 }
 
-/** Same engagement metric as rankTopPosts, summed per platform — "best
- * network" means where the audience actually responds, not just where
- * more was posted. Platforms with zero measurable engagement (no
- * successful insights fetch) are left out rather than shown as 0%. */
-export function summarizeByPlatform(results: PublishedPostInsightResult[]): PlatformBreakdown[] {
-  const byPlatform = new Map<SocialPlatform, number>();
+/** Real engagement rate per platform — interactions divided by
+ * impressions, not a share of a company-wide total — so "91%" on one
+ * platform and "64%" on another are each independently true, not forced
+ * to sum to 100. A platform with no known impressions total is left out
+ * rather than shown with a fabricated denominator. */
+export function summarizePlatformEngagementRates(results: PublishedPostInsightResult[]): PlatformEngagementRate[] {
+  const byPlatform = new Map<SocialPlatform, { impressions: number; interactions: number }>();
   for (const result of results) {
-    const score = engagementScore(result.insights);
-    if (score === null) continue;
-    byPlatform.set(result.platform, (byPlatform.get(result.platform) ?? 0) + score);
+    if (!result.insights) continue;
+    const { impressions, likes, comments, shares } = result.insights;
+    if (!impressions) continue;
+    const entry = byPlatform.get(result.platform) ?? { impressions: 0, interactions: 0 };
+    entry.impressions += impressions;
+    entry.interactions += (likes ?? 0) + (comments ?? 0) + (shares ?? 0);
+    byPlatform.set(result.platform, entry);
   }
 
-  const total = Array.from(byPlatform.values()).reduce((a, b) => a + b, 0);
-  if (total === 0) return [];
-
   return Array.from(byPlatform.entries())
-    .map(([platform, engagement]) => ({
+    .map(([platform, { impressions, interactions }]) => ({
       platform,
-      engagement,
-      percentage: Math.round((engagement / total) * 100),
+      engagementRatePct: Math.round((interactions / impressions) * 1000) / 10,
     }))
-    .sort((a, b) => b.engagement - a.engagement);
+    .sort((a, b) => b.engagementRatePct - a.engagementRatePct);
+}
+
+export interface CreativeInsight {
+  kind: "content_kind" | "weekday" | "recommendation";
+  title: string;
+  description: string;
+}
+
+const WEEKDAY_LABELS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+
+/**
+ * Agente Creativo — real, small-sample-aware observations, not templated
+ * copy. Every insight is only pushed when the underlying numbers actually
+ * support the claim: video-vs-image needs at least 2 of each kind with
+ * real engagement, the "best weekday" needs posts spread across at least
+ * 3 different weekdays. An account too new for either just gets the
+ * top-post recommendation, or nothing — never a plausible-sounding line
+ * with no data behind it.
+ */
+export function generateCreativeInsights(results: PublishedPostInsightResult[], topPost: TopPost | null): CreativeInsight[] {
+  const insights: CreativeInsight[] = [];
+
+  const scored = results
+    .map((r) => ({ contentKind: r.contentKind, scheduledDate: r.scheduledDate, score: engagementScore(r.insights) }))
+    .filter((r): r is { contentKind: ContentKind; scheduledDate: string; score: number } => r.score !== null);
+
+  const videoScores = scored.filter((r) => r.contentKind === "video").map((r) => r.score);
+  const imageScores = scored.filter((r) => r.contentKind === "imagen").map((r) => r.score);
+  if (videoScores.length >= 2 && imageScores.length >= 2) {
+    const avgVideo = videoScores.reduce((a, b) => a + b, 0) / videoScores.length;
+    const avgImage = imageScores.reduce((a, b) => a + b, 0) / imageScores.length;
+    if (avgVideo > 0 && avgImage > 0 && avgVideo !== avgImage) {
+      const videoWins = avgVideo > avgImage;
+      const pct = Math.round((Math.abs(avgVideo - avgImage) / Math.min(avgVideo, avgImage)) * 100);
+      insights.push({
+        kind: "content_kind",
+        title: videoWins
+          ? `Tus videos generan ${pct}% más interacciones que tus imágenes`
+          : `Tus imágenes generan ${pct}% más interacciones que tus videos`,
+        description: `Promedio real: ${Math.round(avgVideo)} interacciones por video vs. ${Math.round(avgImage)} por imagen.`,
+      });
+    }
+  }
+
+  const byWeekday = new Map<number, number[]>();
+  for (const r of scored) {
+    const day = new Date(`${r.scheduledDate}T00:00:00`).getDay();
+    const arr = byWeekday.get(day) ?? [];
+    arr.push(r.score);
+    byWeekday.set(day, arr);
+  }
+  if (byWeekday.size >= 3) {
+    const best = Array.from(byWeekday.entries())
+      .map(([day, dayScores]) => ({ day, avg: dayScores.reduce((a, b) => a + b, 0) / dayScores.length }))
+      .sort((a, b) => b.avg - a.avg)[0];
+    if (best.avg > 0) {
+      const label = WEEKDAY_LABELS[best.day];
+      insights.push({
+        kind: "weekday",
+        title: `Los ${label} son tu mejor día de la semana`,
+        description: `Tus publicaciones en ${label} tienen, en promedio, más interacciones que el resto de tus días.`,
+      });
+    }
+  }
+
+  if (topPost) {
+    insights.push({
+      kind: "recommendation",
+      title: "Recomendación",
+      description: `Crea contenido similar a tu publicación más exitosa: "${topPost.topic}".`,
+    });
+  }
+
+  return insights;
 }

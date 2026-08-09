@@ -15,7 +15,6 @@ import {
   AlertTriangle,
   XCircle,
   TrendingUp,
-  Trophy,
   PieChart as PieChartIcon,
   Users,
   Lightbulb,
@@ -43,7 +42,6 @@ import {
   type PublishedPostInsightResult,
 } from "@/lib/agents/results-agent";
 import { formatInsightNumber } from "@/lib/content/format-insights";
-import { TopVideosList, type TopVideoWithMedia } from "@/components/dashboard/top-videos-list";
 import { PlatformShareDonut } from "@/components/dashboard/platform-share-donut";
 import { DailyInteractionsBarChart } from "@/components/dashboard/daily-interactions-bar-chart";
 import { FollowerGrowthChart, type FollowerSeries } from "@/components/dashboard/follower-growth-chart";
@@ -492,11 +490,6 @@ export default async function DashboardHomePage() {
   const insightsSummary = insightsResults.length > 0 ? summarizeInsights(insightsResults) : null;
   const chartData = buildDailyInsightsSeries(insightsResults, INSIGHTS_WINDOW_DAYS);
   const topVideos = rankTopPosts(insightsResults, 3, "video");
-  const topVideoMedia = await getMediaUrlsForItems(
-    supabase,
-    topVideos.map((v) => v.itemId),
-  );
-  const topVideosWithMedia: TopVideoWithMedia[] = topVideos.map((v) => ({ ...v, mediaUrl: topVideoMedia.get(v.itemId) ?? null }));
   const creativeInsights = generateCreativeInsights(insightsResults, topVideos[0] ?? null);
 
   const platformInteractionShare = summarizePlatformInteractionShare(insightsResults);
@@ -698,18 +691,6 @@ export default async function DashboardHomePage() {
     </div>
   );
 
-  const topVideosSection = hasPublishedContent && (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-        <CardTitle>Top 3 videos más virales</CardTitle>
-        <Trophy className="h-4 w-4 text-accent" />
-      </CardHeader>
-      <CardContent className="p-4 sm:p-6">
-        <TopVideosList posts={topVideosWithMedia} />
-      </CardContent>
-    </Card>
-  );
-
   const creativeInsightsCard = hasPublishedContent && (
     <Card>
       <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
@@ -884,7 +865,6 @@ export default async function DashboardHomePage() {
             content: (
               <div className="flex flex-col gap-4">
                 {chartsRow}
-                {topVideosSection}
                 {creativeInsightsCard}
                 {upcomingPublicationsCard}
               </div>
@@ -896,7 +876,6 @@ export default async function DashboardHomePage() {
       <div className="hidden sm:flex sm:flex-col sm:gap-8">
         <div className="animate-fade-in-up stagger-1">{statsSection}</div>
         <div className="animate-fade-in-up stagger-3">{chartsRow}</div>
-        <div className="animate-fade-in-up stagger-3">{topVideosSection}</div>
         <div className="animate-fade-in-up stagger-3">{insightsRow}</div>
         <div className="animate-fade-in-up stagger-4">{actividadReciente}</div>
       </div>

@@ -16,12 +16,12 @@ interface ChecklistStep {
  * grid instead of a plain list — each step reuses the same icon its own
  * page/quick-action already shows elsewhere, so this isn't a new visual
  * vocabulary, just a bigger version of it. */
-export function OnboardingChecklist({ steps }: { steps: ChecklistStep[] }) {
+export function OnboardingChecklist({ steps, className }: { steps: ChecklistStep[]; className?: string }) {
   const doneCount = steps.filter((s) => s.done).length;
   if (doneCount === steps.length) return null;
 
   return (
-    <Card mobileFlat className="border-accent/20 bg-accent/[0.04]">
+    <Card mobileFlat className={cn("border-accent/20 bg-accent/[0.04]", className)}>
       <CardContent className="flex flex-col gap-3 p-4 sm:gap-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <div>

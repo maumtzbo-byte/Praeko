@@ -118,7 +118,7 @@ export function FollowerGrowthChart({ series }: { series: FollowerSeries[] }) {
         </div>
       </div>
 
-      <div className="h-52 w-full sm:h-64">
+      <div className="h-36 w-full sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="#e4e4e7" strokeDasharray="3 3" />
@@ -153,7 +153,7 @@ export function FollowerGrowthChart({ series }: { series: FollowerSeries[] }) {
       </div>
 
       {(weeklyDelta !== null || weeklyDeltaChangePct !== null) && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="hidden grid-cols-2 gap-3 sm:grid">
           {weeklyDelta !== null && (
             <div className="rounded-xl border border-zinc-200 p-3">
               <p className={cn("text-lg font-semibold", weeklyDelta >= 0 ? "text-emerald-600" : "text-red-600")}>

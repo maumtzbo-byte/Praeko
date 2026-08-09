@@ -24,7 +24,7 @@ function Ring({ platform, engagementRatePct }: { platform: SocialPlatform; engag
   const color = SOCIAL_PLATFORM_COLORS[platform];
 
   return (
-    <svg viewBox="0 0 80 80" className="h-20 w-20 sm:h-24 sm:w-24">
+    <svg viewBox="0 0 80 80" className="h-16 w-16 sm:h-24 sm:w-24">
       <circle cx="40" cy="40" r={RADIUS} fill="none" stroke="#e4e4e7" strokeWidth="7" />
       <circle
         cx="40"

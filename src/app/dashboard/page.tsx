@@ -574,20 +574,157 @@ export default async function DashboardHomePage() {
   const videosUsed = usage?.videos_used ?? 0;
   const imagesUsed = usage?.images_used ?? 0;
 
+  // Resultados first — a business owner opening the dashboard wants to
+  // know "is this working", not the raw generation count, so results
+  // lead the page instead of sharing a row with unrelated stats.
+  const statsSection = (
+    <>
+      {hasPublishedContent || allConnections.length > 0 ? (
+        <div>
+          <MobileStatList
+            rows={[
+              {
+                icon: <Users className="h-4 w-4" strokeWidth={1.75} />,
+                label: "Seguidores",
+                value: totalFollowersToday.toLocaleString("es-MX"),
+                changePct: followersChangePct,
+                showTrend: followersShowTrend,
+              },
+              {
+                icon: <Heart className="h-4 w-4" strokeWidth={1.75} />,
+                label: "Likes",
+                value: formatInsightNumber(insightsSummary?.totalLikes ?? null),
+                changePct: likesChangePct,
+                showTrend: hasPublishedContent,
+              },
+              {
+                icon: <MessageCircle className="h-4 w-4" strokeWidth={1.75} />,
+                label: "Comentarios",
+                value: formatInsightNumber(insightsSummary?.totalComments ?? null),
+                changePct: commentsChangePct,
+                showTrend: hasPublishedContent,
+              },
+              {
+                icon: <Eye className="h-4 w-4" strokeWidth={1.75} />,
+                label: "Alcance",
+                value: formatInsightNumber(insightsSummary?.totalImpressions ?? null),
+                changePct: alcanceChangePct,
+                showTrend: hasPublishedContent,
+              },
+            ]}
+          />
+          <div className="hidden sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+            <StatSparkCard
+              icon={<Users className="h-4 w-4" strokeWidth={1.75} />}
+              label="Seguidores"
+              value={totalFollowersToday.toLocaleString("es-MX")}
+              sparkline={followersSparkline}
+              changePct={followersChangePct}
+              showTrend={followersShowTrend}
+            />
+            <StatSparkCard
+              icon={<Heart className="h-4 w-4" strokeWidth={1.75} />}
+              label="Likes"
+              value={formatInsightNumber(insightsSummary?.totalLikes ?? null)}
+              sparkline={likesSparkline}
+              changePct={likesChangePct}
+              showTrend={hasPublishedContent}
+            />
+            <StatSparkCard
+              icon={<MessageCircle className="h-4 w-4" strokeWidth={1.75} />}
+              label="Comentarios"
+              value={formatInsightNumber(insightsSummary?.totalComments ?? null)}
+              sparkline={commentsSparkline}
+              changePct={commentsChangePct}
+              showTrend={hasPublishedContent}
+            />
+            <StatSparkCard
+              icon={<Eye className="h-4 w-4" strokeWidth={1.75} />}
+              label="Alcance"
+              value={formatInsightNumber(insightsSummary?.totalImpressions ?? null)}
+              sparkline={alcanceSparkline}
+              changePct={alcanceChangePct}
+              showTrend={hasPublishedContent}
+            />
+          </div>
+        </div>
+      ) : (
+        <Card mobileFlat>
+          <CardContent className="p-4 sm:p-6">
+            <EmptyState
+              icon={BarChart3}
+              title="Todavía no hay datos que mostrar"
+              description="Conecta tus redes sociales y publica tu primera pieza para empezar a ver alcance y engagement aquí."
+              action={
+                <Link href="/dashboard/redes-sociales">
+                  <Button size="sm">
+                    <Share2 className="h-4 w-4" />
+                    Conectar redes sociales
+                  </Button>
+                </Link>
+              }
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Subscription status now lives only in PlanBanner (dashboard/layout.tsx,
+          shown when it actually needs attention) — repeating it here as a
+          stat tile when everything's fine was just noise. These 4 tiles are
+          the same size/weight, all real counts already queried above. */}
+      <div>
+        <MobileStatList
+          rows={[
+            { icon: <Clapperboard className="h-4 w-4" strokeWidth={1.75} />, label: "Videos generados", value: `${videosCount ?? 0} · ${videosUsed} este mes` },
+            { icon: <ImageIcon className="h-4 w-4" strokeWidth={1.75} />, label: "Imágenes generadas", value: `${imagesCount ?? 0} · ${imagesUsed} este mes` },
+            { icon: <Send className="h-4 w-4" strokeWidth={1.75} />, label: "Programadas", value: String(scheduledCount ?? 0) },
+            { icon: <Share2 className="h-4 w-4" strokeWidth={1.75} />, label: "Redes conectadas", value: String(connectionsCount ?? 0) },
+          ]}
+        />
+        <div className="hidden sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <StatCard
+            icon={Clapperboard}
+            label="VIDEOS GENERADOS"
+            value={String(videosCount ?? 0)}
+            sublabel={`${videosUsed} este mes`}
+          />
+          <StatCard
+            icon={ImageIcon}
+            label="IMÁGENES GENERADAS"
+            value={String(imagesCount ?? 0)}
+            sublabel={`${imagesUsed} este mes`}
+          />
+          <StatCard
+            icon={Send}
+            label="PROGRAMADAS"
+            value={String(scheduledCount ?? 0)}
+            sublabel={scheduledCount ? "en camino" : "sin piezas en cola"}
+          />
+          <StatCard
+            icon={Share2}
+            label="REDES CONECTADAS"
+            value={String(connectionsCount ?? 0)}
+            sublabel={connectionsCount ? "activas" : "sin conectar"}
+          />
+        </div>
+      </div>
+    </>
+  );
+
   // Chart/video/insight sections are heavy (recharts, video thumbnails) and
-  // are the reason the mobile page needed so much scroll — on mobile they
-  // live behind the "Analíticas" tab (DashboardMobileTabs only mounts the
-  // active tab) instead of always being on-screen. Desktop is unaffected:
-  // these same elements are reused as-is in the unconditional flow below.
+  // are the reason the mobile page needed so much scroll — on mobile each
+  // lives behind its own tab (DashboardMobileTabs only mounts the active
+  // tab) instead of always being on-screen. Desktop is unaffected: these
+  // same elements are reused as-is in the unconditional flow below.
   const chartsRow = (allConnections.length > 0 || hasPublishedContent) && (
-    <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-2 sm:gap-4 lg:grid-cols-2">
       {allConnections.length > 0 && (
         <Card mobileFlat>
-          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+          <CardHeader className="flex-row items-center justify-between p-3 pb-0 sm:p-6 sm:pb-0">
             <CardTitle>Crecimiento de seguidores</CardTitle>
             <TrendingUp className="h-4 w-4 text-accent" />
           </CardHeader>
-          <CardContent className="p-4 sm:p-6">
+          <CardContent className="p-3 sm:p-6">
             <FollowerGrowthChart series={followerSeries} />
           </CardContent>
         </Card>
@@ -595,11 +732,11 @@ export default async function DashboardHomePage() {
 
       {hasPublishedContent && (
         <Card mobileFlat>
-          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+          <CardHeader className="flex-row items-center justify-between p-3 pb-0 sm:p-6 sm:pb-0">
             <CardTitle>Rendimiento por red social</CardTitle>
             <PieChartIcon className="h-4 w-4 text-accent" />
           </CardHeader>
-          <CardContent className="p-4 sm:p-6">
+          <CardContent className="p-3 sm:p-6">
             <EngagementRateRings data={platformRings} />
           </CardContent>
         </Card>
@@ -609,41 +746,48 @@ export default async function DashboardHomePage() {
 
   const topVideosSection = hasPublishedContent && (
     <Card mobileFlat>
-      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+      <CardHeader className="flex-row items-center justify-between p-3 pb-0 sm:p-6 sm:pb-0">
         <CardTitle>Top 3 videos más virales</CardTitle>
         <Trophy className="h-4 w-4 text-accent" />
       </CardHeader>
-      <CardContent className="p-4 sm:p-6">
+      <CardContent className="p-3 sm:p-6">
         <TopVideosList posts={topVideosWithMedia} />
       </CardContent>
     </Card>
   );
 
+  const creativeInsightsCard = hasPublishedContent && (
+    <Card mobileFlat>
+      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+        <CardTitle>Insights de tu Agente Creativo</CardTitle>
+        <Lightbulb className="h-4 w-4 text-accent" />
+      </CardHeader>
+      <CardContent className="p-4 sm:p-6">
+        <CreativeInsightsList insights={creativeInsights} />
+      </CardContent>
+    </Card>
+  );
+
+  const upcomingPublicationsCard = (
+    <Card mobileFlat>
+      <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
+        <CardTitle>Próximas publicaciones</CardTitle>
+        <Link href="/dashboard/calendario" className="text-xs font-medium text-accent hover:underline">
+          Ver calendario
+        </Link>
+      </CardHeader>
+      <CardContent className="p-4 sm:p-6">
+        <UpcomingPublications items={upcomingContent} />
+      </CardContent>
+    </Card>
+  );
+
+  // Desktop keeps these two side by side (unchanged); mobile regroups them
+  // into different tabs below, so this pairing is desktop-only now.
   const insightsRow = (hasPublishedContent || upcomingContent.length > 0) && (
     <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
-      {hasPublishedContent && (
-        <Card mobileFlat>
-          <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-            <CardTitle>Insights de tu Agente Creativo</CardTitle>
-            <Lightbulb className="h-4 w-4 text-accent" />
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            <CreativeInsightsList insights={creativeInsights} />
-          </CardContent>
-        </Card>
-      )}
-
-      <Card mobileFlat>
-        <CardHeader className="flex-row items-center justify-between p-4 pb-0 sm:p-6 sm:pb-0">
-          <CardTitle>Próximas publicaciones</CardTitle>
-          <Link href="/dashboard/calendario" className="text-xs font-medium text-accent hover:underline">
-            Ver calendario
-          </Link>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-6">
-          <UpcomingPublications items={upcomingContent} />
-        </CardContent>
-      </Card>
+      {creativeInsightsCard}
+      {upcomingPublicationsCard}
     </div>
   );
 
@@ -738,9 +882,7 @@ export default async function DashboardHomePage() {
         </div>
       </div>
 
-      <div className="animate-fade-in-up">
-        <OnboardingChecklist steps={onboardingSteps} />
-      </div>
+      <OnboardingChecklist steps={onboardingSteps} className="animate-fade-in-up" />
 
       {hasLowPhotoCount && (
         <Alert variant="info" className="animate-fade-in-up">
@@ -758,159 +900,23 @@ export default async function DashboardHomePage() {
         </Alert>
       )}
 
-      {/* Resultados first — a business owner opening the dashboard wants to
-          know "is this working", not the raw generation count, so results
-          lead the page instead of sharing a row with unrelated stats. */}
-      {hasPublishedContent || allConnections.length > 0 ? (
-        <div className="animate-fade-in-up stagger-1">
-          <MobileStatList
-            rows={[
-              {
-                icon: <Users className="h-4 w-4" strokeWidth={1.75} />,
-                label: "Seguidores",
-                value: totalFollowersToday.toLocaleString("es-MX"),
-                changePct: followersChangePct,
-                showTrend: followersShowTrend,
-              },
-              {
-                icon: <Heart className="h-4 w-4" strokeWidth={1.75} />,
-                label: "Likes",
-                value: formatInsightNumber(insightsSummary?.totalLikes ?? null),
-                changePct: likesChangePct,
-                showTrend: hasPublishedContent,
-              },
-              {
-                icon: <MessageCircle className="h-4 w-4" strokeWidth={1.75} />,
-                label: "Comentarios",
-                value: formatInsightNumber(insightsSummary?.totalComments ?? null),
-                changePct: commentsChangePct,
-                showTrend: hasPublishedContent,
-              },
-              {
-                icon: <Eye className="h-4 w-4" strokeWidth={1.75} />,
-                label: "Alcance",
-                value: formatInsightNumber(insightsSummary?.totalImpressions ?? null),
-                changePct: alcanceChangePct,
-                showTrend: hasPublishedContent,
-              },
-            ]}
-          />
-          <div className="hidden sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-            <StatSparkCard
-              icon={<Users className="h-4 w-4" strokeWidth={1.75} />}
-              label="Seguidores"
-              value={totalFollowersToday.toLocaleString("es-MX")}
-              sparkline={followersSparkline}
-              changePct={followersChangePct}
-              showTrend={followersShowTrend}
-            />
-            <StatSparkCard
-              icon={<Heart className="h-4 w-4" strokeWidth={1.75} />}
-              label="Likes"
-              value={formatInsightNumber(insightsSummary?.totalLikes ?? null)}
-              sparkline={likesSparkline}
-              changePct={likesChangePct}
-              showTrend={hasPublishedContent}
-            />
-            <StatSparkCard
-              icon={<MessageCircle className="h-4 w-4" strokeWidth={1.75} />}
-              label="Comentarios"
-              value={formatInsightNumber(insightsSummary?.totalComments ?? null)}
-              sparkline={commentsSparkline}
-              changePct={commentsChangePct}
-              showTrend={hasPublishedContent}
-            />
-            <StatSparkCard
-              icon={<Eye className="h-4 w-4" strokeWidth={1.75} />}
-              label="Alcance"
-              value={formatInsightNumber(insightsSummary?.totalImpressions ?? null)}
-              sparkline={alcanceSparkline}
-              changePct={alcanceChangePct}
-              showTrend={hasPublishedContent}
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="animate-fade-in-up stagger-1">
-          <Card mobileFlat>
-            <CardContent className="p-4 sm:p-6">
-              <EmptyState
-                icon={BarChart3}
-                title="Todavía no hay datos que mostrar"
-                description="Conecta tus redes sociales y publica tu primera pieza para empezar a ver alcance y engagement aquí."
-                action={
-                  <Link href="/dashboard/redes-sociales">
-                    <Button size="sm">
-                      <Share2 className="h-4 w-4" />
-                      Conectar redes sociales
-                    </Button>
-                  </Link>
-                }
-              />
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Subscription status now lives only in PlanBanner (dashboard/layout.tsx,
-          shown when it actually needs attention) — repeating it here as a
-          stat tile when everything's fine was just noise. These 4 tiles are
-          the same size/weight, all real counts already queried above. */}
-      <div className="animate-fade-in-up stagger-2">
-        <MobileStatList
-          rows={[
-            { icon: <Clapperboard className="h-4 w-4" strokeWidth={1.75} />, label: "Videos generados", value: `${videosCount ?? 0} · ${videosUsed} este mes` },
-            { icon: <ImageIcon className="h-4 w-4" strokeWidth={1.75} />, label: "Imágenes generadas", value: `${imagesCount ?? 0} · ${imagesUsed} este mes` },
-            { icon: <Send className="h-4 w-4" strokeWidth={1.75} />, label: "Programadas", value: String(scheduledCount ?? 0) },
-            { icon: <Share2 className="h-4 w-4" strokeWidth={1.75} />, label: "Redes conectadas", value: String(connectionsCount ?? 0) },
-          ]}
-        />
-        <div className="hidden sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-          <StatCard
-            icon={Clapperboard}
-            label="VIDEOS GENERADOS"
-            value={String(videosCount ?? 0)}
-            sublabel={`${videosUsed} este mes`}
-          />
-          <StatCard
-            icon={ImageIcon}
-            label="IMÁGENES GENERADAS"
-            value={String(imagesCount ?? 0)}
-            sublabel={`${imagesUsed} este mes`}
-          />
-          <StatCard
-            icon={Send}
-            label="PROGRAMADAS"
-            value={String(scheduledCount ?? 0)}
-            sublabel={scheduledCount ? "en camino" : "sin piezas en cola"}
-          />
-          <StatCard
-            icon={Share2}
-            label="REDES CONECTADAS"
-            value={String(connectionsCount ?? 0)}
-            sublabel={connectionsCount ? "activas" : "sin conectar"}
-          />
-        </div>
-      </div>
-
-      {/* Mobile: tabbed so the default view (Resumen) stays short — the
-          chart/videos/insights group only mounts once someone taps
-          Analíticas. Desktop below is unaffected, same linear flow as
-          always (DashboardMobileTabs hides itself at sm and up). */}
+      {/* Mobile: 4 tabs, each sized to fit one phone screen on its own —
+          the stats alone plus any of the chart/videos/insights groups
+          together would still need scrolling, so every group (including
+          the stat tiles) gets its own tab. Desktop below is unaffected,
+          same linear flow as always (DashboardMobileTabs hides itself at
+          sm+, so this whole component contributes nothing there). */}
       <DashboardMobileTabs
-        resumenLabel="Resumen"
-        resumen={<div className="animate-fade-in-up">{actividadReciente}</div>}
-        analiticasLabel="Analíticas"
-        analiticas={
-          <div className="flex flex-col gap-4">
-            {chartsRow}
-            {topVideosSection}
-            {insightsRow}
-          </div>
-        }
+        tabs={[
+          { key: "resumen", label: "Resumen", content: <div className="flex flex-col gap-4">{statsSection}</div> },
+          { key: "crecimiento", label: "Crecimiento", content: <div className="flex flex-col gap-4">{chartsRow}</div> },
+          { key: "contenido", label: "Contenido", content: <div className="flex flex-col gap-4">{topVideosSection}{upcomingPublicationsCard}</div> },
+          { key: "actividad", label: "Actividad", content: <div className="flex flex-col gap-4">{creativeInsightsCard}{actividadReciente}</div> },
+        ]}
       />
 
       <div className="hidden sm:flex sm:flex-col sm:gap-8">
+        <div className="animate-fade-in-up stagger-1">{statsSection}</div>
         <div className="animate-fade-in-up stagger-3">{chartsRow}</div>
         <div className="animate-fade-in-up stagger-3">{topVideosSection}</div>
         <div className="animate-fade-in-up stagger-3">{insightsRow}</div>

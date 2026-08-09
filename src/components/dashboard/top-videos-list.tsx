@@ -34,7 +34,7 @@ export function TopVideosList({ posts }: { posts: TopVideoWithMedia[] }) {
       {posts.map((post, i) => {
         const PlatformIcon = PLATFORM_ICONS[post.platform];
         return (
-          <div key={post.itemId} className="flex w-36 shrink-0 flex-col gap-2 sm:w-auto">
+          <div key={post.itemId} className="flex w-28 shrink-0 flex-col gap-2 sm:w-auto">
             <div className="relative aspect-[9/16] w-full overflow-hidden rounded-2xl bg-zinc-900">
               {post.mediaUrl ? (
                 <video

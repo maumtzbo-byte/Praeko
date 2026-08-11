@@ -1,5 +1,6 @@
+import { useState } from "react";
 import type { BusinessInfoInput } from "@/lib/validation/onboarding";
-import { INDUSTRY_OPTIONS, LANGUAGE_OPTIONS } from "@/lib/onboarding/options";
+import { INDUSTRY_OPTIONS, LANGUAGE_OPTIONS, COUNTRY_OPTIONS } from "@/lib/onboarding/options";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -16,6 +17,14 @@ export function BusinessInfoStep({
   onChange: (patch: Partial<BusinessInfoInput>) => void;
   errors: Partial<Record<keyof BusinessInfoInput, string>>;
 }) {
+  // Tracks "Otro" as its own UI state rather than deriving it from
+  // value.country — that value goes blank the instant "Otro" is picked (so
+  // the free-text field starts empty), which would be indistinguishable
+  // from "nothing selected yet" if derived purely from the string.
+  const [countryIsOther, setCountryIsOther] = useState(
+    value.country !== "" && !(COUNTRY_OPTIONS as readonly string[]).includes(value.country),
+  );
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div className="sm:col-span-2">
@@ -73,7 +82,33 @@ export function BusinessInfoStep({
 
       <div>
         <Label htmlFor="bi-country" required>País</Label>
-        <Input id="bi-country" value={value.country} onChange={(e) => onChange({ country: e.target.value })} invalid={!!errors.country} />
+        <Select
+          id="bi-country"
+          value={countryIsOther ? "Otro" : value.country}
+          onChange={(e) => {
+            const selected = e.target.value;
+            setCountryIsOther(selected === "Otro");
+            onChange({ country: selected === "Otro" ? "" : selected });
+          }}
+          invalid={!!errors.country}
+        >
+          <option value="">Selecciona una opción</option>
+          {COUNTRY_OPTIONS.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+          <option value="Otro">Otro</option>
+        </Select>
+        {countryIsOther && (
+          <Input
+            className="mt-2"
+            placeholder="Escribe tu país"
+            value={value.country}
+            onChange={(e) => onChange({ country: e.target.value })}
+            invalid={!!errors.country}
+          />
+        )}
         <FieldError message={errors.country} />
       </div>
 

@@ -38,6 +38,12 @@ export const INDUSTRY_OPTIONS = [
 
 export const LANGUAGE_OPTIONS = ["Español", "Inglés", "Español e inglés"];
 
+/** Fixed list kept short on purpose — these are the markets Frames
+ * actually targets today (Mexico) plus the one explicitly planned next
+ * (Estados Unidos). "Otro" reveals a free-text field in BusinessInfoStep
+ * instead of forcing every possible country into this dropdown. */
+export const COUNTRY_OPTIONS = ["México", "Estados Unidos"];
+
 export const GOAL_OPTIONS = [
   { value: "conseguir_clientes", label: "Conseguir más clientes", icon: Users },
   { value: "generar_ventas", label: "Generar ventas", icon: ShoppingCart },

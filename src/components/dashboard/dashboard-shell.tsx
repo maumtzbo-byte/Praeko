@@ -7,6 +7,7 @@ import { FramesMark } from "@/components/brand/FramesMark";
 import { SidebarNav } from "./sidebar-nav";
 import { FeedbackModal } from "./feedback-modal";
 import { MobileBottomNav } from "./mobile-bottom-nav";
+import type { BusinessSummary } from "@/lib/dashboard/get-current-business";
 
 export type PlanBannerInfo =
   | { kind: "no_plan" }
@@ -80,14 +81,14 @@ function PlanBanner({ info }: { info: PlanBannerInfo }) {
 }
 
 export function DashboardShell({
-  businessName,
   businessId,
+  businesses,
   planBanner = null,
   showFeedbackPrompt = false,
   children,
 }: {
-  businessName: string;
   businessId: string;
+  businesses: BusinessSummary[];
   planBanner?: PlanBannerInfo | null;
   showFeedbackPrompt?: boolean;
   children: React.ReactNode;
@@ -98,7 +99,7 @@ export function DashboardShell({
     <div className="min-h-screen bg-[var(--background)]">
       <FeedbackModal businessId={businessId} eligible={showFeedbackPrompt} />
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-zinc-200 bg-white/80 backdrop-blur-sm lg:block ">
-        <SidebarNav businessName={businessName} needsPlanAttention={planBanner !== null} />
+        <SidebarNav businessId={businessId} businesses={businesses} needsPlanAttention={planBanner !== null} />
       </aside>
 
       {mobileOpen && (
@@ -113,7 +114,8 @@ export function DashboardShell({
               <X className="h-5 w-5" />
             </button>
             <SidebarNav
-              businessName={businessName}
+              businessId={businessId}
+              businesses={businesses}
               needsPlanAttention={planBanner !== null}
               onNavigate={() => setMobileOpen(false)}
             />

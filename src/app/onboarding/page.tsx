@@ -1,11 +1,18 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { ACTIVE_BUSINESS_COOKIE } from "@/lib/dashboard/get-current-business";
 import { OnboardingWizard, type OnboardingWizardInitialData } from "@/components/onboarding/onboarding-wizard";
 
 export const metadata: Metadata = { title: "Onboarding — Frames" };
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ new?: string }>;
+}) {
+  const { new: startNew } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -13,22 +20,46 @@ export default async function OnboardingPage() {
 
   if (!user) redirect("/login");
 
-  const { data: membership } = await supabase
-    .from("business_members")
-    .select("business_id")
-    .eq("user_id", user!.id)
-    .limit(1)
-    .maybeSingle();
+  // ?new=1 (from the workspace switcher's "Agregar otro negocio") always
+  // starts a fresh business, ignoring any existing membership — a
+  // freelancer running several client workspaces needs this to add one
+  // without resuming/overwriting whichever business happens to be active.
+  // Otherwise, prefer the active_business_id cookie so resuming a plain
+  // /onboarding visit continues the business actually in progress (which
+  // may not be the user's oldest/first one) instead of an arbitrary row.
+  let membershipBusinessId: string | null = null;
+  if (startNew !== "1") {
+    const cookieStore = await cookies();
+    const activeId = cookieStore.get(ACTIVE_BUSINESS_COOKIE)?.value;
+    if (activeId) {
+      const { data: activeMembership } = await supabase
+        .from("business_members")
+        .select("business_id")
+        .eq("user_id", user.id)
+        .eq("business_id", activeId)
+        .maybeSingle();
+      membershipBusinessId = activeMembership?.business_id ?? null;
+    }
+    if (!membershipBusinessId) {
+      const { data: anyMembership } = await supabase
+        .from("business_members")
+        .select("business_id")
+        .eq("user_id", user.id)
+        .limit(1)
+        .maybeSingle();
+      membershipBusinessId = anyMembership?.business_id ?? null;
+    }
+  }
 
   let business = null;
   let brandProfile = null;
   let logoUrl: string | null = null;
 
-  if (membership) {
+  if (membershipBusinessId) {
     const { data: businessRow } = await supabase
       .from("businesses")
       .select("*")
-      .eq("id", membership.business_id)
+      .eq("id", membershipBusinessId)
       .single();
     business = businessRow;
 
@@ -39,14 +70,14 @@ export default async function OnboardingPage() {
     const { data: brandProfileRow } = await supabase
       .from("brand_profiles")
       .select("*")
-      .eq("business_id", membership.business_id)
+      .eq("business_id", membershipBusinessId)
       .maybeSingle();
     brandProfile = brandProfileRow;
 
     const { data: logoAsset } = await supabase
       .from("brand_assets")
       .select("storage_path")
-      .eq("business_id", membership.business_id)
+      .eq("business_id", membershipBusinessId)
       .eq("asset_type", "logo")
       .order("created_at", { ascending: false })
       .limit(1)

@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { setActiveBusinessCookie } from "@/lib/dashboard/get-current-business";
 import {
   businessInfoSchema,
   brandInfoSchema,
@@ -92,6 +93,12 @@ export async function saveBusinessInfo(
     if (createError || !created) {
       return { success: false, error: createError?.message ?? "No se pudo crear el negocio." };
     }
+
+    // Marks this brand-new business as "active" right away, so a plain
+    // /onboarding revisit (no ?new=1) resumes it instead of an older,
+    // already-completed business — see getCurrentBusiness's cookie
+    // resolution and the fallback query in /onboarding/page.tsx.
+    await setActiveBusinessCookie(created.id);
 
     return { success: true, data: { businessId: created.id } };
   } catch (err) {

@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { FramesMark } from "@/components/brand/FramesMark";
 import { PRIMARY_NAV_GROUPS, SECONDARY_NAV_ITEMS, type NavItem } from "@/lib/dashboard/nav-items";
+import { WorkspaceSwitcher } from "./workspace-switcher";
+import type { BusinessSummary } from "@/lib/dashboard/get-current-business";
 import { cn } from "@/lib/utils";
 
 function NavLink({
@@ -58,11 +60,13 @@ function NavLink({
 }
 
 export function SidebarNav({
-  businessName,
+  businessId,
+  businesses,
   needsPlanAttention = false,
   onNavigate,
 }: {
-  businessName: string;
+  businessId: string;
+  businesses: BusinessSummary[];
   needsPlanAttention?: boolean;
   onNavigate?: () => void;
 }) {
@@ -73,9 +77,7 @@ export function SidebarNav({
         FRAMES
       </Link>
 
-      <div className="rounded-xl border border-accent/15 bg-accent/[0.06] px-3 py-2.5">
-        <p className="truncate text-sm font-medium text-zinc-800">{businessName}</p>
-      </div>
+      <WorkspaceSwitcher businesses={businesses} activeBusinessId={businessId} onNavigate={onNavigate} />
 
       <nav className="flex flex-1 flex-col gap-1">
         {PRIMARY_NAV_GROUPS.map((group, i) => (

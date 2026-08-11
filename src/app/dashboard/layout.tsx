@@ -74,14 +74,14 @@ async function shouldPromptFeedback(businessId: string, onboardingCompletedAt: s
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { business } = await getCurrentBusiness();
+  const { business, businesses } = await getCurrentBusiness();
   const [planBanner, showFeedbackPrompt] = await Promise.all([
     getPlanBanner(business.id),
     shouldPromptFeedback(business.id, business.onboarding_completed_at),
   ]);
 
   return (
-    <DashboardShell businessName={business.name} businessId={business.id} planBanner={planBanner} showFeedbackPrompt={showFeedbackPrompt}>
+    <DashboardShell businessId={business.id} businesses={businesses} planBanner={planBanner} showFeedbackPrompt={showFeedbackPrompt}>
       {children}
     </DashboardShell>
   );

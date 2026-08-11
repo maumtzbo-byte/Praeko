@@ -12,12 +12,9 @@
  * year and can shift by a few days from the computed estimate. Treat these
  * as "content should start thinking about this week", not a legal date.
  */
-export interface KeyDate {
-  date: string; // ISO YYYY-MM-DD
-  name: string;
-  angle: string;
-  approximate: boolean;
-}
+import { type KeyDate, nthWeekdayOfMonth } from "./key-date-utils";
+
+export type { KeyDate };
 
 interface FixedKeyDate {
   month: number; // 1-12
@@ -44,15 +41,6 @@ const FIXED_KEY_DATES: FixedKeyDate[] = [
   { month: 12, day: 24, name: "Nochebuena", angle: "última oportunidad de compra navideña, horario especial" },
   { month: 12, day: 31, name: "Fin de año", angle: "cierre de año, agradecimiento a clientes, balance del negocio" },
 ];
-
-/** The nth (1-indexed) occurrence of `weekday` (0=domingo..6=sábado) in `month` of `year`. */
-function nthWeekdayOfMonth(year: number, month: number, weekday: number, nth: number): Date {
-  const first = new Date(Date.UTC(year, month - 1, 1));
-  const firstWeekday = first.getUTCDay();
-  const offset = (weekday - firstWeekday + 7) % 7;
-  const day = 1 + offset + (nth - 1) * 7;
-  return new Date(Date.UTC(year, month - 1, day));
-}
 
 /** Variable-date commercial windows, computed per year. See module comment
  * on why these are estimates, not official dates. */
@@ -124,7 +112,7 @@ function quincenasForMonth(year: number, month: number): KeyDate[] {
 /** All key dates (fixed + variable + quincenas) falling within
  * [startDate, startDate + days), inclusive of the start day. Spans year
  * boundaries correctly since campaigns/content plans can run up to 30 days. */
-export function getUpcomingKeyDates(startDate: string, days: number): KeyDate[] {
+export function getUpcomingMexicoKeyDates(startDate: string, days: number): KeyDate[] {
   const start = new Date(`${startDate}T00:00:00Z`);
   const end = new Date(start);
   end.setUTCDate(end.getUTCDate() + days);

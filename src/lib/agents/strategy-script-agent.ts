@@ -2,7 +2,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { getClaudeClient } from "./claude-client";
 import type { ContentFormat, ContentKind } from "@/lib/content/types";
 import { canGenerateVideo, type PlanLimits } from "@/lib/plans/limits";
-import { getUpcomingKeyDates } from "@/lib/content/mexico-key-dates";
+import { getUpcomingKeyDates, keyDatesRegionLabel } from "@/lib/content/key-dates";
 import { researchIndustryTrends } from "./trends-research-agent";
 
 /**
@@ -65,23 +65,25 @@ function buildSystemPrompt(): string {
     "- Los guiones de video deben incluir gancho inicial, desarrollo y cierre con llamada a la acción, listos para grabarse tal cual.",
     "- Varía los formatos y temas a lo largo de los días; no repitas el mismo tema dos días seguidos.",
     "- Respeta el proveedor de video asignado al plan del negocio al proponer el nivel de producción esperado.",
-    "- Si se te dan fechas clave de México dentro del rango, úsalas cuando tengan sentido real para este negocio (no fuerces una fecha genérica en un negocio al que no le aplica).",
+    "- Si se te dan fechas clave dentro del rango, úsalas cuando tengan sentido real para este negocio (no fuerces una fecha genérica en un negocio al que no le aplica).",
     "- Para recommendedPublishTime: este negocio todavía no tiene historial de datos propios de a qué hora responde mejor su audiencia (eso llega después, con más publicaciones). Mientras tanto, razona con lo que sí es verificable: patrones generales conocidos por plataforma y formato (ej. Reels de Instagram funcionan mejor en la tarde/noche, contenido B2B entre semana en horario laboral) y el giro específico del negocio (ej. un restaurante conviene publicar antes de horas de comida, un gimnasio antes del horario en que la gente suele entrenar). No es un dato medido de este negocio — es la mejor recomendación razonada disponible hasta que haya datos reales.",
     "Responde únicamente llamando a la herramienta proporcionada — no escribas texto fuera de la llamada.",
   ].join("\n");
 }
 
 /** Agente de Tendencias: formats key dates falling inside the generation
- * window as a prompt section, or null if none fall in range. */
-function buildKeyDatesSection(startDate: string, days: number): string | null {
-  const keyDates = getUpcomingKeyDates(startDate, days);
+ * window as a prompt section, or null if none fall in range. Which
+ * region's calendar (Mexico vs. Estados Unidos) it draws from follows the
+ * business's país — see key-dates.ts's dispatcher. */
+function buildKeyDatesSection(country: string | null, startDate: string, days: number): string | null {
+  const keyDates = getUpcomingKeyDates(country, startDate, days);
   if (keyDates.length === 0) return null;
 
   const lines = keyDates.map(
     (d) => `- ${d.date}: ${d.name}${d.approximate ? " (fecha aproximada, confírmala)" : ""} — ${d.angle}`,
   );
   return [
-    "Fechas clave de México dentro de este rango (aprovecha las que tengan sentido para este negocio, sin forzar todas):",
+    `Fechas clave de ${keyDatesRegionLabel(country)} dentro de este rango (aprovecha las que tengan sentido para este negocio, sin forzar todas):`,
     ...lines,
   ].join("\n");
 }
@@ -96,7 +98,7 @@ function buildResearchSection(researchSummary: string | null): string | null {
 
 function buildUserPrompt(input: StrategyAgentInput, researchSummary: string | null): string {
   const { business, brand, plan } = input;
-  const keyDatesSection = buildKeyDatesSection(input.startDate, input.days);
+  const keyDatesSection = buildKeyDatesSection(business.country, input.startDate, input.days);
   const researchSection = buildResearchSection(researchSummary);
   const lines = [
     `Negocio: ${business.name}`,
@@ -258,7 +260,7 @@ function buildCampaignSystemPrompt(): string {
     "- Los guiones de video deben incluir gancho inicial, desarrollo y cierre con llamada a la acción, listos para grabarse tal cual.",
     "- Varía los formatos a lo largo de la campaña; no repitas el mismo formato dos días seguidos si se puede evitar.",
     "- Respeta el proveedor de video asignado al plan del negocio al proponer el nivel de producción esperado.",
-    "- Si se te da la fecha clave de México que da origen a la campaña, ancla el arco de la campaña hacia esa fecha; si hay otras fechas clave dentro del rango, úsalas solo si tienen sentido real para este negocio.",
+    "- Si se te da la fecha clave que da origen a la campaña, ancla el arco de la campaña hacia esa fecha; si hay otras fechas clave dentro del rango, úsalas solo si tienen sentido real para este negocio.",
     "- Para recommendedPublishTime: este negocio todavía no tiene historial de datos propios de a qué hora responde mejor su audiencia. Razona con patrones generales conocidos por plataforma y formato, y el giro específico del negocio — no es un dato medido, es la mejor recomendación razonada disponible.",
     "Responde únicamente llamando a la herramienta proporcionada — no escribas texto fuera de la llamada.",
   ].join("\n");
@@ -267,7 +269,7 @@ function buildCampaignSystemPrompt(): string {
 function buildCampaignUserPrompt(input: CampaignAgentInput, researchSummary: string | null): string {
   const { business, brand, plan, campaign } = input;
   const days = daysBetweenInclusive(campaign.startDate, campaign.endDate);
-  const keyDatesSection = buildKeyDatesSection(campaign.startDate, days);
+  const keyDatesSection = buildKeyDatesSection(business.country, campaign.startDate, days);
   const researchSection = buildResearchSection(researchSummary);
   const lines = [
     `Negocio: ${business.name}`,

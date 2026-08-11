@@ -1,9 +1,9 @@
 import { getClaudeClient } from "./claude-client";
 
 /**
- * Agente de Tendencias — real web research, not just the hardcoded Mexico
- * key-dates list (see src/lib/content/mexico-key-dates.ts, still used
- * alongside this for exact calendar dates). Uses Claude's server-side
+ * Agente de Tendencias — real web research, not just the hardcoded
+ * Mexico/US key-dates calendars (see src/lib/content/key-dates.ts, still
+ * used alongside this for exact calendar dates). Uses Claude's server-side
  * web_search tool so the strategy agent can ground its content plan in
  * what's actually happening right now for this business's industry and
  * city — competitors, trending angles, current conversations — instead of

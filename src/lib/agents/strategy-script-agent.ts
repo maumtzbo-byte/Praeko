@@ -2,7 +2,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { getClaudeClient } from "./claude-client";
 import type { ContentFormat, ContentKind } from "@/lib/content/types";
 import { canGenerateVideo, type PlanLimits } from "@/lib/plans/limits";
-import { getUpcomingKeyDates, keyDatesRegionLabel } from "@/lib/content/key-dates";
+import { getUpcomingKeyDates, keyDatesRegionLabel, isUsBusiness } from "@/lib/content/key-dates";
 import { researchIndustryTrends } from "./trends-research-agent";
 
 /**
@@ -55,12 +55,19 @@ const CONTENT_FORMATS: ContentFormat[] = ["reel", "carrusel", "imagen_unica", "p
 
 const PLAN_TOOL_NAME = "submit_content_plan";
 
-function buildSystemPrompt(): string {
+/** isUs: true when the business's país is "Estados Unidos" — see
+ * isUsBusiness in key-dates.ts. Everything else in this prompt stays in
+ * Spanish (it's an internal instruction to Claude, not customer-facing);
+ * only the one rule governing the actual generated topic/script language
+ * changes, since that's the only part end customers ever see. */
+function buildSystemPrompt(isUs: boolean): string {
   return [
-    "Eres el agente de estrategia y guionista de Frames, una plataforma de marketing con IA para negocios pequeños en México.",
+    "Eres el agente de estrategia y guionista de Frames, una plataforma de marketing con IA para negocios pequeños en México y Estados Unidos.",
     "Tu trabajo es proponer un plan de contenido día por día para redes sociales, con guiones listos para grabar o diseñar.",
     "Reglas:",
-    "- Escribe siempre en español, con el tono de marca que se te da.",
+    isUs
+      ? "- Escribe siempre en inglés (inglés de Estados Unidos) — este negocio opera en Estados Unidos — con el tono de marca que se te da."
+      : "- Escribe siempre en español, con el tono de marca que se te da.",
     "- Cada pieza debe conectar con un objetivo de negocio real, no contenido genérico.",
     "- Los guiones de video deben incluir gancho inicial, desarrollo y cierre con llamada a la acción, listos para grabarse tal cual.",
     "- Varía los formatos y temas a lo largo de los días; no repitas el mismo tema dos días seguidos.",
@@ -230,7 +237,7 @@ export async function generateMonthlyStrategy(input: StrategyAgentInput): Promis
     country: input.business.country,
     sellsDescription: input.brand.sellsDescription,
   });
-  return callStrategyAgent(buildSystemPrompt(), buildUserPrompt(input, researchSummary), input.plan);
+  return callStrategyAgent(buildSystemPrompt(isUsBusiness(input.business.country)), buildUserPrompt(input, researchSummary), input.plan);
 }
 
 export interface CampaignAgentInput {
@@ -248,12 +255,14 @@ export interface CampaignAgentInput {
   };
 }
 
-function buildCampaignSystemPrompt(): string {
+function buildCampaignSystemPrompt(isUs: boolean): string {
   return [
-    "Eres el agente de estrategia y guionista de Frames, una plataforma de marketing con IA para negocios pequeños en México.",
-    "Tu trabajo ahora es planear una CAMPAÑA completa: una serie de piezas conectadas entre sí que llevan a los clientes hacia una fecha o evento específico (ej. Hot Sale, Navidad, Buen Fin, aniversario, lanzamiento).",
+    "Eres el agente de estrategia y guionista de Frames, una plataforma de marketing con IA para negocios pequeños en México y Estados Unidos.",
+    "Tu trabajo ahora es planear una CAMPAÑA completa: una serie de piezas conectadas entre sí que llevan a los clientes hacia una fecha o evento específico (ej. Hot Sale, Navidad, Buen Fin, Black Friday, aniversario, lanzamiento).",
     "Reglas:",
-    "- Escribe siempre en español, con el tono de marca que se te da.",
+    isUs
+      ? "- Escribe siempre en inglés (inglés de Estados Unidos) — este negocio opera en Estados Unidos — con el tono de marca que se te da."
+      : "- Escribe siempre en español, con el tono de marca que se te da.",
     "- Todas las piezas deben conectar explícitamente con el tema y el objetivo de la campaña — no vuelvas a contenido genérico del negocio.",
     "- Construye un arco a lo largo de la campaña: los primeros días generan anticipación/aviso, los días intermedios refuerzan el mensaje y el valor, y los últimos días (sobre todo el último) empujan urgencia y llamada a la acción clara para cerrar.",
     "- Genera exactamente un día de contenido por cada día del rango de fechas de la campaña — ni más ni menos.",
@@ -315,5 +324,9 @@ export async function generateCampaignPlan(input: CampaignAgentInput): Promise<M
     country: input.business.country,
     sellsDescription: input.brand.sellsDescription,
   });
-  return callStrategyAgent(buildCampaignSystemPrompt(), buildCampaignUserPrompt(input, researchSummary), input.plan);
+  return callStrategyAgent(
+    buildCampaignSystemPrompt(isUsBusiness(input.business.country)),
+    buildCampaignUserPrompt(input, researchSummary),
+    input.plan,
+  );
 }

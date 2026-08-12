@@ -1,4 +1,5 @@
 import { getClaudeClient } from "./claude-client";
+import { isUsBusiness } from "@/lib/content/key-dates";
 
 /**
  * Agente de Tendencias — real web research, not just the hardcoded
@@ -27,10 +28,21 @@ const MODEL = "claude-sonnet-5";
 
 function buildResearchPrompt(input: TrendResearchInput): string {
   const location = [input.city, input.country].filter(Boolean).join(", ") || "México";
+  // The summary language follows the business's región (see isUsBusiness)
+  // rather than always Spanish — this text gets folded straight into the
+  // strategy agent's prompt (see buildResearchSection in
+  // strategy-script-agent.ts), which now writes the actual script/topic in
+  // English for US businesses too; keeping this in Spanish for a US
+  // business would just be internal-prompt language drift, not a
+  // customer-facing inconsistency by itself, but matching it avoids Claude
+  // ever needing to translate its own research mid-prompt.
+  const isUs = isUsBusiness(input.country);
   return [
     `Investiga en internet qué tipo de contenido de redes sociales está funcionando AHORA MISMO para negocios de "${input.industry}" en ${location}${input.sellsDescription ? `, especialmente relacionados con: ${input.sellsDescription}` : ""}.`,
     "Busca: tendencias actuales de esta industria específica, temas de conversación relevantes esta semana o este mes, y cualquier evento o fecha próxima específica de esta industria (no una fecha genérica de calendario) que valga la pena aprovechar.",
-    "Responde con un resumen breve (máximo 5-6 líneas), en español, solo con hallazgos concretos y accionables para este negocio — nada de relleno genérico tipo 'las redes sociales son importantes'. Si no encuentras nada específico y útil, dilo en una sola línea en vez de inventar algo.",
+    isUs
+      ? "Responde con un resumen breve (máximo 5-6 líneas), en inglés (este negocio opera en Estados Unidos), solo con hallazgos concretos y accionables para este negocio — nada de relleno genérico tipo 'social media is important'. Si no encuentras nada específico y útil, dilo en una sola línea en vez de inventar algo."
+      : "Responde con un resumen breve (máximo 5-6 líneas), en español, solo con hallazgos concretos y accionables para este negocio — nada de relleno genérico tipo 'las redes sociales son importantes'. Si no encuentras nada específico y útil, dilo en una sola línea en vez de inventar algo.",
   ].join("\n");
 }
 

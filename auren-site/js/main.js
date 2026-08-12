@@ -243,6 +243,312 @@
     recalcCartTotals();
   }
 
+  /* ---------- locale toggle ---------- */
+
+  function initLocaleToggle() {
+    const actions = document.querySelector(".header-actions");
+    if (!actions || actions.querySelector(".locale-toggle")) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "locale-toggle";
+    btn.textContent = localStorage.getItem("auren_locale") || "ES · EUR";
+    btn.addEventListener("click", () => {
+      const next = btn.textContent === "ES · EUR" ? "EN · USD" : "ES · EUR";
+      btn.textContent = next;
+      localStorage.setItem("auren_locale", next);
+      showToast(next === "EN · USD" ? "Currency switched to USD" : "Moneda cambiada a EUR");
+    });
+    actions.insertBefore(btn, actions.firstChild);
+  }
+
+  /* ---------- footer payment badges ---------- */
+
+  function initPaymentBadges() {
+    const brand = document.querySelector(".footer-brand");
+    if (!brand || brand.querySelector(".payment-badges")) return;
+    const row = document.createElement("div");
+    row.className = "payment-badges";
+    ["Visa", "Mastercard", "PayPal", "Bizum", "Apple Pay"].forEach((label) => {
+      const span = document.createElement("span");
+      span.className = "payment-badge";
+      span.textContent = label;
+      row.appendChild(span);
+    });
+    brand.appendChild(row);
+  }
+
+  /* ---------- cookie consent banner ---------- */
+
+  function initCookieBanner() {
+    if (localStorage.getItem("auren_cookie_consent")) return;
+    const bar = document.createElement("div");
+    bar.className = "cookie-banner";
+    bar.innerHTML =
+      '<p>Usamos cookies propias y de terceros para mejorar tu experiencia de compra y analizar la navegación. <a href="privacidad.html">Más información</a>.</p>' +
+      '<div class="cookie-actions">' +
+      '<button type="button" class="btn btn-outline" data-cookie="reject">Rechazar</button>' +
+      '<button type="button" class="btn" data-cookie="accept">Aceptar</button>' +
+      "</div>";
+    document.body.appendChild(bar);
+    requestAnimationFrame(() => bar.classList.add("show"));
+    bar.querySelectorAll("[data-cookie]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        localStorage.setItem("auren_cookie_consent", btn.dataset.cookie);
+        bar.classList.remove("show");
+        setTimeout(() => bar.remove(), 350);
+      });
+    });
+  }
+
+  /* ---------- newsletter entry popup ---------- */
+
+  function initNewsletterPopup() {
+    if (sessionStorage.getItem("auren_popup_seen")) return;
+    setTimeout(() => {
+      if (sessionStorage.getItem("auren_popup_seen")) return;
+      const overlay = document.createElement("div");
+      overlay.className = "popup-overlay";
+      overlay.innerHTML =
+        '<div class="popup-card">' +
+        '<button type="button" class="popup-close" aria-label="Cerrar">×</button>' +
+        '<span class="eyebrow">AUREN Members</span>' +
+        "<h3>Un 10% en tu primer pedido</h3>" +
+        "<p>Suscríbete y sé el primero en conocer las novedades de cada temporada.</p>" +
+        '<form class="popup-form newsletter-form">' +
+        '<input type="email" placeholder="Tu correo electrónico" required />' +
+        '<button type="submit">Unirme →</button>' +
+        "</form>" +
+        '<button type="button" class="popup-dismiss">No, gracias</button>' +
+        "</div>";
+      document.body.appendChild(overlay);
+      requestAnimationFrame(() => overlay.classList.add("show"));
+
+      function close() {
+        sessionStorage.setItem("auren_popup_seen", "1");
+        overlay.classList.remove("show");
+        setTimeout(() => overlay.remove(), 300);
+      }
+
+      overlay.querySelector(".popup-close").addEventListener("click", close);
+      overlay.querySelector(".popup-dismiss").addEventListener("click", close);
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) close();
+      });
+      overlay.querySelector(".popup-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        showToast("Gracias por suscribirte");
+        close();
+      });
+    }, 4000);
+  }
+
+  /* ---------- floating chat button + back to top ---------- */
+
+  function initChatButton() {
+    if (document.querySelector(".chat-fab")) return;
+    const btn = document.createElement("a");
+    btn.className = "chat-fab";
+    btn.href = "mailto:hola@auren-store.com";
+    btn.setAttribute("aria-label", "Escríbenos");
+    btn.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' +
+      '<path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>' +
+      "</svg>";
+    document.body.appendChild(btn);
+  }
+
+  function initBackToTop() {
+    if (document.querySelector(".back-to-top")) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "back-to-top";
+    btn.setAttribute("aria-label", "Volver arriba");
+    btn.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    document.body.appendChild(btn);
+    btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    window.addEventListener(
+      "scroll",
+      () => btn.classList.toggle("show", window.scrollY > 600),
+      { passive: true }
+    );
+  }
+
+  /* ---------- deterministic star ratings (no backend, just UI polish) ---------- */
+
+  function hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  function ratingFor(name) {
+    const hash = hashString(name);
+    const rating = (4 + (hash % 10) / 10).toFixed(1);
+    const count = 12 + (hash % 140);
+    return { rating, count };
+  }
+
+  function starsMarkup(rating) {
+    const pct = Math.round((rating / 5) * 100);
+    return (
+      '<span class="stars" aria-label="' + rating + ' de 5 estrellas">' +
+      '<span class="stars-bg">★★★★★</span>' +
+      '<span class="stars-fg" style="width:' + pct + '%">★★★★★</span>' +
+      "</span>"
+    );
+  }
+
+  function initCardRatings() {
+    document.querySelectorAll(".product-card").forEach((card) => {
+      if (card.querySelector(".rating-row")) return;
+      const nameEl = card.querySelector("h3");
+      const catBlock = card.querySelector(".product-info > div");
+      if (!nameEl || !catBlock) return;
+      const { rating, count } = ratingFor(nameEl.textContent.trim());
+      const row = document.createElement("div");
+      row.className = "rating-row";
+      row.innerHTML = starsMarkup(rating) + '<span class="rating-count">(' + count + ")</span>";
+      catBlock.appendChild(row);
+    });
+  }
+
+  function initPdpRating() {
+    const h1 = document.querySelector(".pdp-info h1");
+    if (!h1 || document.querySelector(".rating-row-pdp")) return;
+    const { rating, count } = ratingFor(h1.textContent.trim());
+    const row = document.createElement("div");
+    row.className = "rating-row rating-row-pdp";
+    row.innerHTML = starsMarkup(rating) + '<span class="rating-count">' + rating + " · " + count + " reseñas</span>";
+    h1.insertAdjacentElement("afterend", row);
+  }
+
+  /* ---------- product detail: low stock note ---------- */
+
+  function initStockNote() {
+    const actions = document.querySelector(".pdp-actions");
+    const h1 = document.querySelector(".pdp-info h1");
+    if (!actions || !h1 || document.querySelector(".stock-note")) return;
+    const hash = hashString(h1.textContent.trim());
+    const stock = 2 + (hash % 6);
+    const note = document.createElement("p");
+    note.className = "stock-note";
+    note.textContent =
+      stock <= 4 ? "Quedan solo " + stock + " unidades en esta talla" : "Disponible — envío en 24/48h";
+    actions.insertAdjacentElement("afterend", note);
+  }
+
+  /* ---------- product detail: sticky mobile add-to-cart ---------- */
+
+  function initStickyAddToCart() {
+    const original = document.querySelector(".pdp-actions [data-add-to-cart]");
+    const priceEl = document.querySelector(".pdp-price");
+    if (!original || !priceEl || document.querySelector(".sticky-add-bar")) return;
+
+    const bar = document.createElement("div");
+    bar.className = "sticky-add-bar";
+    bar.innerHTML =
+      '<span class="sticky-add-price">' + priceEl.textContent.trim() + "</span>" +
+      '<button type="button" class="btn" data-add-to-cart>Añadir a la bolsa</button>';
+    document.body.appendChild(bar);
+
+    bar.querySelector("[data-add-to-cart]").addEventListener("click", (e) => {
+      e.preventDefault();
+      addToCart(1);
+      showToast("Añadido a la bolsa");
+    });
+
+    if ("IntersectionObserver" in window) {
+      const footer = document.querySelector(".site-footer");
+      let ctaVisible = true;
+      let footerVisible = false;
+
+      function refresh() {
+        bar.classList.toggle("show", !ctaVisible && !footerVisible);
+      }
+
+      const ctaObserver = new IntersectionObserver(
+        ([entry]) => {
+          ctaVisible = entry.isIntersecting;
+          refresh();
+        },
+        { threshold: 0 }
+      );
+      ctaObserver.observe(original);
+
+      if (footer) {
+        const footerObserver = new IntersectionObserver(
+          ([entry]) => {
+            footerVisible = entry.isIntersecting;
+            refresh();
+          },
+          { threshold: 0 }
+        );
+        footerObserver.observe(footer);
+      }
+    }
+  }
+
+  /* ---------- recently viewed products ---------- */
+
+  const RECENT_KEY = "auren_recent_products";
+
+  function renderRecentlyViewed() {
+    const mount = document.querySelector("[data-recently-viewed]");
+    if (!mount) return;
+    const h1 = document.querySelector(".pdp-info h1");
+    const currentName = h1 ? h1.textContent.trim() : null;
+    let list = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+    if (currentName) list = list.filter((p) => p.name !== currentName);
+    if (!list.length) {
+      mount.hidden = true;
+      return;
+    }
+    mount.hidden = false;
+    mount.innerHTML =
+      '<div class="section-head related-heading">' +
+      '<div><span class="eyebrow">Tu historial</span><h2 class="h-display">Vistos recientemente</h2></div>' +
+      "</div>" +
+      '<div class="product-grid">' +
+      list
+        .map(
+          (p) =>
+            '<a class="product-card" href="product.html">' +
+            '<div class="art ' + p.artClass + '" data-tag="' + p.tag + '"></div>' +
+            '<div class="product-info">' +
+            "<div><h3>" + p.name + "</h3><span class=\"cat\">" + p.cat + "</span></div>" +
+            '<span class="product-price">' + p.price + "</span>" +
+            "</div></a>"
+        )
+        .join("") +
+      "</div>";
+  }
+
+  function trackRecentProduct() {
+    const h1 = document.querySelector(".pdp-info h1");
+    const priceEl = document.querySelector(".pdp-price");
+    const art = document.querySelector(".pdp-main .art");
+    const eyebrow = document.querySelector(".pdp-info .eyebrow");
+    if (!h1 || !priceEl || !art) return;
+
+    const entry = {
+      name: h1.textContent.trim(),
+      price: priceEl.textContent.trim(),
+      artClass: art.className.replace("art", "").trim(),
+      tag: art.getAttribute("data-tag") || "AUREN",
+      cat: eyebrow ? eyebrow.textContent.split("·")[0].trim() : "AUREN",
+    };
+
+    let list = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+    list = list.filter((p) => p.name !== entry.name);
+    list.unshift(entry);
+    list = list.slice(0, 6);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+  }
+
   /* ---------- init ---------- */
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -256,5 +562,19 @@
     initOptionPickers();
     initAccordion();
     initCartPage();
+
+    initLocaleToggle();
+    initPaymentBadges();
+    initCookieBanner();
+    initNewsletterPopup();
+    initChatButton();
+    initBackToTop();
+
+    initPdpRating();
+    initStockNote();
+    initStickyAddToCart();
+    renderRecentlyViewed();
+    initCardRatings();
+    trackRecentProduct();
   });
 })();

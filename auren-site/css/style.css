@@ -549,3 +549,322 @@ ul {
   opacity: 1;
   transform: translate(-50%, 0);
 }
+
+/* ---- locale toggle (header) ---- */
+
+.locale-toggle {
+  background: none;
+  border: 1px solid var(--color-line-strong);
+  padding: 6px 12px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.locale-toggle:hover {
+  border-color: var(--color-ink);
+}
+
+@media (max-width: 620px) {
+  .locale-toggle { display: none; }
+}
+
+/* ---- footer payment badges ---- */
+
+.payment-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.payment-badge {
+  border: 1px solid rgba(245, 243, 238, 0.3);
+  color: rgba(245, 243, 238, 0.7);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  padding: 5px 10px;
+}
+
+/* ---- cookie banner ---- */
+
+.cookie-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 900;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  padding: 18px var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  transform: translateY(100%);
+  transition: transform 0.35s var(--ease);
+}
+
+.cookie-banner.show {
+  transform: translateY(0);
+}
+
+.cookie-banner p {
+  margin: 0;
+  font-size: 12px;
+  max-width: 60ch;
+  color: rgba(245, 243, 238, 0.82);
+}
+
+.cookie-banner a {
+  text-decoration: underline;
+}
+
+.cookie-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.cookie-actions .btn {
+  padding: 11px 20px;
+}
+
+/* the cookie banner sits on the same navy used for --color-ink, so the
+   default ink-on-transparent/ink-on-ink button styles vanish here —
+   override with light-on-navy treatments */
+.cookie-actions .btn:not(.btn-outline) {
+  background: var(--color-gold);
+  border-color: var(--color-gold);
+  color: var(--color-ink);
+}
+.cookie-actions .btn:not(.btn-outline):hover {
+  background: transparent;
+  border-color: var(--color-paper);
+  color: var(--color-paper);
+}
+
+.cookie-actions .btn-outline {
+  border-color: rgba(245, 243, 238, 0.4);
+  color: var(--color-paper);
+}
+.cookie-actions .btn-outline:hover {
+  background: rgba(245, 243, 238, 0.12);
+  border-color: var(--color-paper);
+}
+
+/* ---- newsletter popup ---- */
+
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  background: rgba(27, 41, 66, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease);
+}
+
+.popup-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.popup-card {
+  position: relative;
+  background: var(--color-paper);
+  max-width: 420px;
+  width: 100%;
+  padding: 44px 36px;
+  text-align: center;
+  transform: scale(0.96);
+  transition: transform 0.3s var(--ease);
+}
+
+.popup-overlay.show .popup-card {
+  transform: scale(1);
+}
+
+.popup-card h3 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  text-transform: uppercase;
+  margin: 10px 0 14px;
+}
+
+.popup-card p {
+  font-size: 13px;
+  color: var(--color-muted);
+  margin: 0 0 24px;
+}
+
+.popup-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px 8px;
+}
+
+.popup-form {
+  border-bottom-color: var(--color-ink);
+}
+
+.popup-dismiss {
+  display: block;
+  margin: 16px auto 0;
+  background: none;
+  border: none;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  color: var(--color-muted);
+}
+
+/* ---- floating chat button ---- */
+
+.chat-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 800;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(27, 41, 66, 0.35);
+}
+
+.chat-fab svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ---- back to top ---- */
+
+.back-to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 88px;
+  z-index: 800;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--color-paper);
+  border: 1px solid var(--color-line-strong);
+  color: var(--color-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+}
+
+.back-to-top.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.back-to-top svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---- star ratings ---- */
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.stars {
+  position: relative;
+  display: inline-block;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--color-line-strong);
+  letter-spacing: 1px;
+}
+
+.stars-fg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--color-gold-dark);
+}
+
+.rating-count {
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+.rating-row-pdp {
+  margin: 4px 0 18px;
+}
+.rating-row-pdp .stars { font-size: 14px; }
+
+/* ---- product stock note ---- */
+
+.stock-note {
+  font-size: 12px;
+  color: var(--color-gold-dark);
+  margin: -14px 0 20px;
+  font-weight: 600;
+}
+
+/* ---- sticky mobile add-to-cart ---- */
+
+.sticky-add-bar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 850;
+  background: var(--color-paper);
+  border-top: 1px solid var(--color-line-strong);
+  padding: 12px var(--gutter);
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transform: translateY(100%);
+  transition: transform 0.3s var(--ease);
+}
+
+@media (max-width: 860px) {
+  .sticky-add-bar { display: flex; }
+}
+
+.sticky-add-bar.show {
+  transform: translateY(0);
+}
+
+.sticky-add-price {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sticky-add-bar .btn {
+  padding: 12px 24px;
+}

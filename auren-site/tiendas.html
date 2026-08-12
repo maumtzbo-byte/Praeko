@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tu bolsa — AUREN</title>
-  <meta name="description" content="Revisa los productos en tu bolsa AUREN antes de finalizar la compra." />
+  <title>Nuestras tiendas — AUREN</title>
+  <meta name="description" content="Encuentra tu tienda AUREN más cercana en España y Francia." />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/pages.css" />
 </head>
@@ -39,7 +39,7 @@
         <button class="icon-btn" aria-label="Cuenta">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.6-3.6 5-5.5 8-5.5s6.4 1.9 8 5.5"/></svg>
         </button>
-        <a href="cart.html" class="icon-btn active" aria-label="Bolsa">
+        <a href="cart.html" class="icon-btn" aria-label="Bolsa">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>
           <span class="cart-count" data-cart-count>0</span>
         </a>
@@ -61,79 +61,78 @@
   <main class="wrap">
 
     <nav class="breadcrumb">
-      <a href="index.html">Inicio</a><span class="sep">/</span><span class="current">Bolsa</span>
+      <a href="index.html">Inicio</a><span class="sep">/</span><span class="current">Tiendas</span>
     </nav>
 
-    <div class="shop-header">
-      <h1 class="h-display">Tu bolsa</h1>
+    <div class="faq-header">
+      <h1 class="h-display">Nuestras tiendas</h1>
+      <p>Seis espacios pensados como un club privado más que como una tienda. Pasa a conocer la colección completa y a tomar un café.</p>
     </div>
 
-    <div data-cart-filled>
-      <div class="cart-layout">
-        <div class="cart-lines">
+    <div class="stores-layout">
+      <div class="stores-list">
 
-          <div class="cart-line" data-price="39">
-            <div class="art" data-tag="AUREN"></div>
-            <div class="cart-line-info">
-              <h4>Camiseta Oversize Arena</h4>
-              <p>Color: Arena · Talla: M</p>
-              <div class="qty-stepper">
-                <button data-qty-action="dec" aria-label="Reducir cantidad">−</button>
-                <span data-qty>1</span>
-                <button data-qty-action="inc" aria-label="Aumentar cantidad">+</button>
-              </div>
-              <button class="remove-line">Eliminar</button>
-            </div>
-            <div class="cart-line-price">39,00 €</div>
-          </div>
-
-          <div class="cart-line" data-price="75">
-            <div class="art stone" data-tag="AUREN"></div>
-            <div class="cart-line-info">
-              <h4>Sudadera Capucha Piedra</h4>
-              <p>Color: Piedra · Talla: L</p>
-              <div class="qty-stepper">
-                <button data-qty-action="dec" aria-label="Reducir cantidad">−</button>
-                <span data-qty>1</span>
-                <button data-qty-action="inc" aria-label="Aumentar cantidad">+</button>
-              </div>
-              <button class="remove-line">Eliminar</button>
-            </div>
-            <div class="cart-line-price">75,00 €</div>
-          </div>
-
-          <div class="cart-line" data-price="23">
-            <div class="art rose" data-tag="AUREN"></div>
-            <div class="cart-line-info">
-              <h4>Gorra Bordada AUREN</h4>
-              <p>Color: Rosa palo · Talla única</p>
-              <div class="qty-stepper">
-                <button data-qty-action="dec" aria-label="Reducir cantidad">−</button>
-                <span data-qty>2</span>
-                <button data-qty-action="inc" aria-label="Aumentar cantidad">+</button>
-              </div>
-              <button class="remove-line">Eliminar</button>
-            </div>
-            <div class="cart-line-price">46,00 €</div>
-          </div>
-
+        <div class="store-item">
+          <span class="store-tag">Flagship</span>
+          <h3>Madrid — Salamanca</h3>
+          <p>Calle de Serrano, 68</p>
+          <p>Lun–Sáb, 10:00–20:30</p>
         </div>
 
-        <aside class="cart-summary">
-          <h3>Resumen del pedido</h3>
-          <div class="summary-row"><span>Subtotal</span><span data-cart-subtotal>160,00 €</span></div>
-          <div class="summary-row"><span>Envío</span><span>Gratis</span></div>
-          <div class="summary-row total"><span>Total</span><span data-cart-total>160,00 €</span></div>
-          <button class="btn btn-block" style="margin-top:24px;">Finalizar compra</button>
-          <a href="shop.html" style="display:block; text-align:center; font-size:12px; letter-spacing:.06em; text-transform:uppercase; margin-top:16px; text-decoration:underline;">Seguir comprando</a>
-        </aside>
-      </div>
-    </div>
+        <div class="store-item">
+          <span class="store-tag">Tienda</span>
+          <h3>Barcelona — Diagonal</h3>
+          <p>Avinguda Diagonal, 470</p>
+          <p>Lun–Sáb, 10:00–20:30</p>
+        </div>
 
-    <div class="empty-cart" data-cart-empty hidden>
-      <span class="eyebrow">Tu bolsa está vacía</span>
-      <p>Todavía no has añadido nada. Explora la colección y encuentra tu próxima pieza esencial.</p>
-      <a href="shop.html" class="btn">Ir a la tienda</a>
+        <div class="store-item">
+          <span class="store-tag">Temporada</span>
+          <h3>Marbella — Puerto Banús</h3>
+          <p>Muelle Ribera, local 12</p>
+          <p>Todos los días, 11:00–22:00 (abril–octubre)</p>
+        </div>
+
+        <div class="store-item">
+          <span class="store-tag">Tienda</span>
+          <h3>Palma de Mallorca</h3>
+          <p>Carrer de la Unió, 4</p>
+          <p>Lun–Sáb, 10:00–20:00</p>
+        </div>
+
+        <div class="store-item">
+          <span class="store-tag">Corner</span>
+          <h3>San Sebastián</h3>
+          <p>Avenida de la Libertad, 21</p>
+          <p>Lun–Sáb, 10:00–19:30</p>
+        </div>
+
+        <div class="store-item">
+          <span class="store-tag">Internacional</span>
+          <h3>Biarritz, Francia</h3>
+          <p>5 Avenue Édouard VII</p>
+          <p>Mar–Dom, 10:30–19:30</p>
+        </div>
+
+      </div>
+
+      <div class="stylized-map" aria-hidden="true">
+        <svg viewBox="0 0 100 125" preserveAspectRatio="xMidYMid slice">
+          <path d="M20 10 C10 25 8 45 15 60 C10 75 18 92 32 105 C45 118 62 115 72 100 C85 90 88 70 80 55 C88 42 82 22 68 14 C55 5 32 2 20 10 Z" fill="none" stroke="#8f7649" stroke-width="0.6" opacity="0.5"/>
+          <circle class="map-pin" cx="38" cy="34" r="1.6"/>
+          <text class="map-pin-label" x="41" y="35">Madrid</text>
+          <circle class="map-pin" cx="58" cy="24" r="1.6"/>
+          <text class="map-pin-label" x="61" y="25">Barcelona</text>
+          <circle class="map-pin" cx="30" cy="58" r="1.6"/>
+          <text class="map-pin-label" x="33" y="59">Marbella</text>
+          <circle class="map-pin" cx="52" cy="66" r="1.6"/>
+          <text class="map-pin-label" x="55" y="67">Palma</text>
+          <circle class="map-pin" cx="26" cy="20" r="1.6"/>
+          <text class="map-pin-label" x="29" y="21">San Sebastián</text>
+          <circle class="map-pin" cx="30" cy="12" r="1.6"/>
+          <text class="map-pin-label" x="33" y="13">Biarritz</text>
+        </svg>
+      </div>
     </div>
 
   </main>

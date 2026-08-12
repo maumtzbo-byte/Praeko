@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tu bolsa — AUREN</title>
-  <meta name="description" content="Revisa los productos en tu bolsa AUREN antes de finalizar la compra." />
+  <title>Revista — AUREN</title>
+  <meta name="description" content="Estilo, cuidado de prendas e historias detrás de las colecciones AUREN." />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/pages.css" />
 </head>
@@ -28,7 +28,7 @@
         <a href="shop.html#novedades">Novedades</a>
         <a href="shop.html">Tienda</a>
         <a href="shop.html#accesorios">Accesorios</a>
-        <a href="journal.html">Revista</a>
+        <a href="journal.html" class="active">Revista</a>
         <a href="index.html#historia">Sobre AUREN</a>
       </nav>
       <a href="index.html" class="logo">AUREN</a>
@@ -39,7 +39,7 @@
         <button class="icon-btn" aria-label="Cuenta">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.6-3.6 5-5.5 8-5.5s6.4 1.9 8 5.5"/></svg>
         </button>
-        <a href="cart.html" class="icon-btn active" aria-label="Bolsa">
+        <a href="cart.html" class="icon-btn" aria-label="Bolsa">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>
           <span class="cart-count" data-cart-count>0</span>
         </a>
@@ -61,79 +61,67 @@
   <main class="wrap">
 
     <nav class="breadcrumb">
-      <a href="index.html">Inicio</a><span class="sep">/</span><span class="current">Bolsa</span>
+      <a href="index.html">Inicio</a><span class="sep">/</span><span class="current">Revista</span>
     </nav>
 
-    <div class="shop-header">
-      <h1 class="h-display">Tu bolsa</h1>
+    <div class="journal-header">
+      <h1 class="h-display">Revista AUREN</h1>
+      <p>Estilo, cuidado de prendas e historias detrás de cada colección.</p>
     </div>
 
-    <div data-cart-filled>
-      <div class="cart-layout">
-        <div class="cart-lines">
-
-          <div class="cart-line" data-price="39">
-            <div class="art" data-tag="AUREN"></div>
-            <div class="cart-line-info">
-              <h4>Camiseta Oversize Arena</h4>
-              <p>Color: Arena · Talla: M</p>
-              <div class="qty-stepper">
-                <button data-qty-action="dec" aria-label="Reducir cantidad">−</button>
-                <span data-qty>1</span>
-                <button data-qty-action="inc" aria-label="Aumentar cantidad">+</button>
-              </div>
-              <button class="remove-line">Eliminar</button>
-            </div>
-            <div class="cart-line-price">39,00 €</div>
-          </div>
-
-          <div class="cart-line" data-price="75">
-            <div class="art stone" data-tag="AUREN"></div>
-            <div class="cart-line-info">
-              <h4>Sudadera Capucha Piedra</h4>
-              <p>Color: Piedra · Talla: L</p>
-              <div class="qty-stepper">
-                <button data-qty-action="dec" aria-label="Reducir cantidad">−</button>
-                <span data-qty>1</span>
-                <button data-qty-action="inc" aria-label="Aumentar cantidad">+</button>
-              </div>
-              <button class="remove-line">Eliminar</button>
-            </div>
-            <div class="cart-line-price">75,00 €</div>
-          </div>
-
-          <div class="cart-line" data-price="23">
-            <div class="art rose" data-tag="AUREN"></div>
-            <div class="cart-line-info">
-              <h4>Gorra Bordada AUREN</h4>
-              <p>Color: Rosa palo · Talla única</p>
-              <div class="qty-stepper">
-                <button data-qty-action="dec" aria-label="Reducir cantidad">−</button>
-                <span data-qty>2</span>
-                <button data-qty-action="inc" aria-label="Aumentar cantidad">+</button>
-              </div>
-              <button class="remove-line">Eliminar</button>
-            </div>
-            <div class="cart-line-price">46,00 €</div>
-          </div>
-
-        </div>
-
-        <aside class="cart-summary">
-          <h3>Resumen del pedido</h3>
-          <div class="summary-row"><span>Subtotal</span><span data-cart-subtotal>160,00 €</span></div>
-          <div class="summary-row"><span>Envío</span><span>Gratis</span></div>
-          <div class="summary-row total"><span>Total</span><span data-cart-total>160,00 €</span></div>
-          <button class="btn btn-block" style="margin-top:24px;">Finalizar compra</button>
-          <a href="shop.html" style="display:block; text-align:center; font-size:12px; letter-spacing:.06em; text-transform:uppercase; margin-top:16px; text-decoration:underline;">Seguir comprando</a>
-        </aside>
+    <a class="journal-feature" href="journal-post.html">
+      <div class="art dark" data-tag="Estilo"></div>
+      <div>
+        <div class="journal-meta">Estilo · 5 min de lectura</div>
+        <h2 class="h-display" style="font-size:clamp(26px,3.5vw,40px); text-transform:none;">Cómo llevar el blazer fuera de la oficina</h2>
+        <p style="color:var(--color-muted); margin-top:14px; max-width:50ch;">La americana dejó de ser solo para reuniones. Te contamos cómo combinarla con vaqueros, camiseta y mocasín para un look de fin de semana con actitud.</p>
       </div>
-    </div>
+    </a>
 
-    <div class="empty-cart" data-cart-empty hidden>
-      <span class="eyebrow">Tu bolsa está vacía</span>
-      <p>Todavía no has añadido nada. Explora la colección y encuentra tu próxima pieza esencial.</p>
-      <a href="shop.html" class="btn">Ir a la tienda</a>
+    <div class="journal-grid">
+
+      <a class="journal-card" href="journal-post.html">
+        <div class="art sage" data-tag="Cápsula"></div>
+        <div class="journal-meta">Guías · 4 min</div>
+        <h3>El armario cápsula para un fin de semana en la costa</h3>
+        <p>Seis prendas, doce combinaciones. Todo lo que necesitas meter en una bolsa de fin de semana.</p>
+      </a>
+
+      <a class="journal-card" href="journal-post.html">
+        <div class="art stone" data-tag="Punto"></div>
+        <div class="journal-meta">Producto · 3 min</div>
+        <h3>El regreso del punto trenzado</h3>
+        <p>Por qué el jersey de punto vuelve a ser la pieza más deseada del entretiempo.</p>
+      </a>
+
+      <a class="journal-card" href="journal-post.html">
+        <div class="art rose" data-tag="Regatta Club"></div>
+        <div class="journal-meta">Marca · 6 min</div>
+        <h3>Detrás de Regatta Club: así nació la colección</h3>
+        <p>De los bocetos al muestrario: el proceso creativo detrás de nuestra colección más náutica.</p>
+      </a>
+
+      <a class="journal-card" href="journal-post.html">
+        <div class="art" data-tag="Básicos"></div>
+        <div class="journal-meta">Estilo · 4 min</div>
+        <h3>Cinco prendas que no pasan de moda</h3>
+        <p>Invertir bien es comprar menos y mejor. Estas son las piezas que siempre funcionan.</p>
+      </a>
+
+      <a class="journal-card" href="journal-post.html">
+        <div class="art ink" data-tag="Cuidado"></div>
+        <div class="journal-meta">Cuidado · 3 min</div>
+        <h3>Cómo alargar la vida de tus prendas</h3>
+        <p>Lavado, secado y almacenaje: pequeños hábitos que marcan una gran diferencia.</p>
+      </a>
+
+      <a class="journal-card" href="journal-post.html">
+        <div class="art dark" data-tag="Talleres"></div>
+        <div class="journal-meta">Marca · 5 min</div>
+        <h3>Dentro de nuestros talleres europeos</h3>
+        <p>Visitamos a los artesanos que confeccionan cada prenda AUREN, pieza a pieza.</p>
+      </a>
+
     </div>
 
   </main>

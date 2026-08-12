@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AUREN — Tienda</title>
+  <meta name="description" content="Descubre camisetas, sudaderas, pantalones y accesorios AUREN. Novedades cada temporada." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+</head>
+<body>
+
+  <div class="announce">
+    <div class="announce-track">
+      <span>ENVÍO GRATIS EN PEDIDOS +75€</span>
+      <span>DEVOLUCIONES GRATUITAS EN 30 DÍAS</span>
+      <span>NUEVA COLECCIÓN — LEISURE SOCIAL CLUB</span>
+      <span>ENVÍO GRATIS EN PEDIDOS +75€</span>
+      <span>DEVOLUCIONES GRATUITAS EN 30 DÍAS</span>
+      <span>NUEVA COLECCIÓN — LEISURE SOCIAL CLUB</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <nav class="nav-primary">
+        <a href="shop.html#novedades">Novedades</a>
+        <a href="shop.html" class="active">Tienda</a>
+        <a href="shop.html#accesorios">Accesorios</a>
+        <a href="index.html#historia">Sobre AUREN</a>
+      </nav>
+      <a href="index.html" class="logo">AUREN</a>
+      <div class="header-actions">
+        <button class="icon-btn" aria-label="Buscar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </button>
+        <button class="icon-btn" aria-label="Cuenta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.6-3.6 5-5.5 8-5.5s6.4 1.9 8 5.5"/></svg>
+        </button>
+        <a href="cart.html" class="icon-btn" aria-label="Bolsa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>
+          <span class="cart-count" data-cart-count>0</span>
+        </a>
+      </div>
+      <button class="menu-toggle" aria-label="Menú"><span></span><span></span><span></span></button>
+    </div>
+    <div class="mobile-nav">
+      <ul>
+        <li><a href="shop.html#novedades">Novedades</a></li>
+        <li><a href="shop.html">Tienda</a></li>
+        <li><a href="shop.html#accesorios">Accesorios</a></li>
+        <li><a href="index.html#historia">Sobre AUREN</a></li>
+        <li><a href="cart.html">Bolsa</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <nav class="breadcrumb">
+      <a href="index.html">Inicio</a><span class="sep">/</span><span class="current">Tienda</span>
+    </nav>
+
+    <div class="shop-header">
+      <h1 class="h-display">Tienda</h1>
+      <p>Piezas esenciales, cortes limpios y materiales que envejecen bien. Filtra por categoría o cambia el orden para encontrar tu próxima pieza favorita.</p>
+    </div>
+
+    <div class="shop-toolbar">
+      <div class="filter-tabs">
+        <button data-filter="all" class="active">Todo</button>
+        <button data-filter="camisetas">Camisetas</button>
+        <button data-filter="sudaderas">Sudaderas</button>
+        <button data-filter="punto">Punto</button>
+        <button data-filter="pantalones">Pantalones</button>
+        <button data-filter="exterior">Exterior</button>
+        <button data-filter="accesorios">Accesorios</button>
+      </div>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <span class="result-count"><span data-result-count>12</span> productos</span>
+        <select class="sort-select">
+          <option value="featured">Destacados</option>
+          <option value="price-asc">Precio: menor a mayor</option>
+          <option value="price-desc">Precio: mayor a menor</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="product-grid" data-product-grid>
+
+      <a class="product-card" href="product.html" data-category="camisetas" data-price="39">
+        <div class="art" data-tag="AUREN">
+          <span class="badge">Nuevo</span>
+          <button class="btn btn-light btn-block quick-add" data-add-to-cart>Añadir a la bolsa</button>
+        </div>
+        <div class="product-info">
+          <div><h3>Camiseta Oversize Arena</h3><span class="cat">Camisetas</span>
+            <div class="swatches"><i style="background:#e7e1d3"></i><i style="background:#141414"></i><i style="background:#8f7038"></i></div>
+          </div>
+          <span class="product-price">39 €</span>
+        </div>
+      </a>
+
+      <a class="product-card" href="product.html" data-category="camisetas" data-price="29">
+        <div class="art stone" data-tag="AUREN">
+          <button class="btn btn-light btn-block quick-add" data-add-to-cart>Añadir a la bolsa</button>
+        </div>
+        <div class="product-info">
+          <div><h3>Camiseta Básica Negra</h3><span class="cat">Camisetas</span>
+            <div class="swatches"><i style="background:#141414"></i><i style="background:#e7e1d3"></i></div>
+          </div>
+          <span class="product-price">29 €</span>
+        </div>
+      </a>
+
+      <a class="product-card" href="product.html" data-category="sudaderas" data-price="75">
+        <div class="art stone" data-tag="AUREN">
+          <span class="badge">Nuevo</span>
+          <button class="btn btn-light btn-block quick-add" data-add-to-cart>Añadir a la bolsa</button>
+        </div>
+        <div class="product-info">
+          <div><h3>Sudadera Capucha Piedra</h3><span class="cat">Sudaderas</span>
+            <div class="swatches"><i style="background:#cfc7b4"></i><i style="background:#141414"></i></div>
+          </div>
+          <span class="product-price">75 €</span>
+        </div>
+      </a>
+
+      <a class="product-card" href="product.html" data-category="sudaderas" data-price="69">
+        <div class="art ink" data-tag="AUREN">
+          <button class="btn btn-light btn-block quick-add" data-add-to-cart>Añadir a la bolsa</button>
+        </div>
+        <div class="product-info">
+          <div><h3>Sudadera Crewneck Gris</h3><span class="cat">Sudaderas</span>
+            <div class="swatches"><i style="background:#6b665c"></i><i style="background:#cfc7b4"></i></div>
+          </div>
+          <span class="product-price">69 €</span>
+        </div>
+      </a>
+
+      <a class="product-card" href="product.html" data-category="punto" data-price="89">
+        <div class="art sage" data-tag="AUREN">
+          <button class="btn btn-light btn-block quick-add" data-add-to-cart>Añadir a la bolsa</button>
+        </div>
+        <div class="product-info">
+          <div><h3>Jersey Punto Trenzado</h3><span class="cat">Punto</span>
+            <div class="swatches"><i style="background:#a9b498"></i><i style="background:#e7e1d3"></i></div>
+          </div>
+          <span class="product-price">89 €</span>
+        </div>
+      </a>
+
+      <a class="product-card" href="product.html" data-category="pantalones" data-price="65">
+        <div class="art ink" data-tag="AUREN">
+          <span class="badge">Nuevo</span>
+          <button class="btn btn-light btn-block quick-add" data-add-to-cart>Añadir a la bolsa</button>
+        </div>
+        <div class="product-info">
+          <div><h3>Pantalón Cargo Negro</h3><span class="cat">Pantalones</span>
+            <div class="swatches"><i style="background:#141414"></i><i style="background:#6f7a5c"></i></div>
+          </div>
+          <span class="product-price">65 €</span>
+        </div>
+      </a>
+
+      <a class="product-card" href="product.html" data-category="pantalones" data-price="79">
+        <div class="art" data-tag="AUREN">
+          <button class="btn btn-light btn-block quick-add" data-add-to-cart>Añadir a la bolsa</button>
+        </div>
+        <div class="product-info">
+          <div><h3>Vaquero Recto Índigo</h3><span class="cat">Pantalones</span>
+            <div class="swatches"><i style="background:#3c4a63"></i></div>
+          </div>
+          <span class="product-price">79 €</span>
+        </div>
+      </a>
+
+      <a class="product-card" href="product.html" data-category="exterior" data-price="99">
+        <div class="art dark" data-tag="AUREN">
+          <span class="badge">Nuevo</span>
+          <button class="btn btn-light btn-block quick-add" data-add-to-cart>Añadir a la bolsa</button>
+        </div>
+        <div class="product-info">
+          <div><h3>Chaqueta Cortavientos</h3><span class="cat">Exterior</span>
+            <div class="swatches"><i style="background:#141414"></i><i style="background:#8f7038"></i></div>
+          </div>
+          <span class="product-price">99 €</span>
+        </div>
+      </a>
+
+      <a class="product-card" href="product.html" data-category="exterior" data-price="135">
+        <div class="art stone" data-tag="AUREN">
+          <button class="btn btn-light btn-block quick-add" data-add-to-cart>Añadir a la bolsa</button>
+        </div>
+        <div class="product-info">
+          <div><h3>Chaqueta Acolchada</h3><span class="cat">Exterior</span>
+            <div class="swatches"><i style="background:#cfc7b4"></i><i style="background:#141414"></i></div>
+          </div>
+          <span class="product-price">135 €</span>
+        </div>
+      </a>
+
+      <a class="product-card" href="product.html" data-category="accesorios" data-price="23" id="accesorios">
+        <div class="art rose" data-tag="AUREN">
+          <span class="badge sale">-20%</span>
+          <button class="btn btn-light btn-block quick-add" data-add-to-cart>Añadir a la bolsa</button>
+        </div>
+        <div class="product-info">
+          <div><h3>Gorra Bordada AUREN</h3><span class="cat">Accesorios</span>
+            <div class="swatches"><i style="background:#c39c86"></i><i style="background:#141414"></i></div>
+          </div>
+          <span class="product-price"><span class="was">29 €</span>23 €</span>
+        </div>
+      </a>
+
+      <a class="product-card" href="product.html" data-category="accesorios" data-price="45">
+        <div class="art" data-tag="AUREN">
+          <button class="btn btn-light btn-block quick-add" data-add-to-cart>Añadir a la bolsa</button>
+        </div>
+        <div class="product-info">
+          <div><h3>Bolso Tote Lona</h3><span class="cat">Accesorios</span>
+            <div class="swatches"><i style="background:#e7e1d3"></i><i style="background:#141414"></i></div>
+          </div>
+          <span class="product-price">45 €</span>
+        </div>
+      </a>
+
+      <a class="product-card" href="product.html" data-category="accesorios" data-price="35">
+        <div class="art ink" data-tag="AUREN">
+          <button class="btn btn-light btn-block quick-add" data-add-to-cart>Añadir a la bolsa</button>
+        </div>
+        <div class="product-info">
+          <div><h3>Cinturón Piel Reciclada</h3><span class="cat">Accesorios</span>
+            <div class="swatches"><i style="background:#141414"></i><i style="background:#8f7038"></i></div>
+          </div>
+          <span class="product-price">35 €</span>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="load-more-wrap">
+      <button class="btn btn-outline" disabled>Has visto todos los productos</button>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-top">
+      <div class="footer-brand">
+        <div class="logo">AUREN</div>
+        <p>Diseño atemporal para el armario de cada día. Piezas esenciales pensadas para durar, hechas con materiales responsables.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="Instagram">IG</a>
+          <a href="#" aria-label="TikTok">TT</a>
+          <a href="#" aria-label="Pinterest">PT</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Tienda</h4>
+        <ul>
+          <li><a href="shop.html#novedades">Novedades</a></li>
+          <li><a href="shop.html#camisetas">Camisetas</a></li>
+          <li><a href="shop.html#sudaderas">Sudaderas</a></li>
+          <li><a href="shop.html#accesorios">Accesorios</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Ayuda</h4>
+        <ul>
+          <li><a href="#">Envíos</a></li>
+          <li><a href="#">Devoluciones</a></li>
+          <li><a href="#">Guía de tallas</a></li>
+          <li><a href="#">Contacto</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>AUREN</h4>
+        <ul>
+          <li><a href="index.html#historia">Nuestra historia</a></li>
+          <li><a href="#">Tiendas</a></li>
+          <li><a href="#">Sostenibilidad</a></li>
+          <li><a href="#">Trabaja con nosotros</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="wrap footer-bottom">
+      <span>© 2026 AUREN. Todos los derechos reservados.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Privacidad</a>
+        <a href="#">Términos</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    // Pre-select a filter tab when arriving via a category hash link (e.g. shop.html#camisetas)
+    (function () {
+      const hash = window.location.hash.replace("#", "");
+      if (!hash) return;
+      const btn = document.querySelector('.filter-tabs button[data-filter="' + hash + '"]');
+      if (btn) btn.click();
+    })();
+  </script>
+</body>
+</html>

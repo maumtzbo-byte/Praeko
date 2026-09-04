@@ -182,7 +182,13 @@ export function ReporteDiarioPage() {
       (esMiercoles ? Number(values.promo_miercoles || 0) * 1.5 : 0),
   )
 
-  const descuadre = Math.abs(operacionTotal - ventasTotales) > 1
+  const diferenciaCuadre = operacionTotal - ventasTotales
+  const descuadre = Math.abs(diferenciaCuadre) > 1
+  const diferenciaCuadreTexto = descuadre
+    ? diferenciaCuadre > 0
+      ? `Faltan ${formatCurrency(diferenciaCuadre)} en método de pago para que cuadre con Operación del día.`
+      : `Sobran ${formatCurrency(Math.abs(diferenciaCuadre))} en método de pago respecto a Operación del día.`
+    : null
 
   async function guardarReporte(formValues: FormValues) {
     if (!usuario || !sucursalId) return
@@ -392,6 +398,9 @@ export function ReporteDiarioPage() {
               <div>
                 <p className="text-xs text-muted-foreground">Ventas totales</p>
                 <p className="text-xl font-semibold">{formatCurrency(ventasTotales)}</p>
+                {diferenciaCuadreTexto && (
+                  <p className="mt-1 text-xs font-medium text-destructive">{diferenciaCuadreTexto}</p>
+                )}
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Ganancia estimada</p>
@@ -412,7 +421,7 @@ export function ReporteDiarioPage() {
         open={Boolean(pendingValues)}
         onOpenChange={(open) => !open && setPendingValues(null)}
         title="Las cifras no coinciden"
-        description={`Los productos vendidos suman ${formatCurrency(operacionTotal)}, pero los métodos de pago suman ${formatCurrency(ventasTotales)}. Puedes revisar los números antes de guardar, o continuar de todas formas — si avanzas, se le avisará al administrador que este reporte no cuadró.`}
+        description={`Los productos vendidos suman ${formatCurrency(operacionTotal)}, pero los métodos de pago suman ${formatCurrency(ventasTotales)}. ${diferenciaCuadreTexto ?? ''} Puedes revisar los números antes de guardar, o continuar de todas formas — si avanzas, se le avisará al administrador que este reporte no cuadró.`}
         confirmLabel="Avanzar de todas formas"
         destructive={false}
         onConfirm={() => pendingValues && guardarReporte(pendingValues)}

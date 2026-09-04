@@ -186,8 +186,8 @@ export function ReporteDiarioPage() {
   const descuadre = Math.abs(diferenciaCuadre) > 1
   const diferenciaCuadreTexto = descuadre
     ? diferenciaCuadre > 0
-      ? `Faltan ${formatCurrency(diferenciaCuadre)} en método de pago para que cuadre con Operación del día.`
-      : `Sobran ${formatCurrency(Math.abs(diferenciaCuadre))} en método de pago respecto a Operación del día.`
+      ? `Faltan ${formatCurrency(diferenciaCuadre)} en método de pago para que cuadre con Operación del día. Esto pasa cuando falta capturar dinero de algún método de pago, o falta efectivo por registrar.`
+      : `Sobran ${formatCurrency(Math.abs(diferenciaCuadre))} en método de pago respecto a Operación del día. Esto pasa cuando falta capturar algún producto vendido, o se registró un pago de más.`
     : null
 
   async function guardarReporte(formValues: FormValues) {

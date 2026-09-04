@@ -17,6 +17,7 @@ import { useResumenMermasDelDia } from '@/hooks/use-mermas'
 import { useGastosTotal } from '@/hooks/use-gastos'
 import { useAuth } from '@/context/AuthContext'
 import { COMPLEMENTOS_ITEMS, EXTRAS_ITEMS, MENU_ITEMS, POLLO_ITEMS, PROMO_ITEMS, PROMO_MIERCOLES } from '@/lib/menu-precios'
+import { calcularVentasNetas } from '@/lib/comisiones'
 import { cn, formatCurrency, todayISO } from '@/lib/utils'
 import { GastosDelDiaSection } from '@/pages/reportes-diarios/GastosDelDiaSection'
 
@@ -155,7 +156,17 @@ export function ReporteDiarioPage() {
     Number(values.didi || 0) +
     Number(values.rappi || 0) +
     Number(values.uber || 0)
-  const gananciaEstimada = ventasTotales - gastosTotal
+  // No es ventasTotales - gastosTotal: DiDi/Uber/Rappi cobran comisión, así
+  // que la ganancia real descuenta eso primero (ver src/lib/comisiones.ts).
+  const ventasNetas = calcularVentasNetas({
+    vta_sucursal: Number(values.vta_sucursal || 0),
+    tarjeta: Number(values.tarjeta || 0),
+    deposito: Number(values.deposito || 0),
+    didi: Number(values.didi || 0),
+    rappi: Number(values.rappi || 0),
+    uber: Number(values.uber || 0),
+  })
+  const gananciaEstimada = ventasNetas - gastosTotal
 
   const operacionTotal =
     MENU_ITEMS.reduce((sum, item) => sum + Number(values[item.key] || 0) * item.precio, 0) +

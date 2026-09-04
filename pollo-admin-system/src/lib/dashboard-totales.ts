@@ -18,7 +18,10 @@ export function calcularTotales(reportes: ReporteDiario[] = []): TotalesDashboar
   return {
     totalVentas,
     totalGastos,
-    ganancia: totalVentas - totalGastos,
+    // Ojo: no es totalVentas - totalGastos. ganancia_estimada ya descuenta
+    // la comisión de DiDi/Uber/Rappi (ver src/lib/comisiones.ts), así que
+    // se suma directo en vez de recalcularse aquí con el total en bruto.
+    ganancia: reportes.reduce((sum, r) => sum + Number(r.ganancia_estimada), 0),
     pollosVendidos: reportes.reduce((sum, r) => sum + Number(r.pollos_vendidos), 0),
     productosDanados: reportes.reduce((sum, r) => sum + Number(r.productos_danados), 0),
   }

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/mascota.png" />
+    <link rel="apple-touch-icon" href="/mascota.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f4b400" />
+    <meta name="description" content="Pimpollo — panel de administración multi-sucursal" />
+    <title>Pimpollo</title>
+    <script>
+      // Applied before React mounts to avoid a flash of the wrong theme.
+      (function () {
+        try {
+          var stored = localStorage.getItem('pollo-admin-theme');
+          var isDark = stored === 'dark' || (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', isDark);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

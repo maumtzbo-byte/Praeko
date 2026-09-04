@@ -1,0 +1,123 @@
+import * as React from 'react'
+import { History } from 'lucide-react'
+import { PageHeader } from '@/components/shared/PageHeader'
+import { EmptyState } from '@/components/shared/EmptyState'
+import { PaginationControls } from '@/components/shared/PaginationControls'
+import { Badge } from '@/components/ui/badge'
+import { TableSkeleton } from '@/components/shared/TableSkeleton'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useHistorial } from '@/hooks/use-historial'
+import { useSucursales } from '@/hooks/use-sucursales'
+import { useAuth } from '@/context/AuthContext'
+import { formatDateTime } from '@/lib/utils'
+import type { BadgeProps } from '@/components/ui/badge'
+
+const TABLA_LABELS: Record<string, string> = {
+  pedidos: 'Pedidos',
+  reportes_diarios: 'Reportes diarios',
+  inventario: 'Inventario',
+}
+
+const ACCION_BADGE: Record<string, NonNullable<BadgeProps['variant']>> = {
+  crear: 'success',
+  actualizar: 'default',
+  eliminar: 'destructive',
+}
+
+const ACCION_LABEL: Record<string, string> = {
+  crear: 'Creado',
+  actualizar: 'Actualizado',
+  eliminar: 'Eliminado',
+}
+
+const PAGE_SIZE = 25
+
+export function HistorialPage() {
+  const { usuario, isAdmin } = useAuth()
+  const { data: sucursales = [] } = useSucursales()
+
+  const [tabla, setTabla] = React.useState('todas')
+  const [sucursalId, setSucursalId] = React.useState(isAdmin ? 'todas' : (usuario?.sucursal_id ?? 'todas'))
+  const [page, setPage] = React.useState(1)
+
+  React.useEffect(() => setPage(1), [tabla, sucursalId])
+
+  const { data, isLoading } = useHistorial(
+    {
+      tabla: tabla === 'todas' ? undefined : tabla,
+      sucursalId: sucursalId === 'todas' ? undefined : sucursalId,
+    },
+    { page, pageSize: PAGE_SIZE },
+  )
+  const historial = data?.data ?? []
+
+  return (
+    <div>
+      <PageHeader title="Auditoría" description="Registro de cada cambio en pedidos, reportes diarios e inventario — quién lo hizo y cuándo" />
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        <Select value={tabla} onValueChange={setTabla}>
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todas">Todas las tablas</SelectItem>
+            {Object.entries(TABLA_LABELS).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {isAdmin && (
+          <Select value={sucursalId} onValueChange={setSucursalId}>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas las sucursales</SelectItem>
+              {sucursales.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  {s.nombre}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
+
+      {isLoading ? (
+        <TableSkeleton columns={4} />
+      ) : historial.length === 0 ? (
+        <EmptyState icon={History} title="Sin movimientos" description="Aún no hay cambios registrados con estos filtros." />
+      ) : (
+        <>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Tabla</TableHead>
+                <TableHead>Acción</TableHead>
+                <TableHead>Registro</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {historial.map((h) => (
+                <TableRow key={h.id}>
+                  <TableCell>{formatDateTime(h.created_at)}</TableCell>
+                  <TableCell>{TABLA_LABELS[h.tabla] ?? h.tabla}</TableCell>
+                  <TableCell>
+                    <Badge variant={ACCION_BADGE[h.accion]}>{ACCION_LABEL[h.accion]}</Badge>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{h.registro_id.slice(0, 8)}…</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <PaginationControls page={page} pageSize={PAGE_SIZE} total={data?.count ?? 0} onPageChange={setPage} />
+        </>
+      )}
+    </div>
+  )
+}

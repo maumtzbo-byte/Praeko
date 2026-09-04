@@ -4,9 +4,8 @@
  * comisión, IVA incluido). Efectivo, Tarjeta y Depósito no tienen comisión.
  *
  * IMPORTANTE: debe coincidir exactamente con la columna generada
- * `ganancia_estimada` de la migración
- * 0015_ganancia_estimada_comisiones_apps.sql — si cambia el porcentaje,
- * hay que actualizar los dos lados.
+ * `ganancia_estimada` de la migración 0018_gastos_ya_netos_en_efectivo.sql
+ * — si cambia el porcentaje, hay que actualizar los dos lados.
  */
 export const NETO_APPS_REPARTO = 0.652
 

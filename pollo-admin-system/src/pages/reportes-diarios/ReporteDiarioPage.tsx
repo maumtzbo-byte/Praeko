@@ -156,8 +156,10 @@ export function ReporteDiarioPage() {
     Number(values.didi || 0) +
     Number(values.rappi || 0) +
     Number(values.uber || 0)
-  // No es ventasTotales - gastosTotal: DiDi/Uber/Rappi cobran comisión, así
-  // que la ganancia real descuenta eso primero (ver src/lib/comisiones.ts).
+  // El Efectivo ya se captura neto de los gastos del día (se pagan del
+  // mismo dinero antes de reportarlo), así que aquí no se vuelve a restar
+  // gastosTotal — ya está descontado. DiDi/Uber/Rappi sí cobran comisión,
+  // eso se descuenta aparte (ver src/lib/comisiones.ts).
   const ventasNetas = calcularVentasNetas({
     vta_sucursal: Number(values.vta_sucursal || 0),
     tarjeta: Number(values.tarjeta || 0),
@@ -166,7 +168,7 @@ export function ReporteDiarioPage() {
     rappi: Number(values.rappi || 0),
     uber: Number(values.uber || 0),
   })
-  const gananciaEstimada = ventasNetas - gastosTotal
+  const gananciaEstimada = ventasNetas
 
   const operacionTotal =
     MENU_ITEMS.reduce((sum, item) => sum + Number(values[item.key] || 0) * item.precio, 0) +
@@ -182,7 +184,10 @@ export function ReporteDiarioPage() {
       (esMiercoles ? Number(values.promo_miercoles || 0) * 1.5 : 0),
   )
 
-  const diferenciaCuadre = operacionTotal - ventasTotales
+  // El cuadre compara contra Ventas + Gastos, no solo Ventas: el efectivo
+  // reportado ya viene neto de los gastos del día, así que hay que sumarlos
+  // de vuelta antes de comparar contra lo vendido en Operación del día.
+  const diferenciaCuadre = operacionTotal - (ventasTotales + gastosTotal)
   const descuadre = Math.abs(diferenciaCuadre) > 1
   const diferenciaCuadreTexto = descuadre
     ? diferenciaCuadre > 0
@@ -421,7 +426,7 @@ export function ReporteDiarioPage() {
         open={Boolean(pendingValues)}
         onOpenChange={(open) => !open && setPendingValues(null)}
         title="Las cifras no coinciden"
-        description={`Los productos vendidos suman ${formatCurrency(operacionTotal)}, pero los métodos de pago suman ${formatCurrency(ventasTotales)}. ${diferenciaCuadreTexto ?? ''} Puedes revisar los números antes de guardar, o continuar de todas formas — si avanzas, se le avisará al administrador que este reporte no cuadró.`}
+        description={`Los productos vendidos suman ${formatCurrency(operacionTotal)}, pero los métodos de pago (más los gastos ya descontados del efectivo) suman ${formatCurrency(ventasTotales + gastosTotal)}. ${diferenciaCuadreTexto ?? ''} Puedes revisar los números antes de guardar, o continuar de todas formas — si avanzas, se le avisará al administrador que este reporte no cuadró.`}
         confirmLabel="Avanzar de todas formas"
         destructive={false}
         onConfirm={() => pendingValues && guardarReporte(pendingValues)}

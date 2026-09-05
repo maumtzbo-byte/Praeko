@@ -48,7 +48,18 @@ async function exchangeCodeForUserToken(code: string, redirectUri: string): Prom
 /** Page access tokens minted from a long-lived user token are themselves
  * long-lived (don't expire on their own timer), so we upgrade before
  * listing Pages rather than storing a short-lived (~1h) user token. */
-async function exchangeForLongLivedToken(shortLivedToken: string): Promise<string> {
+/**
+ * Returns the long-lived user token together with when it lapses. Meta has
+ * no refresh-token flow — the only way back is sending the owner through
+ * the OAuth dialog again — so the expiry is worth keeping even though
+ * nothing can renew it automatically: it's what lets the dashboard warn
+ * "reconecta Facebook" *before* publishing starts failing, instead of
+ * after. Page tokens derived from this user token inherit its horizon,
+ * which is why the adapter below stamps the same expiry on each page.
+ */
+async function exchangeForLongLivedToken(
+  shortLivedToken: string,
+): Promise<{ accessToken: string; expiresAt: string | null }> {
   const url = new URL(TOKEN_URL);
   url.searchParams.set("grant_type", "fb_exchange_token");
   url.searchParams.set("client_id", process.env.META_APP_ID!);
@@ -56,8 +67,14 @@ async function exchangeForLongLivedToken(shortLivedToken: string): Promise<strin
   url.searchParams.set("fb_exchange_token", shortLivedToken);
   const res = await fetch(url.toString());
   if (!res.ok) throw new Error(`Meta long-lived token exchange failed: ${await res.text()}`);
-  const { access_token } = (await res.json()) as { access_token: string };
-  return access_token;
+  const { access_token, expires_in } = (await res.json()) as { access_token: string; expires_in?: number };
+  return {
+    accessToken: access_token,
+    // Meta omits expires_in for tokens it considers non-expiring; null
+    // means "no known horizon", not "expires now" — see the null check in
+    // getValidAccessToken (tokens.ts).
+    expiresAt: expires_in ? new Date(Date.now() + expires_in * 1000).toISOString() : null,
+  };
 }
 
 async function listPages(userToken: string): Promise<MetaPage[]> {
@@ -244,7 +261,7 @@ export function createMetaAdapter(platform: "instagram" | "facebook"): SocialAda
 
     async listConnectableAccounts(code, redirectUri): Promise<ConnectableAccount[]> {
       const shortLivedToken = await exchangeCodeForUserToken(code, redirectUri);
-      const userToken = await exchangeForLongLivedToken(shortLivedToken);
+      const { accessToken: userToken, expiresAt } = await exchangeForLongLivedToken(shortLivedToken);
       const pages = await listPages(userToken);
 
       if (platform === "facebook") {
@@ -253,8 +270,10 @@ export function createMetaAdapter(platform: "instagram" | "facebook"): SocialAda
           name: page.name,
           avatarUrl: page.picture?.data?.url ?? null,
           accessToken: page.access_token,
+          // Meta has no refresh flow — reconnecting is the only path, so
+          // this stays null while expiresAt carries the warning horizon.
           refreshToken: null,
-          expiresAt: null,
+          expiresAt,
         }));
       }
 
@@ -270,7 +289,7 @@ export function createMetaAdapter(platform: "instagram" | "facebook"): SocialAda
           // with the linked Page's access token, not a separate IG token.
           accessToken: page.access_token,
           refreshToken: null,
-          expiresAt: null,
+          expiresAt,
         }));
     },
   };

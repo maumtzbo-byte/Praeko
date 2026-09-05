@@ -65,6 +65,38 @@ export async function publishToTikTok(accessToken: string, mediaUrl: string, cap
   return { externalPostId: data.data.publish_id };
 }
 
+/**
+ * TikTok access tokens live about 24 hours, so a connection made yesterday
+ * is dead today — the audit found the refresh_token being stored at
+ * connect time and then never used, which meant publishing simply started
+ * failing with a raw API error the day after connecting. This is the
+ * missing half; see getValidAccessToken in tokens.ts for the caller that
+ * decides when to run it.
+ */
+export async function refreshTikTokAccessToken(
+  refreshToken: string,
+): Promise<{ accessToken: string; refreshToken: string; expiresAt: string }> {
+  const res = await fetch(TOKEN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_key: process.env.TIKTOK_CLIENT_KEY!,
+      client_secret: process.env.TIKTOK_CLIENT_SECRET!,
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+    }),
+  });
+  if (!res.ok) throw new Error(`TikTok token refresh failed: ${res.status} ${await res.text()}`);
+  const token = (await res.json()) as TikTokTokenResponse;
+  return {
+    accessToken: token.access_token,
+    // TikTok rotates the refresh token on every refresh — storing the old
+    // one back would break the *next* refresh, 24 hours later.
+    refreshToken: token.refresh_token,
+    expiresAt: new Date(Date.now() + token.expires_in * 1000).toISOString(),
+  };
+}
+
 export function createTikTokAdapter(): SocialAdapter {
   return {
     isConfigured() {

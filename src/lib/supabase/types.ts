@@ -865,6 +865,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_increment_usage: {
+        Args: {
+          p_business_id: string
+          p_is_video: boolean
+          p_max_images: number
+          p_max_seconds: number
+          p_max_videos: number
+          p_period_month: string
+          p_requested_seconds: number
+        }
+        Returns: string
+      }
+      refund_usage_counters: {
+        Args: {
+          p_business_id: string
+          p_images_delta?: number
+          p_period_month: string
+          p_video_seconds_delta?: number
+          p_videos_delta?: number
+        }
+        Returns: undefined
+      }
       create_business_for_current_user: {
         Args: {
           p_city: string

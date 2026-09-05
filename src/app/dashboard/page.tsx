@@ -19,6 +19,8 @@ import {
   Users,
   Lightbulb,
   ChevronRight,
+  PlugZap,
+  CalendarClock,
 } from "lucide-react";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
@@ -49,11 +51,23 @@ import { FollowerGrowthHero } from "@/components/dashboard/follower-growth-hero"
 import { CreativeInsightsList } from "@/components/dashboard/creative-insights-list";
 import { fetchAccountFollowers } from "@/lib/social/insights";
 import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/social";
+import { getUpcomingKeyDates } from "@/lib/content/key-dates";
 import type { Tables } from "@/lib/supabase/types";
 
 // A beta trial with no cron/queue to send a reminder email needs the
 // dashboard itself to surface "this is ending" before it lapses silently.
 const BETA_ENDING_SOON_DAYS = 3;
+
+// A dead connection is invisible until a publish fails, and by then the
+// business has already concluded the product stopped working. Meta tokens
+// can't be refreshed at all (no refresh flow exists), so the only fix is
+// the owner reconnecting — which they have to be told to do, ahead of time.
+const CONNECTION_EXPIRING_SOON_DAYS = 7;
+
+// How far ahead the bell mentions a commercial date. Long enough to
+// actually plan and shoot a campaign around it, short enough that it isn't
+// noise — the campaign builder caps at 30 days anyway.
+const KEY_DATE_LOOKAHEAD_DAYS = 21;
 
 /**
  * No notifications table exists (and there's no cron to keep one fresh) —
@@ -65,6 +79,7 @@ async function getAttentionItems(
   supabase: Awaited<ReturnType<typeof createClient>>,
   businessId: string,
   subscription: Tables<"subscriptions"> | null,
+  country: string | null,
 ): Promise<AttentionItem[]> {
   const [{ data: reviewItems }, { data: failedItems }, { data: interactions }] = await Promise.all([
     supabase.from("content_calendar").select("id, topic").eq("business_id", businessId).eq("status", "en_revision").limit(5),
@@ -107,6 +122,70 @@ async function getAttentionItems(
       icon: <MessageCircle className={iconClass} strokeWidth={1.75} />,
     });
   }
+  // Connections that already broke, or are about to. The status flag is set
+  // by getValidAccessToken (social/tokens.ts) the moment a refresh fails or
+  // an unrefreshable token lapses; expires_at catches the ones still working
+  // but running out. Tokens need the service-role client — social_
+  // connection_tokens has no policy for end users on purpose (migration
+  // 0010) — but the connection ids are all scoped to this business first.
+  const { data: connections } = await supabase
+    .from("social_connections")
+    .select("id, platform, status")
+    .eq("business_id", businessId);
+
+  if (connections?.length) {
+    const serviceRole = createServiceRoleClient();
+    const { data: tokenRows } = await serviceRole
+      .from("social_connection_tokens")
+      .select("connection_id, expires_at")
+      .in(
+        "connection_id",
+        connections.map((c) => c.id),
+      );
+    const expiryByConnection = new Map((tokenRows ?? []).map((t) => [t.connection_id, t.expires_at]));
+    const soonCutoff = Date.now() + CONNECTION_EXPIRING_SOON_DAYS * 86_400_000;
+
+    for (const connection of connections) {
+      const expiresAt = expiryByConnection.get(connection.id) ?? null;
+      const expiringSoon = expiresAt !== null && new Date(expiresAt).getTime() <= soonCutoff;
+      if (connection.status !== "error" && !expiringSoon) continue;
+
+      items.push({
+        id: `connection-${connection.id}`,
+        href: "/dashboard/redes-sociales",
+        label: connection.status === "error" ? "Conexión caída" : "Conexión por vencer",
+        detail:
+          connection.status === "error"
+            ? `Vuelve a conectar ${SOCIAL_PLATFORM_LABELS[connection.platform]} para seguir publicando`
+            : `${SOCIAL_PLATFORM_LABELS[connection.platform]} necesita reconectarse pronto`,
+        icon: <PlugZap className={iconClass} strokeWidth={1.75} />,
+      });
+    }
+  }
+
+  // Agente de Tendencias, en modo proactivo: el calendario comercial ya
+  // existe, pero hasta ahora esperaba a que el dueño pidiera la campaña.
+  // Avisar antes es lo que separa "herramienta" de "asistente".
+  const today = new Date().toISOString().slice(0, 10);
+  for (const keyDate of getUpcomingKeyDates(country, today, KEY_DATE_LOOKAHEAD_DAYS)) {
+    const daysAway = Math.round((new Date(`${keyDate.date}T00:00:00Z`).getTime() - new Date(`${today}T00:00:00Z`).getTime()) / 86_400_000);
+    // Quincena hits twice a month, every month — it's a timing hint for the
+    // strategy agent, not news worth a notification.
+    if (keyDate.name === "Quincena") continue;
+    items.push({
+      id: `keydate-${keyDate.date}-${keyDate.name}`,
+      href: "/dashboard/campanas",
+      label: keyDate.name,
+      detail:
+        daysAway === 0
+          ? "Es hoy — ¿armamos la campaña?"
+          : daysAway === 1
+            ? "Es mañana — ¿armamos la campaña?"
+            : `En ${daysAway} días — ¿armamos la campaña?`,
+      icon: <CalendarClock className={iconClass} strokeWidth={1.75} />,
+    });
+  }
+
   if (subscription?.is_beta_trial && subscription.current_period_end) {
     const daysLeft = Math.ceil((new Date(subscription.current_period_end).getTime() - Date.now()) / 86_400_000);
     if (daysLeft >= 0 && daysLeft <= BETA_ENDING_SOON_DAYS) {
@@ -426,7 +505,7 @@ export default async function DashboardHomePage() {
   // published to ask about.
   const [insightsResults, attentionItems, followerSeries] = await Promise.all([
     hasPublishedContent ? getPublishedInsightsResults(supabase, business.id) : Promise.resolve([]),
-    getAttentionItems(supabase, business.id, subscription),
+    getAttentionItems(supabase, business.id, subscription, business.country),
     captureAndFetchFollowerSeries(supabase, business.id, allConnections),
   ]);
   const insightsSummary = insightsResults.length > 0 ? summarizeInsights(insightsResults) : null;

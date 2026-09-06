@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import RequestPlanButton from "@/components/dashboard/request-plan-button";
 import { BetaTrialTicket } from "@/components/dashboard/beta-trial-ticket";
+import { PlanConfigurator } from "@/components/dashboard/plan-configurator";
+import { resolveEffectiveLimits, formatUsd } from "@/lib/plans/custom-plan";
 import { cn } from "@/lib/utils";
 
 const TRIAL_END_FORMATTER = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "long" });
@@ -33,6 +35,7 @@ export default async function PlanPage() {
       : null;
   const trialPlan = trialEndLabel ? (plans ?? []).find((p) => p.key === subscription!.plan_key) : null;
   const currentPlan = subscription ? (plans ?? []).find((p) => p.key === subscription.plan_key) : null;
+  const limits = resolveEffectiveLimits(subscription);
 
   return (
     <div>
@@ -54,6 +57,49 @@ export default async function PlanPage() {
           trialEndLabel={trialEndLabel}
           priceUsd={trialPlan.price_usd_cents / 100}
         />
+      )}
+
+      {/* Un plan ajustado ya no coincide con ninguna de las tarjetas de
+          abajo, así que sus cantidades reales tienen que estar visibles en
+          algún lado o el dueño no tiene forma de saber qué contrató. */}
+      {limits.isCustomized && (
+        <Card className="mb-6 border-accent">
+          <CardContent className="p-5 sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-semibold text-zinc-900">Tu plan a la medida</h3>
+                  <Badge variant="success">Activo</Badge>
+                </div>
+                <p className="mt-0.5 text-sm text-zinc-500">
+                  Sobre la base del plan {limits.plan.displayName}.
+                </p>
+              </div>
+              {subscription?.custom_price_usd_cents != null && (
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-semibold tracking-tight text-zinc-900">
+                    {formatUsd(subscription.custom_price_usd_cents)}
+                  </span>
+                  <span className="text-sm text-zinc-500">USD/mes</span>
+                </div>
+              )}
+            </div>
+            <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-zinc-600 sm:grid-cols-4">
+              <li className="flex items-center gap-2">
+                <Check className="h-4 w-4 shrink-0 text-accent" /> {limits.videosPerMonth} videos
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="h-4 w-4 shrink-0 text-accent" /> hasta {limits.videoMaxSeconds}s c/u
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="h-4 w-4 shrink-0 text-accent" /> {limits.imagesPerMonth} imágenes
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="h-4 w-4 shrink-0 text-accent" /> {limits.carouselsPerMonth} carruseles
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
       )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -99,7 +145,8 @@ export default async function PlanPage() {
                     <Check className="h-4 w-4 shrink-0 text-accent" /> {plan.images_per_month} imágenes/mes
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 shrink-0 text-accent" /> {plan.social_network_limit} redes sociales
+                    <Check className="h-4 w-4 shrink-0 text-accent" />{" "}
+                    {plan.social_network_limit === 1 ? "1 red social" : `${plan.social_network_limit} redes sociales`}
                   </li>
                 </ul>
                 {isCurrent ? (
@@ -120,9 +167,14 @@ export default async function PlanPage() {
         })}
       </div>
 
-      <p className="mt-6 text-center text-sm text-zinc-500">
-        Aún no hay pago en línea — al solicitar un plan te contactamos por correo para activarlo a la brevedad.
-      </p>
+      <div className="mt-6 flex flex-col items-center gap-2 text-center">
+        <p className="text-sm text-zinc-500">
+          ¿Ninguno te queda exacto? <PlanConfigurator businessName={business.name} />
+        </p>
+        <p className="text-sm text-zinc-500">
+          Aún no hay pago en línea — al solicitar un plan te contactamos por correo para activarlo a la brevedad.
+        </p>
+      </div>
     </div>
   );
 }

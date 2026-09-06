@@ -11,7 +11,7 @@ import { getPostPermalink } from "@/lib/social/meta";
 import { fetchPostInsights, type PostInsights } from "@/lib/social/insights";
 import { isPublishablePlatform } from "@/lib/social";
 import { getValidAccessToken } from "@/lib/social/tokens";
-import { PLAN_LIMITS, monthlySecondsBudget, type PlanKey } from "@/lib/plans/limits";
+import { resolveEffectiveLimits, usageKindFor } from "@/lib/plans/custom-plan";
 import type { Database } from "@/lib/supabase/types";
 
 // publishContentNow polls Meta's Instagram container status inline (see
@@ -51,7 +51,13 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
     const [{ data: business }, { data: brand }, { data: subscription }, { data: assets }] = await Promise.all([
       supabase.from("businesses").select("*").eq("id", item.business_id).single(),
       supabase.from("brand_profiles").select("*").eq("business_id", item.business_id).maybeSingle(),
-      supabase.from("subscriptions").select("plan_key").eq("business_id", item.business_id).maybeSingle(),
+      supabase
+        .from("subscriptions")
+        .select(
+          "plan_key, custom_videos_per_month, custom_images_per_month, custom_carousels_per_month, custom_video_max_seconds",
+        )
+        .eq("business_id", item.business_id)
+        .maybeSingle(),
       supabase
         .from("brand_assets")
         .select("storage_path")
@@ -61,15 +67,19 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
     ]);
     if (!business) return { success: false, error: "Negocio no encontrado." };
 
-    const planKey = (subscription?.plan_key ?? "basico") as PlanKey;
-    const plan = PLAN_LIMITS[planKey];
+    // Los límites salen del preset con los ajustes de la suscripción
+    // encima (planes ajustables, ver custom-plan.ts) — no directamente de
+    // PLAN_LIMITS, que solo conoce las tres combinaciones de fábrica.
+    const limits = resolveEffectiveLimits(subscription);
+    const plan = limits.plan;
 
     const periodMonth = new Date();
     periodMonth.setDate(1);
     const periodMonthStr = periodMonth.toISOString().slice(0, 10);
-    const isVideo = item.content_kind === "video";
+    const usageKind = usageKindFor(item.format, item.content_kind, limits);
+    const isVideo = usageKind === "video";
     const requestedSeconds = isVideo
-      ? Math.min(item.target_duration_seconds ?? plan.videoAvgSeconds, plan.videoMaxSeconds)
+      ? Math.min(item.target_duration_seconds ?? plan.videoAvgSeconds, limits.videoMaxSeconds)
       : 0;
 
     // Reserve the quota *before* spending anything at fal.ai, in one atomic
@@ -82,11 +92,12 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
     const { data: guardResult, error: guardError } = await serviceRole.rpc("check_and_increment_usage", {
       p_business_id: item.business_id,
       p_period_month: periodMonthStr,
-      p_is_video: isVideo,
+      p_kind: usageKind,
       p_requested_seconds: requestedSeconds,
-      p_max_videos: plan.videosPerMonth,
-      p_max_images: plan.imagesPerMonth,
-      p_max_seconds: monthlySecondsBudget(plan),
+      p_max_videos: limits.videosPerMonth,
+      p_max_images: limits.imagesPerMonth,
+      p_max_carousels: limits.carouselsPerMonth,
+      p_max_seconds: limits.secondsBudget,
     });
 
     if (guardError) {
@@ -94,11 +105,12 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
       return { success: false, error: "No se pudo verificar tu límite del plan. Intenta de nuevo." };
     }
     if (guardResult !== "ok") {
+      const planLabel = limits.isCustomized ? "tu plan" : `tu plan ${plan.displayName}`;
+      const ranOutOf =
+        usageKind === "video" ? "los videos" : usageKind === "carrusel" ? "los carruseles" : "las imágenes";
       return {
         success: false,
-        error: isVideo
-          ? `Ya usaste los videos incluidos este mes en tu plan ${plan.displayName}.`
-          : `Ya usaste las imágenes incluidas este mes en tu plan ${plan.displayName}.`,
+        error: `Ya usaste ${ranOutOf} incluidos este mes en ${planLabel}.`,
         code: "plan_limit",
       };
     }
@@ -110,9 +122,10 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
       const { error } = await serviceRole.rpc("refund_usage_counters", {
         p_business_id: item.business_id,
         p_period_month: periodMonthStr,
-        p_images_delta: isVideo ? 0 : 1,
-        p_videos_delta: isVideo ? 1 : 0,
-        p_video_seconds_delta: isVideo ? requestedSeconds : 0,
+        p_images_delta: usageKind === "imagen" ? 1 : 0,
+        p_videos_delta: usageKind === "video" ? 1 : 0,
+        p_video_seconds_delta: usageKind === "video" ? requestedSeconds : 0,
+        p_carousels_delta: usageKind === "carrusel" ? 1 : 0,
       });
       if (error) console.error("refund_usage_counters failed", error);
     };
@@ -259,13 +272,34 @@ export async function refreshMediaGenerationStatus(
         // boundary credits the month it was charged to.
         const chargedMonth = new Date(generation.created_at);
         chargedMonth.setDate(1);
-        const isVideo = generation.content_kind === "video";
+
+        // Which bucket to credit has to be worked out the same way it was
+        // charged (usageKindFor), or a failed carousel would give back an
+        // image credit it never took.
+        const [{ data: calendarItem }, { data: subscription }] = await Promise.all([
+          serviceRole.from("content_calendar").select("format").eq("id", generation.content_calendar_id ?? "").maybeSingle(),
+          serviceRole
+            .from("subscriptions")
+            .select(
+              "plan_key, custom_videos_per_month, custom_images_per_month, custom_carousels_per_month, custom_video_max_seconds",
+            )
+            .eq("business_id", generation.business_id)
+            .maybeSingle(),
+        ]);
+
+        const refundKind = usageKindFor(
+          calendarItem?.format ?? "imagen_unica",
+          generation.content_kind,
+          resolveEffectiveLimits(subscription),
+        );
+
         const { error: refundError } = await serviceRole.rpc("refund_usage_counters", {
           p_business_id: generation.business_id,
           p_period_month: chargedMonth.toISOString().slice(0, 10),
-          p_images_delta: isVideo ? 0 : 1,
-          p_videos_delta: isVideo ? 1 : 0,
-          p_video_seconds_delta: isVideo ? generation.duration_seconds : 0,
+          p_images_delta: refundKind === "imagen" ? 1 : 0,
+          p_videos_delta: refundKind === "video" ? 1 : 0,
+          p_video_seconds_delta: refundKind === "video" ? generation.duration_seconds : 0,
+          p_carousels_delta: refundKind === "carrusel" ? 1 : 0,
         });
         if (refundError) console.error("refund_usage_counters failed", refundError);
       }

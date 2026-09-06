@@ -753,6 +753,11 @@ export type Database = {
           business_id: string
           created_at: string
           current_period_end: string | null
+          custom_carousels_per_month: number | null
+          custom_images_per_month: number | null
+          custom_price_usd_cents: number | null
+          custom_video_max_seconds: number | null
+          custom_videos_per_month: number | null
           id: string
           is_beta_trial: boolean
           plan_key: Database["public"]["Enums"]["plan_key"]
@@ -765,6 +770,11 @@ export type Database = {
           business_id: string
           created_at?: string
           current_period_end?: string | null
+          custom_carousels_per_month?: number | null
+          custom_images_per_month?: number | null
+          custom_price_usd_cents?: number | null
+          custom_video_max_seconds?: number | null
+          custom_videos_per_month?: number | null
           id?: string
           is_beta_trial?: boolean
           plan_key: Database["public"]["Enums"]["plan_key"]
@@ -868,7 +878,8 @@ export type Database = {
       check_and_increment_usage: {
         Args: {
           p_business_id: string
-          p_is_video: boolean
+          p_kind: string
+          p_max_carousels: number
           p_max_images: number
           p_max_seconds: number
           p_max_videos: number
@@ -880,6 +891,7 @@ export type Database = {
       refund_usage_counters: {
         Args: {
           p_business_id: string
+          p_carousels_delta?: number
           p_images_delta?: number
           p_period_month: string
           p_video_seconds_delta?: number

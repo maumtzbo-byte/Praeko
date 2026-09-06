@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { motion, useInView } from "framer-motion";
 import { Compass, Radar, Wand2, ShieldCheck, Send, MessageCircle, BarChart3, type LucideIcon } from "lucide-react";
 
 /**
@@ -135,15 +135,93 @@ const AGENTS: Agent[] = [
   },
 ];
 
+/** Cuántos caracteres por segundo teclea el agente. Bastante más rápido
+ * que una persona: a velocidad humana las tres frases tardarían casi
+ * medio minuto y nadie espera tanto en una landing. */
+const CHARS_PER_SECOND = 55;
+
+const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+
+/** La preferencia del sistema, leída sin `setState` dentro de un efecto
+ * (que dispara un render en cascada). En el servidor no hay media query,
+ * y se asume que sí se anima: es lo que verá la mayoría, y si el visitante
+ * pidió lo contrario el primer render en cliente ya lo corrige. */
+function usePrefersReducedMotion() {
+  return useSyncExternalStore(
+    (notify) => {
+      const query = window.matchMedia(REDUCED_MOTION);
+      query.addEventListener("change", notify);
+      return () => query.removeEventListener("change", notify);
+    },
+    () => window.matchMedia(REDUCED_MOTION).matches,
+    () => false,
+  );
+}
+
+/** Revela `text` carácter por carácter y devuelve cuántos van.
+ *
+ * El avance se calcula contra el reloj y no sumando uno por frame: así
+ * tarda lo mismo en un monitor de 120 Hz que en uno de 60, y una pestaña
+ * que se congela un momento no se queda a media frase — al volver, retoma
+ * donde le tocaba por tiempo.
+ *
+ * `running` existe porque la sección está muy abajo en la landing: si el
+ * tecleo arranca al montar, para cuando alguien baja hasta aquí el primer
+ * agente ya terminó de escribir y nunca se ve el efecto. */
+function useTypewriter(text: string, running: boolean) {
+  const reduced = usePrefersReducedMotion();
+  const [count, setCount] = useState(0);
+  // Reiniciar el conteo en un efecto dejaría un frame con el texto nuevo
+  // cortado a la longitud que llevaba el anterior. Ajustarlo en el render
+  // es el patrón que React contempla para esto.
+  const [typedText, setTypedText] = useState(text);
+  if (typedText !== text) {
+    setTypedText(text);
+    setCount(0);
+  }
+
+  useEffect(() => {
+    if (reduced || !running) return;
+    let frame = 0;
+    let start: number | undefined;
+    const step = (now: number) => {
+      start ??= now;
+      const shown = Math.min(text.length, Math.floor(((now - start) / 1000) * CHARS_PER_SECOND));
+      setCount(shown);
+      if (shown < text.length) frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [text, reduced, running]);
+
+  return reduced ? text.length : count;
+}
+
 export default function TeamSection() {
   const [activeId, setActiveId] = useState(AGENTS[0].id);
   // Un PNG que falte no puede tumbar la sección entera: los ids que no
   // cargaron caen al ícono de Lucide, que es lo que había antes de los
   // personajes y se lee bien a cualquier tamaño.
   const [missing, setMissing] = useState<string[]>([]);
+  const panelRef = useRef<HTMLDivElement>(null);
+  // `once`: una vez que arrancó, cambiar de agente vuelve a teclear aunque
+  // el panel se haya salido de cuadro un momento.
+  const panelInView = useInView(panelRef, { once: true, margin: "-80px" });
   const active = AGENTS.find((a) => a.id === activeId) ?? AGENTS[0];
   const ActiveIcon = active.icon;
   const activeHasImage = !missing.includes(active.id);
+  // Las tres frases se teclean como un solo texto para que la segunda
+  // arranque justo cuando termina la primera, sin temporizadores encadenados.
+  const script = active.messages.join("\n");
+  const typed = useTypewriter(script, panelInView);
+  // Dónde empieza cada frase dentro del guion, para repartir entre ellas
+  // los caracteres que ya salieron.
+  const starts: number[] = [];
+  let cursor = 0;
+  for (const message of active.messages) {
+    starts.push(cursor);
+    cursor += message.length + 1;
+  }
   const markMissing = (id: string) => setMissing((prev) => (prev.includes(id) ? prev : [...prev, id]));
 
   return (
@@ -221,7 +299,7 @@ export default function TeamSection() {
             hijos, así que el fondo blanco del render deja de fundirse y
             aparece un recuadro alrededor del personaje. Las fichas de
             arriba nunca tuvieron el problema porque no llevan blur. */}
-        <div className="mt-8 overflow-hidden rounded-3xl border border-[var(--hairline)] bg-white/60">
+        <div ref={panelRef} className="mt-8 overflow-hidden rounded-3xl border border-[var(--hairline)] bg-white/60">
           <div className="flex items-center gap-3 border-b border-[var(--hairline)] px-5 py-4">
             <span
               className="flex h-10 w-10 items-center justify-center rounded-xl"
@@ -260,26 +338,66 @@ export default function TeamSection() {
               />
             )}
 
-            <div className="flex flex-1 flex-col justify-center gap-2.5">
-              <AnimatePresence mode="wait">
-                <motion.div key={active.id} className="flex flex-col gap-2.5">
-                  {active.messages.map((message, i) => (
-                    <motion.p
-                      key={`${active.id}-${i}`}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      // El escalonado imita a alguien escribiendo una tras
-                      // otra; sin él las tres burbujas aparecen de golpe y
-                      // deja de leerse como conversación.
-                      transition={{ duration: 0.3, delay: i * 0.35, ease: "easeOut" }}
-                      className="max-w-[92%] rounded-2xl rounded-tl-md px-4 py-2.5 text-sm leading-relaxed text-zinc-700 sm:max-w-[80%]"
-                      style={{ backgroundColor: `${active.color}12` }}
-                    >
-                      {message}
-                    </motion.p>
-                  ))}
-                </motion.div>
-              </AnimatePresence>
+            {/* Una sola burbuja con cola en vez de tres globos sueltos: el
+                agente está hablando una vez, no mandando tres mensajes. */}
+            <div className="relative flex-1">
+              {/* La cola apunta al personaje, que en escritorio queda a la
+                  izquierda y en celular arriba. Es un cuadrado girado 45°
+                  con borde en los dos lados que quedan hacia afuera, así
+                  se funde con la burbuja sin costura. */}
+              <span
+                aria-hidden="true"
+                className="absolute -top-[7px] left-10 h-3.5 w-3.5 rotate-45 rounded-[3px] sm:hidden"
+                style={{
+                  background: "#fff",
+                  borderTop: `1px solid ${active.color}2e`,
+                  borderLeft: `1px solid ${active.color}2e`,
+                }}
+              />
+              <span
+                aria-hidden="true"
+                className="absolute -left-[7px] top-1/2 hidden h-3.5 w-3.5 -translate-y-1/2 rotate-45 rounded-[3px] sm:block"
+                style={{
+                  background: "#fff",
+                  borderLeft: `1px solid ${active.color}2e`,
+                  borderBottom: `1px solid ${active.color}2e`,
+                }}
+              />
+              <div
+                className="relative space-y-3 rounded-[1.75rem] px-5 py-4 sm:rounded-[2.25rem] sm:px-7 sm:py-6"
+                style={{
+                  background: "#fff",
+                  border: `1px solid ${active.color}2e`,
+                  boxShadow: `0 18px 50px -20px ${active.color}80`,
+                }}
+              >
+                {active.messages.map((message, i) => {
+                  const shown = Math.min(message.length, Math.max(0, typed - starts[i]));
+                  const typing = shown > 0 && shown < message.length;
+                  return (
+                    <p key={`${active.id}-${i}`} className="relative text-sm leading-relaxed text-zinc-700">
+                      {/* La frase completa queda en el flujo pero
+                          transparente: reserva su alto desde el primer
+                          frame, así la burbuja no crece a saltos mientras
+                          se escribe. Va en opacity-0 y no en invisible
+                          porque `visibility: hidden` también la esconde
+                          de los lectores de pantalla, y esta es la copia
+                          que ellos leen — la de encima va marcada como
+                          decorativa para que no se lea dos veces. */}
+                      <span className="opacity-0">{message}</span>
+                      <span aria-hidden="true" className="absolute inset-0">
+                        {message.slice(0, shown)}
+                        {typing && (
+                          <span
+                            className="ml-0.5 inline-block h-[1em] w-[2px] animate-pulse align-[-0.15em]"
+                            style={{ backgroundColor: active.color }}
+                          />
+                        )}
+                      </span>
+                    </p>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

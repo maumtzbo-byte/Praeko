@@ -299,12 +299,25 @@ export default function TeamSection() {
             escritorio, así que no hay dos versiones que mantener. */}
         <div ref={panelRef} className="mt-12 flex flex-col items-center sm:mt-14">
           <div className="relative w-full max-w-xl">
+            {/* La burbuja imita el mismo plástico que los renders, no una
+                caja blanca con borde: degradado de arriba (luz) a abajo
+                (sombra), un filo claro en el canto superior y otro oscuro
+                en el inferior por dentro. Las dos sombras internas son lo
+                que da el volumen — un borde de 1px plano la aplanaba y la
+                dejaba pegada como un recorte encima de los muñecos. El
+                color del agente sobrevive solo en el halo de abajo, que es
+                donde no compite con el modelado. */}
             <div
-              className="space-y-2.5 rounded-[1.75rem] px-6 py-5 sm:rounded-[2rem] sm:px-8 sm:py-6"
+              className="space-y-2.5 rounded-[2.25rem] px-7 py-6 sm:rounded-[3rem] sm:px-10 sm:py-8"
               style={{
-                background: "#fff",
-                border: `1px solid ${active.color}2e`,
-                boxShadow: `0 18px 50px -20px ${active.color}80`,
+                background: "linear-gradient(180deg,#ffffff 0%,#fdfdfe 45%,#f2f3f5 100%)",
+                boxShadow: [
+                  "inset 0 1.5px 1px rgba(255,255,255,0.95)",
+                  "inset 0 -5px 9px rgba(15,23,42,0.07)",
+                  "inset 0 0 0 1px rgba(15,23,42,0.04)",
+                  `0 26px 50px -22px ${active.color}59`,
+                  "0 12px 26px -16px rgba(15,23,42,0.25)",
+                ].join(","),
               }}
             >
               {active.messages.map((message, i) => {
@@ -347,15 +360,30 @@ export default function TeamSection() {
                 borde inferior de la burbuja. */}
             <svg
               aria-hidden="true"
-              viewBox="0 0 40 34"
-              className="absolute left-1/2 top-full -mt-px h-[26px] w-[30px] -translate-x-[52px] sm:h-8 sm:w-10 sm:-translate-x-16"
+              viewBox="0 0 44 38"
+              className="absolute left-1/2 top-full -mt-[3px] h-9 w-[42px] -translate-x-[52px] sm:h-10 sm:w-[46px] sm:-translate-x-16"
+              style={{ filter: "drop-shadow(0 6px 8px rgba(15,23,42,0.16))" }}
             >
+              <defs>
+                {/* Arranca en el gris del canto inferior de la burbuja y no
+                    en blanco: la cola cuelga de ahí, y salir de blanco deja
+                    una costura clara justo en la unión. */}
+                <linearGradient id={`cola-${active.id}`} x1="0" y1="0" x2="0.35" y2="1">
+                  <stop offset="0%" stopColor="#eff0f3" />
+                  <stop offset="100%" stopColor="#e3e5ea" />
+                </linearGradient>
+              </defs>
+              {/* El trazo del mismo tono engorda la cola y le redondea la
+                  punta: sin él queda un pico fino que no pega con lo
+                  regordete de todo lo demás. La línea de cierre de arriba
+                  no se ve porque el svg se monta 3px bajo la burbuja. */}
               <path
-                d="M13,0 C13,15 20,26 35,33 C27,23 27,11 27,0"
-                fill="#fff"
-                stroke={`${active.color}2e`}
-                strokeWidth="1.5"
+                d="M9,0 C9,17 17,29 33,34 C29,25 27,13 27,0 Z"
+                fill={`url(#cola-${active.id})`}
+                stroke="#e9ebef"
+                strokeWidth="4"
                 strokeLinejoin="round"
+                strokeLinecap="round"
               />
             </svg>
           </div>

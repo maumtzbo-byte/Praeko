@@ -7,7 +7,8 @@ import { FramesMark } from "@/components/brand/FramesMark";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "#agentes", label: "Cómo funciona" },
+  { href: "#como-funciona", label: "Cómo funciona" },
+  { href: "#agentes", label: "Agentes" },
   { href: "#precios", label: "Precios" },
 ];
 

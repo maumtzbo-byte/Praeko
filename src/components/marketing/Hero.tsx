@@ -1,53 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Play, Heart, MessageCircle, Send } from "lucide-react";
-
-// The one phrase that rotates under "Tu negocio puede" — same pattern as
-// Shopify's own hero (a fixed lead-in, a swapping payoff), each option a
-// different angle on the same core promise so any one of them stands on
-// its own as a headline.
-const ROTATING_PHRASES = [
-  "crecer solo",
-  "venderse solo",
-  "publicarse solo",
-  "crecer sin ti",
-  "crecer mientras duermes",
-];
-const ROTATE_INTERVAL_MS = 2600;
-
-function RotatingHeadlineWord() {
-  const [index, setIndex] = useState(0);
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate post-mount read of a client-only API (matchMedia), not derivable during render.
-    setReducedMotion(mql.matches);
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
-  }, []);
-
-  useEffect(() => {
-    if (reducedMotion) return;
-    const id = setInterval(() => {
-      setIndex((i) => (i + 1) % ROTATING_PHRASES.length);
-    }, ROTATE_INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [reducedMotion]);
-
-  const phrase = ROTATING_PHRASES[reducedMotion ? 0 : index];
-
-  return (
-    <span className="relative block h-[1.05em] w-full overflow-hidden">
-      <span key={phrase} className={`absolute inset-0 ${reducedMotion ? "" : "rotate-word-in"}`}>
-        {phrase}
-      </span>
-    </span>
-  );
-}
 
 export default function Hero() {
   return (
@@ -63,11 +17,16 @@ export default function Hero() {
           Agentes de IA para negocios en México
         </span>
 
+        {/* Una sola afirmación fija en vez de una palabra que rota: el
+            gancho más fuerte que tiene el producto es contra qué se compara
+            (contratar a alguien), y eso se dice mejor de corrido que
+            repartido en cinco variantes que se van turnando. */}
         <h1 className="mt-6 text-balance text-5xl font-semibold leading-[1.05] tracking-tight text-white sm:text-6xl md:text-7xl">
-          Tu negocio puede
-          <RotatingHeadlineWord />
+          Todo tu equipo de marketing. Sin contratar a nadie.
         </h1>
-        <p className="mt-6 max-w-xl text-balance text-lg text-white/90 sm:text-xl">Contenido nuevo cada mañana. Tú solo publicas.</p>
+        <p className="mt-6 max-w-xl text-balance text-lg text-white/90 sm:text-xl">
+          Cinco agentes de IA planean, producen y publican el contenido de tu negocio. Tú solo apruebas.
+        </p>
 
         {/* Always side by side, even on narrow phones — stacking these
             wasted vertical space and read as an afterthought rather than
@@ -80,7 +39,7 @@ export default function Hero() {
             Únete a la beta
           </Link>
           <a
-            href="#agentes"
+            href="#como-funciona"
             className="rounded-full bg-zinc-950/30 px-5 py-3 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-zinc-950/45 sm:px-7 sm:py-3.5 sm:text-[15px]"
           >
             Cómo funciona

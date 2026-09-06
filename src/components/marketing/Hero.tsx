@@ -25,7 +25,7 @@ export default function Hero() {
           Todo tu equipo de marketing. Sin contratar a nadie.
         </h1>
         <p className="mt-6 max-w-xl text-balance text-lg text-white/90 sm:text-xl">
-          Cinco agentes de IA planean, producen y publican el contenido de tu negocio. Tú solo apruebas.
+          Siete agentes de IA planean, producen y publican el contenido de tu negocio. Tú solo apruebas.
         </p>
 
         {/* Always side by side, even on narrow phones — stacking these

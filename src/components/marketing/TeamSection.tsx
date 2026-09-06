@@ -26,6 +26,11 @@ interface Agent {
   role: string;
   icon: LucideIcon;
   color: string;
+  /** Render 3D del personaje en `public/agentes/<id>.png`. El objeto que
+   * trae cada uno es lo que lo identifica a simple vista (laptop, cámara,
+   * celular…), así que la pose no es decorativa: es el ícono. Si el archivo
+   * todavía no existe, la sección cae al ícono de Lucide y no se rompe. */
+  image: string;
   messages: string[];
 }
 
@@ -37,6 +42,7 @@ const AGENTS: Agent[] = [
     role: "Decide qué se publica",
     icon: Compass,
     color: "#2f6fb0",
+    image: "/agentes/estrategia.png",
     messages: [
       "Yo decido qué se publica y qué día.",
       "Leo el cuestionario de tu marca — tu tono, qué vendes, a quién le vendes — y armo el plan del mes completo, con el guion de cada pieza ya escrito.",
@@ -50,6 +56,7 @@ const AGENTS: Agent[] = [
     role: "Investiga qué está funcionando",
     icon: Radar,
     color: "#3d8f9e",
+    image: "/agentes/tendencias.png",
     messages: [
       "Antes de que se escriba nada, yo investigo.",
       "Busco en internet qué tipo de contenido está funcionando ahora mismo para negocios como el tuyo, en tu ciudad.",
@@ -63,6 +70,7 @@ const AGENTS: Agent[] = [
     role: "Produce el video y la imagen",
     icon: Wand2,
     color: "#6a5fb0",
+    image: "/agentes/creativo.png",
     messages: [
       "Yo lo produzco.",
       "Tomo el guion y genero el video o la imagen de verdad — no un borrador ni una plantilla que tengas que rellenar.",
@@ -76,6 +84,7 @@ const AGENTS: Agent[] = [
     role: "Revisa antes que tú",
     icon: ShieldCheck,
     color: "#b08a3d",
+    image: "/agentes/revisor.png",
     messages: [
       "Yo reviso antes que tú.",
       "Cada pieza pasa por mí: que suene a tu marca, que no diga algo que no debería, que el gancho no sea genérico.",
@@ -89,6 +98,7 @@ const AGENTS: Agent[] = [
     role: "Sube el contenido",
     icon: Send,
     color: "#2f8f6b",
+    image: "/agentes/publicacion.png",
     messages: [
       "Yo la subo.",
       "Publico en Instagram, Facebook o TikTok a la hora que tiene sentido para tu giro — un restaurante antes de la comida, un gimnasio antes de la hora en que la gente entrena.",
@@ -102,6 +112,7 @@ const AGENTS: Agent[] = [
     role: "Contesta a tus clientes",
     icon: MessageCircle,
     color: "#4a7fd0",
+    image: "/agentes/respuestas.png",
     messages: [
       "Yo contesto.",
       "Cuando alguien pregunta precio, horario o disponibilidad en tus comentarios o mensajes, respondo con la información real de tu negocio.",
@@ -115,6 +126,7 @@ const AGENTS: Agent[] = [
     role: "Mide qué funcionó",
     icon: BarChart3,
     color: "#4f6a86",
+    image: "/agentes/resultados.png",
     messages: [
       "Yo mido.",
       "Traigo los números reales de cada publicación: alcance, likes, comentarios, seguidores nuevos.",
@@ -125,8 +137,14 @@ const AGENTS: Agent[] = [
 
 export default function TeamSection() {
   const [activeId, setActiveId] = useState(AGENTS[0].id);
+  // Un PNG que falte no puede tumbar la sección entera: los ids que no
+  // cargaron caen al ícono de Lucide, que es lo que había antes de los
+  // personajes y se lee bien a cualquier tamaño.
+  const [missing, setMissing] = useState<string[]>([]);
   const active = AGENTS.find((a) => a.id === activeId) ?? AGENTS[0];
   const ActiveIcon = active.icon;
+  const activeHasImage = !missing.includes(active.id);
+  const markMissing = (id: string) => setMissing((prev) => (prev.includes(id) ? prev : [...prev, id]));
 
   return (
     <section id="agentes" className="relative py-16 sm:py-24 md:py-28">
@@ -140,29 +158,45 @@ export default function TeamSection() {
         </p>
 
         {/* Fila con scroll lateral en celular: siete avatares no caben, y
-            apilarlos rompería la lectura de "esto es un equipo". */}
+            apilarlos rompería la lectura de "esto es un equipo". Las fichas
+            son cuadradas y más grandes que un ícono porque adentro va un
+            personaje de cuerpo entero: a 56px la silueta no se distingue. */}
         <div className="-mx-6 mt-10 flex snap-x gap-3 overflow-x-auto px-6 pb-2 sm:mx-0 sm:flex-wrap sm:justify-start sm:overflow-visible sm:px-0">
           {AGENTS.map((agent) => {
             const Icon = agent.icon;
             const isActive = agent.id === activeId;
+            const hasImage = !missing.includes(agent.id);
             return (
               <button
                 key={agent.id}
                 type="button"
                 onClick={() => setActiveId(agent.id)}
                 aria-pressed={isActive}
-                className="flex w-[88px] shrink-0 snap-start flex-col items-center gap-2 rounded-2xl px-1 py-2 text-center transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:w-[104px]"
+                className="flex w-[92px] shrink-0 snap-start flex-col items-center gap-2 rounded-2xl px-1 py-2 text-center transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:w-[112px]"
                 style={{ opacity: isActive ? 1 : 0.55 }}
               >
                 <span
-                  className="flex h-14 w-14 items-center justify-center rounded-2xl transition-transform sm:h-16 sm:w-16"
+                  className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl transition-transform"
                   style={{
                     backgroundColor: `${agent.color}1a`,
                     border: `1px solid ${agent.color}${isActive ? "80" : "26"}`,
                     transform: isActive ? "scale(1.06)" : "scale(1)",
                   }}
                 >
-                  <Icon className="h-6 w-6" strokeWidth={1.75} style={{ color: agent.color }} />
+                  {hasImage ? (
+                    // object-contain y no cover: los renders vienen con aire
+                    // alrededor y recortarlos les corta el objeto que
+                    // justamente identifica al agente.
+                    <img
+                      src={agent.image}
+                      alt=""
+                      loading="lazy"
+                      onError={() => markMissing(agent.id)}
+                      className="h-full w-full object-contain p-1"
+                    />
+                  ) : (
+                    <Icon className="h-6 w-6" strokeWidth={1.75} style={{ color: agent.color }} />
+                  )}
                 </span>
                 <span className="text-[11px] font-medium leading-tight text-zinc-700 sm:text-xs">{agent.name}</span>
               </button>
@@ -186,26 +220,51 @@ export default function TeamSection() {
             </div>
           </div>
 
-          <div className="flex min-h-[260px] flex-col gap-2.5 px-5 py-5 sm:min-h-[220px]">
-            <AnimatePresence mode="wait">
-              <motion.div key={active.id} className="flex flex-col gap-2.5">
-                {active.messages.map((message, i) => (
-                  <motion.p
-                    key={`${active.id}-${i}`}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    // El escalonado imita a alguien escribiendo una tras
-                    // otra; sin él las tres burbujas aparecen de golpe y
-                    // deja de leerse como conversación.
-                    transition={{ duration: 0.3, delay: i * 0.35, ease: "easeOut" }}
-                    className="max-w-[85%] rounded-2xl rounded-tl-md px-4 py-2.5 text-sm leading-relaxed text-zinc-700 sm:max-w-[70%]"
-                    style={{ backgroundColor: `${active.color}12` }}
-                  >
-                    {message}
-                  </motion.p>
-                ))}
-              </motion.div>
-            </AnimatePresence>
+          {/* El personaje grande a un lado de sus burbujas: es donde el
+              render sí luce, y hace que las tres frases se lean como algo
+              que alguien te está diciendo. En celular va arriba y más
+              chico para no empujar el texto fuera de la pantalla. */}
+          <div className="flex min-h-[260px] flex-col gap-4 px-5 py-5 sm:min-h-[240px] sm:flex-row sm:items-end sm:gap-6">
+            {activeHasImage && (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${active.id}-art`}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="shrink-0 self-center sm:self-end"
+                >
+                  <img
+                    src={active.image}
+                    alt={`Ilustración del ${active.fullName}`}
+                    onError={() => markMissing(active.id)}
+                    className="h-28 w-auto object-contain sm:h-52"
+                  />
+                </motion.div>
+              </AnimatePresence>
+            )}
+
+            <div className="flex flex-1 flex-col justify-center gap-2.5">
+              <AnimatePresence mode="wait">
+                <motion.div key={active.id} className="flex flex-col gap-2.5">
+                  {active.messages.map((message, i) => (
+                    <motion.p
+                      key={`${active.id}-${i}`}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      // El escalonado imita a alguien escribiendo una tras
+                      // otra; sin él las tres burbujas aparecen de golpe y
+                      // deja de leerse como conversación.
+                      transition={{ duration: 0.3, delay: i * 0.35, ease: "easeOut" }}
+                      className="max-w-[92%] rounded-2xl rounded-tl-md px-4 py-2.5 text-sm leading-relaxed text-zinc-700 sm:max-w-[80%]"
+                      style={{ backgroundColor: `${active.color}12` }}
+                    >
+                      {message}
+                    </motion.p>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>

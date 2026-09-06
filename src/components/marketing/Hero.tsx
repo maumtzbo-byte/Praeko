@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { AGENTS } from "./agents";
-
-// Es el de Publicación porque es el que sostiene lo que dice el titular:
-// el negocio publica solo.
-const PROTAGONISTA = AGENTS.find((a) => a.id === "publicacion")!;
+import HeroProtagonista from "./HeroProtagonista";
 
 export default function Hero() {
   return (
@@ -68,13 +64,12 @@ export default function Hero() {
       {/* En celular no cabe al lado del texto: sacado del flujo, la cabeza
           se le encima al párrafo y al botón. Ahí baja a ocupar su propio
           renglón debajo, y solo desde tablet se vuelve absoluto y se
-          asoma por el borde. */}
-      <img
-        src={PROTAGONISTA.image}
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none order-2 mx-auto mt-10 h-56 w-auto max-w-none object-contain object-bottom mix-blend-multiply sm:absolute sm:bottom-0 sm:-right-10 sm:order-none sm:mx-0 sm:mt-0 sm:h-[72%] lg:right-0 lg:h-[86%]"
-      />
+          asoma por el borde.
+
+          Cortado por el borde derecho a propósito: un cuerpo entero
+          centrado siempre se lee pequeño, porque tiene que caber y la
+          mitad del espacio se le va en aire alrededor. */}
+      <HeroProtagonista className="pointer-events-none order-2 mx-auto mt-10 h-72 sm:absolute sm:bottom-0 sm:-right-16 sm:order-none sm:mx-0 sm:mt-0 sm:h-[78%] lg:right-0 lg:h-[92%]" />
     </section>
   );
 }

@@ -21,6 +21,8 @@ concretos que llegaron. Si se regenera un personaje hay que volver a
 medirlas — no se detectan solas.
 """
 
+import os
+
 from PIL import Image
 import numpy as np
 
@@ -183,7 +185,6 @@ RENDERS = [
 
 
 if __name__ == "__main__":
-    import os
     import sys
 
     src_dir = sys.argv[1]
@@ -197,3 +198,66 @@ if __name__ == "__main__":
         path = os.path.join(out_dir, f"{agent_id}.webp")
         size = to_asset(arr, path)
         print(f"{agent_id:12s} {size} {os.path.getsize(path) // 1024} KB")
+
+
+def _fill_holes(mask):
+    """Rellena los huecos interiores de una máscara.
+
+    Las micas se detectan por su tinte, así que las pupilas —que son
+    negras— salen como agujeros. Un reflejo real pasa por encima del ojo
+    igual que por el resto del cristal, así que el hueco tiene que
+    cerrarse o el destello aparecería mordido."""
+    fuera = ~mask
+    semilla = np.zeros_like(fuera)
+    semilla[0] |= fuera[0]; semilla[-1] |= fuera[-1]
+    semilla[:, 0] |= fuera[:, 0]; semilla[:, -1] |= fuera[:, -1]
+    while True:
+        crecido = semilla.copy()
+        crecido[1:] |= semilla[:-1]; crecido[:-1] |= semilla[1:]
+        crecido[:, 1:] |= semilla[:, :-1]; crecido[:, :-1] |= semilla[:, 1:]
+        crecido &= fuera
+        if crecido.sum() == semilla.sum():
+            break
+        semilla = crecido
+    return ~semilla
+
+
+def hero(src, out_dir, target_h=1400):
+    """Prepara el render del hero y, aparte, la máscara de las micas.
+
+    El destello de los lentes se dibuja en el navegador para que se
+    deslice al inclinar; un brillo pintado en el render se queda quieto y
+    delata el truco. Para recortarlo exactamente a la forma de los
+    cristales hace falta su silueta, y se saca de aquí: las micas son lo
+    único de la imagen con tinte azul-verde, ni el cuerpo blanco ni el
+    armazón negro lo tienen.
+
+    Las dos salidas comparten recorte y escala; si se calcularan por
+    separado, la máscara quedaría corrida unos píxeles sobre la cara."""
+    a = np.array(Image.open(src).convert("RGB")).astype(np.float32)
+    h, w, _ = a.shape
+
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    micas = _fill_holes((b - r > 12) & (g > 140) & (b > 150))
+
+    borde = np.concatenate([a[:8].reshape(-1, 3), a[-8:].reshape(-1, 3),
+                            a[:, :8].reshape(-1, 3), a[:, -8:].reshape(-1, 3)])
+    normalizada = np.clip(a * (255.0 / np.median(borde, axis=0)), 0, 255)
+
+    ys, xs = np.where(normalizada.min(axis=2) < 250)
+    pad = 10
+    caja = (max(0, xs.min() - pad), max(0, ys.min() - pad),
+            min(w, xs.max() + 1 + pad), min(h, ys.max() + 1 + pad))
+    ancho = round((caja[2] - caja[0]) * target_h / (caja[3] - caja[1]))
+
+    Image.fromarray(normalizada.astype(np.uint8)).crop(caja).resize(
+        (ancho, target_h), Image.LANCZOS
+    ).save(os.path.join(out_dir, "protagonista.webp"), quality=92, method=6)
+
+    plano = np.zeros((h, w, 4), dtype=np.uint8)
+    plano[..., :3] = 255
+    plano[..., 3] = micas * 255
+    Image.fromarray(plano).crop(caja).resize((ancho, target_h), Image.LANCZOS).save(
+        os.path.join(out_dir, "protagonista-lentes.png"), optimize=True
+    )
+    return (ancho, target_h), int(micas.sum())

@@ -313,58 +313,15 @@ export default function TeamSection() {
             </div>
           </div>
 
-          {/* El personaje grande a un lado de sus burbujas: es donde el
-              render sí luce, y hace que las tres frases se lean como algo
-              que alguien te está diciendo. En celular va arriba y más
-              chico para no empujar el texto fuera de la pantalla. */}
-          <div className="flex min-h-[260px] flex-col gap-4 px-5 py-5 sm:min-h-[240px] sm:flex-row sm:items-end sm:gap-6">
-            {activeHasImage && (
-              /* La animación va en el <img> y no en un div que lo envuelva:
-                 un padre con `opacity` crea un contexto de apilamiento que
-                 aísla el blend, y el fondo blanco del render deja de
-                 fundirse — se ve un recuadro blanco alrededor del muñeco. */
-              <motion.img
-                key={`${active.id}-art`}
-                src={active.image}
-                alt={`Ilustración del ${active.fullName}`}
-                onError={() => markMissing(active.id)}
-                ref={(el) => {
-                  if (el?.complete && el.naturalWidth === 0) markMissing(active.id);
-                }}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-                className="h-36 w-auto shrink-0 self-center object-contain mix-blend-multiply sm:h-64 sm:self-end"
-              />
-            )}
-
-            {/* Una sola burbuja con cola en vez de tres globos sueltos: el
-                agente está hablando una vez, no mandando tres mensajes. */}
-            <div className="relative flex-1">
-              {/* La cola apunta al personaje, que en escritorio queda a la
-                  izquierda y en celular arriba. Es un cuadrado girado 45°
-                  con borde en los dos lados que quedan hacia afuera, así
-                  se funde con la burbuja sin costura. */}
-              <span
-                aria-hidden="true"
-                className="absolute -top-[7px] left-10 h-3.5 w-3.5 rotate-45 rounded-[3px] sm:hidden"
-                style={{
-                  background: "#fff",
-                  borderTop: `1px solid ${active.color}2e`,
-                  borderLeft: `1px solid ${active.color}2e`,
-                }}
-              />
-              <span
-                aria-hidden="true"
-                className="absolute -left-[7px] top-1/2 hidden h-3.5 w-3.5 -translate-y-1/2 rotate-45 rounded-[3px] sm:block"
-                style={{
-                  background: "#fff",
-                  borderLeft: `1px solid ${active.color}2e`,
-                  borderBottom: `1px solid ${active.color}2e`,
-                }}
-              />
+          {/* La burbuja encima y el personaje debajo, centrados, en vez de
+              uno al lado del otro: la cola cae sobre su cabeza y se lee
+              como que está hablando él, no como un bocadillo puesto junto
+              a una ilustración. La misma composición sirve en celular y en
+              escritorio, así que no hay dos versiones que mantener. */}
+          <div className="flex flex-col items-center px-5 pb-6 pt-7 sm:pb-8 sm:pt-9">
+            <div className="relative w-full max-w-xl">
               <div
-                className="relative space-y-3 rounded-[1.75rem] px-5 py-4 sm:rounded-[2.25rem] sm:px-7 sm:py-6"
+                className="space-y-2.5 rounded-[1.75rem] px-6 py-5 sm:rounded-[2rem] sm:px-8 sm:py-6"
                 style={{
                   background: "#fff",
                   border: `1px solid ${active.color}2e`,
@@ -398,7 +355,51 @@ export default function TeamSection() {
                   );
                 })}
               </div>
+
+              {/* La cola cuelga a la izquierda del centro y engancha hacia
+                  la derecha, hacia la cabeza: enganchada al otro lado
+                  apunta a un espacio vacío y deja de leerse como que está
+                  hablando él.
+
+                  Va como un trazo abierto — relleno blanco pero sin línea
+                  de cierre arriba — para que el borde solo dibuje las dos
+                  curvas de afuera y el lado que toca la burbuja quede sin
+                  costura. Cerrar el path pintaría una raya cruzando el
+                  borde inferior de la burbuja. */}
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 40 34"
+                className="absolute left-1/2 top-full -mt-px h-[26px] w-[30px] -translate-x-[52px] sm:h-8 sm:w-10 sm:-translate-x-16"
+              >
+                <path
+                  d="M13,0 C13,15 20,26 35,33 C27,23 27,11 27,0"
+                  fill="#fff"
+                  stroke={`${active.color}2e`}
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
+
+            {activeHasImage && (
+              /* La animación va en el <img> y no en un div que lo envuelva:
+                 un padre con `opacity` crea un contexto de apilamiento que
+                 aísla el blend, y el fondo blanco del render deja de
+                 fundirse — se ve un recuadro blanco alrededor del muñeco. */
+              <motion.img
+                key={`${active.id}-art`}
+                src={active.image}
+                alt={`Ilustración del ${active.fullName}`}
+                onError={() => markMissing(active.id)}
+                ref={(el) => {
+                  if (el?.complete && el.naturalWidth === 0) markMissing(active.id);
+                }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="mt-5 h-44 w-auto object-contain mix-blend-multiply sm:mt-6 sm:h-64"
+              />
+            )}
           </div>
         </div>
       </div>

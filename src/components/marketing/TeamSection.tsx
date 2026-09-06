@@ -226,10 +226,22 @@ export default function TeamSection() {
           Toca a cualquiera y te cuenta de qué se encarga.
         </p>
 
-        {/* Fila con scroll lateral en celular: siete avatares no caben, y
-            apilarlos rompería la lectura de "esto es un equipo". Las fichas
-            son cuadradas y más grandes que un ícono porque adentro va un
-            personaje de cuerpo entero: a 56px la silueta no se distingue. */}
+        {/* Solo los personajes y su nombre, sin recuadro detrás. El cuadro
+            de color tenía un problema que no se arregla afinándolo: el
+            fondo del render es blanco puro y el del cuadro es un tinte, y
+            aunque el multiply los iguala en teoría, el WebP no reconstruye
+            ese blanco exacto y se alcanza a ver el rectángulo de la foto
+            dentro del rectángulo del cuadro. Sin cuadro, el render se funde
+            contra la página — que es un color plano — y el borde deja de
+            existir.
+
+            La caja de proporción sí se queda, aunque ya no se vea: los
+            renders no miden todos lo mismo de ancho, y sin ella cada
+            personaje ocuparía un espacio distinto y la fila quedaría
+            despareja.
+
+            Scroll lateral en celular: siete no caben, y apilarlos rompería
+            la lectura de "esto es un equipo". */}
         <div className="-mx-6 mt-10 flex snap-x gap-3 overflow-x-auto px-6 pb-2 sm:mx-0 sm:flex-wrap sm:justify-start sm:overflow-visible sm:px-0">
           {AGENTS.map((agent) => {
             const Icon = agent.icon;
@@ -244,12 +256,20 @@ export default function TeamSection() {
                 className="flex w-[92px] shrink-0 snap-start flex-col items-center gap-2 rounded-2xl px-1 py-2 text-center transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:w-[112px]"
                 style={{ opacity: isActive ? 1 : 0.55 }}
               >
+                {/* El fondo de la página, repetido aquí a propósito: se ve
+                    igual que si no hubiera fondo, pero le da al multiply
+                    del render algo contra qué multiplicar. Hace falta
+                    porque el `transform` de abajo crea contexto de
+                    apilamiento y aísla el blend de su hijo — sin este
+                    color el fondo blanco del render se queda blanco y
+                    reaparece el rectángulo. Con el cuadro de color de
+                    antes no se notaba: el tinte hacía justo este trabajo
+                    sin que nadie lo pidiera. */}
                 <span
-                  className="flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-2xl transition-transform"
+                  className="relative flex aspect-[4/5] w-full items-center justify-center transition-transform"
                   style={{
-                    backgroundColor: `${agent.color}1a`,
-                    border: `1px solid ${agent.color}${isActive ? "80" : "26"}`,
-                    transform: isActive ? "scale(1.06)" : "scale(1)",
+                    backgroundColor: "var(--background)",
+                    transform: isActive ? "scale(1.08)" : "scale(1)",
                   }}
                 >
                   {hasImage ? (
@@ -271,13 +291,33 @@ export default function TeamSection() {
                       ref={(el) => {
                         if (el?.complete && el.naturalWidth === 0) markMissing(agent.id);
                       }}
-                      className="h-full w-full object-contain object-bottom mix-blend-multiply"
+                      // Absoluta para que no cuente en el layout: en flujo,
+                      // el alto del <img> le gana al `aspect-[4/5]` y cada
+                      // ficha termina midiendo lo que mida su render — 135
+                      // px la más baja contra 174 la más alta, con los
+                      // nombres bailando. Antes no se veía porque el
+                      // `overflow-hidden` del cuadro lo tapaba.
+                      className="absolute inset-0 h-full w-full object-contain object-bottom mix-blend-multiply"
                     />
                   ) : (
-                    <Icon className="h-6 w-6" strokeWidth={1.75} style={{ color: agent.color }} />
+                    /* El respaldo sí lleva recuadro: un glifo de 24px
+                       flotando solo, donde los demás tienen un personaje
+                       de cuerpo entero, se lee como que algo se rompió. */
+                    <span
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl"
+                      style={{ backgroundColor: `${agent.color}1a`, border: `1px solid ${agent.color}33` }}
+                    >
+                      <Icon className="h-6 w-6" strokeWidth={1.75} style={{ color: agent.color }} />
+                    </span>
                   )}
                 </span>
-                <span className="text-[11px] font-medium leading-tight text-zinc-700 sm:text-xs">{agent.name}</span>
+                <span
+                  className={`text-[11px] leading-tight transition-colors sm:text-xs ${
+                    isActive ? "font-semibold text-zinc-950" : "font-medium text-zinc-500"
+                  }`}
+                >
+                  {agent.name}
+                </span>
               </button>
             );
           })}

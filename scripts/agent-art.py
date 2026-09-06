@@ -1,0 +1,199 @@
+"""Prepara los renders de los agentes para `public/agentes/`.
+
+Uso: python3 scripts/agent-art.py <carpeta-con-los-renders>
+
+Hace tres cosas con cada render y lo deja como .webp:
+
+1. Borra los logos de fabricante de los aparatos que carga el personaje.
+   Es una landing comercial: la marca ajena no puede ir ahi.
+2. Normaliza el fondo a blanco puro. Los renders no traen canal alfa y no
+   pueden traerlo — el muñeco es blanco y el fondo del archivo es un beige
+   de luminancia 247 contra una cabeza de 249, asi que recortar por brillo
+   se come la parte mas clara del muñeco. En vez de recortar, el fondo se
+   lleva a blanco exacto y la landing lo funde con mix-blend-multiply:
+   blanco por el color de la pagina devuelve ese mismo color, y la sombra
+   de contacto se conserva en lugar de quedar cortada con tijera.
+3. Recorta al contenido y exporta a WebP. Son degradados suaves: en PNG
+   pesan ~470 KB cada uno, en WebP ~14 KB con la misma imagen.
+
+Las coordenadas de cada logo estan fijas abajo, atadas a los archivos
+concretos que llegaron. Si se regenera un personaje hay que volver a
+medirlas — no se detectan solas.
+"""
+
+from PIL import Image
+import numpy as np
+
+
+def _dilate(mask, n):
+    for _ in range(n):
+        m = mask.copy()
+        m[1:] |= mask[:-1]; m[:-1] |= mask[1:]
+        m[:, 1:] |= mask[:, :-1]; m[:, :-1] |= mask[:, 1:]
+        mask = m
+    return mask
+
+
+def _border_connected(mask):
+    """Lo oscuro que entra por la orilla del recorte: sombras, bordes del
+    aparato, la mano del muñeco. No es la marca que se quiere borrar."""
+    seed = np.zeros_like(mask)
+    seed[0] |= mask[0]; seed[-1] |= mask[-1]
+    seed[:, 0] |= mask[:, 0]; seed[:, -1] |= mask[:, -1]
+    while True:
+        grown = _dilate(seed, 1) & mask
+        if grown.sum() == seed.sum():
+            return seed
+        seed = grown
+
+
+def delogo(arr, box, dark_margin=10, light_margin=None, dilate=5, fit_margin=45, keep=None):
+    """Borra una marca encerrada dentro de `box` reconstruyendo la
+    superficie de abajo.
+
+    La tapa o carcasa es un degradado suave, asi que se le ajusta una
+    cuadratica por canal y se repinta con eso el area de la marca.
+    Interpolar fila por fila tambien la quita, pero deja un fantasma
+    bandeado: cada fila reconstruye su propio tramo y las costuras no
+    coinciden entre filas.
+
+    El descarte de lo conectado al borde va antes de engordar la mascara.
+    Al reves, cinco dilataciones bastan para que el logo toque la sombra
+    que entra por la orilla, los dos quedan en la misma pieza y se
+    descarta todo."""
+    x0, y0, x1, y1 = box
+    roi = arr[y0:y1, x0:x1].astype(np.float64)
+    lum = roi.mean(axis=2)
+    base = np.median(lum)
+
+    odd = lum < base - dark_margin
+    if light_margin is not None:
+        # Los logos grabados traen un bisel claro alrededor. Sin el, queda
+        # un contorno fantasma justo donde estaba la marca. Lo brillante
+        # del muñeco no se cuela porque entra por la orilla del recorte.
+        odd |= lum > base + light_margin
+    if keep is None:
+        outside = _border_connected(odd)
+        mask = _dilate(odd & ~outside, dilate) & ~outside
+    else:
+        # Cuando la marca queda pegada a otra cosa oscura — el canto del
+        # aparato, la mano del muñeco — lo de "no toca el borde" ya no la
+        # separa. `keep` acota a mano el rectangulo que se repinta, y el
+        # ajuste sigue usando toda la region de alrededor.
+        kx0, ky0, kx1, ky1 = keep
+        sub = odd[ky0 - y0:ky1 - y0, kx0 - x0:kx1 - x0]
+        # El mismo criterio de "no toca la orilla", pero medido contra la
+        # caja: la linea de sombra entre el aparato y la mano entra por
+        # abajo y se descarta, mientras que la marca queda encerrada.
+        sub = sub & ~_border_connected(sub)
+        inner = np.zeros_like(odd)
+        inner[ky0 - y0:ky1 - y0, kx0 - x0:kx1 - x0] = sub
+        mask = _dilate(inner, dilate)
+        limit = np.zeros_like(odd)
+        limit[ky0 - y0:ky1 - y0, kx0 - x0:kx1 - x0] = True
+        mask &= limit
+    if not mask.any():
+        return arr, 0
+
+    h, w, _ = roi.shape
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float64)
+    yn, xn = yy / max(h - 1, 1), xx / max(w - 1, 1)
+    terms = [np.ones_like(xn), xn, yn, xn * yn, xn ** 2, yn ** 2]
+    # El ajuste solo mira la propia superficie: si el recorte roza una mano
+    # blanca del muñeco, esos pixeles arrastran la cuadratica y el parche
+    # sale mas claro que el aparato.
+    fit = (~mask) & (np.abs(lum - base) < fit_margin)
+    A = np.stack([t[fit] for t in terms], axis=1)
+    full = np.stack([t.ravel() for t in terms], axis=1)
+
+    out = roi.copy()
+    for c in range(3):
+        coef, *_ = np.linalg.lstsq(A, roi[fit, c], rcond=None)
+        out[:, :, c][mask] = (full @ coef).reshape(h, w)[mask]
+
+    arr = arr.copy()
+    arr[y0:y1, x0:x1] = np.clip(out, 0, 255).astype(np.uint8)
+    return arr, int(mask.sum())
+
+
+def soften(arr, box, radius=7, feather=6):
+    """Disuelve una marca con un desenfoque local en vez de reconstruir la
+    superficie. Es lo que queda cuando la marca toca otro objeto — en el
+    celular el logo llega hasta el borde de la mano — y ninguna regla de
+    conectividad puede separarlos: reconstruir repinta tambien el canto de
+    la mano y deja un escalon recto. El desenfoque no inventa geometria,
+    solo deja la forma ilegible, y la mascara difuminada evita que se note
+    donde empieza."""
+    from PIL import ImageFilter
+    x0, y0, x1, y1 = box
+    pad = radius * 3
+    region = Image.fromarray(arr[y0 - pad:y1 + pad, x0 - pad:x1 + pad])
+    blurred = np.array(region.filter(ImageFilter.GaussianBlur(radius)), dtype=np.float64)
+    base = np.array(region, dtype=np.float64)
+
+    h, w = base.shape[:2]
+    yy, xx = np.mgrid[0:h, 0:w]
+    inside = np.minimum.reduce([xx - pad, yy - pad, (w - 1 - pad) - xx, (h - 1 - pad) - yy])
+    alpha = np.clip((inside + feather) / (2.0 * feather), 0, 1)[..., None]
+
+    out = arr.copy()
+    out[y0 - pad:y1 + pad, x0 - pad:x1 + pad] = np.clip(
+        base * (1 - alpha) + blurred * alpha, 0, 255
+    ).astype(np.uint8)
+    return out
+
+
+def to_asset(arr, out_path, target_h=900, quality=90):
+    """Normaliza el fondo a blanco, recorta al contenido y guarda WebP."""
+    a = arr.astype(np.float32)
+    h, w, _ = a.shape
+    # El fondo es plano: la mediana del marco exterior lo describe sin que
+    # ningun pixel del personaje entre en la cuenta.
+    border = np.concatenate([a[:8].reshape(-1, 3), a[-8:].reshape(-1, 3),
+                             a[:, :8].reshape(-1, 3), a[:, -8:].reshape(-1, 3)])
+    bg = np.median(border, axis=0)
+    out = np.clip(a * (255.0 / bg), 0, 255)
+
+    ys, xs = np.where(out.min(axis=2) < 250)
+    pad = 12
+    y0, y1 = max(0, ys.min() - pad), min(h, ys.max() + 1 + pad)
+    x0, x1 = max(0, xs.min() - pad), min(w, xs.max() + 1 + pad)
+    crop = Image.fromarray(out.astype(np.uint8)).crop((x0, y0, x1, y1))
+    crop = crop.resize((round(crop.width * target_h / crop.height), target_h), Image.LANCZOS)
+    crop.save(out_path, quality=quality, method=6)
+    return crop.size
+
+
+# Cada entrada: archivo de origen -> id del agente, y como quitarle el logo.
+# `delogo` reconstruye la superficie y es lo que se quiere siempre que se
+# pueda. `soften` es el recurso para cuando la marca toca otro objeto y no
+# hay forma de separarlas.
+RENDERS = [
+    ("a2412f5c-image.png", "estrategia",
+     lambda a: delogo(a, (690, 615, 775, 735), dark_margin=10, dilate=5)[0]),
+    ("d0cf5e01-image.png", "tendencias", None),
+    ("6f99beb9-image.png", "creativo", None),
+    ("bb435bde-image.png", "revisor",
+     lambda a: delogo(a, (710, 565, 815, 675), dark_margin=25, light_margin=14, dilate=6)[0]),
+    ("035bbb59-image.png", "publicacion",
+     lambda a: soften(a, (755, 541, 782, 576), radius=12, feather=8)),
+    ("d0b7b606-image.png", "respuestas", None),
+    ("01d721d4-image.png", "resultados", None),
+]
+
+
+if __name__ == "__main__":
+    import os
+    import sys
+
+    src_dir = sys.argv[1]
+    out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                           "public", "agentes")
+    os.makedirs(out_dir, exist_ok=True)
+    for filename, agent_id, clean in RENDERS:
+        arr = np.array(Image.open(os.path.join(src_dir, filename)).convert("RGB"))
+        if clean is not None:
+            arr = clean(arr)
+        path = os.path.join(out_dir, f"{agent_id}.webp")
+        size = to_asset(arr, path)
+        print(f"{agent_id:12s} {size} {os.path.getsize(path) // 1024} KB")

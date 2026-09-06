@@ -23,7 +23,6 @@ interface Agent {
   /** Título completo tal como se dice. Explícito y no "Agente de " + name,
    * porque ese prefijo produce "Agente de Revisor de Marca". */
   fullName: string;
-  role: string;
   icon: LucideIcon;
   color: string;
   /** Render 3D del personaje en `public/agentes/<id>.webp`. El objeto que
@@ -39,7 +38,6 @@ const AGENTS: Agent[] = [
     id: "estrategia",
     name: "Estrategia",
     fullName: "Agente de Estrategia",
-    role: "Decide qué se publica",
     icon: Compass,
     color: "#2f6fb0",
     image: "/agentes/estrategia.webp",
@@ -53,7 +51,6 @@ const AGENTS: Agent[] = [
     id: "tendencias",
     name: "Tendencias",
     fullName: "Agente de Tendencias",
-    role: "Investiga qué está funcionando",
     icon: Radar,
     color: "#3d8f9e",
     image: "/agentes/tendencias.webp",
@@ -67,7 +64,6 @@ const AGENTS: Agent[] = [
     id: "creativo",
     name: "Creativo",
     fullName: "Agente Creativo",
-    role: "Produce el video y la imagen",
     icon: Wand2,
     color: "#6a5fb0",
     image: "/agentes/creativo.webp",
@@ -81,7 +77,6 @@ const AGENTS: Agent[] = [
     id: "revisor",
     name: "Revisor de Marca",
     fullName: "Agente Revisor de Marca",
-    role: "Revisa antes que tú",
     icon: ShieldCheck,
     color: "#b08a3d",
     image: "/agentes/revisor.webp",
@@ -95,7 +90,6 @@ const AGENTS: Agent[] = [
     id: "publicacion",
     name: "Publicación",
     fullName: "Agente de Publicación",
-    role: "Sube el contenido",
     icon: Send,
     color: "#2f8f6b",
     image: "/agentes/publicacion.webp",
@@ -109,7 +103,6 @@ const AGENTS: Agent[] = [
     id: "respuestas",
     name: "Respuestas",
     fullName: "Agente de Respuestas",
-    role: "Contesta a tus clientes",
     icon: MessageCircle,
     color: "#4a7fd0",
     image: "/agentes/respuestas.webp",
@@ -123,7 +116,6 @@ const AGENTS: Agent[] = [
     id: "resultados",
     name: "Resultados",
     fullName: "Agente de Resultados",
-    role: "Mide qué funcionó",
     icon: BarChart3,
     color: "#4f6a86",
     image: "/agentes/resultados.webp",
@@ -208,7 +200,6 @@ export default function TeamSection() {
   // el panel se haya salido de cuadro un momento.
   const panelInView = useInView(panelRef, { once: true, margin: "-80px" });
   const active = AGENTS.find((a) => a.id === activeId) ?? AGENTS[0];
-  const ActiveIcon = active.icon;
   const activeHasImage = !missing.includes(active.id);
   // Las tres frases se teclean como un solo texto para que la segunda
   // arranque justo cuando termina la primera, sin temporizadores encadenados.
@@ -294,113 +285,100 @@ export default function TeamSection() {
 
         {/* El hilo arranca con un agente ya seleccionado, no vacío: la
             sección tiene que decir algo aunque nadie toque nada. */}
-        {/* Sin `backdrop-blur` a propósito: `backdrop-filter` convierte al
-            panel en un backdrop root y aísla el mix-blend-multiply de sus
-            hijos, así que el fondo blanco del render deja de fundirse y
-            aparece un recuadro alrededor del personaje. Las fichas de
-            arriba nunca tuvieron el problema porque no llevan blur. */}
-        <div ref={panelRef} className="mt-8 overflow-hidden rounded-3xl border border-[var(--hairline)] bg-white/60">
-          <div className="flex items-center gap-3 border-b border-[var(--hairline)] px-5 py-4">
-            <span
-              className="flex h-10 w-10 items-center justify-center rounded-xl"
-              style={{ backgroundColor: `${active.color}1a`, border: `1px solid ${active.color}40` }}
+        {/* Sin tarjeta alrededor: el personaje y su burbuja van sueltos
+            sobre la página. Encajonarlos añadía un borde y un fondo que no
+            decían nada y le quitaban aire al muñeco, que es lo que se
+            quiere mirar. El nombre y el puesto que llevaba el encabezado
+            tampoco se pierden — el nombre está bajo su ficha, y el puesto
+            lo dice él mismo en la primera frase.
+
+            La burbuja encima y el personaje debajo, centrados, en vez de
+            uno al lado del otro: la cola cae sobre su cabeza y se lee como
+            que está hablando él, no como un bocadillo puesto junto a una
+            ilustración. La misma composición sirve en celular y en
+            escritorio, así que no hay dos versiones que mantener. */}
+        <div ref={panelRef} className="mt-12 flex flex-col items-center sm:mt-14">
+          <div className="relative w-full max-w-xl">
+            <div
+              className="space-y-2.5 rounded-[1.75rem] px-6 py-5 sm:rounded-[2rem] sm:px-8 sm:py-6"
+              style={{
+                background: "#fff",
+                border: `1px solid ${active.color}2e`,
+                boxShadow: `0 18px 50px -20px ${active.color}80`,
+              }}
             >
-              <ActiveIcon className="h-[18px] w-[18px]" strokeWidth={1.75} style={{ color: active.color }} />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-zinc-950">{active.fullName}</p>
-              <p className="text-xs text-zinc-500">{active.role}</p>
-            </div>
-          </div>
-
-          {/* La burbuja encima y el personaje debajo, centrados, en vez de
-              uno al lado del otro: la cola cae sobre su cabeza y se lee
-              como que está hablando él, no como un bocadillo puesto junto
-              a una ilustración. La misma composición sirve en celular y en
-              escritorio, así que no hay dos versiones que mantener. */}
-          <div className="flex flex-col items-center px-5 pb-6 pt-7 sm:pb-8 sm:pt-9">
-            <div className="relative w-full max-w-xl">
-              <div
-                className="space-y-2.5 rounded-[1.75rem] px-6 py-5 sm:rounded-[2rem] sm:px-8 sm:py-6"
-                style={{
-                  background: "#fff",
-                  border: `1px solid ${active.color}2e`,
-                  boxShadow: `0 18px 50px -20px ${active.color}80`,
-                }}
-              >
-                {active.messages.map((message, i) => {
-                  const shown = Math.min(message.length, Math.max(0, typed - starts[i]));
-                  const typing = shown > 0 && shown < message.length;
-                  return (
-                    <p key={`${active.id}-${i}`} className="relative text-sm leading-relaxed text-zinc-700">
-                      {/* La frase completa queda en el flujo pero
-                          transparente: reserva su alto desde el primer
-                          frame, así la burbuja no crece a saltos mientras
-                          se escribe. Va en opacity-0 y no en invisible
-                          porque `visibility: hidden` también la esconde
-                          de los lectores de pantalla, y esta es la copia
-                          que ellos leen — la de encima va marcada como
-                          decorativa para que no se lea dos veces. */}
-                      <span className="opacity-0">{message}</span>
-                      <span aria-hidden="true" className="absolute inset-0">
-                        {message.slice(0, shown)}
-                        {typing && (
-                          <span
-                            className="ml-0.5 inline-block h-[1em] w-[2px] animate-pulse align-[-0.15em]"
-                            style={{ backgroundColor: active.color }}
-                          />
-                        )}
-                      </span>
-                    </p>
-                  );
-                })}
-              </div>
-
-              {/* La cola cuelga a la izquierda del centro y engancha hacia
-                  la derecha, hacia la cabeza: enganchada al otro lado
-                  apunta a un espacio vacío y deja de leerse como que está
-                  hablando él.
-
-                  Va como un trazo abierto — relleno blanco pero sin línea
-                  de cierre arriba — para que el borde solo dibuje las dos
-                  curvas de afuera y el lado que toca la burbuja quede sin
-                  costura. Cerrar el path pintaría una raya cruzando el
-                  borde inferior de la burbuja. */}
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 40 34"
-                className="absolute left-1/2 top-full -mt-px h-[26px] w-[30px] -translate-x-[52px] sm:h-8 sm:w-10 sm:-translate-x-16"
-              >
-                <path
-                  d="M13,0 C13,15 20,26 35,33 C27,23 27,11 27,0"
-                  fill="#fff"
-                  stroke={`${active.color}2e`}
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              {active.messages.map((message, i) => {
+                const shown = Math.min(message.length, Math.max(0, typed - starts[i]));
+                const typing = shown > 0 && shown < message.length;
+                return (
+                  <p key={`${active.id}-${i}`} className="relative text-sm leading-relaxed text-zinc-700">
+                    {/* La frase completa queda en el flujo pero
+                        transparente: reserva su alto desde el primer
+                        frame, así la burbuja no crece a saltos mientras
+                        se escribe. Va en opacity-0 y no en invisible
+                        porque `visibility: hidden` también la esconde
+                        de los lectores de pantalla, y esta es la copia
+                        que ellos leen — la de encima va marcada como
+                        decorativa para que no se lea dos veces. */}
+                    <span className="opacity-0">{message}</span>
+                    <span aria-hidden="true" className="absolute inset-0">
+                      {message.slice(0, shown)}
+                      {typing && (
+                        <span
+                          className="ml-0.5 inline-block h-[1em] w-[2px] animate-pulse align-[-0.15em]"
+                          style={{ backgroundColor: active.color }}
+                        />
+                      )}
+                    </span>
+                  </p>
+                );
+              })}
             </div>
 
-            {activeHasImage && (
-              /* La animación va en el <img> y no en un div que lo envuelva:
-                 un padre con `opacity` crea un contexto de apilamiento que
-                 aísla el blend, y el fondo blanco del render deja de
-                 fundirse — se ve un recuadro blanco alrededor del muñeco. */
-              <motion.img
-                key={`${active.id}-art`}
-                src={active.image}
-                alt={`Ilustración del ${active.fullName}`}
-                onError={() => markMissing(active.id)}
-                ref={(el) => {
-                  if (el?.complete && el.naturalWidth === 0) markMissing(active.id);
-                }}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-                className="mt-5 h-44 w-auto object-contain mix-blend-multiply sm:mt-6 sm:h-64"
+            {/* La cola cuelga a la izquierda del centro y engancha hacia
+                la derecha, hacia la cabeza: enganchada al otro lado
+                apunta a un espacio vacío y deja de leerse como que está
+                hablando él.
+
+                Va como un trazo abierto — relleno blanco pero sin línea
+                de cierre arriba — para que el borde solo dibuje las dos
+                curvas de afuera y el lado que toca la burbuja quede sin
+                costura. Cerrar el path pintaría una raya cruzando el
+                borde inferior de la burbuja. */}
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 40 34"
+              className="absolute left-1/2 top-full -mt-px h-[26px] w-[30px] -translate-x-[52px] sm:h-8 sm:w-10 sm:-translate-x-16"
+            >
+              <path
+                d="M13,0 C13,15 20,26 35,33 C27,23 27,11 27,0"
+                fill="#fff"
+                stroke={`${active.color}2e`}
+                strokeWidth="1.5"
+                strokeLinejoin="round"
               />
-            )}
+            </svg>
           </div>
+
+          {activeHasImage && (
+            /* La animación va en el <img> y no en un div que lo envuelva:
+               un padre con `opacity` crea un contexto de apilamiento que
+               aísla el blend, y el fondo blanco del render deja de
+               fundirse — se ve un recuadro blanco alrededor del muñeco. */
+            <motion.img
+              key={`${active.id}-art`}
+              src={active.image}
+              alt={`Ilustración del ${active.fullName}`}
+              onError={() => markMissing(active.id)}
+              ref={(el) => {
+                if (el?.complete && el.naturalWidth === 0) markMissing(active.id);
+              }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="mt-6 h-56 w-auto object-contain mix-blend-multiply sm:mt-7 sm:h-80 lg:h-96"
+            />
+          )}
         </div>
       </div>
     </section>

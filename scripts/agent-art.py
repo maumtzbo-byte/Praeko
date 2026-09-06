@@ -222,6 +222,38 @@ def _fill_holes(mask):
     return ~semilla
 
 
+def _borrar_pupilas(arr, micas, pupilas):
+    """Quita las pupilas del cristal reconstruyendo el tinte de la mica.
+
+    Se van del render porque tienen que moverse: son lo que hace que el
+    personaje siga al cursor, y algo pintado en la imagen no puede seguir
+    a nada. Se vuelven a dibujar en el navegador, encima.
+
+    Cada mica se ajusta por separado — reciben luz distinta, y una sola
+    superficie para las dos deja un parche visiblemente más claro en una
+    de ellas."""
+    salida = arr.astype(np.float64).copy()
+    ys, xs = np.where(micas)
+    medio = (xs.min() + xs.max()) / 2
+    for lado in (xs < medio, xs >= medio):
+        lente = np.zeros_like(micas)
+        lente[ys[lado], xs[lado]] = True
+        limpio = lente & ~pupilas
+        hueco = lente & pupilas
+        if not hueco.any():
+            continue
+        yy, xx = np.mgrid[0:arr.shape[0], 0:arr.shape[1]].astype(np.float64)
+        yn = (yy - ys[lado].mean()) / 100.0
+        xn = (xx - xs[lado].mean()) / 100.0
+        terminos = [np.ones_like(xn), xn, yn, xn * yn, xn ** 2, yn ** 2]
+        A = np.stack([t[limpio] for t in terminos], axis=1)
+        B = np.stack([t[hueco] for t in terminos], axis=1)
+        for c in range(3):
+            coef, *_ = np.linalg.lstsq(A, arr[limpio, c], rcond=None)
+            salida[hueco, c] = B @ coef
+    return np.clip(salida, 0, 255)
+
+
 def hero(src, out_dir, target_h=1400):
     """Prepara el render del hero y, aparte, la máscara de las micas.
 
@@ -239,6 +271,13 @@ def hero(src, out_dir, target_h=1400):
 
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
     micas = _fill_holes((b - r > 12) & (g > 140) & (b > 150))
+    pupilas = micas & (a.mean(axis=2) < 110)
+    # El umbral deja fuera el antialias del borde, que es más claro que la
+    # pupila pero más oscuro que la mica; sin engordar la máscara queda un
+    # contorno punteado donde estaba el ojo.
+    geometria = pupilas
+    pupilas = _dilate(pupilas, 4) & micas
+    a = _borrar_pupilas(a, micas, pupilas)
 
     borde = np.concatenate([a[:8].reshape(-1, 3), a[-8:].reshape(-1, 3),
                             a[:, :8].reshape(-1, 3), a[:, -8:].reshape(-1, 3)])
@@ -260,4 +299,19 @@ def hero(src, out_dir, target_h=1400):
     Image.fromarray(plano).crop(caja).resize((ancho, target_h), Image.LANCZOS).save(
         os.path.join(out_dir, "protagonista-lentes.png"), optimize=True
     )
-    return (ancho, target_h), int(micas.sum())
+
+    # Geometría de las pupilas en porcentaje del recorte final, para
+    # colocarlas por CSS. En porcentaje y no en píxeles porque la imagen se
+    # muestra a alturas distintas según el ancho de pantalla.
+    py, px = np.where(geometria)
+    medio = (px.min() + px.max()) / 2
+    ojos = []
+    for lado in (px < medio, px >= medio):
+        X, Y = px[lado], py[lado]
+        ojos.append({
+            "x": round((X.mean() - caja[0]) / (caja[2] - caja[0]) * 100, 3),
+            "y": round((Y.mean() - caja[1]) / (caja[3] - caja[1]) * 100, 3),
+            "rx": round((X.max() - X.min()) / 2 / (caja[2] - caja[0]) * 100, 3),
+            "ry": round((Y.max() - Y.min()) / 2 / (caja[3] - caja[1]) * 100, 3),
+        })
+    return (ancho, target_h), int(micas.sum()), ojos

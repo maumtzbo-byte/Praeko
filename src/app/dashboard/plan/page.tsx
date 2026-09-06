@@ -102,7 +102,14 @@ export default async function PlanPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      {/* Mismo carrusel con snap que la sección de precios del sitio
+          público (PricingSection.tsx): en celular se desliza de lado con la
+          siguiente tarjeta asomándose, en escritorio vuelve a ser una
+          cuadrícula de tres. Apiladas verticalmente, comparar planes obliga
+          a recordar lo que ya se pasó de largo. Los márgenes negativos
+          cancelan el padding del main para que el carrusel llegue al borde
+          de la pantalla. */}
+      <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0">
         {(plans ?? []).map((plan) => {
           const isCurrent = subscription?.plan_key === plan.key;
           // Same "most popular" anchor as the marketing pricing page — the
@@ -115,11 +122,15 @@ export default async function PlanPage() {
             <Card
               key={plan.key}
               className={cn(
+                // w-[82%] deja ver el filo de la siguiente tarjeta, que es
+                // lo que le avisa a alguien en celular que hay más a la
+                // derecha; h-full las empareja de altura en la cuadrícula.
+                "w-[82%] shrink-0 snap-center md:w-auto md:shrink",
                 isFeatured && "border-transparent bg-zinc-950 text-white ",
                 isCurrent && "border-accent",
               )}
             >
-              <CardContent className="flex flex-col gap-4 p-6">
+              <CardContent className="flex h-full flex-col gap-4 p-6">
                 <div className="flex items-center justify-between">
                   <h3 className={cn("text-lg font-semibold", isFeatured ? "text-white" : "text-zinc-900")}>
                     {plan.display_name}
@@ -137,17 +148,31 @@ export default async function PlanPage() {
                   <span className="text-3xl font-semibold tracking-tight">${priceUsd.toFixed(0)}</span>
                   <span className={cn("text-sm", isFeatured ? "text-zinc-400" : "text-zinc-500")}>USD/mes</span>
                 </div>
-                <ul className={cn("flex flex-col gap-2 text-sm", isFeatured ? "text-zinc-300" : "text-zinc-600")}>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 shrink-0 text-accent" /> {plan.videos_per_month} videos/mes
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 shrink-0 text-accent" /> {plan.images_per_month} imágenes/mes
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 shrink-0 text-accent" />{" "}
-                    {plan.social_network_limit === 1 ? "1 red social" : `${plan.social_network_limit} redes sociales`}
-                  </li>
+                {/* Antes solo listaba videos/imágenes/redes, escondiendo la
+                    mitad de lo que realmente separa un plan de otro (duración
+                    de video, subtítulos, analíticas) — datos que ya estaban en
+                    la tabla sin mostrarse. flex-1 empuja el botón al fondo para
+                    que las tres tarjetas alineen su llamada a la acción aunque
+                    tengan distinto número de líneas. */}
+                <ul className={cn("flex flex-1 flex-col gap-2.5 pt-1 text-sm", isFeatured ? "text-zinc-300" : "text-zinc-600")}>
+                  {[
+                    `${plan.videos_per_month} videos al mes`,
+                    `Videos de hasta ${plan.video_max_seconds} segundos`,
+                    `${plan.images_per_month} imágenes al mes`,
+                    plan.social_network_limit === 1 ? "1 red social" : `${plan.social_network_limit} redes sociales`,
+                    plan.burns_subtitles ? "Subtítulos incluidos" : null,
+                    plan.has_optimized_schedule ? "Horarios optimizados" : null,
+                    plan.has_analytics_dashboard ? "Analíticas de resultados" : null,
+                    plan.has_priority_queue ? "Generación prioritaria" : null,
+                    plan.has_watermark_free_downloads ? "Descargas sin marca de agua" : null,
+                  ]
+                    .filter((feature): feature is string => feature !== null)
+                    .map((feature) => (
+                      <li key={feature} className="flex items-start gap-2">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
                 </ul>
                 {isCurrent ? (
                   <Button variant="secondary" disabled>

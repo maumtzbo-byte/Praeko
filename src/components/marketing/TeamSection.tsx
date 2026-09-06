@@ -26,7 +26,7 @@ interface Agent {
   role: string;
   icon: LucideIcon;
   color: string;
-  /** Render 3D del personaje en `public/agentes/<id>.png`. El objeto que
+  /** Render 3D del personaje en `public/agentes/<id>.webp`. El objeto que
    * trae cada uno es lo que lo identifica a simple vista (laptop, cámara,
    * celular…), así que la pose no es decorativa: es el ícono. Si el archivo
    * todavía no existe, la sección cae al ícono de Lucide y no se rompe. */
@@ -42,7 +42,7 @@ const AGENTS: Agent[] = [
     role: "Decide qué se publica",
     icon: Compass,
     color: "#2f6fb0",
-    image: "/agentes/estrategia.png",
+    image: "/agentes/estrategia.webp",
     messages: [
       "Yo decido qué se publica y qué día.",
       "Leo el cuestionario de tu marca — tu tono, qué vendes, a quién le vendes — y armo el plan del mes completo, con el guion de cada pieza ya escrito.",
@@ -56,7 +56,7 @@ const AGENTS: Agent[] = [
     role: "Investiga qué está funcionando",
     icon: Radar,
     color: "#3d8f9e",
-    image: "/agentes/tendencias.png",
+    image: "/agentes/tendencias.webp",
     messages: [
       "Antes de que se escriba nada, yo investigo.",
       "Busco en internet qué tipo de contenido está funcionando ahora mismo para negocios como el tuyo, en tu ciudad.",
@@ -70,7 +70,7 @@ const AGENTS: Agent[] = [
     role: "Produce el video y la imagen",
     icon: Wand2,
     color: "#6a5fb0",
-    image: "/agentes/creativo.png",
+    image: "/agentes/creativo.webp",
     messages: [
       "Yo lo produzco.",
       "Tomo el guion y genero el video o la imagen de verdad — no un borrador ni una plantilla que tengas que rellenar.",
@@ -84,7 +84,7 @@ const AGENTS: Agent[] = [
     role: "Revisa antes que tú",
     icon: ShieldCheck,
     color: "#b08a3d",
-    image: "/agentes/revisor.png",
+    image: "/agentes/revisor.webp",
     messages: [
       "Yo reviso antes que tú.",
       "Cada pieza pasa por mí: que suene a tu marca, que no diga algo que no debería, que el gancho no sea genérico.",
@@ -98,7 +98,7 @@ const AGENTS: Agent[] = [
     role: "Sube el contenido",
     icon: Send,
     color: "#2f8f6b",
-    image: "/agentes/publicacion.png",
+    image: "/agentes/publicacion.webp",
     messages: [
       "Yo la subo.",
       "Publico en Instagram, Facebook o TikTok a la hora que tiene sentido para tu giro — un restaurante antes de la comida, un gimnasio antes de la hora en que la gente entrena.",
@@ -112,7 +112,7 @@ const AGENTS: Agent[] = [
     role: "Contesta a tus clientes",
     icon: MessageCircle,
     color: "#4a7fd0",
-    image: "/agentes/respuestas.png",
+    image: "/agentes/respuestas.webp",
     messages: [
       "Yo contesto.",
       "Cuando alguien pregunta precio, horario o disponibilidad en tus comentarios o mensajes, respondo con la información real de tu negocio.",
@@ -126,7 +126,7 @@ const AGENTS: Agent[] = [
     role: "Mide qué funcionó",
     icon: BarChart3,
     color: "#4f6a86",
-    image: "/agentes/resultados.png",
+    image: "/agentes/resultados.webp",
     messages: [
       "Yo mido.",
       "Traigo los números reales de cada publicación: alcance, likes, comentarios, seguidores nuevos.",
@@ -176,7 +176,7 @@ export default function TeamSection() {
                 style={{ opacity: isActive ? 1 : 0.55 }}
               >
                 <span
-                  className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl transition-transform"
+                  className="flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-2xl transition-transform"
                   style={{
                     backgroundColor: `${agent.color}1a`,
                     border: `1px solid ${agent.color}${isActive ? "80" : "26"}`,
@@ -186,13 +186,23 @@ export default function TeamSection() {
                   {hasImage ? (
                     // object-contain y no cover: los renders vienen con aire
                     // alrededor y recortarlos les corta el objeto que
-                    // justamente identifica al agente.
+                    // justamente identifica al agente. mix-blend-multiply es
+                    // lo que hace desaparecer el fondo — ver la nota larga
+                    // abajo, en el render grande.
                     <img
                       src={agent.image}
                       alt=""
-                      loading="lazy"
                       onError={() => markMissing(agent.id)}
-                      className="h-full w-full object-contain p-1"
+                      // El <img> viene ya en el HTML del servidor y empieza a
+                      // cargar antes de que React hidrate: si el archivo no
+                      // existe, el evento de error ocurre cuando todavía no
+                      // hay handler y `onError` nunca se entera. Al montar,
+                      // un <img> que ya terminó y no tiene ancho natural es
+                      // exactamente eso — un 404 que ya pasó.
+                      ref={(el) => {
+                        if (el?.complete && el.naturalWidth === 0) markMissing(agent.id);
+                      }}
+                      className="h-full w-full object-contain object-bottom mix-blend-multiply"
                     />
                   ) : (
                     <Icon className="h-6 w-6" strokeWidth={1.75} style={{ color: agent.color }} />
@@ -206,7 +216,12 @@ export default function TeamSection() {
 
         {/* El hilo arranca con un agente ya seleccionado, no vacío: la
             sección tiene que decir algo aunque nadie toque nada. */}
-        <div className="mt-8 overflow-hidden rounded-3xl border border-[var(--hairline)] bg-white/60 backdrop-blur-sm">
+        {/* Sin `backdrop-blur` a propósito: `backdrop-filter` convierte al
+            panel en un backdrop root y aísla el mix-blend-multiply de sus
+            hijos, así que el fondo blanco del render deja de fundirse y
+            aparece un recuadro alrededor del personaje. Las fichas de
+            arriba nunca tuvieron el problema porque no llevan blur. */}
+        <div className="mt-8 overflow-hidden rounded-3xl border border-[var(--hairline)] bg-white/60">
           <div className="flex items-center gap-3 border-b border-[var(--hairline)] px-5 py-4">
             <span
               className="flex h-10 w-10 items-center justify-center rounded-xl"
@@ -226,22 +241,23 @@ export default function TeamSection() {
               chico para no empujar el texto fuera de la pantalla. */}
           <div className="flex min-h-[260px] flex-col gap-4 px-5 py-5 sm:min-h-[240px] sm:flex-row sm:items-end sm:gap-6">
             {activeHasImage && (
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`${active.id}-art`}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, ease: "easeOut" }}
-                  className="shrink-0 self-center sm:self-end"
-                >
-                  <img
-                    src={active.image}
-                    alt={`Ilustración del ${active.fullName}`}
-                    onError={() => markMissing(active.id)}
-                    className="h-28 w-auto object-contain sm:h-52"
-                  />
-                </motion.div>
-              </AnimatePresence>
+              /* La animación va en el <img> y no en un div que lo envuelva:
+                 un padre con `opacity` crea un contexto de apilamiento que
+                 aísla el blend, y el fondo blanco del render deja de
+                 fundirse — se ve un recuadro blanco alrededor del muñeco. */
+              <motion.img
+                key={`${active.id}-art`}
+                src={active.image}
+                alt={`Ilustración del ${active.fullName}`}
+                onError={() => markMissing(active.id)}
+                ref={(el) => {
+                  if (el?.complete && el.naturalWidth === 0) markMissing(active.id);
+                }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="h-36 w-auto shrink-0 self-center object-contain mix-blend-multiply sm:h-64 sm:self-end"
+              />
             )}
 
             <div className="flex flex-1 flex-col justify-center gap-2.5">

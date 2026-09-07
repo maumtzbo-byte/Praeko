@@ -11,12 +11,18 @@
      swap propagates everywhere without touching those files. */
   --accent: #3d75ad;
   --accent-strong: #1f3e5c;
+  /* Azul vivo, solo para el botón principal del hero. El acento de marca
+     está bien para acompañar, pero apagado para lo único que se quiere
+     que la gente toque. Va aparte y no reemplaza a --accent porque ese
+     lo usan diez archivos del dashboard. */
+  --accent-cta: #1865eb;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
+  --color-accent-cta: var(--accent-cta);
   --color-accent-strong: var(--accent-strong);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

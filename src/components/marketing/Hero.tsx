@@ -10,7 +10,7 @@ export default function Hero() {
     // de los renders: se funden por multiplicación, y sobre el azul el
     // personaje se teñía de azul y se perdía contra él. Contra un color
     // plano y claro desaparece el recuadro y el muñeco se ve tal cual.
-    <section className="relative flex min-h-[92vh] flex-col overflow-hidden bg-[var(--background)] pb-6 pt-20 sm:min-h-[100vh] sm:block sm:pb-0 sm:pt-0">      {/* El personaje, enorme y cortado por el borde. Cortarlo es lo que
+    <section className="relative flex min-h-[92vh] flex-col justify-center overflow-hidden bg-[var(--background)] pb-6 pt-20 sm:min-h-[100vh] sm:justify-start sm:block sm:pb-0 sm:pt-0">      {/* El personaje, enorme y cortado por el borde. Cortarlo es lo que
           lo hace grande de verdad: un cuerpo entero centrado siempre se
           lee pequeño porque tiene que caber, y la mitad del espacio se le
           va en aire alrededor.
@@ -19,18 +19,23 @@ export default function Hero() {
           elemento posicionado con z-index crea contexto de apilamiento y
           aísla el mix-blend, y el fondo blanco del render se queda blanco
           — un rectángulo recortado sobre la página. */}
-      <div className="relative order-2 mx-auto flex w-full max-w-6xl flex-1 items-center px-6 sm:order-none sm:min-h-screen">
-        <div className="w-full max-w-xl">
+      {/* En celular el texto va pegado al personaje y el bloque entero se
+          centra vertical: dejándolo crecer con flex-1, el titular se iba al
+          fondo de la pantalla y quedaba un hueco muerto en medio. Desde
+          tablet sí crece, porque ahí el texto y el personaje están uno al
+          lado del otro y el centrado vertical es lo correcto. */}
+      <div className="relative order-2 mx-auto mt-6 flex w-full max-w-6xl shrink-0 items-center px-6 sm:order-none sm:mt-0 sm:min-h-screen sm:flex-1">
+        <div className="flex w-full max-w-xl flex-col items-center text-center sm:items-start sm:text-left">
           {/* Sin "agentes de IA" aquí: la frase de abajo ya los nombra, y
               decirlo dos veces en tres renglones es de las cosas que hacen
               que una portada suene a plantilla. El "BETA" tampoco se
               repite — ya vive en la barra de arriba. */}
-          <p className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500 sm:text-[11px]">
+          <p className="hidden items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500 sm:flex sm:text-[11px]">
             <span aria-hidden="true" className="h-px w-8 bg-accent" />
             Hecho para negocios en México
           </p>
 
-          <h1 className="mt-5 text-balance text-5xl font-semibold leading-[1.02] tracking-tight text-zinc-950 sm:text-6xl lg:text-7xl">
+          <h1 className="text-balance text-[3.4rem] font-semibold leading-[0.98] tracking-tight text-zinc-950 sm:mt-5 sm:text-6xl lg:text-7xl">
             Tu negocio publica solo.
           </h1>
 
@@ -40,7 +45,7 @@ export default function Hero() {
               como escribe una máquina y no como habla alguien. "Dices que
               sí" también es lo que de verdad diría el dueño de un
               changarro; "apruebas" es lenguaje de oficina corporativa. */}
-          <p className="mt-5 max-w-md text-balance text-base leading-relaxed text-zinc-600 sm:text-lg">
+          <p className="mt-5 hidden max-w-md text-balance text-base leading-relaxed text-zinc-600 sm:block sm:text-lg">
             Siete agentes arman tu mes, hacen los videos y los suben. Tú nada
             más dices que sí.
           </p>
@@ -50,7 +55,7 @@ export default function Hero() {
               peso al único clic que importa aquí. */}
           <Link
             href="/registro"
-            className="mt-8 inline-flex items-center gap-2.5 rounded-full bg-accent px-7 py-3.5 text-[15px] font-medium text-white transition-opacity hover:opacity-90"
+            className="mt-7 inline-flex items-center gap-2.5 rounded-full bg-accent-cta px-8 py-4 text-base font-semibold text-white transition-opacity hover:opacity-90 sm:mt-8 sm:px-7 sm:py-3.5 sm:text-[15px] sm:font-medium"
           >
             Únete a la beta
             <ArrowRight className="h-4 w-4" strokeWidth={2} />

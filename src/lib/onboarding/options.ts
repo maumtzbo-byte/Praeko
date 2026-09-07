@@ -14,6 +14,8 @@ import {
   HeartPulse,
   GraduationCap,
   Store,
+  Smartphone,
+  Cloud,
   Megaphone as MarketingIcon,
 } from "lucide-react";
 
@@ -33,6 +35,12 @@ export const INDUSTRY_OPTIONS = [
   { value: "Servicios profesionales", label: "Servicios profesionales", icon: Users },
   { value: "Educación", label: "Educación", icon: GraduationCap },
   { value: "Retail o tienda", label: "Retail o tienda", icon: Store },
+  // Estos dos entran junto con los giros que anuncia la landing. Si la
+  // portada dice que Frames sirve para apps y SaaS, el cuestionario tiene
+  // que poder recibirlos: sin la opción, quien llegue por ahí se registra y
+  // no encuentra su negocio en la lista.
+  { value: "Apps móviles", label: "Apps móviles", icon: Smartphone },
+  { value: "SaaS", label: "SaaS", icon: Cloud },
   { value: "Otro", label: "Otro", icon: Sparkles },
 ] as const;
 

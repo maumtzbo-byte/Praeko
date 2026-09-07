@@ -3,31 +3,28 @@
 import type { CSSProperties } from "react";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Dumbbell, UtensilsCrossed, Sparkles, ShoppingBag, HeartPulse, Briefcase, type LucideIcon } from "lucide-react";
 
 /**
  * Los giros que atiende Frames, flotando en vez de en cuadrícula.
  *
  * Antes eran seis celdas iguales con líneas divisorias — el mismo bloque
  * que tiene cualquier landing tres veces en la misma página, y que aquí
- * competía con la retícula de "Cómo funciona" a un scroll de distancia.
+ * competía con la de "Cómo funciona" a un scroll de distancia.
  *
- * El desorden es a propósito y está medido: si las fichas se colocaran a
- * intervalos regulares volvería a leerse como retícula, solo que torcida.
- * Cada una trae su posición, su giro y su ritmo de flotación, y ninguno de
+ * El desorden es a propósito y está medido: colocadas a intervalos
+ * regulares volverían a leerse como retícula, solo que torcida. Cada ficha
+ * trae su posición, su inclinación y su ritmo de flotación, y ninguno de
  * los tres coincide con el de su vecina.
  */
 type Giro = {
   label: string;
-  icon: LucideIcon;
-  /** Posición en la lona, en porcentaje. Escogidas a mano para que ninguna
-   *  ficha se encime con otra ni se salga por la derecha.
+  simbolo: string;
+  /** Posición en la lona, en porcentaje.
    *
    *  Hay un par por pantalla porque el ancho de la ficha no cambia con la
-   *  ventana pero el de la lona sí: "Gimnasio o estudio boutique" mide 285
-   *  px y en un celular la lona mide 342, así que a esa ficha le quedan 57
-   *  px de juego horizontal. Con las posiciones de escritorio, dos fichas
-   *  se salían de la pantalla. */
+   *  ventana pero el de la lona sí: en celular la lona mide 342 px y la
+   *  ficha más ancha 230, así que a esa le quedan 112 px de juego. Con las
+   *  posiciones de escritorio, varias se salían de la pantalla. */
   x: number;
   y: number;
   xMovil: number;
@@ -35,22 +32,28 @@ type Giro = {
   /** Inclinación en grados. Chica: pasados unos 5° las fichas dejan de
    *  verse flotando y empiezan a verse mal alineadas. */
   giro: number;
-  /** Segundos que tarda un ciclo de flotación. Todos distintos y sin
-   *  múltiplos entre sí, para que el grupo nunca se sincronice — cuando
-   *  eso pasa, seis cosas subiendo a la vez se leen como un solo bloque
-   *  moviéndose, que es justo lo contrario de flotar. */
+  /** Segundos por ciclo de flotación. Todos distintos y sin múltiplos
+   *  entre sí, para que el grupo nunca se sincronice — cuando eso pasa,
+   *  nueve cosas subiendo a la vez se leen como un solo bloque moviéndose,
+   *  que es lo contrario de flotar. */
   ritmo: number;
-  /** Cuánto sube y baja, en píxeles. */
+  /** Cuánto sube y baja, en píxeles. Tope de 8: dos fichas vecinas que
+   *  flotan en sentido contrario cierran el doble de eso, y en celular la
+   *  separación entre renglones es de 18 px. Con la amplitud anterior, de
+   *  13, se tocaban a media animación. */
   vuelo: number;
 };
 
 const GIROS: Giro[] = [
-  { label: "Gimnasio o estudio boutique", icon: Dumbbell, x: 4, y: 6, xMovil: 0, yMovil: 3, giro: -3, ritmo: 6.1, vuelo: 10 },
-  { label: "Restaurante o cafetería", icon: UtensilsCrossed, x: 55, y: 0, xMovil: 15, yMovil: 19, giro: 2.5, ritmo: 7.3, vuelo: 13 },
-  { label: "Belleza y estética", icon: Sparkles, x: 30, y: 30, xMovil: 32, yMovil: 35, giro: 1.5, ritmo: 5.4, vuelo: 8 },
-  { label: "Retail o tienda", icon: ShoppingBag, x: 68, y: 40, xMovil: 6, yMovil: 51, giro: -2, ritmo: 8.2, vuelo: 12 },
-  { label: "Salud y bienestar", icon: HeartPulse, x: 2, y: 55, xMovil: 29, yMovil: 66, giro: 3, ritmo: 6.8, vuelo: 9 },
-  { label: "Servicios profesionales", icon: Briefcase, x: 38, y: 72, xMovil: 2, yMovil: 82, giro: -1.5, ritmo: 7.9, vuelo: 11 },
+  { label: "Gimnasios", simbolo: "/giros/gimnasio.webp", x: 3, y: 3, xMovil: 2, yMovil: 0, giro: -3, ritmo: 6.1, vuelo: 8 },
+  { label: "Cafeterías", simbolo: "/giros/cafeteria.webp", x: 27, y: 21, xMovil: 46, yMovil: 11.5, giro: 2.5, ritmo: 7.3, vuelo: 7 },
+  { label: "Restaurantes", simbolo: "/giros/restaurante.webp", x: 51, y: 1, xMovil: 7, yMovil: 23, giro: 1.5, ritmo: 5.4, vuelo: 8 },
+  { label: "Tiendas", simbolo: "/giros/tienda.webp", x: 75, y: 19, xMovil: 53, yMovil: 34, giro: -2, ritmo: 8.2, vuelo: 6 },
+  { label: "Inmobiliaria", simbolo: "/giros/inmobiliaria.webp", x: 7, y: 45, xMovil: 3, yMovil: 45.5, giro: 3, ritmo: 6.8, vuelo: 8 },
+  { label: "SaaS", simbolo: "/giros/saas.webp", x: 38, y: 54, xMovil: 60, yMovil: 57, giro: -1.5, ritmo: 7.9, vuelo: 7 },
+  { label: "Servicios profesionales", simbolo: "/giros/servicios.webp", x: 59, y: 43, xMovil: 0, yMovil: 68, giro: 2, ritmo: 5.9, vuelo: 8 },
+  { label: "Apps móviles", simbolo: "/giros/apps.webp", x: 14, y: 73, xMovil: 44, yMovil: 79, giro: -2.5, ritmo: 8.7, vuelo: 6 },
+  { label: "Agencias", simbolo: "/giros/agencias.webp", x: 47, y: 81, xMovil: 9, yMovil: 90, giro: 1, ritmo: 6.4, vuelo: 8 },
 ];
 
 export default function IndustryScrollGallery() {
@@ -64,47 +67,50 @@ export default function IndustryScrollGallery() {
           Contenido para cualquier tipo de negocio
         </h2>
 
-        {/* Alto fijo y fichas en posición absoluta: es lo que permite que
-            no guarden fila ni columna. Con `flex-wrap` volverían a
-            alinearse solas en cuanto cambiara el ancho. */}
-        <div className="relative mt-10 h-[430px] sm:mt-14 sm:h-[340px]">
-          {GIROS.map((giro, i) => {
-            const Icon = giro.icon;
-            return (
+        {/* Alto fijo y fichas en posición absoluta: es lo que permite que no
+            guarden fila ni columna. Con `flex-wrap` volverían a alinearse
+            solas en cuanto cambiara el ancho. */}
+        <div className="relative mt-10 h-[640px] sm:mt-14 sm:h-[400px]">
+          {GIROS.map((g, i) => (
+            <motion.div
+              key={g.label}
+              className="absolute left-[var(--x)] top-[var(--y)] sm:left-[var(--x-sm)] sm:top-[var(--y-sm)]"
+              style={
+                {
+                  "--x": `${g.xMovil}%`,
+                  "--y": `${g.yMovil}%`,
+                  "--x-sm": `${g.x}%`,
+                  "--y-sm": `${g.y}%`,
+                } as CSSProperties
+              }
+              initial={{ opacity: 0, scale: 0.92 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.4, delay: i * 0.06, ease: "easeOut" }}
+            >
               <motion.div
-                key={giro.label}
-                className="absolute left-[var(--x)] top-[var(--y)] sm:left-[var(--x-sm)] sm:top-[var(--y-sm)]"
-                style={
-                  {
-                    "--x": `${giro.xMovil}%`,
-                    "--y": `${giro.yMovil}%`,
-                    "--x-sm": `${giro.x}%`,
-                    "--y-sm": `${giro.y}%`,
-                  } as CSSProperties
+                className="flex items-center gap-2 rounded-full border border-[var(--hairline)] bg-white py-1.5 pl-1.5 pr-4 shadow-[0_10px_30px_-14px_rgba(15,23,42,0.28)] sm:gap-2.5 sm:pr-5"
+                style={{ rotate: g.giro }}
+                animate={reducirMovimiento ? undefined : { y: [0, -g.vuelo, 0] }}
+                transition={
+                  reducirMovimiento ? undefined : { duration: g.ritmo, repeat: Infinity, ease: "easeInOut" }
                 }
-                initial={{ opacity: 0, scale: 0.92 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.4, delay: i * 0.07, ease: "easeOut" }}
               >
-                <motion.div
-                  className="flex items-center gap-2.5 rounded-full border border-[var(--hairline)] bg-white py-2.5 pl-3.5 pr-4 shadow-[0_10px_30px_-14px_rgba(15,23,42,0.28)] sm:gap-3 sm:py-3 sm:pl-4 sm:pr-5"
-                  style={{ rotate: giro.giro }}
-                  animate={reducirMovimiento ? undefined : { y: [0, -giro.vuelo, 0] }}
-                  transition={
-                    reducirMovimiento
-                      ? undefined
-                      : { duration: giro.ritmo, repeat: Infinity, ease: "easeInOut" }
-                  }
-                >
-                  <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-accent sm:h-[18px] sm:w-[18px]" strokeWidth={1.75} />
-                  <p className="whitespace-nowrap text-[13px] font-medium leading-none text-zinc-950 sm:text-sm">
-                    {giro.label}
-                  </p>
-                </motion.div>
+                {/* mix-blend-multiply y no recorte con transparencia: el
+                    fondo de los símbolos quedó en blanco exacto al
+                    procesarlos, y contra el blanco de la ficha desaparece. */}
+                <img
+                  src={g.simbolo}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-9 w-9 shrink-0 object-contain mix-blend-multiply sm:h-10 sm:w-10"
+                />
+                <p className="whitespace-nowrap text-[13px] font-medium leading-none text-zinc-950 sm:text-sm">
+                  {g.label}
+                </p>
               </motion.div>
-            );
-          })}
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

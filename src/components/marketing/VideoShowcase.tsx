@@ -5,10 +5,12 @@ import { Play, Dumbbell, UtensilsCrossed, Sparkles, ShoppingBag, HeartPulse, Bri
 // library of real generated videos to show yet) and not customer
 // testimonials (no paying customers to quote either). Same "don't invent
 // an identity" rule as everywhere else on the site: no fabricated
-// business name attached to any of these. Same taxonomy (and now the
-// same icon per industry) as IndustryScrollGallery further down the
-// page, so this row and that one read as one system, not two unrelated
-// lists that happen to share words.
+// business name attached to any of these.
+//
+// Estos seis son ejemplos de video, no la lista de giros que atiende
+// Frames: esa vive en IndustryScrollGallery, tiene nueve y desde que usa
+// símbolos 3D dejó de compartir íconos con esta fila. Son dos listas con
+// propósitos distintos y ya no hay que mantenerlas iguales.
 const EXAMPLE_VIDEOS: { industry: string; caption: string; icon: LucideIcon }[] = [
   { industry: "Gimnasio o estudio boutique", caption: "Rutina de la semana: piernas y core", icon: Dumbbell },
   { industry: "Restaurante o cafetería", caption: "Platillo del día: risotto de temporada", icon: UtensilsCrossed },

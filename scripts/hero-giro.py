@@ -33,6 +33,7 @@ Tres cosas que este script resuelve y que no son obvias:
    es la parte que debería estar quieta.
 """
 
+import json
 import os
 import subprocess
 import sys
@@ -59,14 +60,22 @@ def micas(a):
     return (b - r > 8) & (g > 110) & (b > 120)
 
 
-def sesgo(m):
-    """Ángulo aproximado de la cabeza, de -1 (girada hacia un lado) a +1."""
+def angulos(m):
+    """Giro y altura aproximados de la cabeza.
+
+    El giro sale del reparto de área entre una mica y la otra: al girar, la
+    mica lejana se escorza y pierde área. La altura sale de dónde quedan
+    los ojos en el cuadro, que con el cuerpo quieto es cabecear.
+
+    Las dos son las únicas señales que sobreviven a la compresión de un
+    video: el color de las micas es lo único que se distingue con
+    seguridad del blanco del cuerpo y del negro del armazón."""
     ys, xs = np.where(m)
     if len(xs) < 800:
         return None
     centro = (xs.min() + xs.max()) / 2
     izq, der = (xs < centro).sum(), (xs >= centro).sum()
-    return (der - izq) / (der + izq)
+    return (der - izq) / (der + izq), float(ys.mean()), int(len(xs))
 
 
 def aplanar(a, margen_sup=55, margen_lat=45):
@@ -98,42 +107,58 @@ def ancla(plano):
     return float(np.median(piernas)), int(ys.max()), (int(xs.min()), int(xs.max()), int(ys.min()))
 
 
-def main(video, n_cuadros=33, salida="public/hero/giro", alto=1000):
+def main(video, radio=0.085, salida="public/hero/giro", alto=850):
+    """Selecciona cuadros que cubran el plano giro × altura y los exporta.
+
+    No se eligen a intervalos regulares porque el video no barre una
+    retícula: traza una espiral por ese plano, y hay combinaciones que
+    simplemente no grabó — mirar arriba y a la derecha a la vez, por
+    ejemplo. Con intervalos regulares se pediría un ángulo inexistente y
+    saldría repetido el mismo cuadro.
+
+    En vez de eso se recorren los cuadros del más al menos definido — el
+    que muestra más área de mica es el que mejor se ve — y se va quedando
+    con los que estén a cierta distancia de todos los ya elegidos. El
+    resultado cubre lo que el video sí tiene, sin repetir.
+
+    Se exporta además un manifiesto con la posición de cada cuadro en ese
+    plano, que es lo que el navegador usa para buscar el más cercano al
+    cursor."""
     with tempfile.TemporaryDirectory() as tmp:
         fs = extraer(video, tmp)
         print(f"{len(fs)} cuadros extraídos")
 
-        angulos = []
-        for f in fs:
+        medidas = []
+        for i, f in enumerate(fs):
             a = np.array(Image.open(f).convert("RGB")).astype(int)
-            angulos.append(sesgo(micas(a)))
-        validos = [(i, s) for i, s in enumerate(angulos) if s is not None]
-        lo = min(s for _, s in validos)
-        hi = max(s for _, s in validos)
-        print(f"barrido de ángulo: {lo:+.2f} a {hi:+.2f}")
+            m = angulos(micas(a))
+            if m is not None:
+                medidas.append((i, *m))
+        giro = np.array([m[1] for m in medidas])
+        altura = np.array([m[2] for m in medidas])
+        area = np.array([m[3] for m in medidas])
+        print(f"giro: {giro.min():+.2f} a {giro.max():+.2f} | "
+              f"altura de ojos: {altura.min():.0f} a {altura.max():.0f} px")
 
-        # Índice 0 = cabeza girada hacia la izquierda del espectador. El
-        # sesgo negativo es la mica derecha escorzada, o sea la cabeza
-        # girada hacia la derecha del espectador: por eso el orden se
-        # invierte. Sin esto, el personaje mira al lado contrario del clic.
-        objetivos = np.linspace(hi, lo, n_cuadros)
-        elegidos = [min(validos, key=lambda v: abs(v[1] - t))[0] for t in objetivos]
-        if len(set(elegidos)) < n_cuadros:
-            print(f"  aviso: solo {len(set(elegidos))} ángulos distintos disponibles; "
-                  f"hay cuadros repetidos")
+        G = (giro - giro.min()) / (giro.max() - giro.min()) * 2 - 1
+        A = (altura - altura.min()) / (altura.max() - altura.min()) * 2 - 1
+
+        elegidos = []
+        for k in np.argsort(-area):
+            if all((G[k] - G[j]) ** 2 + (A[k] - A[j]) ** 2 > radio * radio for j in elegidos):
+                elegidos.append(int(k))
+        print(f"{len(elegidos)} cuadros cubren el plano con radio {radio}")
 
         planos, anclas = [], []
-        for i in elegidos:
-            p = aplanar(np.array(Image.open(fs[i]).convert("RGB")).astype(np.float64))
+        for k in elegidos:
+            p = aplanar(np.array(Image.open(fs[medidas[k][0]]).convert("RGB")).astype(np.float64))
             planos.append(p)
             anclas.append(ancla(p))
 
-        # Encuadre común: la caja que contiene al personaje en todos los
-        # cuadros ya alineados, con un respiro alrededor.
         cx_ref = float(np.median([a[0] for a in anclas]))
         y_ref = int(np.median([a[1] for a in anclas]))
         cajas = []
-        for p, (cx, yb, (x0, x1, y0)) in zip(planos, anclas):
+        for (cx, yb, (x0, x1, y0)) in anclas:
             dx, dy = int(round(cx_ref - cx)), int(round(y_ref - yb))
             cajas.append((x0 + dx, x1 + dx, y0 + dy))
         X0 = min(c[0] for c in cajas) - 20
@@ -141,24 +166,29 @@ def main(video, n_cuadros=33, salida="public/hero/giro", alto=1000):
         Y0 = min(c[2] for c in cajas) - 20
 
         os.makedirs(salida, exist_ok=True)
+        for viejo in os.listdir(salida):
+            os.remove(os.path.join(salida, viejo))
         h, w, _ = planos[0].shape
-        for k, (p, (cx, yb, _)) in enumerate(zip(planos, anclas)):
+        manifiesto = []
+        ancho = 0
+        for n, (p, (cx, yb, _), k) in enumerate(zip(planos, anclas, elegidos)):
             dx, dy = int(round(cx_ref - cx)), int(round(y_ref - yb))
             movido = np.full_like(p, 255.0)
             sy0, sy1 = max(0, -dy), min(h, h - dy)
             sx0, sx1 = max(0, -dx), min(w, w - dx)
             movido[sy0 + dy:sy1 + dy, sx0 + dx:sx1 + dx] = p[sy0:sy1, sx0:sx1]
             rec = Image.fromarray(movido.astype(np.uint8)).crop(
-                (max(0, X0), max(0, Y0), min(w, X1), h)
-            )
+                (max(0, X0), max(0, Y0), min(w, X1), h))
             ancho = round(rec.width * alto / rec.height)
             rec.resize((ancho, alto), Image.LANCZOS).save(
-                os.path.join(salida, f"{k:02d}.webp"), quality=82, method=6
-            )
+                os.path.join(salida, f"{n:02d}.webp"), quality=82, method=6)
+            manifiesto.append({"g": round(float(G[k]), 4), "a": round(float(A[k]), 4)})
+
+        with open(os.path.join(salida, "cuadros.json"), "w") as fh:
+            json.dump({"ancho": ancho, "alto": alto, "cuadros": manifiesto}, fh)
         peso = sum(os.path.getsize(os.path.join(salida, f)) for f in os.listdir(salida))
-        print(f"{n_cuadros} cuadros de {ancho}x{alto} — {peso // 1024} KB en total")
-        print(f"desplazamientos aplicados: x {[int(round(cx_ref - a[0])) for a in anclas]}")
+        print(f"{len(elegidos)} cuadros de {ancho}x{alto} — {peso // 1024} KB en total")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], int(sys.argv[2]) if len(sys.argv) > 2 else 33)
+    main(sys.argv[1], float(sys.argv[2]) if len(sys.argv) > 2 else 0.085)

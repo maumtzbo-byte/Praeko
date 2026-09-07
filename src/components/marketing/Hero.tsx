@@ -69,7 +69,7 @@ export default function Hero() {
           Cortado por el borde derecho a propósito: un cuerpo entero
           centrado siempre se lee pequeño, porque tiene que caber y la
           mitad del espacio se le va en aire alrededor. */}
-      <HeroProtagonista className="pointer-events-none order-2 mx-auto mt-10 aspect-[723/1000] h-72 sm:absolute sm:bottom-0 sm:-right-8 sm:order-none sm:mx-0 sm:mt-0 sm:h-[78%] lg:right-0 lg:h-[94%]" />
+      <HeroProtagonista className="pointer-events-none order-2 mx-auto mt-10 aspect-[613/850] h-72 sm:absolute sm:bottom-0 sm:-right-8 sm:order-none sm:mx-0 sm:mt-0 sm:h-[78%] lg:right-0 lg:h-[94%]" />
     </section>
   );
 }

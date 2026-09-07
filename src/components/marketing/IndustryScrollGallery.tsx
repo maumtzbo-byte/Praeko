@@ -25,11 +25,15 @@ type Giro = {
    *  ventana pero el de la lona sí: en celular la lona mide 342 px. Con las
    *  posiciones de escritorio, varias se salían.
    *
-   *  En celular van de dos por renglón, emparejando cada etiqueta ancha
-   *  con una angosta — Restaurantes con Tiendas, Apps móviles con SaaS —
-   *  porque así caben las dos en 342 px. Una por renglón dejaba la sección
-   *  el doble de larga de lo que debe ser. "Servicios profesionales" es la
-   *  única que va sola: mide 250 px y no le queda sitio a ninguna al lado. */
+   *  Van tres por renglón, y caben porque el nombre va DEBAJO del símbolo
+   *  y no al lado: así cada pieza mide lo que mide su columna en vez de lo
+   *  que mide su etiqueta, y "Servicios profesionales" ocupa lo mismo que
+   *  "SaaS".
+   *
+   *  Las posiciones salen de medir las piezas en el navegador, no de
+   *  calcularlas: la inclinación agranda la caja que ocupan —una pieza de
+   *  100 px girada 3° ocupa 106— y con las medidas "de papel" tres
+   *  columnas no cabían y se encimaban. */
   x: number;
   y: number;
   xMovil: number;
@@ -50,15 +54,15 @@ type Giro = {
 };
 
 const GIROS: Giro[] = [
-  { label: "Gimnasios", simbolo: "/giros/gimnasio.webp", x: 3, y: 3, xMovil: 52, yMovil: 49, giro: -3, ritmo: 6.1, vuelo: 8 },
-  { label: "Cafeterías", simbolo: "/giros/cafeteria.webp", x: 27, y: 21, xMovil: 4, yMovil: 25, giro: 2.5, ritmo: 7.3, vuelo: 7 },
-  { label: "Restaurantes", simbolo: "/giros/restaurante.webp", x: 51, y: 1, xMovil: 0, yMovil: 1, giro: 1.5, ritmo: 5.4, vuelo: 8 },
-  { label: "Tiendas", simbolo: "/giros/tienda.webp", x: 75, y: 19, xMovil: 53, yMovil: 5, giro: -2, ritmo: 8.2, vuelo: 6 },
-  { label: "Inmobiliaria", simbolo: "/giros/inmobiliaria.webp", x: 7, y: 45, xMovil: 0, yMovil: 45, giro: 3, ritmo: 6.8, vuelo: 8 },
-  { label: "SaaS", simbolo: "/giros/saas.webp", x: 38, y: 54, xMovil: 60, yMovil: 65, giro: -1.5, ritmo: 7.9, vuelo: 7 },
-  { label: "Servicios profesionales", simbolo: "/giros/servicios.webp", x: 59, y: 43, xMovil: 8, yMovil: 89, giro: 2, ritmo: 5.9, vuelo: 8 },
-  { label: "Apps móviles", simbolo: "/giros/apps.webp", x: 14, y: 73, xMovil: 2, yMovil: 69, giro: -2.5, ritmo: 8.7, vuelo: 6 },
-  { label: "Agencias", simbolo: "/giros/agencias.webp", x: 47, y: 81, xMovil: 50, yMovil: 21, giro: 1, ritmo: 6.4, vuelo: 8 },
+  { label: "Gimnasios", simbolo: "/giros/gimnasio.webp", x: 6, y: 35, xMovil: 0, yMovil: 38, giro: -3, ritmo: 6.1, vuelo: 8 },
+  { label: "Cafeterías", simbolo: "/giros/cafeteria.webp", x: 37, y: 0, xMovil: 35, yMovil: 4, giro: 2.5, ritmo: 7.3, vuelo: 7 },
+  { label: "Restaurantes", simbolo: "/giros/restaurante.webp", x: 2, y: 0, xMovil: 1, yMovil: 0, giro: 1.5, ritmo: 5.4, vuelo: 8 },
+  { label: "Tiendas", simbolo: "/giros/tienda.webp", x: 70, y: 0, xMovil: 67, yMovil: 2, giro: -2, ritmo: 8.2, vuelo: 6 },
+  { label: "Inmobiliaria", simbolo: "/giros/inmobiliaria.webp", x: 3, y: 68, xMovil: 1, yMovil: 68, giro: 3, ritmo: 6.8, vuelo: 8 },
+  { label: "SaaS", simbolo: "/giros/saas.webp", x: 40, y: 35, xMovil: 36, yMovil: 34, giro: -1.5, ritmo: 7.9, vuelo: 7 },
+  { label: "Servicios profesionales", simbolo: "/giros/servicios.webp", x: 69, y: 68, xMovil: 67, yMovil: 70, giro: 2, ritmo: 5.9, vuelo: 8 },
+  { label: "Apps móviles", simbolo: "/giros/apps.webp", x: 36, y: 68, xMovil: 34, yMovil: 72, giro: -2.5, ritmo: 8.7, vuelo: 6 },
+  { label: "Agencias", simbolo: "/giros/agencias.webp", x: 73, y: 35, xMovil: 68, yMovil: 36, giro: 1, ritmo: 6.4, vuelo: 8 },
 ];
 
 export default function IndustryScrollGallery() {
@@ -75,7 +79,7 @@ export default function IndustryScrollGallery() {
         {/* Alto fijo y fichas en posición absoluta: es lo que permite que no
             guarden fila ni columna. Con `flex-wrap` volverían a alinearse
             solas en cuanto cambiara el ancho. */}
-        <div className="relative mt-10 h-[460px] sm:mt-14 sm:h-[400px]">
+        <div className="relative mt-10 h-[420px] sm:mt-14 sm:h-[480px]">
           {GIROS.map((g, i) => (
             <motion.div
               key={g.label}
@@ -94,23 +98,30 @@ export default function IndustryScrollGallery() {
               transition={{ duration: 0.4, delay: i * 0.06, ease: "easeOut" }}
             >
               <motion.div
-                className="flex items-center gap-2 rounded-full border border-[var(--hairline)] bg-white py-1.5 pl-1.5 pr-4 shadow-[0_10px_30px_-14px_rgba(15,23,42,0.28)] sm:gap-2.5 sm:pr-5"
-                style={{ rotate: g.giro }}
+                className="flex w-[100px] flex-col items-center gap-2 sm:w-[130px] sm:gap-2.5"
+                style={{
+                  rotate: g.giro,
+                  // El color de la página, repetido aquí: se ve igual que
+                  // si no lo llevara, pero le da al multiply del símbolo
+                  // algo contra qué multiplicar. Hace falta porque el
+                  // `rotate` y el vaivén de abajo crean contexto de
+                  // apilamiento y aíslan el blend — sin este color el
+                  // fondo blanco del símbolo se queda blanco y reaparece
+                  // el recuadro que justamente se quería quitar.
+                  backgroundColor: "var(--background)",
+                }}
                 animate={reducirMovimiento ? undefined : { y: [0, -g.vuelo, 0] }}
                 transition={
                   reducirMovimiento ? undefined : { duration: g.ritmo, repeat: Infinity, ease: "easeInOut" }
                 }
               >
-                {/* mix-blend-multiply y no recorte con transparencia: el
-                    fondo de los símbolos quedó en blanco exacto al
-                    procesarlos, y contra el blanco de la ficha desaparece. */}
                 <img
                   src={g.simbolo}
                   alt=""
                   aria-hidden="true"
-                  className="h-9 w-9 shrink-0 object-contain mix-blend-multiply sm:h-10 sm:w-10"
+                  className="h-14 w-14 object-contain mix-blend-multiply sm:h-20 sm:w-20"
                 />
-                <p className="whitespace-nowrap text-[13px] font-medium leading-none text-zinc-950 sm:text-sm">
+                <p className="text-balance text-center text-[13px] font-medium leading-tight text-zinc-700 sm:text-sm">
                   {g.label}
                 </p>
               </motion.div>

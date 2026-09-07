@@ -10,7 +10,14 @@ export default function Hero() {
     // de los renders: se funden por multiplicación, y sobre el azul el
     // personaje se teñía de azul y se perdía contra él. Contra un color
     // plano y claro desaparece el recuadro y el muñeco se ve tal cual.
-    <section className="relative flex min-h-[92vh] flex-col justify-center overflow-hidden bg-[var(--background)] pb-6 pt-20 sm:min-h-[100vh] sm:justify-start sm:block sm:pb-0 sm:pt-0">      {/* El personaje, enorme y cortado por el borde. Cortarlo es lo que
+    //
+    // `svh` y no `vh` en celular: en iPhone, `100vh` mide la ventana SIN la
+    // barra de Safari, así que una sección de 100vh siempre queda más alta
+    // que lo que de verdad se ve. `svh` mide la ventana chica —con la barra
+    // puesta, que es como se abre la página— y así el hero llena la
+    // pantalla exacta sin dejar asomar la sección de abajo.
+    <section className="relative flex min-h-svh flex-col justify-center overflow-hidden bg-[var(--background)] pb-6 pt-20 sm:block sm:min-h-[100vh] sm:justify-start sm:pb-0 sm:pt-0">
+      {/* El personaje, enorme y cortado por el borde. Cortarlo es lo que
           lo hace grande de verdad: un cuerpo entero centrado siempre se
           lee pequeño porque tiene que caber, y la mitad del espacio se le
           va en aire alrededor.
@@ -85,7 +92,7 @@ export default function Hero() {
           En escritorio se va al borde derecho, cortado a propósito: un
           cuerpo entero centrado siempre se lee pequeño, porque tiene que
           caber y la mitad del espacio se le va en aire alrededor. */}
-      <HeroProtagonista className="pointer-events-none order-1 mx-auto aspect-[613/850] h-[40vh] max-h-[360px] shrink-0 sm:absolute sm:bottom-0 sm:-right-8 sm:order-none sm:mx-0 sm:h-[78%] sm:max-h-none lg:right-0 lg:h-[94%]" />
+      <HeroProtagonista className="pointer-events-none order-1 mx-auto aspect-[613/850] h-[44svh] max-h-[400px] shrink-0 sm:absolute sm:bottom-0 sm:-right-8 sm:order-none sm:mx-0 sm:h-[78%] sm:max-h-none lg:right-0 lg:h-[94%]" />
     </section>
   );
 }

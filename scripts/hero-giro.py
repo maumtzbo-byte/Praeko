@@ -140,7 +140,15 @@ def main(video, radio=0.085, salida="public/hero/giro", alto=850):
         print(f"giro: {giro.min():+.2f} a {giro.max():+.2f} | "
               f"altura de ojos: {altura.min():.0f} a {altura.max():.0f} px")
 
-        G = (giro - giro.min()) / (giro.max() - giro.min()) * 2 - 1
+        # El signo se invierte, y no es un detalle: un sesgo negativo
+        # significa que la mica DERECHA perdió área por escorzo, o sea que
+        # la cara apunta hacia la derecha del espectador. Verificado
+        # mirando los dos cuadros extremos, no deducido. Sin invertirlo, el
+        # personaje voltea al lado contrario del cursor.
+        G = -((giro - giro.min()) / (giro.max() - giro.min()) * 2 - 1)
+        # La altura no se invierte: los ojos más abajo en el cuadro es
+        # mirar hacia abajo, que es lo que se quiere cuando el cursor está
+        # abajo.
         A = (altura - altura.min()) / (altura.max() - altura.min()) * 2 - 1
 
         elegidos = []

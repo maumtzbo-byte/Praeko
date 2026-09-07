@@ -78,6 +78,17 @@ export default function HowItWorks() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
+                // El color de la página, pintado aquí a propósito. Se ve
+                // igual que si no lo llevara, pero sin él el símbolo
+                // parpadeaba medio segundo al entrar: esta animación mueve
+                // opacidad Y desplazamiento, las dos crean contexto de
+                // apilamiento, y eso aísla el mix-blend-multiply del
+                // símbolo. Aislado, el blend no aplica y durante los 450 ms
+                // de la entrada se veía el rectángulo blanco del archivo
+                // contra el gris de la página: 255 contra 244. Con el color
+                // aquí, el blend tiene contra qué multiplicar desde el
+                // primer cuadro.
+                style={{ backgroundColor: "var(--background)" }}
                 className={`flex items-center gap-4 sm:w-[54%] sm:gap-7 ${
                   derecha ? "flex-row-reverse text-right sm:ml-auto" : "sm:mr-auto"
                 }`}
@@ -86,9 +97,16 @@ export default function HowItWorks() {
                   src={step.simbolo}
                   alt=""
                   aria-hidden="true"
-                  // mix-blend-multiply y no un recorte con transparencia: el
-                  // fondo de los símbolos quedó en blanco exacto al
-                  // procesarlos, y multiplicado contra la página desaparece.
+                  // mix-blend-multiply y no transparencia de verdad, al
+                  // revés que los símbolos de giros. Aquí no se puede: el
+                  // objeto es plástico BLANCO sobre fondo blanco y no hay
+                  // señal que los separe, el mismo caso del muñeco del
+                  // hero. Probado: el avión de papel quedaba con 10% de
+                  // píxeles opacos, o sea deshecho. Lo que sí se hizo fue
+                  // dejar el fondo de los archivos en 255 exacto —venía en
+                  // 253.4— para que el multiply sea una identidad y no
+                  // pinte el recuadro de 243 que se veía en los giros.
+                  // Ver scripts/alfa-simbolos.py.
                   className="h-24 w-24 shrink-0 object-contain mix-blend-multiply sm:h-32 sm:w-32"
                 />
                 {/* El número va dentro de la línea del título y no como

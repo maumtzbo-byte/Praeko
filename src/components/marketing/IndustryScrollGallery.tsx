@@ -99,27 +99,27 @@ export default function IndustryScrollGallery() {
             >
               <motion.div
                 className="flex w-[100px] flex-col items-center gap-2 sm:w-[130px] sm:gap-2.5"
-                style={{
-                  rotate: g.giro,
-                  // El color de la página, repetido aquí: se ve igual que
-                  // si no lo llevara, pero le da al multiply del símbolo
-                  // algo contra qué multiplicar. Hace falta porque el
-                  // `rotate` y el vaivén de abajo crean contexto de
-                  // apilamiento y aíslan el blend — sin este color el
-                  // fondo blanco del símbolo se queda blanco y reaparece
-                  // el recuadro que justamente se quería quitar.
-                  backgroundColor: "var(--background)",
-                }}
+                style={{ rotate: g.giro }}
                 animate={reducirMovimiento ? undefined : { y: [0, -g.vuelo, 0] }}
                 transition={
                   reducirMovimiento ? undefined : { duration: g.ritmo, repeat: Infinity, ease: "easeInOut" }
                 }
               >
+                {/* Los archivos traen transparencia de verdad, no fondo
+                    blanco disuelto con mix-blend-multiply. El blend dejaba
+                    un recuadro: el fondo de los archivos promediaba 254.5,
+                    no 255, y multiplicado contra la página daba 243 sobre
+                    244. Un nivel, invisible en un monitor y perfectamente
+                    visible en un OLED. Y de paso el blend obligaba a
+                    pintarle el color de la página a cualquier ancestro que
+                    creara contexto de apilamiento —el giro, el vaivén, la
+                    animación de entrada—, cosa que ya no hace falta
+                    vigilar. Ver scripts/alfa-simbolos.py. */}
                 <img
                   src={g.simbolo}
                   alt=""
                   aria-hidden="true"
-                  className="h-14 w-14 object-contain mix-blend-multiply sm:h-20 sm:w-20"
+                  className="h-14 w-14 object-contain sm:h-20 sm:w-20"
                 />
                 <p className="text-balance text-center text-[13px] font-medium leading-tight text-zinc-700 sm:text-sm">
                   {g.label}

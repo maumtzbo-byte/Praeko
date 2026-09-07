@@ -4,18 +4,16 @@ import { useEffect, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 
 /**
- * PRUEBA — el personaje gira la cabeza cambiando de cuadro.
+ * El personaje gira la cabeza hacia donde apuntas, cambiando de cuadro.
  *
- * Trece recortes sacados del video, elegidos por ángulo y no por tiempo:
- * el video barre a su izquierda, vuelve, barre a su derecha y regresa, así
- * que los ángulos que hacen falta están repartidos por toda la duración.
- * Cada uno se recorta anclado al centro de las micas, que es lo único que
- * se detecta limpio en un video comprimido, y así los ojos se quedan
- * quietos aunque la cabeza cabecee entre cuadro y cuadro.
+ * El índice 0 es la cabeza girada hacia la izquierda del espectador y el
+ * último hacia la derecha, para que mire hacia donde está el cursor y no
+ * al lado contrario.
  *
- * Se monta para juzgarlo en movimiento. Lo que ya se sabe que trae de
- * fábrica: los reflejos vienen pegados en las micas, el tamaño de la
- * cabeza baila entre cuadros y la compresión se comió los bordes.
+ * Los cuadros salen de `scripts/hero-giro.py`, que los elige por ángulo,
+ * aplana el fondo y los alinea entre sí. Lo que sigue viniendo de fábrica
+ * en este video: los reflejos están pegados en las micas y la compresión
+ * se comió los bordes.
  */
 
 const CUADROS = 13;
@@ -54,6 +52,10 @@ export default function HeroProtagonista({ className = "" }: { className?: strin
   }, [reducirMovimiento]);
 
   return (
+    // El color de la página como fondo: se ve igual que si no lo llevara,
+    // pero le da al multiply de los cuadros algo contra qué multiplicar.
+    // El fondo de los cuadros quedó en blanco exacto al aplanarlo, así que
+    // multiplicado contra este color desaparece.
     <div id="protagonista" className={`relative ${className}`} style={{ backgroundColor: "var(--background)" }}>
       {/* Los trece van en el DOM desde el principio y solo se enciende uno.
           Cargarlos bajo demanda haría que el primer giro hacia cada lado
@@ -64,7 +66,7 @@ export default function HeroProtagonista({ className = "" }: { className?: strin
           src={ruta}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-auto object-contain mix-blend-multiply"
+          className="absolute inset-0 h-full w-full object-contain object-bottom mix-blend-multiply"
           style={{ opacity: i === cuadro ? 1 : 0 }}
         />
       ))}

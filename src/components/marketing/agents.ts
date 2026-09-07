@@ -39,7 +39,7 @@ export const AGENTS: Agent[] = [
     image: "/agentes/estrategia.webp",
     messages: [
       "Yo decido qué se publica y qué día.",
-      "Leo el cuestionario de tu marca — tu tono, qué vendes, a quién le vendes — y armo el plan del mes completo, con el guion de cada pieza ya escrito.",
+      "Leo lo que contestaste de tu marca: tu tono, qué vendes, a quién. Con eso armo el plan del mes completo, con el guion de cada pieza ya escrito.",
       "Si tu plan trae 8 videos, reparto esos 8 donde más sirven. No relleno el calendario por llenarlo.",
     ],
   },
@@ -65,7 +65,7 @@ export const AGENTS: Agent[] = [
     image: "/agentes/creativo.webp",
     messages: [
       "Yo lo produzco.",
-      "Tomo el guion y genero el video o la imagen de verdad — no un borrador ni una plantilla que tengas que rellenar.",
+      "Tomo el guion y genero el video o la imagen de verdad. No un borrador, ni una plantilla que tengas que rellenar tú.",
       "Uso las fotos de tu negocio que subiste como referencia, para que se parezca a ti y no a un banco de imágenes.",
     ],
   },
@@ -91,7 +91,7 @@ export const AGENTS: Agent[] = [
     image: "/agentes/publicacion.webp",
     messages: [
       "Yo la subo.",
-      "Publico en Instagram, Facebook o TikTok a la hora que tiene sentido para tu giro — un restaurante antes de la comida, un gimnasio antes de la hora en que la gente entrena.",
+      "Publico en Instagram, Facebook o TikTok a la hora que le sirve a tu giro. Un restaurante, antes de la comida. Un gimnasio, antes de que la gente salga a entrenar.",
       "Tú apruebas una vez; de ahí en adelante me encargo yo.",
     ],
   },

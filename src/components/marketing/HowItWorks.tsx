@@ -54,7 +54,7 @@ export default function HowItWorks() {
           De no tener nada a publicar solo, en cuatro pasos
         </h2>
         <p className="mt-4 max-w-lg text-sm leading-relaxed text-zinc-600 sm:text-base">
-          Configuras una vez. Después tu única tarea recurrente es decir que sí.
+          Lo configuras una vez. De ahí en adelante lo único que haces es decir que sí.
         </p>
 
         {/* Zigzag a dos columnas desde tablet, y columna recta en celular

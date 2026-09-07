@@ -10,8 +10,8 @@ export default function CtaSection() {
             Dedica tu tiempo a tu negocio, no a tus redes
           </h2>
           <p className="max-w-md text-zinc-600">
-            Onboarding de 10 minutos. El primer calendario de contenido de tu
-            negocio, listo el mismo día.
+            Contestas el cuestionario en diez minutos. Ese mismo día tienes
+            tu primer mes de contenido armado.
           </p>
           <Link
             href="/registro"
@@ -19,7 +19,7 @@ export default function CtaSection() {
           >
             Únete a la beta
           </Link>
-          <p className="text-xs text-zinc-500">Primer mes gratis del plan Básico — sin tarjeta de crédito</p>
+          <p className="text-xs text-zinc-500">Primer mes gratis del plan Básico. Sin tarjeta de crédito.</p>
         </div>
 
         {/* Asymmetric visual accent — the only off-center element on an
@@ -33,7 +33,7 @@ export default function CtaSection() {
             10 min
           </p>
           <p className="mt-1 text-sm text-zinc-500">
-            de onboarding para tener tu primer calendario de contenido listo.
+            es lo que tardas en contestar el cuestionario. Nada más.
           </p>
         </div>
       </div>

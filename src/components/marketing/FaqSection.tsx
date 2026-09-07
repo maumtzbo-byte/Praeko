@@ -8,12 +8,12 @@ const FAQS = [
   {
     question: "¿Necesito saber de diseño o edición para usarlo?",
     answer:
-      "No. Le cuentas a Frames sobre tu negocio una vez, durante el onboarding, y a partir de ahí los videos, imágenes y textos se generan solos cada mes. No hay que editar nada ni aprender ninguna herramienta.",
+      "No. Le cuentas de tu negocio una sola vez al principio y de ahí en adelante los videos, las imágenes y los textos salen solos cada mes. No tienes que editar nada ni aprender ninguna herramienta.",
   },
   {
     question: "¿Es seguro conectar mis redes sociales?",
     answer:
-      "Sí. La conexión se hace con el inicio de sesión oficial de Meta y TikTok — nunca vemos ni guardamos tu contraseña. Solo pedimos permiso para publicar en tu nombre, y puedes desconectar cualquier cuenta cuando quieras desde tu panel.",
+      "Sí. Te conectas con el inicio de sesión oficial de Meta y de TikTok, así que tu contraseña nunca pasa por nosotros. Lo único que pedimos es permiso para publicar a tu nombre, y desconectas la cuenta cuando quieras desde tu panel.",
   },
   {
     question: "¿Puedo cancelar cuando quiera?",
@@ -23,12 +23,12 @@ const FAQS = [
   {
     question: "¿Qué pasa si no me gusta el contenido que genera?",
     answer:
-      "Puedes regenerarlo o ajustar la información de tu marca (tono, productos, estilo) para que el siguiente lote salga más cerca de lo que buscas. El contenido mejora conforme afinas esos datos.",
+      "Lo mandas a regenerar, o le corriges los datos de tu marca (el tono, lo que vendes, tu estilo) para que el siguiente salga más cerca de lo que querías. Entre mejor esté esa información, mejor sale el contenido.",
   },
   {
     question: "¿Cuánto tarda en estar listo mi primer contenido?",
     answer:
-      "El onboarding toma unos 10 minutos. El mismo día tienes tu primer calendario de contenido generado y listo para revisar antes de publicarse.",
+      "El cuestionario te toma unos diez minutos. Ese mismo día tienes tu primer mes de contenido listo para que lo revises antes de que salga.",
   },
   {
     question: "¿En qué redes sociales puedo publicar?",

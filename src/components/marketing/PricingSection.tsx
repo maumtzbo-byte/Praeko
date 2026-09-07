@@ -40,7 +40,7 @@ const plans: PricingPlan[] = [
   {
     name: "Pro",
     price: 199,
-    tagline: "El más elegido: contenido nuevo todos los días",
+    tagline: "Algo nuevo casi todos los días, en tus tres redes",
     featured: true,
     features: [
       "15 videos al mes, con la duración justa para cada pieza (hasta 25s)",
@@ -106,9 +106,12 @@ function PricingCard({
             : "border-[var(--hairline)] bg-[var(--background)] text-zinc-950"
         }`}
       >
+        {/* "RECOMENDADO" y no "MÁS POPULAR": lo segundo dice que otros
+            clientes ya lo eligieron, y en beta eso no se puede sostener.
+            Esto es una recomendación nuestra, que sí podemos defender. */}
         {plan.featured && (
           <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-[11px] font-semibold tracking-wide text-white">
-            MÁS POPULAR
+            RECOMENDADO
           </span>
         )}
 
@@ -202,8 +205,8 @@ export default function PricingSection() {
             Elige tu plan y publica tu primer contenido hoy
           </h2>
           <p className="mt-4 text-zinc-600">
-            Precios en dólares, límites claros cada mes — sabes exactamente
-            cuánto vas a gastar, sin sorpresas.
+            Precios en dólares y un límite claro cada mes. Sabes desde el
+            primer día cuánto vas a pagar.
           </p>
         </div>
 
@@ -211,7 +214,7 @@ export default function PricingSection() {
             at full comfortable size — cramming all 3 into equal thirds of
             a phone screen read as cramped no matter how far the type was
             shrunk. Snap-scroll instead, same card sizing as tablet/desktop.
-            pt-8 gives room for the "MÁS POPULAR" badge (pokes -top-3 above
+            pt-8 gives room for the "RECOMENDADO" badge (pokes -top-3 above
             the card) plus the pop lift (-10px) it can get when centered —
             overflow-x-auto here also computes overflow-y as clipping, so
             without enough padding the badge's top got cut off by the
@@ -233,8 +236,8 @@ export default function PricingSection() {
         <p className="mt-2 text-center text-xs text-zinc-400 sm:hidden">Desliza para ver los 3 planes →</p>
 
         <p className="mt-8 text-center text-xs text-zinc-500">
-          Equivalente informativo en MXN al tipo de cambio del día. Sin contratos
-          forzosos ni letra chica — cancela cuando quieras.
+          Equivalente informativo en MXN al tipo de cambio del día. Sin
+          contratos forzosos y sin letra chica. Cancelas cuando quieras.
         </p>
       </div>
     </section>

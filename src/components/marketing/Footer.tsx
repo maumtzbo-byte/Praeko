@@ -21,7 +21,7 @@ export default function Footer() {
             FRAMES
           </span>
           <p className="max-w-xs text-sm text-zinc-500">
-            Marketing con inteligencia, para negocios pequeños en México.
+            Siete agentes de IA que le llevan las redes a negocios chicos en México.
           </p>
         </div>
 

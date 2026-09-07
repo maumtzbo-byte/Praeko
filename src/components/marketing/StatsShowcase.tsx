@@ -28,9 +28,9 @@ export default function StatsShowcase() {
           Sé de los primeros negocios en usar Frames
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-sm text-zinc-600 sm:text-base">
-          Estamos en beta: tu cuenta es real y tu contenido se genera y se
-          publica de verdad — seguimos puliendo cosas, y tu opinión nos ayuda
-          a mejorar rápido.
+          Estamos en beta. Tu cuenta es real y tu contenido se genera y se
+          publica de verdad. Todavía hay cosas que estamos puliendo, y lo que
+          nos digas se arregla rápido.
         </p>
         <Link
           href="/registro"

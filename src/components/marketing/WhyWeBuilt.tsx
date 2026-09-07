@@ -12,29 +12,27 @@ export default function WhyWeBuilt() {
             hierarchy between "the point" and "the reasoning". */}
         <div className="grid gap-10 md:grid-cols-[1.1fr_1fr] md:gap-16">
           <p className="text-balance text-3xl font-semibold leading-[1.1] tracking-tight text-zinc-950 sm:text-4xl md:text-5xl">
-            Creamos Frames para los negocios que{" "}
-            <span className="text-accent">no tienen tiempo</span> para el
-            marketing — ni deberían tener que hacerlo.
+            Creamos Frames para quien{" "}
+            <span className="text-accent">no tiene tiempo</span> de hacer
+            marketing. Y no debería tener que hacerlo.
           </p>
 
           <div className="flex flex-col gap-5 border-l border-[var(--hairline)] pl-6 text-base leading-relaxed text-zinc-600">
             <p>
-              Administrar un negocio pequeño ya es suficiente trabajo. Entre
-              atender clientes, llevar las cuentas y mantener todo
-              funcionando, no queda tiempo para grabar, editar, escribir el
-              texto perfecto y publicarlo a la hora correcta — todos los
-              días, en varias redes a la vez.
+              Un negocio chico ya es trabajo de sobra. Abres, atiendes,
+              cobras, cierras. Cuando por fin te sientas ya son las diez de
+              la noche, y a esa hora nadie tiene ganas de grabar un video,
+              escribirle el texto y acordarse de subirlo.
             </p>
             <p>
-              Contratar una agencia cuesta miles de pesos al mes. Aprenderlo
-              tú mismo cuesta el tiempo que simplemente no tienes. Mientras
-              tanto, tu competencia sigue publicando.
+              Una agencia cobra miles de pesos al mes. Aprender a hacerlo tú
+              sale gratis, pero se paga con horas que no tienes. Y el negocio
+              de al lado sigue subiendo algo todos los días.
             </p>
             <p>
-              Por eso construimos agentes de IA que hacen ese trabajo por ti,
-              todos los días, sin que grabes, edites ni programes nada — para
-              devolverte{" "}
-              <span className="font-medium text-zinc-950">tu tiempo y tu dinero</span>.
+              Por eso Frames lo hace por ti. No grabas nada, no editas nada,
+              no programas nada. Solo lo revisas y{" "}
+              <span className="font-medium text-zinc-950">das el visto bueno</span>.
             </p>
           </div>
         </div>

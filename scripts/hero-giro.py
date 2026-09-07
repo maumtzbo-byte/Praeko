@@ -98,7 +98,7 @@ def ancla(plano):
     return float(np.median(piernas)), int(ys.max()), (int(xs.min()), int(xs.max()), int(ys.min()))
 
 
-def main(video, n_cuadros=13, salida="public/hero/giro", alto=1100):
+def main(video, n_cuadros=33, salida="public/hero/giro", alto=1000):
     with tempfile.TemporaryDirectory() as tmp:
         fs = extraer(video, tmp)
         print(f"{len(fs)} cuadros extraídos")
@@ -118,6 +118,9 @@ def main(video, n_cuadros=13, salida="public/hero/giro", alto=1100):
         # invierte. Sin esto, el personaje mira al lado contrario del clic.
         objetivos = np.linspace(hi, lo, n_cuadros)
         elegidos = [min(validos, key=lambda v: abs(v[1] - t))[0] for t in objetivos]
+        if len(set(elegidos)) < n_cuadros:
+            print(f"  aviso: solo {len(set(elegidos))} ángulos distintos disponibles; "
+                  f"hay cuadros repetidos")
 
         planos, anclas = [], []
         for i in elegidos:
@@ -150,7 +153,7 @@ def main(video, n_cuadros=13, salida="public/hero/giro", alto=1100):
             )
             ancho = round(rec.width * alto / rec.height)
             rec.resize((ancho, alto), Image.LANCZOS).save(
-                os.path.join(salida, f"{k:02d}.webp"), quality=90, method=6
+                os.path.join(salida, f"{k:02d}.webp"), quality=82, method=6
             )
         peso = sum(os.path.getsize(os.path.join(salida, f)) for f in os.listdir(salida))
         print(f"{n_cuadros} cuadros de {ancho}x{alto} — {peso // 1024} KB en total")
@@ -158,4 +161,4 @@ def main(video, n_cuadros=13, salida="public/hero/giro", alto=1100):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], int(sys.argv[2]) if len(sys.argv) > 2 else 13)
+    main(sys.argv[1], int(sys.argv[2]) if len(sys.argv) > 2 else 33)

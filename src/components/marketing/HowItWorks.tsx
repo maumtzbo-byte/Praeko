@@ -2,6 +2,15 @@
 
 import { motion } from "framer-motion";
 
+// Sin descripción bajo cada paso: los cuatro títulos ya cuentan la
+// historia completa —cuéntanos, arman, apruebas, se publica— y un párrafo
+// debajo de cada uno llenaba la sección de texto chico que nadie lee.
+//
+// Lo que sí decían esas descripciones y valía la pena está verificado en
+// otra parte de la página, no se perdió: el calendario mexicano y las
+// respuestas a comentarios los dice cada agente en primera persona en
+// "Tu nuevo equipo" (ver agents.ts).
+//
 // Los símbolos son objetos 3D del mismo material que los personajes —
 // plástico mate, luz suave, un solo acento azul— en vez de íconos de línea.
 // Con un muñeco 3D en la portada, un glifo de trazo aquí abajo se leía como
@@ -15,26 +24,18 @@ const STEPS = [
   {
     simbolo: "/pasos/cuestionario.webp",
     title: "Cuéntanos de tu negocio",
-    description:
-      "Un cuestionario de una sola vez: tu giro, tu tono, qué vendes y a quién. Es todo lo que los agentes necesitan para dejar de sonar genéricos.",
   },
   {
     simbolo: "/pasos/calendario.webp",
     title: "Los agentes arman tu mes",
-    description:
-      "Estrategia, guion y la pieza terminada — video, imagen o carrusel — con las fechas que importan en México ya consideradas.",
   },
   {
     simbolo: "/pasos/aprobacion.webp",
     title: "Tú apruebas",
-    description:
-      "Ves lo que se generó antes de que salga. Cambias lo que no te lata; lo demás queda listo con un toque.",
   },
   {
     simbolo: "/pasos/publicacion.webp",
     title: "Se publica solo",
-    description:
-      "A tus redes conectadas, a la hora recomendada para tu tipo de negocio. Y los comentarios que lleguen también se contestan.",
   },
 ];
 
@@ -67,7 +68,7 @@ export default function HowItWorks() {
             recta gana: el ojo baja 1-2-3-4 sin pensarlo. El movimiento que
             da el zigzag se consigue igual alternando solo el símbolo, y el
             texto conserva su ancho. */}
-        <div className="mt-12 flex flex-col gap-10 sm:mt-16 sm:gap-14">
+        <div className="mt-12 flex flex-col gap-8 sm:mt-16 sm:gap-10">
           {STEPS.map((step, i) => {
             const derecha = i % 2 === 1;
             return (
@@ -77,7 +78,7 @@ export default function HowItWorks() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
-                className={`flex items-start gap-5 sm:w-[54%] sm:gap-8 ${
+                className={`flex items-center gap-4 sm:w-[54%] sm:gap-7 ${
                   derecha ? "flex-row-reverse text-right sm:ml-auto" : "sm:mr-auto"
                 }`}
               >
@@ -88,15 +89,24 @@ export default function HowItWorks() {
                   // mix-blend-multiply y no un recorte con transparencia: el
                   // fondo de los símbolos quedó en blanco exacto al
                   // procesarlos, y multiplicado contra la página desaparece.
-                  className="h-20 w-20 shrink-0 object-contain mix-blend-multiply sm:h-28 sm:w-28"
+                  className="h-24 w-24 shrink-0 object-contain mix-blend-multiply sm:h-32 sm:w-32"
                 />
-                <div className={derecha ? "sm:pr-2" : "sm:pl-2"}>
-                  <div className={`flex items-center gap-2.5 ${derecha ? "justify-end" : ""}`}>
-                    <span className="font-mono text-xs text-zinc-400">{String(i + 1).padStart(2, "0")}</span>
-                    <h3 className="text-base font-semibold text-zinc-950 sm:text-lg">{step.title}</h3>
-                  </div>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-500 sm:text-[15px]">{step.description}</p>
-                </div>
+                {/* El número va dentro de la línea del título y no como
+                    hermano en un flex: como hermano, en los pasos alineados
+                    a la derecha el título ocupa todo el ancho sobrante y el
+                    número se queda descolgado en el extremo opuesto. En
+                    línea viaja pegado a la primera palabra, se alinee como
+                    se alinee el bloque. */}
+                <h3
+                  className={`text-balance text-xl font-semibold leading-tight tracking-tight text-zinc-950 sm:text-2xl lg:text-3xl ${
+                    derecha ? "sm:pr-2" : "sm:pl-2"
+                  }`}
+                >
+                  <span className="mr-2.5 align-middle font-mono text-xs font-normal text-zinc-400 sm:text-sm">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  {step.title}
+                </h3>
               </motion.div>
             );
           })}

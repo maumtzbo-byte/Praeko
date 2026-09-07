@@ -22,9 +22,14 @@ type Giro = {
   /** Posición en la lona, en porcentaje.
    *
    *  Hay un par por pantalla porque el ancho de la ficha no cambia con la
-   *  ventana pero el de la lona sí: en celular la lona mide 342 px y la
-   *  ficha más ancha 230, así que a esa le quedan 112 px de juego. Con las
-   *  posiciones de escritorio, varias se salían de la pantalla. */
+   *  ventana pero el de la lona sí: en celular la lona mide 342 px. Con las
+   *  posiciones de escritorio, varias se salían.
+   *
+   *  En celular van de dos por renglón, emparejando cada etiqueta ancha
+   *  con una angosta — Restaurantes con Tiendas, Apps móviles con SaaS —
+   *  porque así caben las dos en 342 px. Una por renglón dejaba la sección
+   *  el doble de larga de lo que debe ser. "Servicios profesionales" es la
+   *  única que va sola: mide 250 px y no le queda sitio a ninguna al lado. */
   x: number;
   y: number;
   xMovil: number;
@@ -45,15 +50,15 @@ type Giro = {
 };
 
 const GIROS: Giro[] = [
-  { label: "Gimnasios", simbolo: "/giros/gimnasio.webp", x: 3, y: 3, xMovil: 2, yMovil: 0, giro: -3, ritmo: 6.1, vuelo: 8 },
-  { label: "Cafeterías", simbolo: "/giros/cafeteria.webp", x: 27, y: 21, xMovil: 46, yMovil: 11.5, giro: 2.5, ritmo: 7.3, vuelo: 7 },
-  { label: "Restaurantes", simbolo: "/giros/restaurante.webp", x: 51, y: 1, xMovil: 7, yMovil: 23, giro: 1.5, ritmo: 5.4, vuelo: 8 },
-  { label: "Tiendas", simbolo: "/giros/tienda.webp", x: 75, y: 19, xMovil: 53, yMovil: 34, giro: -2, ritmo: 8.2, vuelo: 6 },
-  { label: "Inmobiliaria", simbolo: "/giros/inmobiliaria.webp", x: 7, y: 45, xMovil: 3, yMovil: 45.5, giro: 3, ritmo: 6.8, vuelo: 8 },
-  { label: "SaaS", simbolo: "/giros/saas.webp", x: 38, y: 54, xMovil: 60, yMovil: 57, giro: -1.5, ritmo: 7.9, vuelo: 7 },
-  { label: "Servicios profesionales", simbolo: "/giros/servicios.webp", x: 59, y: 43, xMovil: 0, yMovil: 68, giro: 2, ritmo: 5.9, vuelo: 8 },
-  { label: "Apps móviles", simbolo: "/giros/apps.webp", x: 14, y: 73, xMovil: 44, yMovil: 79, giro: -2.5, ritmo: 8.7, vuelo: 6 },
-  { label: "Agencias", simbolo: "/giros/agencias.webp", x: 47, y: 81, xMovil: 9, yMovil: 90, giro: 1, ritmo: 6.4, vuelo: 8 },
+  { label: "Gimnasios", simbolo: "/giros/gimnasio.webp", x: 3, y: 3, xMovil: 52, yMovil: 49, giro: -3, ritmo: 6.1, vuelo: 8 },
+  { label: "Cafeterías", simbolo: "/giros/cafeteria.webp", x: 27, y: 21, xMovil: 4, yMovil: 25, giro: 2.5, ritmo: 7.3, vuelo: 7 },
+  { label: "Restaurantes", simbolo: "/giros/restaurante.webp", x: 51, y: 1, xMovil: 0, yMovil: 1, giro: 1.5, ritmo: 5.4, vuelo: 8 },
+  { label: "Tiendas", simbolo: "/giros/tienda.webp", x: 75, y: 19, xMovil: 53, yMovil: 5, giro: -2, ritmo: 8.2, vuelo: 6 },
+  { label: "Inmobiliaria", simbolo: "/giros/inmobiliaria.webp", x: 7, y: 45, xMovil: 0, yMovil: 45, giro: 3, ritmo: 6.8, vuelo: 8 },
+  { label: "SaaS", simbolo: "/giros/saas.webp", x: 38, y: 54, xMovil: 60, yMovil: 65, giro: -1.5, ritmo: 7.9, vuelo: 7 },
+  { label: "Servicios profesionales", simbolo: "/giros/servicios.webp", x: 59, y: 43, xMovil: 8, yMovil: 89, giro: 2, ritmo: 5.9, vuelo: 8 },
+  { label: "Apps móviles", simbolo: "/giros/apps.webp", x: 14, y: 73, xMovil: 2, yMovil: 69, giro: -2.5, ritmo: 8.7, vuelo: 6 },
+  { label: "Agencias", simbolo: "/giros/agencias.webp", x: 47, y: 81, xMovil: 50, yMovil: 21, giro: 1, ritmo: 6.4, vuelo: 8 },
 ];
 
 export default function IndustryScrollGallery() {
@@ -70,7 +75,7 @@ export default function IndustryScrollGallery() {
         {/* Alto fijo y fichas en posición absoluta: es lo que permite que no
             guarden fila ni columna. Con `flex-wrap` volverían a alinearse
             solas en cuanto cambiara el ancho. */}
-        <div className="relative mt-10 h-[640px] sm:mt-14 sm:h-[400px]">
+        <div className="relative mt-10 h-[460px] sm:mt-14 sm:h-[400px]">
           {GIROS.map((g, i) => (
             <motion.div
               key={g.label}

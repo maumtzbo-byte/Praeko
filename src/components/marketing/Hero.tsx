@@ -10,8 +10,7 @@ export default function Hero() {
     // de los renders: se funden por multiplicación, y sobre el azul el
     // personaje se teñía de azul y se perdía contra él. Contra un color
     // plano y claro desaparece el recuadro y el muñeco se ve tal cual.
-    <section className="relative flex min-h-[92vh] flex-col justify-center overflow-hidden bg-[var(--background)] py-24 sm:min-h-[100vh] sm:flex-row sm:items-center sm:py-0">
-      {/* El personaje, enorme y cortado por el borde. Cortarlo es lo que
+    <section className="relative flex min-h-[92vh] flex-col overflow-hidden bg-[var(--background)] pb-10 pt-24 sm:min-h-[100vh] sm:block sm:pb-0 sm:pt-0">      {/* El personaje, enorme y cortado por el borde. Cortarlo es lo que
           lo hace grande de verdad: un cuerpo entero centrado siempre se
           lee pequeño porque tiene que caber, y la mitad del espacio se le
           va en aire alrededor.
@@ -20,8 +19,8 @@ export default function Hero() {
           elemento posicionado con z-index crea contexto de apilamiento y
           aísla el mix-blend, y el fondo blanco del render se queda blanco
           — un rectángulo recortado sobre la página. */}
-      <div className="relative order-1 mx-auto w-full max-w-6xl px-6">
-        <div className="max-w-xl">
+      <div className="relative order-2 mx-auto flex w-full max-w-6xl flex-1 items-center px-6 sm:order-none sm:min-h-screen">
+        <div className="w-full max-w-xl">
           {/* Una línea corta y versalitas en vez de la píldora oscura de
               antes: el "BETA" ya vive en la barra de arriba, y repetirlo
               aquí era decir dos veces lo mismo a treinta píxeles de
@@ -36,8 +35,7 @@ export default function Hero() {
           </h1>
 
           <p className="mt-5 max-w-md text-base leading-relaxed text-zinc-600 sm:text-lg">
-            Siete agentes de IA planean, producen y publican el contenido de tu
-            negocio. Tú solo apruebas.
+            Siete agentes de IA lo hacen. Tú solo apruebas.
           </p>
 
           {/* Un solo botón. El "Cómo funciona" que lo acompañaba mandaba a
@@ -61,15 +59,17 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* En celular no cabe al lado del texto: sacado del flujo, la cabeza
-          se le encima al párrafo y al botón. Ahí baja a ocupar su propio
-          renglón debajo, y solo desde tablet se vuelve absoluto y se
-          asoma por el borde.
+      {/* Arriba en celular y a la derecha desde tablet.
 
-          Cortado por el borde derecho a propósito: un cuerpo entero
-          centrado siempre se lee pequeño, porque tiene que caber y la
-          mitad del espacio se le va en aire alrededor. */}
-      <HeroProtagonista className="pointer-events-none order-2 mx-auto mt-10 aspect-[613/850] h-72 sm:absolute sm:bottom-0 sm:-right-8 sm:order-none sm:mx-0 sm:mt-0 sm:h-[78%] lg:right-0 lg:h-[94%]" />
+          Arriba porque abajo se lo comía el pliegue: quedaba a media
+          pantalla de distancia del titular y había que hacer scroll para
+          verlo entero. Primero el personaje y después el texto también
+          hace que lo primero que se ve al abrir sea la marca.
+
+          En escritorio se va al borde derecho, cortado a propósito: un
+          cuerpo entero centrado siempre se lee pequeño, porque tiene que
+          caber y la mitad del espacio se le va en aire alrededor. */}
+      <HeroProtagonista className="pointer-events-none order-1 mx-auto aspect-[613/850] h-[42vh] max-h-[380px] shrink-0 sm:absolute sm:bottom-0 sm:-right-8 sm:order-none sm:mx-0 sm:h-[78%] sm:max-h-none lg:right-0 lg:h-[94%]" />
     </section>
   );
 }

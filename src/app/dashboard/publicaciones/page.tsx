@@ -3,6 +3,7 @@ import { PublicationsView } from "@/components/content/publications-view";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { createClient } from "@/lib/supabase/server";
 import { isPublishablePlatform } from "@/lib/social";
+import { fetchMediaUrlsByItemId } from "@/lib/content/media";
 
 // publishContentNow (called from this page) polls Meta's Instagram container
 // status inline before it can return — see waitForInstagramContainerReady in
@@ -53,6 +54,15 @@ export default async function PublicacionesPage() {
     (c): c is typeof c & { platform: "instagram" | "facebook" | "tiktok" } => isPublishablePlatform(c.platform),
   );
 
+  // La miniatura de cada pieza ya generada. Antes esta lista solo mostraba
+  // un icono de "video" o "imagen" igual para todas, así que había que
+  // abrir una por una para saber qué era cada cosa.
+  const mediaByItemId = await fetchMediaUrlsByItemId(
+    supabase,
+    business.id,
+    (calendarItems ?? []).map((item) => item.id),
+  );
+
   return (
     <div>
       <PageHeader title="Publicaciones" description="Genera, revisa y publica tu contenido — en lista o por fecha." />
@@ -61,6 +71,7 @@ export default async function PublicacionesPage() {
         initialItems={calendarItems ?? []}
         inFlightByItemId={inFlightByItemId}
         connections={publishableConnections}
+        mediaByItemId={mediaByItemId}
       />
     </div>
   );

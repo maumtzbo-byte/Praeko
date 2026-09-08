@@ -24,11 +24,13 @@ export function PublicationsView({
   initialItems,
   inFlightByItemId,
   connections = [],
+  mediaByItemId,
 }: {
   businessId: string;
   initialItems: ContentCalendarRow[];
   inFlightByItemId?: Map<string, string>;
   connections?: SocialConnection[];
+  mediaByItemId?: Map<string, string>;
 }) {
   const router = useRouter();
   const [view, setView] = useState<"lista" | "calendario">("lista");
@@ -70,6 +72,7 @@ export function PublicationsView({
           inFlightByItemId={inFlightByItemId}
           connections={connections}
           generateAction={generateAction}
+          mediaByItemId={mediaByItemId}
         />
       ) : (
         <CalendarView initialItems={initialItems} generateAction={generateAction} />

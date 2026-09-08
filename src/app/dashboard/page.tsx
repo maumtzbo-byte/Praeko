@@ -34,6 +34,8 @@ import { NotificationBell, type AttentionItem } from "@/components/dashboard/not
 import { AttentionPanel } from "@/components/dashboard/attention-panel";
 import { UpcomingQueue, type PiezaEnCola } from "@/components/dashboard/upcoming-queue";
 import { PlasticStage } from "@/components/dashboard/plastic-panel";
+import { PostPreview, type CuentaConectada, type PiezaPrevia } from "@/components/dashboard/post-preview";
+import { fetchMediaUrlsByItemId } from "@/lib/content/media";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
@@ -47,13 +49,14 @@ import {
   type PublishedPostInsightResult,
 } from "@/lib/agents/results-agent";
 import { formatInsightNumber } from "@/lib/content/format-insights";
+import { formatScheduledDate } from "@/lib/content/labels";
 import { PlatformShareDonut } from "@/components/dashboard/platform-share-donut";
 import { DailyInteractionsBarChart } from "@/components/dashboard/daily-interactions-bar-chart";
 import { FollowerGrowthChart, type FollowerSeries } from "@/components/dashboard/follower-growth-chart";
 import { FollowerGrowthHero } from "@/components/dashboard/follower-growth-hero";
 import { CreativeInsightsList } from "@/components/dashboard/creative-insights-list";
 import { fetchAccountFollowers } from "@/lib/social/insights";
-import { SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/social";
+import { SOCIAL_PLATFORM_LABELS, isPublishablePlatform, type SocialPlatform } from "@/lib/social";
 import { getUpcomingKeyDates } from "@/lib/content/key-dates";
 import type { Tables } from "@/lib/supabase/types";
 
@@ -487,7 +490,7 @@ export default async function DashboardHomePage() {
       .limit(6),
     supabase
       .from("social_connections")
-      .select("id, platform, external_account_id")
+      .select("id, platform, external_account_id, external_account_name, external_account_avatar_url, status")
       .eq("business_id", business.id),
     supabase
       .from("content_calendar")
@@ -510,7 +513,7 @@ export default async function DashboardHomePage() {
     // arriba, no como algo que va a salir).
     supabase
       .from("content_calendar")
-      .select("id, topic, scheduled_date, recommended_publish_time, content_kind, format, status")
+      .select("id, topic, script, scheduled_date, recommended_publish_time, content_kind, format, status")
       .eq("business_id", business.id)
       .in("status", ["pendiente", "generada", "en_revision"])
       .gte("scheduled_date", new Date().toISOString().slice(0, 10))
@@ -520,6 +523,45 @@ export default async function DashboardHomePage() {
 
   const allConnections = connections ?? [];
   const connectionsCount = allConnections.length;
+
+  // ── Miniaturas y vista previa ───────────────────────────────────────
+  // El archivo generado de cada pieza de la cola, en una consulta. Sin
+  // esto la lista solo podía enseñar el título, y un título no dice si la
+  // pieza quedó bien.
+  const cola = (colaProxima ?? []) as PiezaEnCola[];
+  const mediaPorPieza = await fetchMediaUrlsByItemId(
+    supabase,
+    business.id,
+    cola.map((c) => c.id),
+  );
+  const colaConMedia: PiezaEnCola[] = cola.map((c) => ({ ...c, mediaUrl: mediaPorPieza.get(c.id) ?? null }));
+
+  // Se previsualiza la primera pieza que YA tiene archivo, no la primera
+  // de la cola: una pieza sin generar no tiene nada que enseñar y dejaría
+  // el panel vacío teniendo material más abajo en la lista.
+  const piezaPrevia = colaConMedia.find((c) => c.mediaUrl) ?? null;
+  const previa: PiezaPrevia | null = piezaPrevia
+    ? {
+        id: piezaPrevia.id,
+        topic: piezaPrevia.topic,
+        script: piezaPrevia.script ?? null,
+        contentKind: piezaPrevia.content_kind,
+        mediaUrl: piezaPrevia.mediaUrl ?? null,
+        // Nunca hay red antes de publicar: se elige al momento de
+        // publicar, así que aquí siempre va null y el preview lo dice.
+        publishedPlatform: null,
+      }
+    : null;
+
+  // Solo las conectadas y vivas, y solo las que publican: Google Business
+  // es fuente de reseñas, no un canal donde se vea un post.
+  const cuentasPreview: CuentaConectada[] = allConnections
+    .filter((c) => c.status === "active" && isPublishablePlatform(c.platform))
+    .map((c) => ({
+      platform: c.platform,
+      nombre: c.external_account_name,
+      avatarUrl: c.external_account_avatar_url,
+    }));
   const hasNoConnections = connectionsCount === 0;
   const hasPublishedContent = (publishedCount ?? 0) > 0;
   const hasLowPhotoCount = (photoCount ?? 0) < LOW_PHOTO_THRESHOLD;
@@ -937,9 +979,24 @@ export default async function DashboardHomePage() {
           un piso apenas más oscuro abajo. Sin él los paneles flotan sobre
           un gris plano y el relieve del plástico no se lee. */}
       <PlasticStage className="animate-fade-in-up stagger-1">
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <AttentionPanel items={attentionItems} />
-          <UpcomingQueue piezas={(colaProxima ?? []) as PiezaEnCola[]} />
+        {/* Dos tercios para las dos preguntas y un tercio para la vista
+            previa, que es alta porque previsualiza un post vertical. Con
+            las tres en fila, la previa estiraba la fila entera al doble de
+            su alto y dejaba a las otras dos flotando en el vacío. */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <div className="flex flex-col gap-5 lg:col-span-2">
+            <AttentionPanel items={attentionItems} />
+            <UpcomingQueue piezas={colaConMedia} />
+          </div>
+          {/* `self-start` para que la previa mida lo que mide su contenido.
+              Sin esto la rejilla la estira a la altura de la columna
+              izquierda y deja un tramo vacío de plástico debajo del post. */}
+          <PostPreview
+            className="lg:self-start"
+            pieza={previa}
+            cuentas={cuentasPreview}
+            fechaLabel={piezaPrevia ? formatScheduledDate(piezaPrevia.scheduled_date) : null}
+          />
         </div>
       </PlasticStage>
 

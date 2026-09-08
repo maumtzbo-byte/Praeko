@@ -19,6 +19,7 @@ import {
 } from "@/app/dashboard/publicaciones/actions";
 import { cn } from "@/lib/utils";
 import { FORMAT_LABELS, STATUS_VARIANTS, STATUS_LABELS, REVIEW_RESULT_LABELS, formatScheduledDate } from "@/lib/content/labels";
+import { primerCuadro } from "@/lib/content/media";
 import { SOCIAL_PLATFORM_LABELS } from "@/lib/social";
 import { InstagramIcon, FacebookIcon, TikTokIcon } from "@/components/dashboard/social-icons";
 import type { Tables } from "@/lib/supabase/types";
@@ -234,10 +235,13 @@ export function PublicationsList({
   inFlightByItemId,
   connections = [],
   generateAction,
+  mediaByItemId,
 }: {
   initialItems: ContentCalendarRow[];
   inFlightByItemId?: Map<string, string>;
   connections?: SocialConnection[];
+  /** URL del archivo ya generado por pieza (ver lib/content/media.ts). */
+  mediaByItemId?: Map<string, string>;
   generateAction?: ReactNode;
 }) {
   const [filter, setFilter] = useState<ContentStatus | "todas">("todas");
@@ -305,6 +309,7 @@ export function PublicationsList({
         <div className="flex flex-col gap-3">
           {filtered.map((item) => {
             const Icon = item.content_kind === "video" ? Clapperboard : ImageIcon;
+            const mediaUrl = mediaByItemId?.get(item.id) ?? null;
             return (
               <Card
                 key={item.id}
@@ -313,9 +318,24 @@ export function PublicationsList({
               >
                 <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
                   <div className="flex items-center gap-3 sm:w-40 sm:shrink-0">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
-                      <Icon className="h-4 w-4 text-accent" strokeWidth={1.75} />
-                    </span>
+                    {/* La pieza cuando ya existe, el icono cuando no.
+                        Un icono de "video" repetido en las diez filas no
+                        distingue nada; la miniatura sí, y es el dato con
+                        el que el dueño reconoce lo que está aprobando. */}
+                    {mediaUrl ? (
+                      <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg shadow-[inset_0_0_0_1px_rgba(15,23,42,0.09)]">
+                        {item.content_kind === "video" ? (
+                          <video src={primerCuadro(mediaUrl)} className="h-full w-full object-cover" preload="metadata" muted playsInline />
+                        ) : (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={mediaUrl} alt="" className="h-full w-full object-cover" />
+                        )}
+                      </span>
+                    ) : (
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-zinc-100 shadow-[var(--relieve-hundido)]">
+                        <Icon className="h-4 w-4 text-accent" strokeWidth={1.75} />
+                      </span>
+                    )}
                     <div>
                       <p className="text-xs font-medium text-zinc-500">{formatScheduledDate(item.scheduled_date)}</p>
                       <p className="text-xs text-zinc-400">{FORMAT_LABELS[item.format]}</p>

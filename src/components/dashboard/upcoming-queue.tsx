@@ -3,13 +3,18 @@ import { Clapperboard, ImageIcon, ChevronRight, CalendarPlus } from "lucide-reac
 
 import { PlasticPanel, PressedChip } from "@/components/dashboard/plastic-panel";
 import { FORMAT_LABELS, STATUS_LABELS } from "@/lib/content/labels";
+import { primerCuadro } from "@/lib/content/media";
 import { Button } from "@/components/ui/button";
 import type { Tables } from "@/lib/supabase/types";
 
 export type PiezaEnCola = Pick<
   Tables<"content_calendar">,
-  "id" | "topic" | "scheduled_date" | "recommended_publish_time" | "content_kind" | "format" | "status"
->;
+  "id" | "topic" | "script" | "scheduled_date" | "recommended_publish_time" | "content_kind" | "format" | "status"
+> & {
+  /** El archivo ya generado, si existe (ver lib/content/media.ts). Con él
+   *  la fila enseña la pieza; sin él, la ficha del día. */
+  mediaUrl?: string | null;
+};
 
 /**
  * "¿Qué va a salir?" — la cola de lo que viene.
@@ -81,28 +86,48 @@ export function UpcomingQueue({ piezas }: { piezas: PiezaEnCola[] }) {
                 href="/dashboard/publicaciones"
                 className="flex items-center gap-3.5 px-5 py-3 transition-colors hover:bg-zinc-900/[0.025] sm:px-6"
               >
-                {/* La ficha del día, levantada: la única pieza de plástico
-                    dentro del panel, porque es el dato que se busca al
-                    barrer la lista con la vista. */}
-                <span
-                  className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-2xl"
-                  style={{
-                    background: "linear-gradient(180deg,#ffffff 0%,#f1f3f6 100%)",
-                    boxShadow: [
-                      "inset 0 1px 1px rgba(255,255,255,0.95)",
-                      "inset 0 -2px 4px rgba(15,23,42,0.07)",
-                      "inset 0 0 0 1px rgba(15,23,42,0.05)",
-                      "0 4px 8px -4px rgba(15,23,42,0.22)",
-                    ].join(","),
-                  }}
-                >
-                  <span className="text-[9px] font-semibold uppercase leading-none tracking-wide text-zinc-400">
-                    {DIA_CORTO.format(fecha).replace(".", "")}
+                {/* La miniatura de la pieza cuando ya se generó, y la
+                    ficha del día cuando no. Ver el contenido —la sudadera,
+                    el platillo— identifica la pieza mucho mejor que su
+                    título, que es lo único que había antes. El día no se
+                    pierde: baja al renglón de abajo, junto al formato.
+
+                    Las dos formas miden lo mismo y llevan el mismo
+                    relieve, así que la lista no se descuadra cuando unas
+                    piezas tienen archivo y otras todavía no. */}
+                {pieza.mediaUrl ? (
+                  <span
+                    className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl"
+                    style={{ boxShadow: "inset 0 0 0 1px rgba(15,23,42,0.09), 0 4px 8px -4px rgba(15,23,42,0.28)" }}
+                  >
+                    {pieza.content_kind === "video" ? (
+                      <video src={primerCuadro(pieza.mediaUrl)} className="h-full w-full object-cover" preload="metadata" muted playsInline />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={pieza.mediaUrl} alt="" className="h-full w-full object-cover" />
+                    )}
                   </span>
-                  <span className="font-mono text-[15px] font-semibold leading-tight tabular-nums text-zinc-900">
-                    {NUM_DIA.format(fecha)}
+                ) : (
+                  <span
+                    className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-2xl"
+                    style={{
+                      background: "linear-gradient(180deg,#ffffff 0%,#f1f3f6 100%)",
+                      boxShadow: [
+                        "inset 0 1px 1px rgba(255,255,255,0.95)",
+                        "inset 0 -2px 4px rgba(15,23,42,0.07)",
+                        "inset 0 0 0 1px rgba(15,23,42,0.05)",
+                        "0 4px 8px -4px rgba(15,23,42,0.22)",
+                      ].join(","),
+                    }}
+                  >
+                    <span className="text-[9px] font-semibold uppercase leading-none tracking-wide text-zinc-400">
+                      {DIA_CORTO.format(fecha).replace(".", "")}
+                    </span>
+                    <span className="font-mono text-[15px] font-semibold leading-tight tabular-nums text-zinc-900">
+                      {NUM_DIA.format(fecha)}
+                    </span>
                   </span>
-                </span>
+                )}
 
                 {/* En celular la pastilla de estado baja al renglón de
                     abajo en vez de pelear por el ancho con el título: en
@@ -114,6 +139,9 @@ export function UpcomingQueue({ piezas }: { piezas: PiezaEnCola[] }) {
                   <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-zinc-500">
                     <Icono className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
                     <span className="truncate">
+                      {/* Con miniatura, el día se dice aquí: la ficha que
+                          lo llevaba cedió su lugar a la imagen. */}
+                      {pieza.mediaUrl ? `${DIA_CORTO.format(fecha).replace(".", "")} ${NUM_DIA.format(fecha)} · ` : ""}
                       {FORMAT_LABELS[pieza.format]}
                       {pieza.recommended_publish_time ? ` · ${pieza.recommended_publish_time.slice(0, 5)}` : ""}
                     </span>

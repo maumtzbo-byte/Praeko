@@ -21,13 +21,39 @@ function daysAgoStr(days: number) {
   return d.toISOString().slice(0, 10);
 }
 
-/** Sum of every series' follower count on a given date — only counts a
- * date where every connected platform actually has a snapshot, so a newly
- * connected account mid-window can't silently drag the combined total down. */
+/** Suma de seguidores de todas las series en una fecha — solo cuenta una
+ * fecha donde TODA plataforma que reporta tiene su medición, para que una
+ * cuenta conectada a medio periodo no haga ver el total como una caída.
+ *
+ * "Que reporta" es la parte importante y es lo que faltaba: la serie llega
+ * con una entrada por cada conexión, incluidas las que no tienen ni una
+ * sola medición —token vencido, cuenta recién conectada, Google Business
+ * que ni siquiera tiene seguidores—. Con esas adentro, `undefined` volvía
+ * null SIEMPRE, y el render lo pintaba como `?? 0`: un cero enorme de
+ * "seguidores" en la primera pantalla del celular, con datos buenos
+ * atrás. El escritorio, que suma `currentFollowers`, mostraba el número
+ * correcto en la misma pantalla. */
+function seriesConDatos(series: FollowerSeries[]): FollowerSeries[] {
+  return series.filter((s) => s.points.length > 0);
+}
+
 function totalFollowersOn(series: FollowerSeries[], date: string): number | null {
-  const values = series.map((s) => s.points.find((p) => p.date === date)?.followers);
+  const vivas = seriesConDatos(series);
+  if (vivas.length === 0) return null;
+  const values = vivas.map((s) => s.points.find((p) => p.date === date)?.followers);
   if (values.some((v) => v === undefined)) return null;
   return values.reduce<number>((sum, v) => sum + (v ?? 0), 0);
+}
+
+/** El total de la fecha completa más reciente. Hace falta porque la
+ * medición de hoy se toma cuando el dueño abre el panel: antes de eso "hoy"
+ * está incompleto y pedirlo a secas devolvía null, o sea otra vez el cero. */
+function totalMasReciente(series: FollowerSeries[], fechas: string[]): number | null {
+  for (let i = fechas.length - 1; i >= 0; i--) {
+    const t = totalFollowersOn(series, fechas[i]);
+    if (t !== null) return t;
+  }
+  return null;
 }
 
 /**
@@ -42,29 +68,31 @@ export function FollowerGrowthHero({ series }: { series: FollowerSeries[] }) {
   const [rangeDays, setRangeDays] = useState<number>(7);
   const hasTrend = series.some((s) => new Set(s.points.map((p) => p.date)).size >= 2);
 
-  const todayStr = daysAgoStr(0);
-  const totalToday = totalFollowersOn(series, todayStr);
+  const fechas = useMemo(
+    () => Array.from(new Set(series.flatMap((s) => s.points.map((p) => p.date)))).sort(),
+    [series],
+  );
+  const totalToday = totalFollowersOn(series, daysAgoStr(0)) ?? totalMasReciente(series, fechas);
   const totalWeekAgo = totalFollowersOn(series, daysAgoStr(7));
   const weeklyChangePct =
     totalToday !== null && totalWeekAgo !== null && totalWeekAgo !== 0
       ? Math.round(((totalToday - totalWeekAgo) / totalWeekAgo) * 1000) / 10
       : null;
 
-  const allDates = useMemo(() => Array.from(new Set(series.flatMap((s) => s.points.map((p) => p.date)))).sort(), [series]);
   const rows = useMemo(
     () =>
-      allDates
+      fechas
         .map((date) => ({ date, total: totalFollowersOn(series, date) }))
         .filter((row): row is { date: string; total: number } => row.total !== null)
         .slice(-rangeDays),
-    [allDates, series, rangeDays],
+    [fechas, series, rangeDays],
   );
 
   if (!hasTrend) {
     return (
       <div className="flex flex-col gap-2">
         <p className="text-2xl font-semibold tracking-tight text-zinc-950">
-          {series.reduce((sum, s) => sum + s.currentFollowers, 0).toLocaleString("es-MX")}
+          {seriesConDatos(series).reduce((sum, s) => sum + s.currentFollowers, 0).toLocaleString("es-MX")}
         </p>
         <p className="text-xs text-zinc-400">
           Empezamos a rastrear tu crecimiento hoy — vuelve en unos días para ver la tendencia.

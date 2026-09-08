@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle2, Lock, MessageCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Lock, MessageCircle } from "lucide-react";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { createClient } from "@/lib/supabase/server";
 import { getAdapter, isPublishablePlatform, SOCIAL_PLATFORM_LABELS, type SocialPlatform } from "@/lib/social";
@@ -51,7 +51,7 @@ export default async function RedesSocialesPage({
   const [{ data: connections }, { data: subscription }, { data: interactions }] = await Promise.all([
     supabase
       .from("social_connections")
-      .select("id, platform, external_account_name, external_account_avatar_url")
+      .select("id, platform, external_account_name, external_account_avatar_url, status")
       .eq("business_id", business.id),
     supabase.from("subscriptions").select("plan_key").eq("business_id", business.id).maybeSingle(),
     supabase
@@ -72,7 +72,14 @@ export default async function RedesSocialesPage({
   const limit = plan?.social_network_limit ?? 1;
   // Google Business Profile is a data source, not a publishing slot — see
   // isPublishablePlatform — so it's excluded from the "de tu plan" count.
-  const publishableConnections = (connections ?? []).filter((c) => isPublishablePlatform(c.platform));
+  // Solo las que de verdad sirven. Una conexión en "error" es un token
+  // muerto: sigue en la tabla pero ya no puede publicar. Contarla como
+  // conectada llenaba el cupo del plan y dejaba al dueño sin poder
+  // reconectar la que se cayó — justo el caso que el aviso de conexión por
+  // vencer del Dashboard existe para evitar.
+  const publishableConnections = (connections ?? []).filter(
+    (c) => isPublishablePlatform(c.platform) && c.status === "active",
+  );
   const connectedCount = publishableConnections.length;
   const atLimit = connectedCount >= limit;
 
@@ -133,12 +140,32 @@ export default async function RedesSocialesPage({
                     )}
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-zinc-800">{connection.external_account_name}</p>
-                      <p className="flex items-center gap-1 text-xs text-emerald-600">
-                        <CheckCircle2 className="h-3 w-3" /> Conectada
-                      </p>
+                      {/* El estado real, no un palomita fija. Antes esta
+                          línea decía "Conectada" en verde para cualquier
+                          fila que existiera, aunque su token estuviera
+                          muerto: la consulta ni siquiera traía la columna
+                          `status`. O sea que la pantalla cuyo único trabajo
+                          es decirte si tus redes están conectadas era la
+                          última en enterarse de que una no. */}
+                      {connection.status === "active" ? (
+                        <p className="flex items-center gap-1 text-xs text-emerald-600">
+                          <CheckCircle2 className="h-3 w-3" /> Conectada
+                        </p>
+                      ) : (
+                        <p className="flex items-center gap-1 text-xs text-amber-700">
+                          <AlertTriangle className="h-3 w-3" /> Se desconectó, vuelve a conectarla
+                        </p>
+                      )}
                     </div>
                   </div>
-                  {key === "google_business" && <RefreshGoogleReviewsButton />}
+                  {key === "google_business" && connection.status === "active" && <RefreshGoogleReviewsButton />}
+                  {connection.status !== "active" && (
+                    <Link href={`/social/${key}/start`}>
+                      <Button size="sm" className="w-full">
+                        Reconectar
+                      </Button>
+                    </Link>
+                  )}
                   <form action={disconnectSocialAccount}>
                     <input type="hidden" name="connectionId" value={connection.id} />
                     <Button type="submit" variant="secondary" size="sm" className="w-full">

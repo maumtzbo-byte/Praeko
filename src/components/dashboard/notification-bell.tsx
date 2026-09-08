@@ -13,6 +13,13 @@ export interface AttentionItem {
   // values can't cross the server→client boundary (this is a client
   // component), but an already-rendered icon element can.
   icon: ReactNode;
+  /** Qué tan urgente es, decidido donde se construye el item y no donde se
+   *  pinta. "roto" es algo que dejó de funcionar y el dueño tiene que
+   *  arreglar; "pendiente" es algo que lo espera a él; "neutro" es un aviso
+   *  con tiempo. Va aquí, en el dato, porque el panel de inicio y la
+   *  campana lo pintan distinto y no deben cada uno adivinar la urgencia a
+   *  partir del texto. */
+  tono: "roto" | "pendiente" | "neutro";
 }
 
 /** Every item here is derived live from real rows (content stuck in

@@ -31,6 +31,9 @@ import { StatIconCard } from "@/components/dashboard/stat-icon-card";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { NotificationBell, type AttentionItem } from "@/components/dashboard/notification-bell";
+import { AttentionPanel } from "@/components/dashboard/attention-panel";
+import { UpcomingQueue, type PiezaEnCola } from "@/components/dashboard/upcoming-queue";
+import { PlasticStage } from "@/components/dashboard/plastic-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
@@ -100,6 +103,7 @@ async function getAttentionItems(
       id: `review-${item.id}`,
       href: "/dashboard/publicaciones",
       label: "En revisión",
+      tono: "pendiente" as const,
       detail: `"${item.topic}" necesita tu aprobación`,
       icon: <AlertTriangle className={iconClass} strokeWidth={1.75} />,
     });
@@ -109,6 +113,7 @@ async function getAttentionItems(
       id: `failed-${item.id}`,
       href: "/dashboard/publicaciones",
       label: "Generación fallida",
+      tono: "roto" as const,
       detail: `"${item.topic}" no se pudo generar`,
       icon: <XCircle className={iconClass} strokeWidth={1.75} />,
     });
@@ -118,6 +123,7 @@ async function getAttentionItems(
       id: `interaction-${item.id}`,
       href: "/dashboard/redes-sociales",
       label: "Necesita respuesta",
+      tono: "pendiente" as const,
       detail: `${item.author_name ?? "Alguien"} en ${SOCIAL_PLATFORM_LABELS[item.platform]}`,
       icon: <MessageCircle className={iconClass} strokeWidth={1.75} />,
     });
@@ -154,6 +160,7 @@ async function getAttentionItems(
         id: `connection-${connection.id}`,
         href: "/dashboard/redes-sociales",
         label: connection.status === "error" ? "Conexión caída" : "Conexión por vencer",
+        tono: connection.status === "error" ? ("roto" as const) : ("pendiente" as const),
         detail:
           connection.status === "error"
             ? `Vuelve a conectar ${SOCIAL_PLATFORM_LABELS[connection.platform]} para seguir publicando`
@@ -176,6 +183,7 @@ async function getAttentionItems(
       id: `keydate-${keyDate.date}-${keyDate.name}`,
       href: "/dashboard/campanas",
       label: keyDate.name,
+      tono: "neutro" as const,
       detail:
         daysAway === 0
           ? "Es hoy — ¿armamos la campaña?"
@@ -193,6 +201,7 @@ async function getAttentionItems(
         id: "beta-ending",
         href: "/dashboard/plan",
         label: "Tu mes gratis termina pronto",
+        tono: "pendiente" as const,
         detail: daysLeft === 0 ? "Termina hoy" : daysLeft === 1 ? "Termina mañana" : `Quedan ${daysLeft} días`,
         icon: <Gem className={iconClass} strokeWidth={1.75} />,
       });
@@ -446,6 +455,7 @@ export default async function DashboardHomePage() {
     { count: anyContentCount },
     { count: publishedCount },
     { count: photoCount },
+    { data: colaProxima },
   ] = await Promise.all([
     supabase.from("subscriptions").select("*").eq("business_id", business.id).maybeSingle(),
     supabase
@@ -493,6 +503,19 @@ export default async function DashboardHomePage() {
       .select("id", { count: "exact", head: true })
       .eq("business_id", business.id)
       .eq("asset_type", "photo"),
+    // La cola de lo que viene, para UpcomingQueue. Ascendente y desde hoy:
+    // es la única consulta de esta página que mira hacia adelante — todas
+    // las demás cuentan o listan lo que ya pasó. Se excluyen "publicada"
+    // (ya salió) y "fallida" (esa aparece como pendiente en el panel de
+    // arriba, no como algo que va a salir).
+    supabase
+      .from("content_calendar")
+      .select("id, topic, scheduled_date, recommended_publish_time, content_kind, format, status")
+      .eq("business_id", business.id)
+      .in("status", ["pendiente", "generada", "en_revision"])
+      .gte("scheduled_date", new Date().toISOString().slice(0, 10))
+      .order("scheduled_date", { ascending: true })
+      .limit(4),
   ]);
 
   const allConnections = connections ?? [];
@@ -901,6 +924,24 @@ export default async function DashboardHomePage() {
       </div>
 
       <OnboardingChecklist steps={onboardingSteps} className="animate-fade-in-up" />
+
+      {/* Las dos preguntas con las que el dueño abre Frames, arriba de
+          todo y en las dos pantallas: "¿tengo que hacer algo?" y "¿qué va
+          a salir?". Antes la primera vivía solo dentro de la campana y la
+          segunda no se contestaba en ningún lado — el inicio abría con
+          cuatro métricas de resultados que hoy, sin acceso a las de Meta,
+          salen todas en guion. Las analíticas siguen abajo, que es donde
+          las busca quien de verdad las quiere.
+
+          PlasticStage es el fondo con profundidad: un pozo de luz arriba y
+          un piso apenas más oscuro abajo. Sin él los paneles flotan sobre
+          un gris plano y el relieve del plástico no se lee. */}
+      <PlasticStage className="animate-fade-in-up stagger-1">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <AttentionPanel items={attentionItems} />
+          <UpcomingQueue piezas={(colaProxima ?? []) as PiezaEnCola[]} />
+        </div>
+      </PlasticStage>
 
       {hasLowPhotoCount && (
         <Alert variant="info" className="animate-fade-in-up">

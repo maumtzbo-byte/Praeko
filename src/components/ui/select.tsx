@@ -14,10 +14,10 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           className={cn(
-            "h-11 w-full appearance-none rounded-xl border bg-white px-3.5 pr-9 text-sm text-zinc-900 outline-none transition-colors",
-            "focus:border-zinc-400 focus:ring-4 focus:ring-zinc-100",
-            "",
-            invalid ? "border-red-400" : "border-zinc-200",
+            // Mismo pozo que Input, ver ahí.
+            "h-11 w-full appearance-none rounded-xl bg-white px-3.5 pr-9 text-sm text-zinc-900 outline-none transition-shadow",
+            "shadow-[var(--relieve-pozo)] focus:shadow-[var(--relieve-pozo),0_0_0_3.5px_rgba(61,117,173,0.16)]",
+            invalid ? "shadow-[var(--relieve-pozo),0_0_0_1.5px_rgba(180,35,24,0.55)]" : "",
             className,
           )}
           {...props}

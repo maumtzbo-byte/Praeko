@@ -282,10 +282,12 @@ export function PublicationsList({
             type="button"
             onClick={() => setFilter(key)}
             className={cn(
-              "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
+              "rounded-full px-3.5 py-1.5 text-xs font-medium transition-all",
+              // El filtro activo se queda oprimido, los otros sobresalen:
+              // el mismo par que usan los botones y las opciones.
               filter === key
-                ? "border-zinc-900 bg-zinc-900 text-white "
-                : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 ",
+                ? "bg-[image:var(--plastico-oscuro)] text-white shadow-[var(--relieve-oscuro)] "
+                : "bg-[image:var(--plastico)] text-zinc-600 shadow-[var(--relieve-pieza)] hover:brightness-[1.02] active:translate-y-px active:shadow-[var(--relieve-oprimido)] ",
             )}
           >
             {key === "todas" ? "Todas" : STATUS_LABELS[key]} ({counts[key]})

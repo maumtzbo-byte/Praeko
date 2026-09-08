@@ -11,7 +11,12 @@ const Checkbox = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputEleme
           ref={ref}
           type="checkbox"
           className={cn(
-            "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md border border-zinc-300 bg-white transition-colors checked:border-zinc-950 checked:bg-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ",
+            // Vacía se hunde (es un hueco que espera algo), palomeada
+            // sobresale (ya es una pieza puesta). Es el mismo par
+            // hundido/levantado que usan el campo y el botón.
+            "peer h-5 w-5 shrink-0 cursor-pointer appearance-none rounded-md bg-white shadow-[var(--relieve-pozo)] transition-all " +
+            "checked:bg-[image:var(--plastico-oscuro)] checked:shadow-[var(--relieve-oscuro)] " +
+            "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ",
             className,
           )}
           {...props}

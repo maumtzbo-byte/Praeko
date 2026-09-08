@@ -5,7 +5,12 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "rounded-3xl border border-zinc-200/80 bg-white/70 shadow-[0_1px_2px_rgba(0,0,0,0.03),0_16px_36px_-22px_rgba(0,0,0,0.18)] backdrop-blur-sm",
+        // Plástico mate, no una caja blanca con borde. El volumen viene
+        // de las sombras internas de --relieve-panel (ver globals.css);
+        // por eso ya no lleva `border`, que las aplanaba, ni
+        // `backdrop-blur`, que costaba pintura para desenfocar un fondo
+        // plano que no tiene nada que desenfocar.
+        "rounded-3xl bg-[image:var(--plastico)] shadow-[var(--relieve-panel)]",
         className,
       )}
       {...props}

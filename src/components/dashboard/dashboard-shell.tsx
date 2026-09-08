@@ -98,7 +98,12 @@ export function DashboardShell({
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <FeedbackModal businessId={businessId} eligible={showFeedbackPrompt} />
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-zinc-200 bg-white/80 backdrop-blur-sm lg:block ">
+      {/* La barra lateral queda un escalón ATRÁS del contenido, no
+          delante: es plástico también, pero recibe una sombra interna en
+          su canto derecho, como si el área de trabajo estuviera montada
+          encima de ella. Un panel elevado a la izquierda competiría con
+          las tarjetas, que son lo que sí se toca. */}
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 bg-[linear-gradient(180deg,#fbfcfd_0%,#f3f5f7_100%)] shadow-[inset_-8px_0_14px_-12px_rgba(15,23,42,0.28),inset_-1px_0_0_rgba(15,23,42,0.06)] lg:block ">
         <SidebarNav businessId={businessId} businesses={businesses} needsPlanAttention={planBanner !== null} />
       </aside>
 
@@ -124,7 +129,7 @@ export function DashboardShell({
       )}
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-zinc-200 bg-[var(--background)]/80 px-4 py-3 backdrop-blur-sm lg:hidden">
+        <header className="sticky top-0 z-30 flex items-center gap-3 bg-[var(--background)]/85 px-4 py-3 shadow-[0_1px_0_rgba(15,23,42,0.07),0_10px_16px_-14px_rgba(15,23,42,0.35)] backdrop-blur-sm lg:hidden">
           <button
             className="rounded-lg p-1.5 text-zinc-700 hover:bg-zinc-100 "
             onClick={() => setMobileOpen(true)}
@@ -138,7 +143,13 @@ export function DashboardShell({
           </span>
         </header>
 
-        <main className="px-4 py-8 pb-24 sm:px-6 lg:px-10 lg:pb-8">
+        {/* `escenario` (globals.css) pinta el espacio con profundidad
+            detrás de TODO lo que va dentro del panel: pozo de luz arriba,
+            piso apenas más oscuro abajo. Va aquí, en el shell, para que
+            cada pantalla del dashboard lo herede sin repetirlo — y para
+            que el relieve de las piezas tenga contra qué leerse. Sin
+            fondo con volumen, el plástico se ve como cajas blancas. */}
+        <main className="escenario relative isolate px-4 py-8 pb-24 sm:px-6 lg:px-10 lg:pb-8">
           {planBanner && <PlanBanner info={planBanner} />}
           {children}
         </main>

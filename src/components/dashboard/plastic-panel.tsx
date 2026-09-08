@@ -48,14 +48,12 @@ export function PlasticPanel({
     <div
       className={`relative rounded-[1.75rem] ${className}`}
       style={{
-        background: "linear-gradient(180deg,#ffffff 0%,#fdfdfe 45%,#f2f3f5 100%)",
-        boxShadow: [
-          "inset 0 1.5px 1px rgba(255,255,255,0.95)",
-          "inset 0 -5px 9px rgba(15,23,42,0.07)",
-          "inset 0 0 0 1px rgba(15,23,42,0.04)",
-          `0 26px 50px -22px ${HALO[relieve]}`,
-          "0 12px 26px -16px rgba(15,23,42,0.22)",
-        ].join(","),
+        // La receta base vive en globals.css (--plastico y
+        // --relieve-panel), compartida con Card y los botones. Aquí solo
+        // se le suma el halo de color, que es lo único propio de estos
+        // paneles.
+        background: "var(--plastico)",
+        boxShadow: `var(--relieve-panel), 0 26px 50px -22px ${HALO[relieve]}`,
         ...style,
       }}
     >
@@ -65,39 +63,17 @@ export function PlasticPanel({
 }
 
 /**
- * El fondo contra el que se apoyan los paneles.
+ * Un escenario local, más marcado que el del shell.
  *
- * Sin esto los paneles flotan sobre un gris plano y el relieve se pierde:
- * una pieza con volumen necesita un espacio con volumen atrás. Son dos
- * capas, las dos fuera del flujo y sin eventos:
- *
- *   1. Un pozo de luz arriba al centro, que hace de fuente luminosa y
- *      explica por qué el filo de arriba de cada panel está iluminado.
- *   2. Un piso apenas más oscuro abajo, donde caen las sombras de
- *      contacto.
- *
- * Se sale del ancho del contenido a propósito (los `-inset`): el borde del
- * degradado nunca debe coincidir con el borde de un panel, porque entonces
- * se lee como una caja más en vez de como profundidad.
+ * El fondo con profundidad ya lo pinta `<main>` para todo el dashboard
+ * (ver dashboard-shell.tsx). Esto lo repite sobre un grupo concreto para
+ * subrayarlo — la clase `escenario` de globals.css se apila, así que dos
+ * capas dan un pozo de luz más cerrado alrededor de estos dos paneles, que
+ * son los primeros de la pantalla.
  */
 export function PlasticStage({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`relative isolate ${className}`}>
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -inset-x-8 -inset-y-10 -z-10"
-        style={{
-          background: [
-            "radial-gradient(78% 62% at 50% -12%, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 58%)",
-            "radial-gradient(68% 52% at 50% 114%, rgba(15,23,42,0.085) 0%, rgba(15,23,42,0) 56%)",
-            // Las esquinas de arriba, apenas hundidas. Es lo que convierte
-            // el pozo de luz en luz DIRIGIDA: sin algo más oscuro a los
-            // lados, un degradado claro al centro se lee como una mancha
-            // blanca y no como una fuente arriba del escenario.
-            "radial-gradient(120% 70% at 50% -20%, rgba(15,23,42,0) 55%, rgba(15,23,42,0.045) 100%)",
-          ].join(","),
-        }}
-      />
+    <div className={`escenario relative isolate ${className}`}>
       {children}
     </div>
   );

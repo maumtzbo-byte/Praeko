@@ -12,15 +12,26 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
 }
 
+// Un botón es una pieza que se oprime, así que se modela como tal: sale de
+// la página en reposo y se hunde al presionarla. El desplazamiento de 1px
+// en :active va junto con el cambio de sombra a propósito — solo cambiando
+// la sombra el botón parpadea, no se siente que baja.
+//
+// `ghost` se queda plano y es intencional: no es un objeto, es texto que
+// se puede tocar. Si también tuviera relieve, dejaría de distinguirse del
+// botón secundario y la jerarquía se perdería.
 const variantClasses: Record<ButtonVariant, string> = {
-  // Inverted in dark mode (white on near-black), not just left as-is — a
-  // near-black button on an already-near-black page would barely register.
   primary:
-    "bg-zinc-950 text-white shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] hover:scale-[1.02] disabled:hover:scale-100 ",
+    "bg-[image:var(--plastico-oscuro)] text-white shadow-[var(--relieve-oscuro)] " +
+    "hover:brightness-110 active:translate-y-px active:shadow-[var(--relieve-oprimido)] " +
+    "disabled:hover:brightness-100 ",
   secondary:
-    "border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-50 ",
-  ghost: "text-zinc-600 hover:bg-zinc-100 ",
-  destructive: "bg-red-600 text-white hover:bg-red-700 ",
+    "bg-[image:var(--plastico)] text-zinc-800 shadow-[var(--relieve-pieza)] " +
+    "hover:brightness-[1.02] active:translate-y-px active:shadow-[var(--relieve-oprimido)] ",
+  ghost: "text-zinc-600 hover:bg-zinc-900/[0.055] active:bg-zinc-900/[0.09] ",
+  destructive:
+    "bg-[linear-gradient(180deg,#e04b3f_0%,#c8342a_55%,#a8261b_100%)] text-white shadow-[var(--relieve-oscuro)] " +
+    "hover:brightness-110 active:translate-y-px active:shadow-[var(--relieve-oprimido)] ",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {

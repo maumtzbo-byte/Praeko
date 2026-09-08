@@ -12,6 +12,13 @@ import { resolveEffectiveLimits, formatUsd } from "@/lib/plans/custom-plan";
 import { cn } from "@/lib/utils";
 
 const TRIAL_END_FORMATTER = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "long" });
+// Fecha de emisión del ticket de beta: la de alta real de la
+// suscripción, no una hora de impresión simulada.
+const EMISION_FORMATTER = new Intl.DateTimeFormat("es-MX", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
 
 const SUBSCRIPTION_STATUS_LABELS: Record<"active" | "past_due" | "canceled" | "incomplete", string> = {
   active: "activo",
@@ -56,6 +63,9 @@ export default async function PlanPage() {
           planDisplayName={trialPlan.display_name}
           trialEndLabel={trialEndLabel}
           priceUsd={trialPlan.price_usd_cents / 100}
+          issuedAtLabel={
+            subscription?.created_at ? EMISION_FORMATTER.format(new Date(subscription.created_at)) : null
+          }
         />
       )}
 

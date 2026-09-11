@@ -4,36 +4,50 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
+// Las preguntas están escritas para lo que Frames vende HOY: un servicio
+// donde nosotros hacemos el mes y lo publicamos. Las respuestas anteriores
+// describían el autoservicio —"cancelas desde tu panel", "el cuestionario
+// te toma diez minutos", "Instagram en el plan Básico... en Pro y Max"— y
+// ninguna de esas tres cosas es cierta para quien contrata el servicio:
+// no tiene panel, no llena un cuestionario, y los paquetes ya ni se
+// llaman así. Una sección de preguntas frecuentes que contradice a la
+// tabla de precios que está tres pantallas arriba no genera dudas, genera
+// desconfianza.
 const FAQS = [
   {
-    question: "¿Necesito saber de diseño o edición para usarlo?",
+    question: "¿Necesito saber de diseño o edición?",
     answer:
-      "No. Le cuentas de tu negocio una sola vez al principio y de ahí en adelante los videos, las imágenes y los textos salen solos cada mes. No tienes que editar nada ni aprender ninguna herramienta.",
+      "No, y tampoco tienes que aprender ninguna herramienta. Nos cuentas de tu negocio una vez, nosotros armamos el mes, hacemos los videos y las imágenes y los subimos. Lo único que haces tú es avisarnos si algo no te late.",
   },
   {
-    question: "¿Es seguro conectar mis redes sociales?",
+    question: "¿El contenido se nota que está hecho con IA?",
     answer:
-      "Sí. Te conectas con el inicio de sesión oficial de Meta y de TikTok, así que tu contraseña nunca pasa por nosotros. Lo único que pedimos es permiso para publicar a tu nombre, y desconectas la cuenta cuando quieras desde tu panel.",
+      "Se nota cuando está mal hecho. Por eso ninguna pieza sale sin que una persona la revise antes, y por eso te mandamos tres de muestra antes de que pagues: para que lo juzgues tú y no nosotros. Lo que sí te decimos de frente es que no vamos a ir a grabar a tu local. Si lo que necesitas es a tu gente y tu producto en cámara, eso es otra cosa y te conviene un fotógrafo.",
+  },
+  {
+    question: "¿Es seguro darles acceso a mis redes?",
+    answer:
+      "Tú decides cómo. Puedes conectarnos con el inicio de sesión oficial de Instagram, Facebook o TikTok —tu contraseña nunca pasa por nosotros y nos quitas el permiso cuando quieras— o te mandamos las piezas listas por WhatsApp y las subes tú. Las dos formas funcionan igual.",
   },
   {
     question: "¿Puedo cancelar cuando quiera?",
     answer:
-      "Sí, sin contratos forzosos ni letra chica. Cancelas desde tu panel en cualquier momento y dejas de pagar al terminar tu ciclo actual.",
+      "Sí. Se paga mes con mes, sin contrato forzoso y sin penalización. Nos avisas antes de que termine tu mes y ahí queda. Lo que ya te entregamos es tuyo y te lo quedas.",
   },
   {
-    question: "¿Qué pasa si no me gusta el contenido que genera?",
+    question: "¿Qué pasa si no me gusta una pieza?",
     answer:
-      "Lo mandas a regenerar, o le corriges los datos de tu marca (el tono, lo que vendes, tu estilo) para que el siguiente salga más cerca de lo que querías. Entre mejor esté esa información, mejor sale el contenido.",
+      "Nos dices cuál y la rehacemos, sin costo y sin discutirlo. Es más rápido de lo que suena: rehacer un video es cuestión de minutos, no de volver a citar a un equipo de grabación. Y entre más nos corrijas al principio, menos vas a tener que corregir después.",
   },
   {
-    question: "¿Cuánto tarda en estar listo mi primer contenido?",
+    question: "¿Cuánto tarda en estar listo?",
     answer:
-      "El cuestionario te toma unos diez minutos. Ese mismo día tienes tu primer mes de contenido listo para que lo revises antes de que salga.",
+      "Las tres piezas de muestra te llegan en menos de 24 horas. Si decides seguir, primero platicamos un rato para entender bien tu negocio y de ahí te mandamos el mes completo, para que lo revises antes de que salga publicado nada.",
   },
   {
-    question: "¿En qué redes sociales puedo publicar?",
+    question: "¿En qué redes publican?",
     answer:
-      "Instagram en el plan Básico; Instagram, Facebook y TikTok en Pro y Max. Publicamos directamente en tus cuentas conectadas, a la hora en que tu público suele estar más activo.",
+      "Instagram en el paquete Entrada; Instagram, Facebook y TikTok en Crecimiento y Completo. Publicamos a la hora en que tu público suele estar despierto, no a la hora en que nos acordamos.",
   },
 ];
 

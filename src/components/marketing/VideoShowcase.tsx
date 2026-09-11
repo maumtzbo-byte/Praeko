@@ -1,4 +1,4 @@
-import { Play, Dumbbell, UtensilsCrossed, Sparkles, ShoppingBag, HeartPulse, Briefcase, type LucideIcon } from "lucide-react";
+import { Dumbbell, UtensilsCrossed, Sparkles, ShoppingBag, HeartPulse, Briefcase, type LucideIcon } from "lucide-react";
 
 // Illustrative examples of the kind of video Frames generates per
 // industry — not real finished output (Frames is in beta, there's no
@@ -59,11 +59,12 @@ function VideoCard({
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/5 to-black/20" />
       <p className="absolute left-3 top-3 text-[10px] font-medium text-white/80 md:left-4 md:top-4">{industry}</p>
-      <span className="absolute inset-0 flex items-center justify-center">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm md:h-12 md:w-12">
-          <Play className="h-4 w-4 fill-white text-white md:h-5 md:w-5" />
-        </span>
-      </span>
+      {/* Aquí había un botón de play encima de cada tarjeta. No reproducía
+          nada —no hay video atrás, la tarjeta es un degradado— así que lo
+          único que lograba era invitar a un clic donde no pasaba nada. Un
+          control que no controla nada es peor que no tener control: quien
+          lo toca aprende, en el primer scroll de la portada, que lo que ve
+          aquí no es de fiar. */}
       <p className="absolute inset-x-3 bottom-3 text-xs font-medium leading-snug text-white md:inset-x-4 md:bottom-4">{caption}</p>
     </div>
   );
@@ -78,10 +79,19 @@ export default function VideoShowcase() {
   return (
     <section className="relative overflow-hidden bg-zinc-950 py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
-        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">CONTENIDO GENERADO POR IA</p>
+        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">IDEAS POR GIRO</p>
+        {/* Decía "Así es el tipo de video que Frames genera" arriba de
+            seis tarjetas donde no hay ni un video. Lo que esta fila sí
+            puede enseñar sin mentir es de qué habla cada pieza según el
+            giro; el video de verdad se enseña en la muestra, que es a
+            donde manda el botón. */}
         <h2 className="max-w-lg text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-          Así es el tipo de video que Frames genera para tu negocio
+          De esto habla tu mes, según tu giro
         </h2>
+        <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-400">
+          Ideas de las que armamos cada mes. Los videos ya hechos te los mandamos en tu muestra, con
+          el nombre de tu negocio.
+        </p>
       </div>
 
       {/* Auto-scrolling, not a manual drag row — pauses on hover (see

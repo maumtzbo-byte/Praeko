@@ -19,7 +19,11 @@ export default function CtaSection() {
           >
             Ver mis 3 piezas
           </Link>
-          <p className="text-xs text-zinc-500">Desde $4,900 al mes. Sin contratos forzosos.</p>
+          {/* El precio sale de PricingSection y tiene que decir lo mismo:
+              esta línea se quedó en $4,900 cuando los paquetes bajaron, y
+              la misma página mostraba dos precios distintos con dos
+              scrolls de diferencia. */}
+          <p className="text-xs text-zinc-500">Desde $2,490 al mes. Sin contratos forzosos.</p>
         </div>
 
         {/* Asymmetric visual accent — the only off-center element on an
@@ -29,11 +33,16 @@ export default function CtaSection() {
           <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-zinc-100">
             <CalendarClock className="h-5 w-5 text-accent" strokeWidth={1.5} />
           </span>
+          {/* Decía "10 min es lo que tardas en pedirlas", que venía del
+              cuestionario de autoservicio: el formulario de hoy son
+              cuatro campos y se llena en menos de uno. Y repetir las 24
+              horas que ya promete el párrafo de al lado desperdiciaba el
+              único número que este recuadro puede aportar. */}
           <p className="mt-5 text-3xl font-semibold tracking-tight text-zinc-950">
-            10 min
+            20 piezas
           </p>
           <p className="mt-1 text-sm text-zinc-500">
-            es lo que tardas en pedirlas. Nosotros hacemos el resto.
+            al mes: las armamos, las hacemos y las subimos nosotros.
           </p>
         </div>
       </div>

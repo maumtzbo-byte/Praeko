@@ -17,9 +17,12 @@ interface PricingPlan {
   price: number;
   tagline: string;
   featured: boolean;
-  /** Beta launch offer, Básico only: the first month is free, granted
-   * automatically the moment onboarding finishes (see grantBetaTrial in
-   * src/app/onboarding/actions.ts) — no card, no waiting on a human. */
+  /** La oferta de arranque, solo en Entrada. Se aplica a mano al cerrar
+   * el trato: `grantBetaTrial` (src/app/onboarding/actions.ts) regala el
+   * primer mes completo, pero solo corre al terminar el cuestionario de
+   * autoservicio, y quien contrata el servicio nunca pasa por ahí. El
+   * comentario anterior decía "primer mes gratis, automático" y las dos
+   * mitades eran falsas para el cliente de la agencia. */
   trialBadge?: string;
   features: string[];
 }
@@ -254,8 +257,13 @@ export default function PricingSection() {
           <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">
             PLANES
           </p>
+          {/* Decía "Elige tu plan y publica tu primer contenido hoy",
+              que promete autoservicio: no hay dónde elegir plan ni nada
+              que se publique hoy — el botón de abajo abre una propuesta.
+              Un encabezado que promete más que el botón que lo acompaña
+              es la forma más barata de perder la confianza. */}
           <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-            Elige tu plan y publica tu primer contenido hoy
+            Elige el tamaño de tu mes
           </h2>
           <p className="mt-4 text-zinc-600">
             Precios en pesos y un número claro de piezas cada mes. Sabes desde

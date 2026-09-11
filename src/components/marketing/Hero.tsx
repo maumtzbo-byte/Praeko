@@ -60,11 +60,16 @@ export default function Hero() {
           {/* Un solo botón. El "Cómo funciona" que lo acompañaba mandaba a
               una sección que está a un scroll de distancia y le quitaba
               peso al único clic que importa aquí. */}
+          {/* A /prueba y no a /registro: el embudo ya no es que se
+              registre solo. La muestra es lo que vende, así que el único
+              clic que importa es el que deja sus datos para poder
+              hacérsela. /registro sigue existiendo para cuando abra el
+              autoservicio, solo que ya no se anuncia aquí. */}
           <Link
-            href="/registro"
+            href="/prueba"
             className="mt-7 inline-flex items-center gap-2.5 rounded-full bg-accent-cta px-8 py-4 text-base font-semibold text-white transition-opacity hover:opacity-90 sm:mt-8 sm:px-7 sm:py-3.5 sm:text-[15px] sm:font-medium"
           >
-            Únete a la beta
+            Quiero mis 3 piezas gratis
             <ArrowRight className="h-4 w-4" strokeWidth={2} />
           </Link>
 
@@ -77,7 +82,7 @@ export default function Hero() {
               en español es de las que delatan una plantilla traducida, y
               además la mitad de los dueños de negocio no sabe qué es. */}
           <p className="mt-4 text-xs text-zinc-500">
-            Sin tarjeta de crédito · Tu primer mes de contenido, listo hoy
+            Sin costo y sin compromiso · Te las mando en menos de 24 horas
           </p>
         </div>
       </div>

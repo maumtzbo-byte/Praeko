@@ -450,6 +450,45 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          created_at: string
+          estado: string
+          giro: string
+          id: string
+          instagram: string | null
+          negocio: string
+          nombre: string
+          notas: string | null
+          origen: string | null
+          whatsapp: string
+        }
+        Insert: {
+          created_at?: string
+          estado?: string
+          giro: string
+          id?: string
+          instagram?: string | null
+          negocio: string
+          nombre: string
+          notas?: string | null
+          origen?: string | null
+          whatsapp: string
+        }
+        Update: {
+          created_at?: string
+          estado?: string
+          giro?: string
+          id?: string
+          instagram?: string | null
+          negocio?: string
+          nombre?: string
+          notas?: string | null
+          origen?: string | null
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       generations: {
         Row: {
           business_id: string

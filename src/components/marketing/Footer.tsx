@@ -77,10 +77,10 @@ export default function Footer() {
               down without converting on the way — the rest of the footer
               is informational, not a second ask. */}
           <Link
-            href="/registro"
+            href="/prueba"
             className="rounded-full bg-zinc-950 px-4 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90 "
           >
-            Únete a la beta
+            Ver mis 3 piezas
           </Link>
         </div>
       </div>

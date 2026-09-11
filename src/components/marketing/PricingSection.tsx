@@ -28,7 +28,7 @@ const plans: PricingPlan[] = [
     price: 99,
     tagline: "Para arrancar a publicar cada semana, sin complicarte",
     featured: false,
-    trialBadge: "1er mes gratis (beta)",
+    trialBadge: "Primer mes a mitad",
     features: [
       "8 videos al mes, de 10 segundos con audio, listos para subir",
       "22 imágenes o carruseles al mes",
@@ -138,12 +138,20 @@ function PricingCard({
         </ul>
 
         <Link
-          href={`/registro?plan=${plan.name.toLowerCase()}`}
+          // A /prueba y no a /registro con el plan preseleccionado: no hay
+          // autoservicio que entregar mientras Meta siga bloqueado, y un
+          // servicio se cierra hablando. El plan que le interese se
+          // conversa en WhatsApp, que es donde de todos modos se decide.
+          href="/prueba"
           className={`mt-8 rounded-full px-5 py-2.5 text-center text-sm font-medium transition-opacity hover:opacity-90 ${
             plan.featured ? "bg-accent text-white" : "bg-zinc-950 text-white "
           }`}
         >
-          {plan.trialBadge ? "Prueba gratis" : `Elegir ${plan.name}`}
+          {/* "Solicitar propuesta" y no "Elegir plan": el botón ya no
+              contrata nada, abre una conversación. Prometer que eliges y
+              ya, para luego mandar un formulario, es la forma más rápida
+              de perder la confianza en el primer clic. */}
+          Solicitar propuesta
         </Link>
       </motion.div>
     </div>

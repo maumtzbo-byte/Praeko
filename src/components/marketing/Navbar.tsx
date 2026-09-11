@@ -75,10 +75,10 @@ export default function Navbar() {
               Iniciar sesión
             </Link>
             <Link
-              href="/registro"
+              href="/prueba"
               className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 "
             >
-              Únete a la beta
+              Ver mis 3 piezas
             </Link>
           </div>
 
@@ -115,11 +115,11 @@ export default function Navbar() {
             Iniciar sesión
           </Link>
           <Link
-            href="/registro"
+            href="/prueba"
             onClick={() => setOpen(false)}
             className="mt-2 rounded-full bg-zinc-950 px-4 py-3 text-center text-base font-medium text-white transition-opacity hover:opacity-90 "
           >
-            Únete a la beta
+            Ver mis 3 piezas
           </Link>
         </div>
       )}

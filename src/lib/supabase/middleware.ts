@@ -3,6 +3,9 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_PATHS = [
   "/",
+  // La página de aterrizaje de los anuncios. Sin esto el middleware la
+  // manda a /login, y cada clic pagado se convierte en un rebote.
+  "/prueba",
   "/login",
   "/registro",
   "/recuperar-contrasena",

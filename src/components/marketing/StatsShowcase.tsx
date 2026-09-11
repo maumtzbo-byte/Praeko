@@ -21,22 +21,25 @@ export default function StatsShowcase() {
   return (
     <section className="relative overflow-hidden py-16 sm:py-24">
       <div className="mx-auto max-w-3xl px-6 text-center">
-        <span className="inline-flex items-center rounded-full bg-zinc-950 px-3 py-1.5 text-xs font-medium text-white ">
-          Beta abierta
-        </span>
-        <h2 className="mt-5 text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-          Sé de los primeros negocios en usar Frames
+        {/* Fuera el distintivo de "Beta abierta" y el "sé de los
+            primeros". Anunciar que estás en beta es normal en software y
+            es veneno en un servicio: quien va a pagar por que le lleven
+            sus redes no quiere ser el conejillo de indias de nadie. El
+            trabajo se entrega igual de terminado hoy que dentro de un
+            año; lo que sigue puliéndose es la herramienta, y eso es
+            asunto nuestro, no suyo. */}
+        <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+          Antes de decidir, mira una muestra tuya
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-sm text-zinc-600 sm:text-base">
-          Estamos en beta. Tu cuenta es real y tu contenido se genera y se
-          publica de verdad. Todavía hay cosas que estamos puliendo, y lo que
-          nos digas se arregla rápido.
+          Te hacemos tres piezas para tu negocio, con tu nombre y lo que vendes, y te las mandamos
+          por WhatsApp. Si no te laten, ahí queda.
         </p>
         <Link
-          href="/registro"
+          href="/prueba"
           className="mt-6 inline-flex rounded-full bg-zinc-950 px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
         >
-          Únete a la beta
+          Ver mis 3 piezas
         </Link>
       </div>
 

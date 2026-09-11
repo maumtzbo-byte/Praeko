@@ -10,16 +10,16 @@ export default function CtaSection() {
             Dedica tu tiempo a tu negocio, no a tus redes
           </h2>
           <p className="max-w-md text-zinc-600">
-            Contestas el cuestionario en diez minutos. Ese mismo día tienes
-            tu primer mes de contenido armado.
+            Te hacemos tres piezas para tu negocio y te las mandamos en menos
+            de 24 horas. Sin costo y sin compromiso.
           </p>
           <Link
-            href="/registro"
+            href="/prueba"
             className="rounded-full bg-zinc-950 px-7 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90 "
           >
-            Únete a la beta
+            Ver mis 3 piezas
           </Link>
-          <p className="text-xs text-zinc-500">Primer mes gratis del plan Básico. Sin tarjeta de crédito.</p>
+          <p className="text-xs text-zinc-500">Desde $4,900 al mes. Sin contratos forzosos.</p>
         </div>
 
         {/* Asymmetric visual accent — the only off-center element on an
@@ -33,7 +33,7 @@ export default function CtaSection() {
             10 min
           </p>
           <p className="mt-1 text-sm text-zinc-500">
-            es lo que tardas en contestar el cuestionario. Nada más.
+            es lo que tardas en pedirlas. Nosotros hacemos el resto.
           </p>
         </div>
       </div>

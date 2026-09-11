@@ -52,6 +52,42 @@ const VIDEO_MODEL_SLUGS: Record<VideoGenerationRequest["provider"], { textToVide
 const IMAGE_MODEL_SLUG = "fal-ai/flux/dev";
 const IMAGE_EDIT_MODEL_SLUG = "fal-ai/flux/dev/image-to-image";
 
+/**
+ * Lo que fal.ai cobra por cada generación, en dólares.
+ *
+ * `fetchResult` devolvía `costUsd: 0` en sus tres salidas, así que la
+ * columna `cost_usd` de `generations` se llenaba de ceros: el costo de
+ * producción —el único número que dice si un plan deja dinero— no existía
+ * en ningún lado. Y no es un dato que haga falta estimar: fal.ai cobra por
+ * segundo de video a una tarifa publicada, y los segundos los pedimos
+ * nosotros.
+ *
+ * Tarifas verificadas el 2026-09-11 contra las páginas de cada modelo en
+ * fal.ai. Si fal.ai las mueve, esto queda viejo en silencio; por eso están
+ * juntas y fechadas, y no repartidas por el archivo.
+ *
+ * Kling v3 Pro cobra $0.112/s sin audio y $0.168/s con audio. Va con la de
+ * audio porque los paquetes prometen video con audio.
+ *
+ * Seedance 2.0 a 720p con audio cuesta $0.3034/s: casi el doble que Kling.
+ * Eso importa porque el plan Max es el único que lo usa (ver
+ * src/lib/plans/limits.ts) y es también el que más segundos otorga —22
+ * videos × 20 s = 440 s, o sea ~$133 USD de generación contra $399 USD de
+ * precio. El plan más caro es el de peor margen, y hasta ahora eso no se
+ * veía porque el costo se guardaba en cero.
+ */
+const TARIFA_VIDEO_POR_SEGUNDO: Record<string, number> = {
+  "fal-ai/kling-video/v3/pro/text-to-video": 0.168,
+  "fal-ai/kling-video/v3/pro/image-to-video": 0.168,
+  "bytedance/seedance-2.0/text-to-video": 0.3034,
+  "bytedance/seedance-2.0/image-to-video": 0.3034,
+};
+
+/** Flux dev cobra $0.025 por megapixel, redondeando hacia arriba. No le
+ *  mandamos `image_size`, así que sale el tamaño por defecto del endpoint,
+ *  que queda por debajo de un megapixel y se cobra como uno. */
+const TARIFA_IMAGEN = 0.025;
+
 interface FalQueueSubmitResponse {
   request_id: string;
   status_url: string;
@@ -67,19 +103,49 @@ interface FalQueueStatusResponse {
  * slug is packed into the id here and unpacked in checkStatus/fetchResult,
  * instead of widening the shared GenerationJobHandle type for one provider's
  * quirk. */
-function encodeJobId(modelSlug: string, requestId: string): string {
-  return `${modelSlug}::${requestId}`;
+function encodeJobId(modelSlug: string, requestId: string, segundos?: number): string {
+  const base = `${modelSlug}::${requestId}`;
+  return segundos === undefined ? base : `${base}::${segundos}`;
 }
 
-function decodeJobId(providerJobId: string): { modelSlug: string; requestId: string } {
+/** Los segundos viajan dentro del id por la misma razón que el slug: la
+ *  interfaz `GenerationProvider` solo le pasa a `fetchResult` un
+ *  `providerJobId`, y sin la duración no hay forma de calcular el costo de
+ *  un video cuando termina. Un id viejo sin ese tercer campo sigue
+ *  funcionando; nada más se queda sin costo, que es justo como estaba
+ *  todo antes. */
+function decodeJobId(providerJobId: string): { modelSlug: string; requestId: string; segundos?: number } {
   const separatorIndex = providerJobId.indexOf("::");
   if (separatorIndex === -1) {
     throw new Error(`Malformed fal.ai job id: ${providerJobId}`);
   }
+  const resto = providerJobId.slice(separatorIndex + 2);
+  const segundoSeparador = resto.indexOf("::");
+  if (segundoSeparador === -1) {
+    return { modelSlug: providerJobId.slice(0, separatorIndex), requestId: resto };
+  }
+  const segundos = Number(resto.slice(segundoSeparador + 2));
   return {
     modelSlug: providerJobId.slice(0, separatorIndex),
-    requestId: providerJobId.slice(separatorIndex + 2),
+    requestId: resto.slice(0, segundoSeparador),
+    segundos: Number.isFinite(segundos) ? segundos : undefined,
   };
+}
+
+/** Lo que costó la generación que acaba de terminar.
+ *
+ *  Devuelve 0 solo cuando de verdad no se puede saber —un slug que no está
+ *  en la tabla, o un id viejo sin duración—, y no como valor por omisión
+ *  para todo. */
+function costoUsd(modelSlug: string, segundos?: number): number {
+  const porSegundo = TARIFA_VIDEO_POR_SEGUNDO[modelSlug];
+  if (porSegundo !== undefined) {
+    return segundos === undefined ? 0 : Number((porSegundo * segundos).toFixed(4));
+  }
+  if (modelSlug === IMAGE_MODEL_SLUG || modelSlug === IMAGE_EDIT_MODEL_SLUG) {
+    return TARIFA_IMAGEN;
+  }
+  return 0;
 }
 
 /** Was missing the "FAILED" case entirely — fal.ai's queue API documents
@@ -130,7 +196,11 @@ export class FalGenerationProvider implements GenerationProvider {
     };
   }
 
-  private async submitToQueue(modelSlug: string, input: Record<string, unknown>): Promise<GenerationJobHandle> {
+  private async submitToQueue(
+    modelSlug: string,
+    input: Record<string, unknown>,
+    segundos?: number,
+  ): Promise<GenerationJobHandle> {
     const res = await fetch(`${QUEUE_BASE}/${modelSlug}`, {
       method: "POST",
       headers: this.authHeaders(),
@@ -140,7 +210,7 @@ export class FalGenerationProvider implements GenerationProvider {
       throw new Error(`fal.ai submit failed (${modelSlug}): ${res.status} ${await res.text()}`);
     }
     const data = (await res.json()) as FalQueueSubmitResponse;
-    return { providerJobId: encodeJobId(modelSlug, data.request_id), status: "queued" };
+    return { providerJobId: encodeJobId(modelSlug, data.request_id, segundos), status: "queued" };
   }
 
   async submitVideo(request: VideoGenerationRequest): Promise<GenerationJobHandle> {
@@ -158,7 +228,7 @@ export class FalGenerationProvider implements GenerationProvider {
       duration: request.durationSeconds,
       ...(isSeedance ? { resolution: "720p" } : {}),
       ...(hasReference ? { image_url: request.referenceAssetUrls[0] } : {}),
-    });
+    }, request.durationSeconds);
   }
 
   async submitImage(request: ImageGenerationRequest): Promise<GenerationJobHandle> {
@@ -184,11 +254,13 @@ export class FalGenerationProvider implements GenerationProvider {
   }
 
   async fetchResult(providerJobId: string): Promise<GenerationResult> {
-    const { modelSlug, requestId } = decodeJobId(providerJobId);
+    const { modelSlug, requestId, segundos } = decodeJobId(providerJobId);
     const res = await fetch(`${QUEUE_BASE}/${modelSlug}/requests/${requestId}`, {
       headers: this.authHeaders(),
     });
     if (!res.ok) {
+      // Los dos caminos de error se quedan en 0 a propósito: fal.ai no
+      // cobra un trabajo que no entregó salida.
       return { status: "failed", errorMessage: `fal.ai result fetch failed: ${res.status} ${await res.text()}`, costUsd: 0 };
     }
     const data = (await res.json()) as Record<string, unknown>;
@@ -202,6 +274,6 @@ export class FalGenerationProvider implements GenerationProvider {
     if (!outputUrl) {
       return { status: "failed", errorMessage: "fal.ai response had no recognizable output URL.", costUsd: 0 };
     }
-    return { status: "completed", outputUrl, costUsd: 0 };
+    return { status: "completed", outputUrl, costUsd: costoUsd(modelSlug, segundos) };
   }
 }

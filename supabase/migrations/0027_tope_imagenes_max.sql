@@ -1,0 +1,17 @@
+-- Sube el tope de imágenes del plan Max.
+--
+-- Venía en 8, heredado de un diseño donde los planes intercambiaban video
+-- por imagen (22/15/8) en vez de dar más de todo. Eso dejaba al paquete
+-- más caro con MENOS imágenes que el de en medio, y en la página se leía
+-- como lo que era: pagas más y recibes menos.
+--
+-- La imagen es lo barato en los dos costos que importan: centavos de
+-- generación con Flux, y unos tres segundos de revisión contra los 60 a 90
+-- que cuesta ver un video completo para juzgarlo. No hay razón para
+-- racionarla.
+--
+-- 30 y no 20, que es lo que se promete, porque cada regeneración cuenta
+-- contra el tope (ver check_and_increment_usage): con el tope igual a lo
+-- prometido, la primera pieza que se manda a rehacer deja la cuenta sin
+-- cupo.
+update plans set images_per_month = 30 where key = 'max';

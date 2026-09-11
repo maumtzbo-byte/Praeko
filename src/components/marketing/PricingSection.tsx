@@ -33,6 +33,11 @@ interface PricingPlan {
 // de 15 videos se ve bien en la página y te cuesta el doble de horas que
 // uno de 8 con más imagen.
 //
+// Y por lo mismo la imagen sube libremente con el paquete: cuesta centavos
+// de generación y tres segundos de revisión. Que Completo tuviera MENOS
+// imágenes que Crecimiento —8 contra 12— era un error heredado de los
+// topes de la tabla, no una decisión: pagabas más y recibías menos.
+//
 // Los topes de la tabla `plans` se quedan como están y a propósito quedan
 // POR ENCIMA de lo que se promete aquí: cada regeneración cuenta contra el
 // tope, así que si el tope fuera igual a lo prometido, la primera pieza
@@ -71,7 +76,7 @@ const plans: PricingPlan[] = [
     featured: false,
     features: [
       "16 videos al mes, de mayor duración",
-      "8 imágenes o carruseles al mes",
+      "20 imágenes o carruseles al mes",
       "Instagram, Facebook y TikTok",
       "Tu contenido se produce primero que el de nadie más",
       "Reporte mensual de resultados",

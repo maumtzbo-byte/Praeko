@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+
+import { ligaWhatsapp, MENSAJE_DATOS, WHATSAPP_VISIBLE } from "@/lib/contacto";
 import Navbar from "@/components/marketing/Navbar";
 import Footer from "@/components/marketing/Footer";
 
@@ -22,11 +24,16 @@ export default function EliminarDatosPage() {
             <div className="rounded-2xl border border-[var(--hairline)] bg-white p-6">
               <h2 className="text-base font-semibold text-zinc-950">Solicita la eliminación</h2>
               <p className="mt-2">
-                Escríbenos a{" "}
-                <a href="mailto:soporte@frames.com" className="text-accent hover:underline">
-                  soporte@frames.com
+                Escríbenos por WhatsApp al{" "}
+                <a
+                  href={ligaWhatsapp(MENSAJE_DATOS)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:underline"
+                >
+                  {WHATSAPP_VISIBLE}
                 </a>{" "}
-                desde el correo con el que te registraste, pidiendo la eliminación de tu cuenta.
+                pidiendo la eliminación de tu cuenta, y dinos el correo con el que te registraste.
                 Verificamos tu identidad y eliminamos tu perfil de negocio, contenido generado y
                 tokens de redes sociales conectadas en un plazo máximo de 20 días hábiles, conforme
                 a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares.

@@ -1,15 +1,19 @@
 import Link from "next/link";
 import { FramesMark } from "@/components/brand/FramesMark";
+import { ligaWhatsapp, MENSAJE_SOPORTE, WHATSAPP_VISIBLE } from "@/lib/contacto";
 
 const PRODUCT_LINKS = [
   { href: "#agentes", label: "Cómo funciona" },
   { href: "#precios", label: "Precios" },
 ];
 
-const ACCOUNT_LINKS = [
-  { href: "/login", label: "Iniciar sesión" },
-  { href: "/registro", label: "Crear cuenta" },
-];
+// Sin "Crear cuenta". La ruta /registro sigue existiendo para cuando
+// abra el autoservicio, pero anunciarla aquí manda a alguien a darse de
+// alta solo en un producto que hoy se contrata hablando — y lo que
+// encuentra del otro lado no es lo que la página le acaba de prometer.
+// "Iniciar sesión" se queda: los clientes que ya tienen panel entran por
+// ahí.
+const ACCOUNT_LINKS = [{ href: "/login", label: "Iniciar sesión" }];
 
 export default function Footer() {
   return (
@@ -39,7 +43,7 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold tracking-[0.2em] text-zinc-500">CUENTA</p>
+          <p className="text-xs font-semibold tracking-[0.2em] text-zinc-500">CONTACTO</p>
           {ACCOUNT_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -49,11 +53,15 @@ export default function Footer() {
               {link.label}
             </Link>
           ))}
+          {/* Era mailto:soporte@frames.com — un dominio que no es
+              nuestro. Ver MENSAJE_SOPORTE en src/lib/contacto.ts. */}
           <a
-            href="mailto:soporte@frames.com"
+            href={ligaWhatsapp(MENSAJE_SOPORTE)}
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-sm text-zinc-600 transition-colors hover:text-zinc-950 "
           >
-            soporte@frames.com
+            WhatsApp {WHATSAPP_VISIBLE}
           </a>
         </div>
       </div>

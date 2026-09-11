@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, Mail, X } from "lucide-react";
 import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
-import { requestPlanEmailHref } from "@/lib/dashboard/request-plan-email";
+import { ligaSolicitudDePlan } from "@/lib/dashboard/solicitud-de-plan";
 
 const BRAND_CONFETTI_COLORS = ["#1e6b4c", "#0a2e23", "#ece3d8", "#c9b896"];
 
@@ -140,7 +140,7 @@ export default function PlanRequestModal({
               <Button variant="secondary" className="flex-1 border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={onClose}>
                 Cerrar
               </Button>
-              <a href={requestPlanEmailHref(businessName, planDisplayName, priceUsd)} className="flex-1">
+              <a href={ligaSolicitudDePlan(businessName, planDisplayName, priceUsd)} className="flex-1">
                 <Button className="w-full bg-accent text-white hover:bg-accent-strong">
                   <Mail className="h-4 w-4" />
                   Abrir correo

@@ -14,7 +14,7 @@ import {
   type CustomPlanSelection,
 } from "@/lib/plans/custom-plan";
 import { PLAN_LIMITS, type PlanKey } from "@/lib/plans/limits";
-import { customPlanEmailHref } from "@/lib/dashboard/request-plan-email";
+import { ligaSolicitudDePlanAMedida } from "@/lib/dashboard/solicitud-de-plan";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -243,7 +243,7 @@ export function PlanConfigurator({ businessName }: { businessName: string }) {
                     Elige al menos una pieza de contenido al mes.
                   </p>
                 ) : (
-                  <a href={customPlanEmailHref(businessName, selection, priceCents)} className="mt-5 block">
+                  <a href={ligaSolicitudDePlanAMedida(businessName, selection, priceCents)} className="mt-5 block">
                     <Button className="w-full bg-accent text-white hover:bg-accent-strong">
                       <Mail className="h-4 w-4" />
                       Solicitar este plan

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+
+import { ligaWhatsapp, MENSAJE_SOPORTE, WHATSAPP_VISIBLE } from "@/lib/contacto";
 import Navbar from "@/components/marketing/Navbar";
 import Footer from "@/components/marketing/Footer";
 
@@ -149,9 +151,14 @@ export default function TerminosPage() {
             <section>
               <h2 className="text-lg font-semibold text-zinc-950">14. Contacto</h2>
               <p className="mt-2">
-                ¿Dudas sobre estos términos? Escríbenos a{" "}
-                <a href="mailto:soporte@frames.com" className="text-accent hover:underline">
-                  soporte@frames.com
+                ¿Dudas sobre estos términos? Escríbenos por WhatsApp al{" "}
+                <a
+                  href={ligaWhatsapp(MENSAJE_SOPORTE)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:underline"
+                >
+                  {WHATSAPP_VISIBLE}
                 </a>
                 .
               </p>

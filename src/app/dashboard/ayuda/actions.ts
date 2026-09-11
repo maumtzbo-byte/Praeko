@@ -30,7 +30,7 @@ const SUPPORT_SYSTEM_PROMPT = [
   "Reglas de estilo:",
   "- Responde siempre en español, corto y directo — de preferencia en pasos numerados si es un procedimiento.",
   "- Nunca inventes botones, menús o funciones que no están en esta lista.",
-  "- Si la pregunta no es sobre cómo usar Frames (por ejemplo, temas de facturación específicos de su cuenta, quejas, o algo fuera de la app), dile amablemente que escriba a soporte@frames.com en vez de inventar una respuesta.",
+  "- Si la pregunta no es sobre cómo usar Frames (por ejemplo, temas de facturación específicos de su cuenta, quejas, o algo fuera de la app), dile amablemente que nos escriba por WhatsApp al 81 4007 6185 en vez de inventar una respuesta.",
 ].join("\n");
 
 interface ChatMessage {
@@ -63,7 +63,7 @@ export async function sendSupportChatMessage(
     if ((messagesToday ?? 0) >= MAX_SUPPORT_MESSAGES_PER_DAY) {
       return {
         success: false,
-        error: "Ya usaste el máximo de mensajes de hoy. Vuelve mañana o escríbenos a soporte@frames.com.",
+        error: "Ya usaste el máximo de mensajes de hoy. Vuelve mañana o escríbenos por WhatsApp al 81 4007 6185.",
       };
     }
 

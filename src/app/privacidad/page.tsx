@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+
+import { ligaWhatsapp, MENSAJE_DATOS, MENSAJE_SOPORTE, WHATSAPP_VISIBLE } from "@/lib/contacto";
 import Navbar from "@/components/marketing/Navbar";
 import Footer from "@/components/marketing/Footer";
 
@@ -152,9 +154,14 @@ export default function PrivacidadPage() {
                 <a href="/eliminar-datos" className="text-accent hover:underline">
                   instrucciones aquí
                 </a>{" "}
-                o escríbenos a{" "}
-                <a href="mailto:soporte@frames.com" className="text-accent hover:underline">
-                  soporte@frames.com
+                o escríbenos por WhatsApp al{" "}
+                <a
+                  href={ligaWhatsapp(MENSAJE_DATOS)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:underline"
+                >
+                  {WHATSAPP_VISIBLE}
                 </a>{" "}
                 — respondemos en un plazo máximo de 20 días hábiles. Desconectar una red social
                 (desde el panel de Redes sociales) revoca de inmediato el acceso que le diste a
@@ -200,9 +207,14 @@ export default function PrivacidadPage() {
             <section>
               <h2 className="text-lg font-semibold text-zinc-950">12. Contacto</h2>
               <p className="mt-2">
-                ¿Preguntas sobre esta política o tus datos? Escríbenos a{" "}
-                <a href="mailto:soporte@frames.com" className="text-accent hover:underline">
-                  soporte@frames.com
+                ¿Preguntas sobre esta política o tus datos? Escríbenos por WhatsApp al{" "}
+                <a
+                  href={ligaWhatsapp(MENSAJE_SOPORTE)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:underline"
+                >
+                  {WHATSAPP_VISIBLE}
                 </a>
                 .
               </p>

@@ -32,3 +32,17 @@ export const MENSAJE_COTIZACION =
 
 export const MENSAJE_MUESTRA =
   "Hola, vi su anuncio y quiero las 3 piezas de muestra para mi negocio.";
+
+/** El canal de soporte y de avisos legales.
+ *
+ *  Durante mucho tiempo la página, el aviso de privacidad y los términos
+ *  mandaban a `soporte@frames.com`, que es un dominio que no es nuestro:
+ *  el sitio vive en praekomarketingsaas.vercel.app. O sea que el correo
+ *  donde se ejercen los derechos ARCO llegaba, con suerte, al buzón de un
+ *  desconocido. WhatsApp no es el canal más formal para un aviso de
+ *  privacidad, pero es el único que de verdad contestamos, y la ley pide
+ *  un medio real de contacto, no uno que se vea bien. */
+export const MENSAJE_SOPORTE = "Hola, tengo una duda sobre mi servicio de Frames.";
+
+export const MENSAJE_DATOS =
+  "Hola, quiero ejercer mis derechos sobre los datos que tienen de mí (ARCO).";

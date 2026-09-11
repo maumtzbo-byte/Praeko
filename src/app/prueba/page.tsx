@@ -9,7 +9,7 @@ import { ligaWhatsapp, MENSAJE_COTIZACION } from "@/lib/contacto";
 /**
  * Aterrizaje de los anuncios de Meta.
  *
- * Vive aparte de la home a propósito. El anuncio dice "30 piezas al mes" y
+ * Vive aparte de la home a propósito. El anuncio dice "20 piezas al mes" y
  * la página tiene que abrir diciendo lo mismo: mandar tráfico pagado a una
  * portada que habla de otra cosa es la forma más cara de perder un clic.
  *
@@ -24,7 +24,7 @@ import { ligaWhatsapp, MENSAJE_COTIZACION } from "@/lib/contacto";
  *     conversación va en WhatsApp, que es donde de todos modos se cierra.
  */
 export const metadata: Metadata = {
-  title: "30 piezas al mes para tu negocio | Frames",
+  title: "20 piezas al mes para tu negocio | Frames",
   description:
     "Videos e imágenes para Instagram, Facebook y TikTok, publicados por nosotros. Pide tres piezas de muestra sin costo.",
   // Es una página de campaña: no tiene por qué competir en buscadores con
@@ -34,8 +34,8 @@ export const metadata: Metadata = {
 };
 
 const RECIBES = [
-  { icono: Clapperboard, texto: "15 videos al mes, con audio y subtítulos" },
-  { icono: ImageIcon, texto: "15 imágenes o carruseles" },
+  { icono: Clapperboard, texto: "8 videos al mes, con audio y subtítulos" },
+  { icono: ImageIcon, texto: "12 imágenes o carruseles" },
   { icono: Send, texto: "Publicado en Instagram, Facebook y TikTok" },
   { icono: MessageCircle, texto: "Contestamos comentarios y mensajes" },
 ];
@@ -61,7 +61,7 @@ export default function PruebaPage() {
                 PARA NEGOCIOS EN MÉXICO
               </p>
               <h1 className="mt-4 text-balance text-4xl font-semibold leading-[1.02] tracking-tight text-zinc-950 sm:text-5xl">
-                30 piezas al mes para tu negocio
+                20 piezas al mes para tu negocio
               </h1>
               <p className="mt-4 max-w-md text-[17px] leading-relaxed text-zinc-600">
                 Nosotros armamos el mes completo, lo producimos y lo publicamos en tus redes. Tú
@@ -133,11 +133,11 @@ export default function PruebaPage() {
 
         {/* La objeción, no el argumento de venta. Nadie compra "siete
             agentes de IA"; la gente compra que sus redes estén resueltas.
-            Pero al ver 30 piezas por ese precio, la primera pregunta es
+            Pero al ver 20 piezas por ese precio, la primera pregunta es
             "¿cómo le hacen?", y esto la contesta. */}
         <section className="mt-16 border-t border-[var(--hairline)] pt-10 sm:mt-20">
           <h2 className="max-w-lg text-balance text-2xl font-semibold tracking-tight text-zinc-950">
-            ¿Cómo alcanza para 30 piezas?
+            ¿Cómo alcanza para 20 piezas?
           </h2>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-zinc-600">
             Porque no las hacemos a mano. Siete agentes de IA producen el mes: uno arma el plan, uno

@@ -4,8 +4,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 // Real numbers only, nothing invented to look like traction Frames
-// doesn't have yet. "30" is every plan's video+image count added
-// together (8+22, 15+15, 22+8 — all land on 30, just a different mix),
+// doesn't have yet. "20" son las piezas del paquete de en medio, que es el
+// que se anuncia (8 videos + 12 imágenes; ver PricingSection),
 // "100%" is the product's actual language, and "7" is the number of
 // agents actually listed further down this same page (see
 // TeamSection.tsx) — no fabricated user/customer count. This said "5"
@@ -13,7 +13,7 @@ import { motion } from "framer-motion";
 // Tendencias were already shipped and simply weren't being counted.
 const SUPPORTING_STATS = [
   { value: "100%", label: "Contenido generado en español" },
-  { value: "30", label: "Videos e imágenes cada mes, en cualquier plan" },
+  { value: "20", label: "Videos e imágenes al mes, publicados por nosotros" },
   { value: "7", label: "Agentes de IA trabajando por tu negocio" },
 ];
 

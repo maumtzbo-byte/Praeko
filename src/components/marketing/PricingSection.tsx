@@ -24,45 +24,57 @@ interface PricingPlan {
   features: string[];
 }
 
+// Los tres paquetes de la agencia, en pesos.
+//
+// El número de piezas está calculado sobre TU tiempo, no sobre lo que la
+// IA puede producir: un video hay que verlo completo para juzgarlo (60 a
+// 90 segundos) y una imagen se juzga en tres. Por eso los paquetes suben
+// principalmente en video —4, 8, 16— y las imágenes acompañan. Un paquete
+// de 15 videos se ve bien en la página y te cuesta el doble de horas que
+// uno de 8 con más imagen.
+//
+// Los topes de la tabla `plans` se quedan como están y a propósito quedan
+// POR ENCIMA de lo que se promete aquí: cada regeneración cuenta contra el
+// tope, así que si el tope fuera igual a lo prometido, la primera pieza
+// que mandes a rehacer te dejaría sin cupo.
 const plans: PricingPlan[] = [
   {
-    name: "Básico",
-    price: 99,
-    tagline: "Para arrancar a publicar cada semana, sin complicarte",
+    name: "Entrada",
+    price: 4900,
+    tagline: "Para dejar de tener el perfil abandonado",
     featured: false,
     trialBadge: "Primer mes a mitad",
     features: [
-      "8 videos al mes, de 10 segundos con audio, listos para subir",
-      "22 imágenes o carruseles al mes",
-      "Video generado con IA de calidad profesional",
-      "1 red social conectada (Instagram)",
-      "Sin subtítulos automáticos",
+      "4 videos al mes, con audio",
+      "10 imágenes o carruseles al mes",
+      "1 red social",
+      "Nosotros publicamos por ti",
     ],
   },
   {
-    name: "Pro",
-    price: 199,
-    tagline: "Algo nuevo casi todos los días, en tus tres redes",
+    name: "Crecimiento",
+    price: 8900,
+    tagline: "Algo nuevo cuatro veces por semana, en tus tres redes",
     featured: true,
     features: [
-      "15 videos al mes, con la duración justa para cada pieza (hasta 25s)",
-      "15 imágenes o carruseles al mes",
-      "Video con calidad profesional y subtítulos automáticos incluidos",
-      "3 redes sociales conectadas (Instagram, Facebook y TikTok)",
-      "Publicamos con el horario recomendado para tu tipo de negocio, y ves tus resultados reales en tu panel",
+      "8 videos al mes, con audio y subtítulos",
+      "12 imágenes o carruseles al mes",
+      "Instagram, Facebook y TikTok",
+      "Publicamos a la hora que le sirve a tu giro",
+      "Contestamos comentarios y mensajes",
     ],
   },
   {
-    name: "Max",
-    price: 399,
-    tagline: "Para negocios que quieren estar en todos lados, sin esperar",
+    name: "Completo",
+    price: 14900,
+    tagline: "Para cuando el video es lo que te está trayendo clientes",
     featured: false,
     features: [
-      "22 videos al mes, hasta 30 segundos cada uno",
+      "16 videos al mes, de mayor duración",
       "8 imágenes o carruseles al mes",
-      "La mejor calidad de video que ofrecemos, con subtítulos automáticos",
-      "3 redes sociales conectadas (Instagram, Facebook y TikTok)",
-      "Tu contenido se procesa primero que el de nadie más, con soporte dedicado y sin marca de agua",
+      "Instagram, Facebook y TikTok",
+      "Tu contenido se produce primero que el de nadie más",
+      "Reporte mensual de resultados",
     ],
   },
 ];
@@ -121,8 +133,10 @@ function PricingCard({
         <p className={`mt-1 text-sm ${plan.featured ? "text-zinc-400" : "text-zinc-500"}`}>{plan.tagline}</p>
 
         <div className="mt-6 flex items-baseline gap-1">
-          <span className="text-2xl font-semibold tracking-tight md:text-4xl">${plan.price}</span>
-          <span className={`text-sm ${plan.featured ? "text-zinc-400" : "text-zinc-500"}`}>/mes</span>
+          <span className="text-2xl font-semibold tracking-tight md:text-4xl">
+            ${plan.price.toLocaleString("es-MX")}
+          </span>
+          <span className={`text-sm ${plan.featured ? "text-zinc-400" : "text-zinc-500"}`}>MXN/mes</span>
         </div>
         {plan.trialBadge && (
           <span className="mt-2 inline-flex w-fit items-center rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-semibold text-accent">
@@ -215,8 +229,8 @@ export default function PricingSection() {
             Elige tu plan y publica tu primer contenido hoy
           </h2>
           <p className="mt-4 text-zinc-600">
-            Precios en dólares y un límite claro cada mes. Sabes desde el
-            primer día cuánto vas a pagar.
+            Precios en pesos y un número claro de piezas cada mes. Sabes desde
+            el primer día qué recibes y cuánto pagas.
           </p>
         </div>
 
@@ -266,8 +280,9 @@ export default function PricingSection() {
         </div>
 
         <p className="mt-8 text-center text-xs text-zinc-500">
-          Equivalente informativo en MXN al tipo de cambio del día. Sin
-          contratos forzosos y sin letra chica. Cancelas cuando quieras.
+          Precios en pesos, más IVA. Sin contratos forzosos y sin letra chica:
+          cancelas cuando quieras. El presupuesto de anuncios, si decides
+          pautar, va aparte.
         </p>
       </div>
     </section>

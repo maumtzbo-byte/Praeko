@@ -47,9 +47,6 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-2">
             <FramesMark className="h-5 w-5 text-zinc-950" />
             <span className="text-base font-semibold tracking-[0.2em] text-zinc-950">FRAMES</span>
-            <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-accent">
-              BETA
-            </span>
           </Link>
 
           <div className="hidden items-center gap-6 md:flex">

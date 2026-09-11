@@ -26,6 +26,30 @@ interface PricingPlan {
 
 // Los tres paquetes de la agencia, en pesos.
 //
+// Los precios NO salen de compararse con agencias de humanos. Ese fue el
+// error de la primera versión: anclar en "60% de lo que cobra una agencia"
+// sigue siendo anclar en una agencia, e invita justo a la comparación que
+// Frames pierde — un reel grabado en el gimnasio con gente de verdad tiene
+// algo que el generado no.
+//
+// El rango sale de contra qué compara de verdad un dueño de negocio en
+// México cuando lo que le ofrecen es contenido producido con IA:
+//
+//     No hacer nada                              $0
+//     Una herramienta de IA que él opera         $400 – 900
+//     Community manager freelance              $4,000 – 8,000
+//     Agencia chica                            $8,000 – 15,000
+//
+// Frames vive entre la herramienta y el freelance: más volumen que un CM,
+// cero trabajo para el cliente, pero contenido generado. Por eso el
+// paquete de en medio queda en $4,490 y no en los $8,900 de antes.
+//
+// Lo que sostiene el margen no es el precio, es el costo: la generación
+// del paquete de en medio cuesta ~$450 MXN (8 videos × 15 s × $0.168 USD,
+// más centavos de imagen), o sea el 10% del ingreso. El costo real sigue
+// siendo el tiempo de revisión, que es lo que limita cuántos clientes
+// caben — no el precio.
+//
 // El número de piezas está calculado sobre TU tiempo, no sobre lo que la
 // IA puede producir: un video hay que verlo completo para juzgarlo (60 a
 // 90 segundos) y una imagen se juzga en tres. Por eso los paquetes suben
@@ -45,7 +69,7 @@ interface PricingPlan {
 const plans: PricingPlan[] = [
   {
     name: "Entrada",
-    price: 4900,
+    price: 2490,
     tagline: "Para dejar de tener el perfil abandonado",
     featured: false,
     trialBadge: "Primer mes a mitad",
@@ -58,7 +82,7 @@ const plans: PricingPlan[] = [
   },
   {
     name: "Crecimiento",
-    price: 8900,
+    price: 4490,
     tagline: "Algo nuevo cuatro veces por semana, en tus tres redes",
     featured: true,
     features: [
@@ -71,7 +95,7 @@ const plans: PricingPlan[] = [
   },
   {
     name: "Completo",
-    price: 14900,
+    price: 7900,
     tagline: "Para cuando el video es lo que te está trayendo clientes",
     featured: false,
     features: [

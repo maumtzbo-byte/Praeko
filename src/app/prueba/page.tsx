@@ -93,7 +93,7 @@ export default function PruebaPage() {
 
             <p className="text-[15px] text-zinc-600">
               <span className="text-xl font-semibold tracking-tight text-zinc-950">
-                Desde $4,900 al mes.
+                Desde $2,490 al mes.
               </span>{" "}
               Sin contratos forzosos. El presupuesto de anuncios, si quieres pautar, va aparte.
             </p>
@@ -145,8 +145,8 @@ export default function PruebaPage() {
             que los veas. Nosotros ponemos el criterio y la cara, que es lo que sí importa.
           </p>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-zinc-600">
-            Una agencia normal necesita un diseñador y un editor para hacer esto, y por eso cobra
-            tres veces más. Nosotros no.
+            Por eso te sale en una fracción de lo que cuesta contratar a alguien que lo haga a
+            mano, y por eso alcanza para veinte piezas al mes en vez de cuatro.
           </p>
         </section>
       </main>

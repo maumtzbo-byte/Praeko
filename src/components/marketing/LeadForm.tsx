@@ -2,34 +2,88 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, Sparkles } from "lucide-react";
 
-import { registrarProspecto } from "@/app/prueba/actions";
+import { completarContexto, registrarProspecto } from "@/app/prueba/actions";
 import { GIROS_PROSPECTO } from "@/lib/validation/lead";
+import { ligaWhatsapp, MENSAJE_MUESTRA, WHATSAPP_VISIBLE } from "@/lib/contacto";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 /**
- * El formulario de /prueba.
+ * El formulario de /prueba, en dos pasos.
  *
- * Cuatro campos obligatorios y uno opcional. La tentación es pedir correo,
- * ciudad, presupuesto y cuántos seguidores tiene — y cada campo extra en
- * un formulario que vive detrás de anuncios pagados cuesta prospectos.
- * Estos cinco alcanzan para generarle tres piezas y devolverle la llamada,
- * que es todo lo que la página promete.
+ * La tensión que resuelve: con cuatro datos —nombre, negocio, giro,
+ * teléfono— el agente de estrategia no tiene de dónde agarrarse y la
+ * muestra sale genérica. Y la muestra es lo único que vende, así que una
+ * muestra genérica no sirve de nada. Pero un formulario de ocho campos en
+ * una página detrás de anuncios pagados espanta prospectos.
  *
- * No pide correo a propósito: el canal es WhatsApp. Pedir las dos cosas
- * sugiere que vas a mandar boletines, y el correo no se usaría.
+ * Partirlo resuelve las dos: el paso 1 son los cuatro campos y AL
+ * MANDARLO el prospecto ya quedó guardado. El paso 2 pide lo que la IA
+ * necesita de verdad, ya sin riesgo — quien lo abandone sigue siendo un
+ * prospecto que tienes en la base y al que le puedes escribir.
+ *
+ * El paso 2 se vende como lo que es: "esto hace que la muestra salga más
+ * parecida a lo tuyo". No es un trámite más, es la razón por la que va a
+ * quedar bien.
  */
+
+type Paso = "datos" | "contexto" | "listo";
+
 export function LeadForm() {
   const parametros = useSearchParams();
+  const [paso, setPaso] = useState<Paso>("datos");
+  const [leadId, setLeadId] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
-  const [listo, setListo] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (listo) {
+  async function enviarDatos(formulario: FormData) {
+    setEnviando(true);
+    setError(null);
+    const resultado = await registrarProspecto({
+      nombre: formulario.get("nombre"),
+      negocio: formulario.get("negocio"),
+      giro: formulario.get("giro"),
+      whatsapp: formulario.get("whatsapp"),
+      // De qué anuncio vino, para poder separar el tráfico de cada
+      // creatividad sin depender del pixel de Meta.
+      origen: parametros.get("origen") ?? undefined,
+    });
+    setEnviando(false);
+    if (!resultado.success) {
+      setError(resultado.error);
+      return;
+    }
+    // Sin id significa que ya se había registrado antes: no tiene caso
+    // volver a pedirle el contexto.
+    setLeadId(resultado.leadId);
+    setPaso(resultado.leadId ? "contexto" : "listo");
+  }
+
+  async function enviarContexto(formulario: FormData) {
+    if (!leadId) return setPaso("listo");
+    setEnviando(true);
+    setError(null);
+    const resultado = await completarContexto({
+      leadId,
+      vende: formulario.get("vende") || undefined,
+      ciudad: formulario.get("ciudad") || undefined,
+      preguntan: formulario.get("preguntan") || undefined,
+      instagram: formulario.get("instagram") || undefined,
+    });
+    setEnviando(false);
+    // Aunque falle se pasa a "listo": el prospecto ya está capturado desde
+    // el paso 1 y dejarlo atorado en un error, después de que YA te dejó
+    // sus datos, sería el peor momento posible para frenarlo.
+    if (!resultado.success) console.error(resultado.error);
+    setPaso("listo");
+  }
+
+  if (paso === "listo") {
     return (
       <div className="rounded-3xl bg-[image:var(--plastico)] p-7 shadow-[var(--relieve-panel)] sm:p-8">
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
@@ -40,31 +94,95 @@ export function LeadForm() {
           En menos de 24 horas te escribo por WhatsApp con tres piezas hechas para tu negocio. Si no
           te laten, ahí queda y no me debes nada.
         </p>
+        <a
+          href={ligaWhatsapp(MENSAJE_MUESTRA)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-5 inline-flex rounded-full bg-[image:var(--plastico)] px-5 py-2.5 text-sm font-medium text-zinc-800 shadow-[var(--relieve-pieza)] transition-all hover:brightness-[1.02] active:translate-y-px"
+        >
+          Escríbeme tú primero
+        </a>
       </div>
     );
   }
 
-  async function enviar(formulario: FormData) {
-    setEnviando(true);
-    setError(null);
-    const resultado = await registrarProspecto({
-      nombre: formulario.get("nombre"),
-      negocio: formulario.get("negocio"),
-      giro: formulario.get("giro"),
-      whatsapp: formulario.get("whatsapp"),
-      instagram: formulario.get("instagram") || undefined,
-      // De qué anuncio vino, para poder separar el tráfico de cada
-      // creatividad sin depender del pixel de Meta.
-      origen: parametros.get("origen") ?? undefined,
-    });
-    setEnviando(false);
-    if (resultado.success) setListo(true);
-    else setError(resultado.error);
+  if (paso === "contexto") {
+    return (
+      <form
+        action={enviarContexto}
+        className="rounded-3xl bg-[image:var(--plastico)] p-6 shadow-[var(--relieve-panel)] sm:p-7"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+              <Sparkles className="h-4 w-4" strokeWidth={1.75} />
+            </span>
+            <div>
+              <h3 className="text-[15px] font-semibold tracking-tight text-zinc-950">
+                Ya quedaste. ¿Le damos contexto?
+              </h3>
+              <p className="mt-1 text-sm leading-relaxed text-zinc-600">
+                Con esto la muestra sale hablando de lo que tú vendes, no de un negocio genérico.
+                Son 30 segundos y puedes saltártelo.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="vende">¿Qué vendes?</Label>
+            <Textarea
+              id="vende"
+              name="vende"
+              rows={2}
+              className="min-h-[64px]"
+              placeholder="Mensualidades de gimnasio y clases sueltas de spinning y yoga"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="ciudad">¿En qué ciudad?</Label>
+            <Input id="ciudad" name="ciudad" placeholder="Monterrey" />
+            <p className="text-xs leading-snug text-zinc-500">
+              Sirve para buscar qué está funcionando en tu zona.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="preguntan">¿Qué es lo que más te preguntan tus clientes?</Label>
+            <Textarea
+              id="preguntan"
+              name="preguntan"
+              rows={2}
+              className="min-h-[64px]"
+              placeholder="Cuánto cuesta, si hay clase los sábados, si tienen estacionamiento"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="instagram">Tu Instagram</Label>
+            <Input id="instagram" name="instagram" placeholder="@tunegocio" />
+          </div>
+
+          <Button type="submit" size="lg" disabled={enviando} className="mt-1 w-full">
+            {enviando && <Loader2 className="h-4 w-4 animate-spin" />}
+            Listo, mándame la muestra
+          </Button>
+
+          <button
+            type="button"
+            onClick={() => setPaso("listo")}
+            className="text-center text-xs font-medium text-zinc-500 underline underline-offset-2 hover:text-zinc-700"
+          >
+            Saltar, ya luego platicamos
+          </button>
+        </div>
+      </form>
+    );
   }
 
   return (
     <form
-      action={enviar}
+      action={enviarDatos}
       className="rounded-3xl bg-[image:var(--plastico)] p-6 shadow-[var(--relieve-panel)] sm:p-7"
     >
       <div className="flex flex-col gap-4">
@@ -101,18 +219,8 @@ export function LeadForm() {
             type="tel"
             inputMode="tel"
             autoComplete="tel"
-            placeholder="33 1234 5678"
+            placeholder="81 1234 5678"
           />
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="instagram">
-            Tu Instagram <span className="font-normal text-zinc-400">(opcional)</span>
-          </Label>
-          <Input id="instagram" name="instagram" placeholder="@tunegocio" />
-          <p className="text-xs leading-snug text-zinc-500">
-            Si me lo pasas, la muestra sale más parecida a lo tuyo.
-          </p>
         </div>
 
         {error && (
@@ -127,7 +235,7 @@ export function LeadForm() {
         </Button>
 
         <p className="text-center text-xs leading-snug text-zinc-500">
-          Sin costo y sin compromiso. Te escribo yo, no un robot.
+          Sin costo y sin compromiso. Te escribo yo al {WHATSAPP_VISIBLE}, no un robot.
         </p>
       </div>
     </form>

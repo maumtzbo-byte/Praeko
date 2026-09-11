@@ -452,6 +452,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          ciudad: string | null
           created_at: string
           estado: string
           giro: string
@@ -461,9 +462,12 @@ export type Database = {
           nombre: string
           notas: string | null
           origen: string | null
+          preguntan: string | null
+          vende: string | null
           whatsapp: string
         }
         Insert: {
+          ciudad?: string | null
           created_at?: string
           estado?: string
           giro: string
@@ -473,9 +477,12 @@ export type Database = {
           nombre: string
           notas?: string | null
           origen?: string | null
+          preguntan?: string | null
+          vende?: string | null
           whatsapp: string
         }
         Update: {
+          ciudad?: string | null
           created_at?: string
           estado?: string
           giro?: string
@@ -485,6 +492,8 @@ export type Database = {
           nombre?: string
           notas?: string | null
           origen?: string | null
+          preguntan?: string | null
+          vende?: string | null
           whatsapp?: string
         }
         Relationships: []

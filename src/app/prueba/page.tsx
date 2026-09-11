@@ -4,6 +4,7 @@ import { Clapperboard, ImageIcon, MessageCircle, Send } from "lucide-react";
 
 import { FramesMark } from "@/components/brand/FramesMark";
 import { LeadForm } from "@/components/marketing/LeadForm";
+import { ligaWhatsapp, MENSAJE_COTIZACION } from "@/lib/contacto";
 
 /**
  * Aterrizaje de los anuncios de Meta.
@@ -40,17 +41,6 @@ const RECIBES = [
 ];
 
 const NO_HACES = ["No grabas", "No editas", "No escribes", "No programas"];
-
-/** El número al que va el botón de WhatsApp, en formato internacional y
- *  solo dígitos (ej. 523312345678). Si no está puesto, el botón no se
- *  pinta: es mejor no ofrecer el canal que mandar a un chat que no existe.
- *
- *  OJO al desplegar: esta página se prerenderiza estática, y las variables
- *  NEXT_PUBLIC_* se incrustan en el HTML al COMPILAR, no al servir. Si la
- *  variable se agrega en Vercel después de la compilación, el botón no
- *  aparece hasta el siguiente despliegue. No es una falla; hay que
- *  recompilar. */
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP?.replace(/\D/g, "") ?? "";
 
 export default function PruebaPage() {
   return (
@@ -126,18 +116,18 @@ export default function PruebaPage() {
               <LeadForm />
             </Suspense>
 
-            {WHATSAPP && (
-              <a
-                href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
-                  "Hola, vi su anuncio y quiero las 3 piezas de muestra para mi negocio.",
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-full bg-[image:var(--plastico)] px-5 py-3 text-center text-sm font-medium text-zinc-800 shadow-[var(--relieve-pieza)] transition-all hover:brightness-[1.02] active:translate-y-px"
-              >
-                O escríbeme por WhatsApp
-              </a>
-            )}
+            {/* La salida para quien no quiere llenar nada. Un porcentaje
+                real de los prospectos en México prefiere escribir directo
+                a WhatsApp, y perderlos por no ofrecerles el canal sería
+                tirar el clic que ya pagaste. */}
+            <a
+              href={ligaWhatsapp(MENSAJE_COTIZACION)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-[image:var(--plastico)] px-5 py-3 text-center text-sm font-medium text-zinc-800 shadow-[var(--relieve-pieza)] transition-all hover:brightness-[1.02] active:translate-y-px"
+            >
+              O pide tu cotización por WhatsApp
+            </a>
           </div>
         </div>
 

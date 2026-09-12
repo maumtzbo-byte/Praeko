@@ -121,59 +121,78 @@ const BASE: Estilo[] = [
   },
 ];
 
-/** Las referencias por categoría.
+/** Qué estilos se le ofrecen a cada categoría, y con qué marca.
  *
- *  Solo se nombra una marca cuando su estilo visual está documentado y es
- *  reconocible de verdad, no cuando la marca es famosa. Una referencia
- *  floja es peor que ninguna: manda al prospecto a imaginarse otra cosa y
- *  después reclama que la muestra no se parece.
+ *  Es un catálogo por categoría y no una tabla de referencias sueltas, y
+ *  ese cambio resuelve dos cosas a la vez.
  *
- *  Por eso hay categorías sin referencia —tés, salsas, suplementos,
- *  joyería—: no encontré una marca cuyo estilo fotográfico fuera lo
- *  bastante distintivo y conocido como para servir de atajo, y prefiero
- *  dejarlo vacío que inventarlo. Ahí el nombre del estilo se sostiene
- *  solo, que para eso se renombraron.
+ *  La primera es que no todos los estilos le quedan a todo. "Negro y
+ *  dorado" es dirección de perfume y de joyería; en skincare casi no
+ *  existe. Ofrecerlo ahí era llenar una lista, no dar opciones.
+ *
+ *  La segunda es de forma: con los cinco fijos, skincare mostraba cuatro
+ *  "Tipo X" y una suelta, y esa se veía a medio hacer. Buscando la marca
+ *  que faltaba —negro y dorado en skincare— no encontré ninguna que
+ *  defendiera: Chanel Sublimage resultó ser blanco y dorado, no negro.
+ *  Inventar una referencia floja es peor que no ponerla, porque manda al
+ *  prospecto a imaginarse otra cosa y después reclama que la muestra no
+ *  se parece. Se quita la opción y ya.
+ *
+ *  Las categorías que no aparecen aquí reciben los cinco estilos sin
+ *  marca. No es un hueco: es que todavía no encuentro referencias
+ *  reconocibles para tés, salsas, suplementos ni joyería, y el nombre del
+ *  estilo se sostiene solo — para eso se renombraron con cosas que se ven.
  *
  *  Perfiles confirmados: The Ordinary es clínico y centrado en el
  *  ingrediente; Aesop es minimalismo brutalista, simetría arquitectónica y
  *  tonos apagados; Glossier son bloques de color contrastantes con luz
  *  suave; Le Labo es blanco y negro con tipografía de máquina de escribir;
  *  Blue Bottle es minimalismo limpio en azul claro; Stumptown es papel
- *  kraft, textura sucia y blanco y negro; Onyx Coffee Lab es oscuro con
- *  acentos dorados; Boy Smells es rosa y descarado. */
-const REFERENCIAS: Partial<Record<(typeof CATEGORIAS_PRODUCTO)[number], Record<string, string>>> = {
-  "Skincare y cosmética": {
-    limpio: "The Ordinary",
-    calido: "Aesop",
-    jugueton: "Glossier",
-    editorial: "Le Labo",
-  },
-  "Cuidado del cabello": {
-    limpio: "The Ordinary",
-    calido: "Aesop",
-    jugueton: "Glossier",
-  },
-  "Café de especialidad": {
-    limpio: "Blue Bottle",
-    calido: "Stumptown",
-    oscuro: "Onyx Coffee Lab",
-  },
-  Perfumes: {
-    editorial: "Le Labo",
-    calido: "Aesop",
-    oscuro: "Tom Ford",
-  },
-  "Velas y aromas para el hogar": {
-    editorial: "Le Labo",
-    calido: "Diptyque",
-    jugueton: "Boy Smells",
-  },
-};
+ *  kraft y textura sucia; Onyx Coffee Lab es oscuro con acentos dorados;
+ *  Boy Smells es rosa y descarado. */
+const CATALOGO: Partial<Record<(typeof CATEGORIAS_PRODUCTO)[number], { id: string; marca: string }[]>> =
+  {
+    "Skincare y cosmética": [
+      { id: "limpio", marca: "The Ordinary" },
+      { id: "calido", marca: "Aesop" },
+      { id: "editorial", marca: "Le Labo" },
+      { id: "jugueton", marca: "Glossier" },
+    ],
+    "Cuidado del cabello": [
+      { id: "limpio", marca: "The Ordinary" },
+      { id: "calido", marca: "Aesop" },
+      { id: "editorial", marca: "Le Labo" },
+      { id: "jugueton", marca: "Glossier" },
+    ],
+    "Café de especialidad": [
+      { id: "limpio", marca: "Blue Bottle" },
+      { id: "calido", marca: "Stumptown" },
+      { id: "oscuro", marca: "Onyx Coffee Lab" },
+    ],
+    Perfumes: [
+      { id: "editorial", marca: "Le Labo" },
+      { id: "calido", marca: "Aesop" },
+      { id: "oscuro", marca: "Tom Ford" },
+    ],
+    "Velas y aromas para el hogar": [
+      { id: "editorial", marca: "Le Labo" },
+      { id: "calido", marca: "Diptyque" },
+      { id: "jugueton", marca: "Boy Smells" },
+    ],
+  };
 
-/** Los estilos que le tocan a una categoría, con su referencia puesta. */
+/** Los estilos que le tocan a una categoría.
+ *
+ *  Con catálogo, se respeta su orden y su marca. Sin catálogo, van los
+ *  cinco de base sin marca. */
 export function estilosPara(categoria: string): Estilo[] {
-  const refs = REFERENCIAS[categoria as (typeof CATEGORIAS_PRODUCTO)[number]] ?? {};
-  return BASE.map((estilo) => ({ ...estilo, marca: refs[estilo.id] }));
+  const catalogo = CATALOGO[categoria as (typeof CATEGORIAS_PRODUCTO)[number]];
+  if (!catalogo) return BASE.map((estilo) => ({ ...estilo }));
+
+  return catalogo.flatMap(({ id, marca }) => {
+    const base = BASE.find((e) => e.id === id);
+    return base ? [{ ...base, marca }] : [];
+  });
 }
 
 /** El título de una opción: la marca si la hay, y si no el nombre del

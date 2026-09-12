@@ -11,6 +11,10 @@ import {
   SalidasAWhatsapp,
   type ResumenDeSalidas,
 } from "@/components/operacion/salidas-a-whatsapp";
+import {
+  ConversacionesSinProspecto,
+  type HiloSinProspecto,
+} from "@/components/operacion/conversaciones-sin-prospecto";
 
 /** Es una pantalla interna. Que no la indexe nadie ni salga en un
  *  buscador, aunque el acceso ya esté cerrado: una URL interna que aparece
@@ -97,6 +101,66 @@ function resumirSalidas(filas: { origen: string | null; created_at: string }[]):
   };
 }
 
+/** Cuántos mensajes se traen para armar la bandeja. No es el hilo
+ *  completo — eso lo lee `importarHilo` cuando hace falta—, solo lo
+ *  suficiente para saber quién escribió y qué dijo al final. */
+const TOPE_MENSAJES = 400;
+
+type MensajeDeBandeja = {
+  telefono: string;
+  nombre_perfil: string | null;
+  texto: string | null;
+  tipo: string;
+  entrante: boolean;
+  enviado_at: string;
+};
+
+/**
+ * Agrupa los mensajes por teléfono y deja fuera a los que ya son
+ * prospecto.
+ *
+ * El cruce se hace aquí y no en SQL porque `leads` y `whatsapp_messages`
+ * no tienen llave foránea entre ellas: se juntan por un teléfono
+ * normalizado que las dos guardan por su cuenta. Con el volumen de esta
+ * pantalla, traer los dos lados y cruzarlos en memoria cuesta menos que
+ * una vista.
+ */
+function armarBandeja(
+  mensajes: MensajeDeBandeja[],
+  telefonosConProspecto: Set<string>,
+): HiloSinProspecto[] {
+  const porTelefono = new Map<string, MensajeDeBandeja[]>();
+  for (const m of mensajes) {
+    if (telefonosConProspecto.has(m.telefono)) continue;
+    const hilo = porTelefono.get(m.telefono);
+    if (hilo) hilo.push(m);
+    else porTelefono.set(m.telefono, [m]);
+  }
+
+  return [...porTelefono.entries()]
+    // Se ordena ANTES de pintar, por la fecha cruda. Ordenar después
+    // usaría `ultimo`, que ya viene formateado como "12 sept", y eso
+    // alfabéticamente pone octubre antes que septiembre.
+    .sort(([, a], [, b]) => (a[0]!.enviado_at < b[0]!.enviado_at ? 1 : -1))
+    .map(([telefono, hilo]) => {
+      // Llegan del más nuevo al más viejo.
+      const ultimoSuyo = hilo.find((m) => m.entrante) ?? hilo[0];
+      return {
+        telefono,
+        nombrePerfil: hilo.find((m) => m.nombre_perfil)?.nombre_perfil ?? null,
+        cuantos: hilo.length,
+        ultimo: FECHA_CORTA.format(new Date(hilo[0]!.enviado_at)),
+        vistazo: ultimoSuyo?.texto ?? `[${ultimoSuyo?.tipo ?? "sin texto"}]`,
+      };
+    });
+}
+
+const FECHA_CORTA = new Intl.DateTimeFormat("es-MX", {
+  day: "numeric",
+  month: "short",
+  timeZone: "America/Monterrey",
+});
+
 const FECHA = new Intl.DateTimeFormat("es-MX", {
   day: "numeric",
   month: "long",
@@ -113,12 +177,17 @@ export default async function ProspectosPage() {
 
   const desde = inicioDeVentana();
 
-  const [{ data: filas, error }, { data: salidas }] = await Promise.all([
+  const [{ data: filas, error }, { data: salidas }, { data: mensajes }] = await Promise.all([
     supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(TOPE),
     // Las salidas no bloquean la pantalla: si la tabla todavía no existe
     // —la migración 0031 se corre aparte— esto devuelve error y el resumen
     // sale en cero, en vez de tumbar la lista de prospectos.
     supabase.from("whatsapp_exits").select("origen, created_at").gte("created_at", desde),
+    supabase
+      .from("whatsapp_messages")
+      .select("telefono, nombre_perfil, texto, tipo, entrante, enviado_at")
+      .order("enviado_at", { ascending: false })
+      .limit(TOPE_MENSAJES),
   ]);
 
   if (error) {
@@ -148,6 +217,21 @@ export default async function ProspectosPage() {
       if (firma.path && firma.signedUrl) urlPorRuta.set(firma.path, firma.signedUrl);
     }
   }
+
+  // El cruce va contra TODOS los prospectos, no contra los que se pintan:
+  // `leads` está topado a 200 y un prospecto más viejo que eso volvería a
+  // aparecer en la bandeja como si nunca se hubiera atendido. Se pregunta
+  // por los teléfonos exactos que salieron en los mensajes.
+  const telefonosDeMensajes = [...new Set((mensajes ?? []).map((m) => m.telefono))];
+  let conProspecto = new Set<string>();
+  if (telefonosDeMensajes.length > 0) {
+    const { data: yaSon } = await supabase
+      .from("leads")
+      .select("whatsapp")
+      .in("whatsapp", telefonosDeMensajes);
+    conProspecto = new Set((yaSon ?? []).map((l) => l.whatsapp));
+  }
+  const bandeja = armarBandeja(mensajes ?? [], conProspecto);
 
   const prospectos: Prospecto[] = leads.map((lead) => {
     const catalogo = estilosPara(lead.giro);
@@ -194,6 +278,10 @@ export default async function ProspectosPage() {
 
       <div className="mt-6">
         <SalidasAWhatsapp resumen={resumirSalidas(salidas ?? [])} />
+      </div>
+
+      <div className="mt-6">
+        <ConversacionesSinProspecto hilos={bandeja} />
       </div>
 
       <div className="mt-6">

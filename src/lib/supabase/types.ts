@@ -980,6 +980,45 @@ export type Database = {
           },
         ]
       }
+      whatsapp_messages: {
+        Row: {
+          created_at: string
+          entrante: boolean
+          enviado_at: string
+          id: string
+          nombre_perfil: string | null
+          telefono: string
+          texto: string | null
+          tipo: string
+          wa_id: string
+          wam_id: string
+        }
+        Insert: {
+          created_at?: string
+          entrante: boolean
+          enviado_at: string
+          id?: string
+          nombre_perfil?: string | null
+          telefono: string
+          texto?: string | null
+          tipo: string
+          wa_id: string
+          wam_id: string
+        }
+        Update: {
+          created_at?: string
+          entrante?: boolean
+          enviado_at?: string
+          id?: string
+          nombre_perfil?: string | null
+          telefono?: string
+          texto?: string | null
+          tipo?: string
+          wa_id?: string
+          wam_id?: string
+        }
+        Relationships: []
+      }
       whatsapp_exits: {
         Row: {
           boton: string

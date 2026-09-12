@@ -255,3 +255,56 @@ export async function importarConversacion(datos: {
     faltantes: extraido.faltantes,
   };
 }
+
+/** Cuántos mensajes del hilo se le pasan al agente. Los últimos, no los
+ *  primeros: lo reciente es lo que define en qué quedaron. */
+const TOPE_MENSAJES = 120;
+
+/**
+ * Convierte en prospecto un hilo que llegó por el webhook.
+ *
+ * Es el mismo camino que pegar la conversación a mano —arma el texto y se
+ * lo da a `importarConversacion`— y por eso el agente no tiene idea de si
+ * el texto lo tecleó alguien o lo trajo Meta.
+ */
+export async function importarHilo(datos: { telefono: unknown }): Promise<Importacion> {
+  if (!(await esOperador())) return { success: false, error: "Sin acceso." };
+
+  const { telefono } = datos;
+  if (typeof telefono !== "string" || normalizaWhatsapp(telefono).length !== 10) {
+    return { success: false, error: "Teléfono no válido." };
+  }
+  const numero = normalizaWhatsapp(telefono);
+
+  const { data: mensajes, error } = await createServiceRoleClient()
+    .from("whatsapp_messages")
+    .select("entrante, texto, tipo, nombre_perfil, enviado_at")
+    .eq("telefono", numero)
+    .order("enviado_at", { ascending: false })
+    .limit(TOPE_MENSAJES);
+
+  if (error) {
+    console.error("importarHilo: no se pudo leer el hilo", error);
+    return { success: false, error: "No se pudo leer la conversación." };
+  }
+  if (!mensajes || mensajes.length === 0) {
+    return { success: false, error: "Esa conversación ya no tiene mensajes." };
+  }
+
+  const perfil = mensajes.find((m) => m.nombre_perfil)?.nombre_perfil;
+
+  // Se vuelven a ordenar del más viejo al más nuevo: se pidieron al revés
+  // para que el `limit` se quedara con los últimos, no con los primeros.
+  const texto = [...mensajes]
+    .reverse()
+    .map((m) => {
+      const quien = m.entrante ? (perfil ?? "Cliente") : "Frames";
+      // Una foto o un audio dejan constancia de que existieron. Sin esto,
+      // "te mando foto" seguido de nada se lee como que nunca la mandó.
+      const cuerpo = m.texto ?? `[${m.tipo}]`;
+      return `${quien}: ${cuerpo}`;
+    })
+    .join("\n");
+
+  return importarConversacion({ conversacion: texto, whatsapp: numero });
+}

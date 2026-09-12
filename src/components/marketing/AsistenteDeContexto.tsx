@@ -6,6 +6,7 @@ import { Check, Loader2 } from "lucide-react";
 import { completarContexto } from "@/app/prueba/actions";
 import { conLimite } from "@/lib/espera";
 import { estilosPara, imagenDeEstilo, tituloDeEstilo } from "@/lib/marketing/estilos";
+import { PantallaCompleta } from "@/components/marketing/PantallaCompleta";
 import { SubidaDeFotos } from "@/components/marketing/SubidaDeFotos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,25 +101,29 @@ export function AsistenteDeContexto({
     }
   }
 
-  const marco = "rounded-3xl bg-[image:var(--plastico)] p-6 shadow-[var(--relieve-panel)] sm:p-7";
-
   return (
-    <div className={marco}>
-      {/* El avance, arriba. Sin él, un asistente de cuatro pasos se siente
-          infinito: no se sabe si falta uno o faltan seis. */}
-      <div className="mb-5 flex items-center gap-2">
-        {recorrido.map((s, i) => (
-          <span
-            key={s}
-            className={`h-1 flex-1 rounded-full transition-colors ${
-              i < posicion ? "bg-accent" : "bg-zinc-200"
-            }`}
-          />
-        ))}
-        <span className="ml-1 shrink-0 text-[11px] font-medium tabular-nums text-zinc-500">
-          {posicion}/{recorrido.length}
-        </span>
-      </div>
+    <PantallaCompleta
+      encabezado={
+        // El avance va pegado arriba, fuera del scroll. Sin él, un
+        // asistente de cuatro pasos se siente infinito: no se sabe si
+        // falta uno o faltan seis. Y si se fuera con el scroll, en la
+        // sección larga de estilos desaparecería justo cuando más se
+        // necesita.
+        <div className="mx-auto flex w-full max-w-lg items-center gap-2 px-5 pb-3">
+          {recorrido.map((s, i) => (
+            <span
+              key={s}
+              className={`h-1 flex-1 rounded-full transition-colors ${
+                i < posicion ? "bg-accent" : "bg-zinc-200"
+              }`}
+            />
+          ))}
+          <span className="ml-1 shrink-0 text-[11px] font-medium tabular-nums text-zinc-500">
+            {posicion}/{recorrido.length}
+          </span>
+        </div>
+      }
+    >
 
       {/* El aviso va en gris y no en rojo, y no dice "error".
           
@@ -272,7 +277,7 @@ export function AsistenteDeContexto({
               desbalancea. Y en un teléfono caben seis de un vistazo en vez
               de tres y media, que para escoger un estilo importa: se
               escoge comparando, no leyendo de arriba abajo. */}
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
             {opciones.map((estilo) => {
               const marcado = estilos.includes(estilo.id);
               const foto = imagenDeEstilo(estilo);
@@ -292,7 +297,7 @@ export function AsistenteDeContexto({
                         : [...limpio, estilo.id];
                     })
                   }
-                  className={`flex flex-col gap-2 rounded-2xl p-2.5 text-center transition-all ${
+                  className={`block rounded-2xl p-2.5 text-center transition-all ${
                     marcado
                       ? "bg-[image:var(--plastico)] shadow-[var(--relieve-oprimido)]"
                       : "bg-[image:var(--plastico)] shadow-[var(--relieve-pieza)] active:translate-y-px"
@@ -320,7 +325,7 @@ export function AsistenteDeContexto({
                       </span>
                     )}
                   </span>
-                  <span className="block px-0.5 pb-0.5">
+                  <span className="mt-2 block px-0.5 pb-0.5">
                     <span className="block text-[13px] font-semibold leading-tight tracking-tight text-zinc-950">
                       {tituloDeEstilo(estilo)}
                     </span>
@@ -348,7 +353,7 @@ export function AsistenteDeContexto({
               onClick={() =>
                 setEstilos((previo) => (previo.includes(NINGUNA) ? [] : [NINGUNA]))
               }
-              className={`col-span-2 flex flex-col items-center justify-center gap-1 rounded-2xl px-4 py-3.5 text-center transition-all ${
+              className={`col-span-2 flex flex-col items-center justify-center gap-1 rounded-2xl px-4 py-3.5 text-center transition-all sm:col-span-3 ${
                 estilos.includes(NINGUNA)
                   ? "bg-[image:var(--plastico)] shadow-[var(--relieve-oprimido)]"
                   : "bg-[image:var(--plastico)] shadow-[var(--relieve-pieza)] active:translate-y-px"
@@ -402,6 +407,6 @@ export function AsistenteDeContexto({
       >
         Mejor luego
       </button>
-    </div>
+    </PantallaCompleta>
   );
 }

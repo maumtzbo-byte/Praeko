@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { AsistenteDeContexto } from "@/components/marketing/AsistenteDeContexto";
+import { PantallaCompleta } from "@/components/marketing/PantallaCompleta";
 
 /**
  * El formulario de /prueba: cuatro campos y luego un asistente.
@@ -71,12 +72,15 @@ export function LeadForm() {
 
   if (paso === "listo") {
     return (
-      <div className="rounded-3xl bg-[image:var(--plastico)] p-7 shadow-[var(--relieve-panel)] sm:p-8">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-          <CheckCircle2 className="h-6 w-6" strokeWidth={1.75} />
+      // A pantalla completa igual que el asistente. Volver aquí a la
+      // columna de la página, después de que el asistente se comió la
+      // pantalla, se sentiría como si algo se hubiera cerrado mal.
+      <PantallaCompleta>
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+          <CheckCircle2 className="h-7 w-7" strokeWidth={1.75} />
         </span>
-        <h2 className="mt-4 text-xl font-semibold tracking-tight text-zinc-950">Quedó.</h2>
-        <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-zinc-600">
+        <h2 className="mt-5 text-3xl font-semibold tracking-tight text-zinc-950">Quedó.</h2>
+        <p className="mt-3 max-w-sm text-[16px] leading-relaxed text-zinc-600">
           En menos de 24 horas te escribo por WhatsApp con tres piezas hechas con tu producto. Si no
           te laten, ahí queda y no me debes nada.
         </p>
@@ -84,11 +88,11 @@ export function LeadForm() {
           href={ligaWhatsapp(MENSAJE_MUESTRA)}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-5 inline-flex rounded-full bg-[image:var(--plastico)] px-5 py-2.5 text-sm font-medium text-zinc-800 shadow-[var(--relieve-pieza)] transition-all hover:brightness-[1.02] active:translate-y-px"
+          className="mt-7 inline-flex rounded-full bg-[image:var(--plastico)] px-5 py-3 text-sm font-medium text-zinc-800 shadow-[var(--relieve-pieza)] transition-all hover:brightness-[1.02] active:translate-y-px"
         >
           Escríbeme tú primero
         </a>
-      </div>
+      </PantallaCompleta>
     );
   }
 

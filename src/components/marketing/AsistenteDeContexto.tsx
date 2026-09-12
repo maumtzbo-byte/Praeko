@@ -34,6 +34,17 @@ import { Label } from "@/components/ui/label";
 
 type Seccion = "sitio" | "negocio" | "fotos" | "estilo";
 
+/** El id que guarda "ninguna de estas".
+ *
+ *  Se guarda como una respuesta y no como un arreglo vacío porque las dos
+ *  cosas son distintas: vacío es "no contestó", y esto es "las vi y no me
+ *  laten". La segunda dice que su gusto va por otro lado y que hay que
+ *  preguntarle; la primera no dice nada.
+ *
+ *  `instruccionDeEstilos` lo ignora solo, porque filtra contra los estilos
+ *  conocidos. */
+const NINGUNA = "ninguna";
+
 export function AsistenteDeContexto({
   leadId,
   categoria,
@@ -253,7 +264,15 @@ export function AsistenteDeContexto({
             </p>
           </div>
 
-          <div className="flex flex-col gap-2">
+          {/* Cuadrícula de cuadrados y no lista de renglones.
+              
+              Con el nombre debajo de la imagen, cada opción mide lo que
+              mide su columna y no lo que mide su texto, así que "Tipo Onyx
+              Coffee Lab" ocupa igual que "Tipo Aesop" y la retícula no se
+              desbalancea. Y en un teléfono caben seis de un vistazo en vez
+              de tres y media, que para escoger un estilo importa: se
+              escoge comparando, no leyendo de arriba abajo. */}
+          <div className="grid grid-cols-2 gap-2.5">
             {opciones.map((estilo) => {
               const marcado = estilos.includes(estilo.id);
               const foto = imagenDeEstilo(estilo);
@@ -263,74 +282,87 @@ export function AsistenteDeContexto({
                   type="button"
                   aria-pressed={marcado}
                   onClick={() =>
-                    setEstilos((previo) =>
-                      previo.includes(estilo.id)
-                        ? previo.filter((x) => x !== estilo.id)
-                        : [...previo, estilo.id],
-                    )
+                    setEstilos((previo) => {
+                      // Elegir un estilo apaga "ninguna": son cosas
+                      // contrarias y dejarlas prendidas a la vez guardaría
+                      // una respuesta que no quiere decir nada.
+                      const limpio = previo.filter((x) => x !== NINGUNA);
+                      return limpio.includes(estilo.id)
+                        ? limpio.filter((x) => x !== estilo.id)
+                        : [...limpio, estilo.id];
+                    })
                   }
-                  className={`flex items-center gap-3 rounded-2xl p-2.5 text-left transition-all ${
+                  className={`flex flex-col gap-2 rounded-2xl p-2.5 text-center transition-all ${
                     marcado
                       ? "bg-[image:var(--plastico)] shadow-[var(--relieve-oprimido)]"
                       : "bg-[image:var(--plastico)] shadow-[var(--relieve-pieza)] active:translate-y-px"
                   }`}
                 >
-                  {/* La muestra del estilo, que es lo que de verdad se
-                      está eligiendo. Sin ella la lista son renglones de
-                      texto, y el estilo es justo lo que no se explica con
-                      palabras.
-                      
-                      Si ya existe la foto de ejemplo se usa la foto; si no,
-                      el degradado de respaldo. Soltar el archivo en
-                      public/estilos/ y agregar su id a ESTILOS_CON_FOTO es
-                      todo lo que hace falta para estrenarla. */}
-                  {foto ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={foto}
-                      alt=""
-                      aria-hidden="true"
-                      className="h-14 w-14 shrink-0 rounded-xl object-cover shadow-[var(--relieve-hundido)]"
-                    />
-                  ) : (
-                    <span
-                      aria-hidden="true"
-                      className="h-14 w-14 shrink-0 rounded-xl shadow-[var(--relieve-hundido)]"
-                      style={{ backgroundImage: estilo.muestra }}
-                    />
-                  )}
-                  {/* La marca va de título y el estilo debajo, no al
-                      revés. "Aesop" le dice más en un segundo a quien
-                      vende skincare que cualquier descripción que yo
-                      escriba. Donde no hay marca —tés, salsas,
-                      suplementos, joyería— sube el nombre del estilo, y
-                      la tarjeta conserva su forma porque la descripción
-                      siempre está. */}
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-semibold leading-tight tracking-tight text-zinc-950">
+                  <span className="relative block">
+                    {foto ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={foto}
+                        alt=""
+                        aria-hidden="true"
+                        className="aspect-square w-full rounded-xl object-cover shadow-[var(--relieve-hundido)]"
+                      />
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        className="block aspect-square w-full rounded-xl shadow-[var(--relieve-hundido)]"
+                        style={{ backgroundImage: estilo.muestra }}
+                      />
+                    )}
+                    {marcado && (
+                      <span className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-white shadow-sm">
+                        <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                      </span>
+                    )}
+                  </span>
+                  <span className="block px-0.5 pb-0.5">
+                    <span className="block text-[13px] font-semibold leading-tight tracking-tight text-zinc-950">
                       {tituloDeEstilo(estilo)}
                     </span>
-                    <span className="mt-0.5 block text-[13px] leading-snug text-zinc-500">
+                    <span className="mt-0.5 block text-[11px] leading-snug text-zinc-500">
                       {estilo.descripcion}
                     </span>
-                  </span>
-                  <span
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md ${
-                      marcado ? "bg-accent text-white" : "bg-zinc-200"
-                    }`}
-                  >
-                    {marcado && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
                   </span>
                 </button>
               );
             })}
+
+            {/* Ancho completo, a propósito. Es una opción de otra clase
+                que las cinco de arriba, y ocupando una celda igual se veía
+                como una sexta tarjeta a medio hacer: sin cuadro, más baja
+                que sus vecinas, dejando la retícula despareja.
+
+                "Ninguna" es una opción de verdad y no la ausencia de
+                respuesta. Quien rechaza las cinco está diciendo algo útil
+                —su gusto va por otro lado y hay que preguntarle— y eso se
+                pierde si la única forma de expresarlo es no marcar nada,
+                que es igual a haberse saltado la pantalla. */}
+            <button
+              type="button"
+              aria-pressed={estilos.includes(NINGUNA)}
+              onClick={() =>
+                setEstilos((previo) => (previo.includes(NINGUNA) ? [] : [NINGUNA]))
+              }
+              className={`col-span-2 flex flex-col items-center justify-center gap-1 rounded-2xl px-4 py-3.5 text-center transition-all ${
+                estilos.includes(NINGUNA)
+                  ? "bg-[image:var(--plastico)] shadow-[var(--relieve-oprimido)]"
+                  : "bg-[image:var(--plastico)] shadow-[var(--relieve-pieza)] active:translate-y-px"
+              }`}
+            >
+              <span className="text-[13px] font-semibold tracking-tight text-zinc-950">
+                Ninguna me late
+              </span>
+              <span className="text-[11px] leading-snug text-zinc-500">
+                Lo platicamos por WhatsApp y te lo armo a tu gusto
+              </span>
+            </button>
           </div>
 
-          {/* El texto cambia según si eligió estilo, y no por adorno:
-              "Listo, mándame la muestra" anunciaba que él terminó de
-              llenar algo. Lo que importa no es que terminó, es lo que va a
-              recibir — y si acaba de señalar un estilo, nombrarlo es la
-              forma más corta de decirle que se le va a hacer caso. */}
           {/* El deslinde, y va DEBAJO de la lista y no arriba.
               
               Arriba interrumpiría con letra chica legal justo antes de la
@@ -353,7 +385,12 @@ export function AsistenteDeContexto({
             onClick={() => void guardarYSeguir({ estilos }, "fin")}
           >
             {guardando && <Loader2 className="h-4 w-4 animate-spin" />}
-            {estilos.length > 0 ? "Quiero ver mi producto así" : "A ver cómo queda"}
+            {/* Cuenta estilos de verdad, no la longitud del arreglo:
+                con "ninguna" marcada el arreglo mide uno, y el botón
+                habría prometido "así" señalando a nada. */}
+            {estilos.some((id) => id !== NINGUNA)
+              ? "Quiero ver mi producto así"
+              : "A ver cómo queda"}
           </Button>
         </div>
       )}

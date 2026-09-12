@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isPublishablePlatform } from "@/lib/social";
 import { fetchMediaUrlsByItemId } from "@/lib/content/media";
 import { EnvioDeAprobacion, type ResumenDeLiga } from "@/components/dashboard/envio-de-aprobacion";
+import { PublicarEnTanda, type PiezaPublicable } from "@/components/dashboard/publicar-en-tanda";
 
 // publishContentNow (called from this page) polls Meta's Instagram container
 // status inline before it can return — see waitForInstagramContainerReady in
@@ -108,10 +109,31 @@ export default async function PublicacionesPage() {
       })()
     : null;
 
+  // Lo que ya tiene archivo y todavía no sale. `status === "generada"` es
+  // la única condición dura: sin archivo no hay nada que publicar. El
+  // veredicto del cliente viaja aparte para que el componente decida qué
+  // ofrecer marcado, qué apagado y qué ni enseñar.
+  const publicables: PiezaPublicable[] = (calendarItems ?? [])
+    .filter((item) => item.status === "generada")
+    .map((item) => ({
+      id: item.id,
+      titulo: item.topic,
+      fecha: item.scheduled_date,
+      veredicto: item.client_verdict,
+    }));
+
   return (
     <div>
       <PageHeader title="Publicaciones" description="Genera, revisa y publica tu contenido — en lista o por fecha." />
       <EnvioDeAprobacion resumen={resumenDeLiga} />
+      <PublicarEnTanda
+        piezas={publicables}
+        cuentas={publishableConnections.map((c) => ({
+          id: c.id,
+          plataforma: c.platform,
+          nombre: c.external_account_name,
+        }))}
+      />
       <PublicationsView
         businessId={business.id}
         initialItems={calendarItems ?? []}

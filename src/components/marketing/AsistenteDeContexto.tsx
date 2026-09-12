@@ -268,20 +268,22 @@ export function AsistenteDeContexto({
                         : [...previo, estilo.id],
                     )
                   }
-                  className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all ${
+                  className={`flex items-center gap-3 rounded-2xl p-2.5 text-left transition-all ${
                     marcado
                       ? "bg-[image:var(--plastico)] shadow-[var(--relieve-oprimido)]"
                       : "bg-[image:var(--plastico)] shadow-[var(--relieve-pieza)] active:translate-y-px"
                   }`}
                 >
+                  {/* La muestra del estilo, que es lo que de verdad se
+                      está eligiendo. Sin ella la lista son cinco renglones
+                      de texto y el estilo es justo lo que no se explica
+                      con palabras. */}
                   <span
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md ${
-                      marcado ? "bg-accent text-white" : "bg-zinc-200"
-                    }`}
-                  >
-                    {marcado && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
-                  </span>
-                  <span>
+                    aria-hidden="true"
+                    className="h-14 w-14 shrink-0 rounded-xl shadow-[var(--relieve-hundido)]"
+                    style={{ backgroundImage: estilo.muestra }}
+                  />
+                  <span className="min-w-0 flex-1">
                     <span className="block text-[15px] font-medium leading-tight text-zinc-950">
                       {estilo.nombre}
                     </span>
@@ -290,6 +292,13 @@ export function AsistenteDeContexto({
                         {estilo.referencia}
                       </span>
                     )}
+                  </span>
+                  <span
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md ${
+                      marcado ? "bg-accent text-white" : "bg-zinc-200"
+                    }`}
+                  >
+                    {marcado && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
                   </span>
                 </button>
               );
@@ -301,6 +310,22 @@ export function AsistenteDeContexto({
               llenar algo. Lo que importa no es que terminó, es lo que va a
               recibir — y si acaba de señalar un estilo, nombrarlo es la
               forma más corta de decirle que se le va a hacer caso. */}
+          {/* El deslinde, y va DEBAJO de la lista y no arriba.
+              
+              Arriba interrumpiría con letra chica legal justo antes de la
+              única parte divertida del formulario. Abajo cumple igual —
+              está a la vista, sin scroll extra, antes del botón— y no le
+              quita el momento.
+              
+              Nombrar una marca para describir un estilo es uso referencial
+              y está permitido; lo que la ley pide es que nada sugiera una
+              relación que no existe. Esta frase es exactamente eso, dicho
+              sin rodeos. */}
+          <p className="text-xs leading-snug text-zinc-500">
+            Estas marcas no trabajan con nosotros ni tienen relación con Frames. Las nombramos nada
+            más para que nos digas qué estilo te late.
+          </p>
+
           <Button
             size="lg"
             loading={guardando}

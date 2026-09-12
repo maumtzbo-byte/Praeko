@@ -149,7 +149,30 @@ export default function TerminosPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-semibold text-zinc-950">14. Contacto</h2>
+              <h2 className="text-lg font-semibold text-zinc-950">
+                14. Contenido generado con inteligencia artificial
+              </h2>
+              <p className="mt-2">
+                Las piezas que producimos se generan con herramientas de inteligencia artificial a
+                partir de las fotografías que tú nos proporcionas. Instagram, Facebook y TikTok
+                pueden detectar ese origen —leen marcas técnicas que las herramientas dejan en el
+                archivo— y aplicar una etiqueta de contenido generado con IA de forma automática,
+                sin intervención nuestra ni tuya.
+              </p>
+              <p className="mt-2">
+                Conforme a las políticas vigentes de esas plataformas, esa etiqueta no reduce el
+                alcance de una publicación ordinaria. Sí es obligatorio declarar el uso de
+                inteligencia artificial en contenido publicitario pagado, y nos hacemos cargo de
+                esa declaración en los anuncios que administremos por ti.
+              </p>
+              <p className="mt-2">
+                No podemos garantizar que estas políticas se mantengan, porque no dependen de
+                nosotros. Si cambian de forma que afecte tus resultados, te lo avisaremos.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-semibold text-zinc-950">15. Contacto</h2>
               <p className="mt-2">
                 ¿Dudas sobre estos términos? Escríbenos por WhatsApp al{" "}
                 <a

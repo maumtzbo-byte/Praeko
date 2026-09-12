@@ -5,6 +5,7 @@ import { AlertTriangle, Check, Loader2, Send, X } from "lucide-react";
 
 import { publishContentNow } from "@/app/dashboard/publicaciones/actions";
 import { diaCorto } from "@/lib/aprobacion/liga";
+import { AVISO_ETIQUETA_PANEL } from "@/lib/marketing/etiqueta-ia";
 import { Button } from "@/components/ui/button";
 import { PlasticPanel } from "@/components/dashboard/plastic-panel";
 
@@ -222,6 +223,15 @@ export function PublicarEnTanda({
               );
             })}
           </ul>
+
+          {/* El recordatorio de la etiqueta va junto al botón de publicar
+              y no en un rincón de ajustes: es el momento exacto en que
+              alguien decide mandar contenido generado a la cuenta de otra
+              persona, y es el único instante en que esta información
+              cambia lo que hace. */}
+          <p className="mt-3 rounded-xl bg-zinc-100 px-3 py-2 text-[12px] leading-snug text-zinc-600 shadow-[var(--relieve-hundido)]">
+            {AVISO_ETIQUETA_PANEL}
+          </p>
 
           <Button
             onClick={() => void publicar()}

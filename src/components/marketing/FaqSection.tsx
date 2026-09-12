@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
+
+import { AVISO_ETIQUETA_PUBLICO } from "@/lib/marketing/etiqueta-ia";
 import { AnimatePresence, motion } from "framer-motion";
 
 // Las preguntas están escritas para lo que Frames vende HOY: video y
@@ -26,6 +28,10 @@ const FAQS = [
     question: "¿Van a inventar mi producto? ¿Se va a ver falso?",
     answer:
       "Tu foto entra y sale con la misma forma, el mismo color y el mismo nombre al frente. Lo que armamos alrededor es la mesa, la luz, la mano que lo levanta. Antes de que pagues te mandamos tres piezas con tu producto, así que esto no hay que creérnoslo: se ve.",
+  },
+  {
+    question: "¿Instagram va a marcar mis posts como hechos con IA?",
+    answer: AVISO_ETIQUETA_PUBLICO,
   },
   {
     question: "¿Hacen ropa o calzado?",

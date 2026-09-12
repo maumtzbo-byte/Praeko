@@ -39,11 +39,17 @@ export default function Hero() {
               repite — ya vive en la barra de arriba. */}
           <p className="hidden items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500 sm:flex sm:text-[11px]">
             <span aria-hidden="true" className="h-px w-8 bg-accent" />
-            Hecho para negocios en México
+            Para marcas mexicanas que venden en línea
           </p>
 
+          {/* Antes: "Tu negocio publica solo." Servía cuando le hablábamos a
+              cualquier negocio, y dejó de servir en cuanto el cliente pasó a
+              ser una marca de producto: lo que esa persona quiere no es
+              publicar, es que su frasco se vea como los de las marcas que
+              admira. "Publicar solo" describe el mecanismo; esto describe el
+              resultado, que es lo que se compra. */}
           <h1 className="text-balance text-[3.4rem] font-semibold leading-[0.98] tracking-tight text-zinc-950 sm:mt-5 sm:text-6xl lg:text-7xl">
-            Tu negocio publica solo.
+            Tu producto, como se ve en las marcas grandes.
           </h1>
 
           {/* Verbos concretos en vez de "lo hacen": arman, hacen, suben.
@@ -53,8 +59,8 @@ export default function Hero() {
               sí" también es lo que de verdad diría el dueño de un
               changarro; "apruebas" es lenguaje de oficina corporativa. */}
           <p className="mt-5 hidden max-w-md text-balance text-base leading-relaxed text-zinc-600 sm:block sm:text-lg">
-            Siete agentes arman tu mes, hacen los videos y los suben. Tú nada
-            más dices que sí.
+            Nos mandas las fotos que ya tienes. Nosotros le generamos la
+            escena, la luz y el movimiento, y publicamos tu mes completo.
           </p>
 
           {/* Un solo botón. El "Cómo funciona" que lo acompañaba mandaba a
@@ -69,7 +75,7 @@ export default function Hero() {
             href="/prueba"
             className="mt-7 inline-flex items-center gap-2.5 rounded-full bg-accent-cta px-8 py-4 text-base font-semibold text-white transition-opacity hover:opacity-90 sm:mt-8 sm:px-7 sm:py-3.5 sm:text-[15px] sm:font-medium"
           >
-            Quiero mis 3 piezas gratis
+            Quiero ver 3 piezas de mi producto
             <ArrowRight className="h-4 w-4" strokeWidth={2} />
           </Link>
 
@@ -82,7 +88,7 @@ export default function Hero() {
               en español es de las que delatan una plantilla traducida, y
               además la mitad de los dueños de negocio no sabe qué es. */}
           <p className="mt-4 text-xs text-zinc-500">
-            Sin costo y sin compromiso · Te las mando en menos de 24 horas
+            Con tus propias fotos · Te las mando en menos de 24 horas
           </p>
         </div>
       </div>

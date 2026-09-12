@@ -5,7 +5,20 @@ import type { CSSProperties } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
 /**
- * Los giros que atiende Frames, flotando en vez de en cuadrícula.
+ * Las categorías de producto con las que Frames trabaja, flotando en vez
+ * de en cuadrícula.
+ *
+ * Eran nueve giros —gimnasios, restaurantes, inmobiliarias— con un símbolo
+ * 3D cada uno. Al pasar a marcas de producto empacado, esos símbolos
+ * dejaron de poder reciclarse: una mancuerna no ilustra "skincare", y
+ * reetiquetar la imagen habría dejado el dibujo desmintiendo al texto tres
+ * pantallas debajo del titular. Las piezas pasan a ser pastillas del mismo
+ * plástico que el resto del sitio, así que el material se conserva sin
+ * depender de nueve archivos que ya no corresponden. Los .webp se quedan en
+ * public/giros por si vuelve la versión general de la portada.
+ *
+ * La lista es la del filtro real: producto de forma rígida, que la
+ * referencia respeta. Por eso no aparecen ropa ni calzado.
  *
  * Antes eran seis celdas iguales con líneas divisorias — el mismo bloque
  * que tiene cualquier landing tres veces en la misma página, y que aquí
@@ -18,17 +31,15 @@ import { motion, useReducedMotion } from "framer-motion";
  */
 type Giro = {
   label: string;
-  simbolo: string;
   /** Posición en la lona, en porcentaje.
    *
    *  Hay un par por pantalla porque el ancho de la ficha no cambia con la
    *  ventana pero el de la lona sí: en celular la lona mide 342 px. Con las
    *  posiciones de escritorio, varias se salían.
    *
-   *  Van tres por renglón, y caben porque el nombre va DEBAJO del símbolo
-   *  y no al lado: así cada pieza mide lo que mide su columna en vez de lo
-   *  que mide su etiqueta, y "Servicios profesionales" ocupa lo mismo que
-   *  "SaaS".
+   *  Van tres por renglón y todas miden lo mismo, no lo que mida su
+   *  etiqueta: así "Suplementos" ocupa igual que "Tés" y la nube no se
+   *  desbalancea sola.
    *
    *  Las posiciones salen de medir las piezas en el navegador, no de
    *  calcularlas: la inclinación agranda la caja que ocupan —una pieza de
@@ -53,16 +64,21 @@ type Giro = {
   vuelo: number;
 };
 
+// Rótulos de una sola palabra donde se pueda. La ficha mide 100 px de
+// ancho en celular —que es lo que deja meter tres columnas en 342 px sin
+// que se toquen— y "Skincare y cosmética" a 13 px se parte en tres
+// renglones ahí adentro. El subtítulo de la sección ya explica el filtro,
+// así que la pastilla solo tiene que nombrar la categoría.
 const GIROS: Giro[] = [
-  { label: "Gimnasios", simbolo: "/giros/gimnasio.webp", x: 6, y: 35, xMovil: 0, yMovil: 38, giro: -3, ritmo: 6.1, vuelo: 8 },
-  { label: "Cafeterías", simbolo: "/giros/cafeteria.webp", x: 37, y: 0, xMovil: 35, yMovil: 4, giro: 2.5, ritmo: 7.3, vuelo: 7 },
-  { label: "Restaurantes", simbolo: "/giros/restaurante.webp", x: 2, y: 0, xMovil: 1, yMovil: 0, giro: 1.5, ritmo: 5.4, vuelo: 8 },
-  { label: "Tiendas", simbolo: "/giros/tienda.webp", x: 70, y: 0, xMovil: 67, yMovil: 2, giro: -2, ritmo: 8.2, vuelo: 6 },
-  { label: "Inmobiliaria", simbolo: "/giros/inmobiliaria.webp", x: 3, y: 68, xMovil: 1, yMovil: 68, giro: 3, ritmo: 6.8, vuelo: 8 },
-  { label: "SaaS", simbolo: "/giros/saas.webp", x: 40, y: 35, xMovil: 36, yMovil: 34, giro: -1.5, ritmo: 7.9, vuelo: 7 },
-  { label: "Servicios profesionales", simbolo: "/giros/servicios.webp", x: 69, y: 68, xMovil: 67, yMovil: 70, giro: 2, ritmo: 5.9, vuelo: 8 },
-  { label: "Apps móviles", simbolo: "/giros/apps.webp", x: 36, y: 68, xMovil: 34, yMovil: 72, giro: -2.5, ritmo: 8.7, vuelo: 6 },
-  { label: "Agencias", simbolo: "/giros/agencias.webp", x: 73, y: 35, xMovil: 68, yMovil: 36, giro: 1, ritmo: 6.4, vuelo: 8 },
+  { label: "Skincare", x: 6, y: 35, xMovil: 0, yMovil: 38, giro: -3, ritmo: 6.1, vuelo: 8 },
+  { label: "Café", x: 37, y: 0, xMovil: 35, yMovil: 4, giro: 2.5, ritmo: 7.3, vuelo: 7 },
+  { label: "Tés", x: 2, y: 0, xMovil: 1, yMovil: 0, giro: 1.5, ritmo: 5.4, vuelo: 8 },
+  { label: "Salsas", x: 70, y: 0, xMovil: 67, yMovil: 2, giro: -2, ritmo: 8.2, vuelo: 6 },
+  { label: "Velas", x: 3, y: 68, xMovil: 1, yMovil: 68, giro: 3, ritmo: 6.8, vuelo: 8 },
+  { label: "Suplementos", x: 40, y: 35, xMovil: 36, yMovil: 34, giro: -1.5, ritmo: 7.9, vuelo: 7 },
+  { label: "Cabello", x: 69, y: 68, xMovil: 67, yMovil: 70, giro: 2, ritmo: 5.9, vuelo: 8 },
+  { label: "Joyería", x: 36, y: 68, xMovil: 34, yMovil: 72, giro: -2.5, ritmo: 8.7, vuelo: 6 },
+  { label: "Perfumes", x: 73, y: 35, xMovil: 68, yMovil: 36, giro: 1, ritmo: 6.4, vuelo: 8 },
 ];
 
 export default function IndustryScrollGallery() {
@@ -72,14 +88,21 @@ export default function IndustryScrollGallery() {
     <section className="relative overflow-hidden py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
         <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">PARA QUIÉN ES ESTO</p>
+        {/* Decía "para cualquier tipo de negocio", que es lo contrario de
+            especializarse: al que vende cremas no lo tranquiliza saber que
+            también le hacemos las redes a una inmobiliaria. */}
         <h2 className="max-w-md text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-          Contenido para cualquier tipo de negocio
+          Marcas de producto, no negocios en general
         </h2>
+        <p className="mt-4 max-w-lg text-sm leading-relaxed text-zinc-600 sm:text-base">
+          Funcionamos con producto de forma rígida —un frasco, una bolsa, una lata—, porque es lo que
+          tu foto de referencia conserva tal cual. Por eso no verás ropa ni calzado en esta lista.
+        </p>
 
         {/* Alto fijo y fichas en posición absoluta: es lo que permite que no
             guarden fila ni columna. Con `flex-wrap` volverían a alinearse
             solas en cuanto cambiara el ancho. */}
-        <div className="relative mt-10 h-[420px] sm:mt-14 sm:h-[480px]">
+        <div className="relative mt-10 h-[300px] sm:mt-14 sm:h-[340px]">
           {GIROS.map((g, i) => (
             <motion.div
               key={g.label}
@@ -98,30 +121,14 @@ export default function IndustryScrollGallery() {
               transition={{ duration: 0.4, delay: i * 0.06, ease: "easeOut" }}
             >
               <motion.div
-                className="flex w-[100px] flex-col items-center gap-2 sm:w-[130px] sm:gap-2.5"
+                className="flex w-[100px] items-center justify-center rounded-2xl bg-[image:var(--plastico)] px-3 py-3 text-center shadow-[var(--relieve-pieza)] sm:w-[130px] sm:px-4 sm:py-3.5"
                 style={{ rotate: g.giro }}
                 animate={reducirMovimiento ? undefined : { y: [0, -g.vuelo, 0] }}
                 transition={
                   reducirMovimiento ? undefined : { duration: g.ritmo, repeat: Infinity, ease: "easeInOut" }
                 }
               >
-                {/* Los archivos traen transparencia de verdad, no fondo
-                    blanco disuelto con mix-blend-multiply. El blend dejaba
-                    un recuadro: el fondo de los archivos promediaba 254.5,
-                    no 255, y multiplicado contra la página daba 243 sobre
-                    244. Un nivel, invisible en un monitor y perfectamente
-                    visible en un OLED. Y de paso el blend obligaba a
-                    pintarle el color de la página a cualquier ancestro que
-                    creara contexto de apilamiento —el giro, el vaivén, la
-                    animación de entrada—, cosa que ya no hace falta
-                    vigilar. Ver scripts/alfa-simbolos.py. */}
-                <img
-                  src={g.simbolo}
-                  alt=""
-                  aria-hidden="true"
-                  className="h-14 w-14 object-contain sm:h-20 sm:w-20"
-                />
-                <p className="text-balance text-center text-[13px] font-medium leading-tight text-zinc-700 sm:text-sm">
+                <p className="text-balance text-center text-[13px] font-medium leading-tight text-zinc-800 sm:text-sm">
                   {g.label}
                 </p>
               </motion.div>

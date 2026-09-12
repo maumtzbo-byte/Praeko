@@ -11,10 +11,14 @@ import { motion } from "framer-motion";
 // TeamSection.tsx) — no fabricated user/customer count. This said "5"
 // while that section listed five; the Revisor de Marca and the Agente de
 // Tendencias were already shipped and simply weren't being counted.
+// Los tres siguen siendo números verificables, nada inventado para
+// parecer tracción. Cambia el primero: "100% contenido en español" era
+// cierto pero no le resolvía nada a una marca de producto, y "0 sesiones
+// de fotos" sí — es justo el gasto y la agenda que le quitas.
 const SUPPORTING_STATS = [
-  { value: "100%", label: "Contenido generado en español" },
-  { value: "20", label: "Videos e imágenes al mes, publicados por nosotros" },
-  { value: "7", label: "Agentes de IA trabajando por tu negocio" },
+  { value: "0", label: "Sesiones de fotos que tengas que agendar" },
+  { value: "20", label: "Piezas nuevas de tu producto al mes" },
+  { value: "7", label: "Agentes de IA trabajando en tu marca" },
 ];
 
 export default function StatsShowcase() {
@@ -32,8 +36,8 @@ export default function StatsShowcase() {
           Antes de decidir, mira una muestra tuya
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-sm text-zinc-600 sm:text-base">
-          Te hacemos tres piezas para tu negocio, con tu nombre y lo que vendes, y te las mandamos
-          por WhatsApp. Si no te laten, ahí queda.
+          Mándanos las fotos de un producto y te hacemos tres piezas con él —dos escenas y un
+          video— por WhatsApp. Si no te laten, ahí queda.
         </p>
         <Link
           href="/prueba"

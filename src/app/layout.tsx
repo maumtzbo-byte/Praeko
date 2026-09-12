@@ -17,9 +17,9 @@ const geistMono = Geist_Mono({
 });
 
 const SITE_URL = "https://praekomarketingsaas.vercel.app";
-const SITE_TITLE = "Frames — Marketing con Inteligencia";
+const SITE_TITLE = "Frames — Video y escenas de tu producto";
 const SITE_DESCRIPTION =
-  "Videos, imágenes y publicaciones para tus redes sociales, creados y publicados por IA todos los días — sin que grabes, edites ni programes nada. Hecho para negocios pequeños en México.";
+  "Convertimos las fotos que ya tienes de tu producto en video y escenas nuevas cada mes, y las publicamos en tus redes. Para marcas mexicanas de skincare, café, salsas y consumo.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -29,11 +29,11 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   keywords: [
-    "marketing con IA",
-    "agentes de IA",
-    "marketing para negocios pequeños",
-    "generación de contenido con IA",
-    "SaaS de marketing México",
+    "video de producto",
+    "fotografía de producto con IA",
+    "contenido para marcas de skincare",
+    "contenido para e-commerce México",
+    "escenas de producto sin sesión de fotos",
   ],
   robots: { index: true, follow: true },
   openGraph: {

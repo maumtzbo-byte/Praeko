@@ -3,6 +3,7 @@ import Hero from "@/components/marketing/Hero";
 import HowItWorks from "@/components/marketing/HowItWorks";
 import TeamSection from "@/components/marketing/TeamSection";
 import IndustryScrollGallery from "@/components/marketing/IndustryScrollGallery";
+import ProductoReal from "@/components/marketing/ProductoReal";
 import VideoShowcase from "@/components/marketing/VideoShowcase";
 import StatsShowcase from "@/components/marketing/StatsShowcase";
 import WhyWeBuilt from "@/components/marketing/WhyWeBuilt";
@@ -24,6 +25,7 @@ export default function Home() {
         <StatsShowcase />
         <TeamSection />
         <IndustryScrollGallery />
+        <ProductoReal />
         <WhyWeBuilt />
         <PricingSection />
         <FaqSection />

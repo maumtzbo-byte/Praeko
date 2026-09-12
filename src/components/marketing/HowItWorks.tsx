@@ -23,11 +23,11 @@ import { motion } from "framer-motion";
 const STEPS = [
   {
     simbolo: "/pasos/cuestionario.webp",
-    title: "Cuéntanos de tu negocio",
+    title: "Nos mandas tus fotos de producto",
   },
   {
     simbolo: "/pasos/calendario.webp",
-    title: "Los agentes arman tu mes",
+    title: "Armamos el mes con tu producto",
   },
   {
     simbolo: "/pasos/aprobacion.webp",
@@ -51,7 +51,7 @@ export default function HowItWorks() {
       <div className="mx-auto max-w-6xl px-6">
         <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">CÓMO FUNCIONA</p>
         <h2 className="max-w-lg text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-          De no tener nada a publicar solo, en cuatro pasos
+          De una foto en fondo blanco a tu mes publicado
         </h2>
         <p className="mt-4 max-w-lg text-sm leading-relaxed text-zinc-600 sm:text-base">
           Lo configuras una vez. De ahí en adelante lo único que haces es decir que sí.

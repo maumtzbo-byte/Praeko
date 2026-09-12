@@ -52,7 +52,7 @@ export const AGENTS: Agent[] = [
     image: "/agentes/tendencias.webp",
     messages: [
       "Antes de que se escriba nada, yo investigo.",
-      "Busco en internet qué tipo de contenido está funcionando ahora mismo para negocios como el tuyo, en tu ciudad.",
+      "Busco en internet qué tipo de contenido está funcionando ahora mismo para marcas como la tuya.",
       "Y traigo el calendario que importa: Buen Fin, Día de las Madres, la quincena. Si vendes en Estados Unidos, cambio a Black Friday y Thanksgiving.",
     ],
   },
@@ -66,7 +66,7 @@ export const AGENTS: Agent[] = [
     messages: [
       "Yo lo produzco.",
       "Tomo el guion y genero el video o la imagen de verdad. No un borrador, ni una plantilla que tengas que rellenar tú.",
-      "Uso las fotos de tu negocio que subiste como referencia, para que se parezca a ti y no a un banco de imágenes.",
+      "Tu producto no lo invento: uso la foto que subiste como referencia, y genero la escena alrededor. Sale con su forma y su etiqueta, no un parecido.",
     ],
   },
   {
@@ -91,7 +91,7 @@ export const AGENTS: Agent[] = [
     image: "/agentes/publicacion.webp",
     messages: [
       "Yo la subo.",
-      "Publico en Instagram, Facebook o TikTok a la hora que le sirve a tu giro. Un restaurante, antes de la comida. Un gimnasio, antes de que la gente salga a entrenar.",
+      "Publico en Instagram, Facebook o TikTok a la hora en que tu gente está despierta y comprando, no a la hora en que se acordó alguien.",
       "Tú apruebas una vez; de ahí en adelante me encargo yo.",
     ],
   },
@@ -104,7 +104,7 @@ export const AGENTS: Agent[] = [
     image: "/agentes/respuestas.webp",
     messages: [
       "Yo contesto.",
-      "Cuando alguien pregunta precio, horario o disponibilidad en tus comentarios o mensajes, respondo con la información real de tu negocio.",
+      "Cuando alguien pregunta precio, envío o de qué está hecho en tus comentarios o mensajes, respondo con la información real de tu marca.",
       "Si la pregunta se pone seria, te la paso a ti en vez de inventar una respuesta.",
     ],
   },

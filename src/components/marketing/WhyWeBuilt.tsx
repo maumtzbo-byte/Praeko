@@ -18,20 +18,26 @@ export default function WhyWeBuilt() {
           </p>
 
           <div className="flex flex-col gap-5 border-l border-[var(--hairline)] pl-6 text-base leading-relaxed text-zinc-600">
+            {/* Describía a un local: "abres, atiendes, cobras, cierras".
+                El cliente de hoy no abre una cortina — manda a producir,
+                empaca y va al correo. Y su dolor no es grabar un video, es
+                que cada sesión de fotos se agenda, se paga y le rinde dos
+                semanas. */}
             <p>
-              Un negocio chico ya es trabajo de sobra. Abres, atiendes,
-              cobras, cierras. Cuando por fin te sientas ya son las diez de
-              la noche, y a esa hora nadie tiene ganas de grabar un video,
-              escribirle el texto y acordarse de subirlo.
+              Sacar una marca ya es trabajo de sobra. Formulas, mandas a
+              producir, empacas, contestas pedidos, vas al correo. Cuando por
+              fin te sientas ya son las diez de la noche, y a esa hora nadie
+              tiene ganas de montar una sesión de fotos.
             </p>
             <p>
-              Una agencia cobra miles de pesos al mes. Aprender a hacerlo tú
-              sale gratis, pero se paga con horas que no tienes. Y el negocio
-              de al lado sigue subiendo algo todos los días.
+              Y una sesión cuesta miles de pesos, se agenda con semanas y te
+              rinde para quince días de contenido. Luego otra vez. Mientras
+              tanto, la marca de al lado sigue subiendo algo todos los días.
             </p>
             <p>
-              Por eso Frames lo hace por ti. No grabas nada, no editas nada,
-              no programas nada. Solo lo revisas y{" "}
+              Por eso Frames lo hace por ti, con las fotos que ya tienes. No
+              agendas nada, no editas nada, no programas nada. Solo lo revisas
+              y{" "}
               <span className="font-medium text-zinc-950">das el visto bueno</span>.
             </p>
           </div>

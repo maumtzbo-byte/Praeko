@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Loader2, Sparkles } from "lucide-react";
 
 import { completarContexto, registrarProspecto } from "@/app/prueba/actions";
-import { GIROS_PROSPECTO } from "@/lib/validation/lead";
+import { CATEGORIAS_PRODUCTO } from "@/lib/validation/lead";
 import { ligaWhatsapp, MENSAJE_MUESTRA, WHATSAPP_VISIBLE } from "@/lib/contacto";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,9 +16,10 @@ import { Label } from "@/components/ui/label";
 /**
  * El formulario de /prueba, en dos pasos.
  *
- * La tensión que resuelve: con cuatro datos —nombre, negocio, giro,
- * teléfono— el agente de estrategia no tiene de dónde agarrarse y la
- * muestra sale genérica. Y la muestra es lo único que vende, así que una
+ * La tensión que resuelve: con cuatro datos —nombre, marca, categoría,
+ * teléfono— el agente de estrategia no tiene de dónde agarrarse y, peor,
+ * no tiene ni una foto del producto, que es el insumo sin el cual no hay
+ * pieza. La muestra saldría genérica. Y la muestra es lo único que vende, así que una
  * muestra genérica no sirve de nada. Pero un formulario de ocho campos en
  * una página detrás de anuncios pagados espanta prospectos.
  *
@@ -91,7 +92,7 @@ export function LeadForm() {
         </span>
         <h2 className="mt-4 text-xl font-semibold tracking-tight text-zinc-950">Quedó.</h2>
         <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-zinc-600">
-          En menos de 24 horas te escribo por WhatsApp con tres piezas hechas para tu negocio. Si no
+          En menos de 24 horas te escribo por WhatsApp con tres piezas hechas con tu producto. Si no
           te laten, ahí queda y no me debes nada.
         </p>
         <a
@@ -122,28 +123,31 @@ export function LeadForm() {
                 Ya quedaste. ¿Le damos contexto?
               </h3>
               <p className="mt-1 text-sm leading-relaxed text-zinc-600">
-                Con esto la muestra sale hablando de lo que tú vendes, no de un negocio genérico.
-                Son 30 segundos y puedes saltártelo.
+                Con esto la muestra sale con tu producto, no con uno genérico. Son 30 segundos y
+                puedes saltártelo.
               </p>
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="vende">¿Qué vendes?</Label>
+            <Label htmlFor="vende">¿Qué producto usamos, y dónde están sus fotos?</Label>
             <Textarea
               id="vende"
               name="vende"
-              rows={2}
-              className="min-h-[64px]"
-              placeholder="Mensualidades de gimnasio y clases sueltas de spinning y yoga"
+              rows={3}
+              className="min-h-[80px]"
+              placeholder="El serum de niacinamida. Las fotos están en mi Instagram y en la tienda: botanicanorte.com"
             />
+            <p className="text-xs leading-snug text-zinc-500">
+              Sirven las que ya tengas, aunque sean de fondo blanco o de celular.
+            </p>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ciudad">¿En qué ciudad?</Label>
+            <Label htmlFor="ciudad">¿De qué ciudad es tu marca?</Label>
             <Input id="ciudad" name="ciudad" placeholder="Monterrey" />
             <p className="text-xs leading-snug text-zinc-500">
-              Sirve para buscar qué está funcionando en tu zona.
+              Sirve para buscar qué está funcionando en tu mercado.
             </p>
           </div>
 
@@ -154,13 +158,13 @@ export function LeadForm() {
               name="preguntan"
               rows={2}
               className="min-h-[64px]"
-              placeholder="Cuánto cuesta, si hay clase los sábados, si tienen estacionamiento"
+              placeholder="De qué está hecho, cuánto rinde, si sirve para piel grasa"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="instagram">Tu Instagram</Label>
-            <Input id="instagram" name="instagram" placeholder="@tunegocio" />
+            <Label htmlFor="instagram">El Instagram de tu marca</Label>
+            <Input id="instagram" name="instagram" placeholder="@tumarca" />
           </div>
 
           <Button type="submit" size="lg" disabled={enviando} className="mt-1 w-full">
@@ -192,17 +196,17 @@ export function LeadForm() {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="negocio">Tu negocio</Label>
-          <Input id="negocio" name="negocio" required placeholder="Estudio Vértice" />
+          <Label htmlFor="negocio">Tu marca</Label>
+          <Input id="negocio" name="negocio" required placeholder="Botánica Norte" />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="giro">¿A qué se dedica?</Label>
+          <Label htmlFor="giro">¿Qué tipo de producto vendes?</Label>
           <Select id="giro" name="giro" required defaultValue="">
             <option value="" disabled>
               Elige una opción
             </option>
-            {GIROS_PROSPECTO.map((giro) => (
+            {CATEGORIAS_PRODUCTO.map((giro) => (
               <option key={giro} value={giro}>
                 {giro}
               </option>

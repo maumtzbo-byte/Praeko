@@ -7,11 +7,11 @@ export default function CtaSection() {
       <div className="relative mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 px-6 sm:grid-cols-[1.1fr_0.9fr]">
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
           <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-            Dedica tu tiempo a tu negocio, no a tus redes
+            Tu producto merece verse mejor que en fondo blanco
           </h2>
           <p className="max-w-md text-zinc-600">
-            Te hacemos tres piezas para tu negocio y te las mandamos en menos
-            de 24 horas. Sin costo y sin compromiso.
+            Mándanos la foto de un producto y te devolvemos tres piezas con
+            él en menos de 24 horas. Sin costo y sin compromiso.
           </p>
           <Link
             href="/prueba"
@@ -42,7 +42,7 @@ export default function CtaSection() {
             20 piezas
           </p>
           <p className="mt-1 text-sm text-zinc-500">
-            al mes: las armamos, las hacemos y las subimos nosotros.
+            al mes de tu producto: las armamos, las hacemos y las subimos nosotros.
           </p>
         </div>
       </div>

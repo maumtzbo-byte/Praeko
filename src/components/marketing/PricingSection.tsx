@@ -65,6 +65,18 @@ interface PricingPlan {
 // imágenes que Crecimiento —8 contra 12— era un error heredado de los
 // topes de la tabla, no una decisión: pagabas más y recibías menos.
 //
+// Las redes sociales YA NO diferencian paquetes: los tres traen las tres.
+// Antes Entrada daba una sola red, y eso era cobrar por algo que no nos
+// cuesta — publicar en tres cuentas en lugar de una es el mismo trabajo.
+// Feedbird, que es el competidor más cercano y tiene veinte mil clientes,
+// cobra igual por una red que por siete. Lo único que varía entre paquetes
+// es el VIDEO, que es lo caro de generar y lo lento de revisar.
+//
+// Contestar comentarios salió de los paquetes y pasó a ser un agregado:
+// es lo único de la lista que cuesta tiempo humano todos los días en vez
+// de créditos de generación, así que tiene que cobrarse aparte o se come
+// las horas que sostienen todo lo demás.
+//
 // Los topes de la tabla `plans` se quedan como están y a propósito quedan
 // POR ENCIMA de lo que se promete aquí: cada regeneración cuenta contra el
 // tope, así que si el tope fuera igual a lo prometido, la primera pieza
@@ -73,37 +85,37 @@ const plans: PricingPlan[] = [
   {
     name: "Entrada",
     price: 2490,
-    tagline: "Para dejar de tener el perfil abandonado",
+    tagline: "Para dejar de publicar puro fondo blanco",
     featured: false,
     trialBadge: "Primer mes a mitad",
     features: [
-      "4 videos al mes, con audio",
-      "10 imágenes o carruseles al mes",
-      "1 red social",
+      "4 videos de tu producto al mes",
+      "10 escenas o carruseles al mes",
+      "Instagram, Facebook y TikTok",
       "Nosotros publicamos por ti",
     ],
   },
   {
     name: "Crecimiento",
     price: 4490,
-    tagline: "Algo nuevo cuatro veces por semana, en tus tres redes",
+    tagline: "Algo nuevo de tu producto cuatro veces por semana",
     featured: true,
     features: [
-      "8 videos al mes, con audio y subtítulos",
-      "12 imágenes o carruseles al mes",
+      "8 videos de tu producto al mes",
+      "12 escenas o carruseles al mes",
       "Instagram, Facebook y TikTok",
-      "Publicamos a la hora que le sirve a tu giro",
-      "Contestamos comentarios y mensajes",
+      "Publicamos a la hora que le sirve a tu marca",
+      "Variantes del mismo producto para probar cuál jala",
     ],
   },
   {
     name: "Completo",
     price: 7900,
-    tagline: "Para cuando el video es lo que te está trayendo clientes",
+    tagline: "Para cuando el video es lo que te está vendiendo",
     featured: false,
     features: [
-      "16 videos al mes, de mayor duración",
-      "20 imágenes o carruseles al mes",
+      "16 videos de tu producto al mes, de mayor duración",
+      "20 escenas o carruseles al mes",
       "Instagram, Facebook y TikTok",
       "Tu contenido se produce primero que el de nadie más",
       "Reporte mensual de resultados",
@@ -263,11 +275,12 @@ export default function PricingSection() {
               Un encabezado que promete más que el botón que lo acompaña
               es la forma más barata de perder la confianza. */}
           <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-            Elige el tamaño de tu mes
+            Elige cuánto video quieres al mes
           </h2>
           <p className="mt-4 text-zinc-600">
-            Precios en pesos y un número claro de piezas cada mes. Sabes desde
-            el primer día qué recibes y cuánto pagas.
+            Las tres redes vienen en los tres paquetes. Lo único que cambia es
+            cuánto video de tu producto producimos, porque es lo que de verdad
+            cuesta hacer.
           </p>
         </div>
 
@@ -294,7 +307,14 @@ export default function PricingSection() {
             />
           ))}
         </div>
-        <p className="mt-2 text-center text-xs text-zinc-400 sm:hidden">Desliza para ver los 3 planes →</p>
+        <p className="mt-2 text-center text-xs text-zinc-400 sm:hidden">Desliza para ver los 3 paquetes →</p>
+
+        {/* El agregado, fuera de las tarjetas a propósito: si viviera dentro
+            de una de las tres, volvería a parecer que es lo que separa un
+            paquete de otro. */}
+        <p className="mx-auto mt-6 max-w-lg text-center text-sm text-zinc-600">
+          ¿Quieres que también contestemos comentarios y mensajes? Se agrega a cualquier paquete.
+        </p>
 
         {/* La salida de WhatsApp, debajo de los planes y no arriba. Quien
             llegó hasta aquí ya comparó y tiene una duda concreta —"¿me

@@ -25,7 +25,7 @@ export default function Footer() {
             FRAMES
           </span>
           <p className="max-w-xs text-sm text-zinc-500">
-            Siete agentes de IA que le llevan las redes a negocios chicos en México.
+            Video y escenas de tu producto, cada mes, para marcas mexicanas que venden en línea.
           </p>
         </div>
 

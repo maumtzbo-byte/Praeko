@@ -1,23 +1,20 @@
-import { Dumbbell, UtensilsCrossed, Sparkles, ShoppingBag, HeartPulse, Briefcase, type LucideIcon } from "lucide-react";
+import { Coffee, Droplet, Flame, Gem, Leaf, Pill, type LucideIcon } from "lucide-react";
 
-// Illustrative examples of the kind of video Frames generates per
-// industry — not real finished output (Frames is in beta, there's no
-// library of real generated videos to show yet) and not customer
-// testimonials (no paying customers to quote either). Same "don't invent
-// an identity" rule as everywhere else on the site: no fabricated
-// business name attached to any of these.
+// Ideas de contenido por categoría de producto. Son ejemplos, no obra
+// terminada: no hay todavía una biblioteca de piezas reales que enseñar, y
+// tampoco hay clientes que citar. La misma regla de siempre — no se
+// inventa la identidad de nadie, así que ninguna trae nombre de marca.
 //
-// Estos seis son ejemplos de video, no la lista de giros que atiende
-// Frames: esa vive en IndustryScrollGallery, tiene nueve y desde que usa
-// símbolos 3D dejó de compartir íconos con esta fila. Son dos listas con
-// propósitos distintos y ya no hay que mantenerlas iguales.
+// Eran seis giros (gimnasio, restaurante, estética...) y ahora son seis
+// categorías de producto, las mismas del filtro: forma rígida, referencia
+// que se respeta.
 const EXAMPLE_VIDEOS: { industry: string; caption: string; icon: LucideIcon }[] = [
-  { industry: "Gimnasio o estudio boutique", caption: "Rutina de la semana: piernas y core", icon: Dumbbell },
-  { industry: "Restaurante o cafetería", caption: "Platillo del día: risotto de temporada", icon: UtensilsCrossed },
-  { industry: "Belleza y estética", caption: "Antes y después: tratamiento facial", icon: Sparkles },
-  { industry: "Retail o tienda", caption: "Nueva colección ya disponible", icon: ShoppingBag },
-  { industry: "Salud y bienestar", caption: "3 tips para dormir mejor", icon: HeartPulse },
-  { industry: "Servicios profesionales", caption: "Cómo trabajamos con nuevos clientes", icon: Briefcase },
+  { industry: "Skincare", caption: "El serum cayendo en cámara lenta", icon: Droplet },
+  { industry: "Café de especialidad", caption: "La bolsa y la taza, luz de mañana", icon: Coffee },
+  { industry: "Tés e infusiones", caption: "El agua tiñéndose, de cerca", icon: Leaf },
+  { industry: "Velas y aromas", caption: "La mecha prendiendo en penumbra", icon: Flame },
+  { industry: "Suplementos", caption: "El frasco girando sobre mármol", icon: Pill },
+  { industry: "Joyería", caption: "La pieza en la mano, contraluz", icon: Gem },
 ];
 
 // Same sky-blue family as the Hero, a two-tone diagonal per card instead of
@@ -79,18 +76,18 @@ export default function VideoShowcase() {
   return (
     <section className="relative overflow-hidden bg-zinc-950 py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
-        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">IDEAS POR GIRO</p>
+        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">IDEAS POR CATEGORÍA</p>
         {/* Decía "Así es el tipo de video que Frames genera" arriba de
             seis tarjetas donde no hay ni un video. Lo que esta fila sí
             puede enseñar sin mentir es de qué habla cada pieza según el
             giro; el video de verdad se enseña en la muestra, que es a
             donde manda el botón. */}
         <h2 className="max-w-lg text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-          De esto habla tu mes, según tu giro
+          De esto habla tu mes, según lo que vendes
         </h2>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-400">
-          Ideas de las que armamos cada mes. Los videos ya hechos te los mandamos en tu muestra, con
-          el nombre de tu negocio.
+          Ideas de las que armamos cada mes. Los videos ya hechos te los mandamos en tu muestra,
+          hechos con las fotos de tu propio producto.
         </p>
       </div>
 

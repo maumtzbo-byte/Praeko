@@ -4,25 +4,43 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-// Las preguntas están escritas para lo que Frames vende HOY: un servicio
-// donde nosotros hacemos el mes y lo publicamos. Las respuestas anteriores
-// describían el autoservicio —"cancelas desde tu panel", "el cuestionario
-// te toma diez minutos", "Instagram en el plan Básico... en Pro y Max"— y
-// ninguna de esas tres cosas es cierta para quien contrata el servicio:
-// no tiene panel, no llena un cuestionario, y los paquetes ya ni se
-// llaman así. Una sección de preguntas frecuentes que contradice a la
-// tabla de precios que está tres pantallas arriba no genera dudas, genera
-// desconfianza.
+// Las preguntas están escritas para lo que Frames vende HOY: video y
+// escenas del producto de una marca, hechos con sus propias fotos, y
+// publicados por nosotros.
+//
+// Dos cosas que antes no estaban y ahora sí, porque las dos cuestan dinero
+// cuando faltan. La primera: qué necesitamos de ellos para empezar — una
+// marca que no sabe que tiene que mandar fotos llega el día uno sin nada y
+// el mes arranca tarde. La segunda: las revisiones con número. Decían "la
+// rehacemos, sin costo y sin discutirlo", que con un cliente exigente se
+// come el margen entero; el 68% de quien compra un paquete cerrado espera
+// personalización de todos modos, así que el límite se pone por escrito
+// antes de venderlo, no después.
 const FAQS = [
+  {
+    question: "¿Qué necesitan de mí para empezar?",
+    answer:
+      "Las fotos de tu producto que ya tengas, aunque sean de fondo blanco o tomadas con celular. Con eso nos basta: de ahí sale la escena y el video. Si tienes catálogo, mejor, pero con tres o cuatro fotos buenas de cada producto arrancamos.",
+  },
+  {
+    question: "¿Van a inventar mi producto? ¿Se va a ver falso?",
+    answer:
+      "Tu producto es tu foto y no se toca: entra con su forma y su etiqueta y sale igual. Lo que generamos es lo de alrededor — la mesa, la luz, la mano, el movimiento de cámara. Es lo mismo que hace una marca grande cuando lleva su producto a un estudio, nada más que sin agendar el estudio. Y antes de que pagues te mandamos tres piezas con tu producto para que lo veas tú, no para que nos creas.",
+  },
+  {
+    question: "¿Hacen ropa o calzado?",
+    answer:
+      "No, y es a propósito. La tela se dobla y cae distinto en cada toma, y ahí la diferencia se nota. Trabajamos con producto de forma rígida: frascos, bolsas, latas, cajas, piezas de joyería. Si vendes ropa, preferimos decírtelo ahora que cobrarte y quedarte mal.",
+  },
   {
     question: "¿Necesito saber de diseño o edición?",
     answer:
-      "No, y tampoco tienes que aprender ninguna herramienta. Nos cuentas de tu negocio una vez, nosotros armamos el mes, hacemos los videos y las imágenes y los subimos. Lo único que haces tú es avisarnos si algo no te late.",
+      "No, y tampoco tienes que aprender ninguna herramienta. Nos mandas tus fotos una vez, nosotros armamos el mes, hacemos los videos y las escenas y los subimos. Lo único que haces tú es avisarnos si algo no te late.",
   },
   {
-    question: "¿El contenido se nota que está hecho con IA?",
+    question: "¿Qué pasa si no me gusta una pieza?",
     answer:
-      "Se nota cuando está mal hecho. Por eso ninguna pieza sale sin que una persona la revise antes, y por eso te mandamos tres de muestra antes de que pagues: para que lo juzgues tú y no nosotros. Lo que sí te decimos de frente es que no vamos a ir a grabar a tu local. Si lo que necesitas es a tu gente y tu producto en cámara, eso es otra cosa y te conviene un fotógrafo.",
+      "Nos dices cuál y la rehacemos. Van tres cambios incluidos el primer mes, mientras agarramos tu estilo, y dos cada mes después — que en la práctica alcanzan de sobra. Rehacer una pieza es cuestión de minutos, no de volver a citar a un equipo de grabación.",
   },
   {
     question: "¿Es seguro darles acceso a mis redes?",
@@ -32,22 +50,17 @@ const FAQS = [
   {
     question: "¿Puedo cancelar cuando quiera?",
     answer:
-      "Sí. Se paga mes con mes, sin contrato forzoso y sin penalización. Nos avisas antes de que termine tu mes y ahí queda. Lo que ya te entregamos es tuyo y te lo quedas.",
-  },
-  {
-    question: "¿Qué pasa si no me gusta una pieza?",
-    answer:
-      "Nos dices cuál y la rehacemos, sin costo y sin discutirlo. Es más rápido de lo que suena: rehacer un video es cuestión de minutos, no de volver a citar a un equipo de grabación. Y entre más nos corrijas al principio, menos vas a tener que corregir después.",
+      "Sí. Se paga mes con mes, sin contrato forzoso y sin penalización. Nos avisas antes de que termine tu mes y ahí queda. Las piezas que ya te entregamos son tuyas y te las quedas.",
   },
   {
     question: "¿Cuánto tarda en estar listo?",
     answer:
-      "Las tres piezas de muestra te llegan en menos de 24 horas. Si decides seguir, primero platicamos un rato para entender bien tu negocio y de ahí te mandamos el mes completo, para que lo revises antes de que salga publicado nada.",
+      "Las tres piezas de muestra te llegan en menos de 24 horas. Si decides seguir, primero platicamos un rato para entender tu marca y de ahí te mandamos el mes completo, para que lo revises antes de que salga publicado nada.",
   },
   {
     question: "¿En qué redes publican?",
     answer:
-      "Instagram en el paquete Entrada; Instagram, Facebook y TikTok en Crecimiento y Completo. Publicamos a la hora en que tu público suele estar despierto, no a la hora en que nos acordamos.",
+      "Instagram, Facebook y TikTok, en los tres paquetes. Publicamos a la hora en que tu público suele estar despierto, no a la hora en que nos acordamos.",
   },
 ];
 

@@ -24,9 +24,9 @@ import { ligaWhatsapp, MENSAJE_COTIZACION } from "@/lib/contacto";
  *     conversación va en WhatsApp, que es donde de todos modos se cierra.
  */
 export const metadata: Metadata = {
-  title: "20 piezas al mes para tu negocio | Frames",
+  title: "Video y escenas de tu producto | Frames",
   description:
-    "Videos e imágenes para Instagram, Facebook y TikTok, publicados por nosotros. Pide tres piezas de muestra sin costo.",
+    "Convertimos las fotos que ya tienes de tu producto en video y escenas nuevas, y las publicamos. Pide tres piezas de muestra sin costo.",
   // Es una página de campaña: no tiene por qué competir en buscadores con
   // la portada ni acumular versiones indexadas por cada parámetro de
   // origen que traiga un anuncio.
@@ -34,13 +34,13 @@ export const metadata: Metadata = {
 };
 
 const RECIBES = [
-  { icono: Clapperboard, texto: "8 videos al mes, con audio y subtítulos" },
-  { icono: ImageIcon, texto: "12 imágenes o carruseles" },
+  { icono: Clapperboard, texto: "8 videos de tu producto al mes, con audio" },
+  { icono: ImageIcon, texto: "12 escenas o carruseles" },
   { icono: Send, texto: "Publicado en Instagram, Facebook y TikTok" },
-  { icono: MessageCircle, texto: "Contestamos comentarios y mensajes" },
+  { icono: MessageCircle, texto: "Con tus propias fotos como referencia" },
 ];
 
-const NO_HACES = ["No grabas", "No editas", "No escribes", "No programas"];
+const NO_HACES = ["No agendas sesión", "No editas", "No escribes", "No programas"];
 
 export default function PruebaPage() {
   return (
@@ -58,14 +58,14 @@ export default function PruebaPage() {
           <div className="flex flex-col gap-6">
             <div>
               <p className="text-xs font-semibold tracking-[0.28em] text-zinc-500">
-                PARA NEGOCIOS EN MÉXICO
+                PARA MARCAS MEXICANAS
               </p>
               <h1 className="mt-4 text-balance text-4xl font-semibold leading-[1.02] tracking-tight text-zinc-950 sm:text-5xl">
-                20 piezas al mes para tu negocio
+                20 piezas al mes de tu producto
               </h1>
               <p className="mt-4 max-w-md text-[17px] leading-relaxed text-zinc-600">
-                Nosotros armamos el mes completo, lo producimos y lo publicamos en tus redes. Tú
-                nada más lo revisas.
+                Nos mandas las fotos que ya tienes. Nosotros generamos la escena y el video
+                alrededor de tu producto, y lo publicamos. Tú nada más lo revisas.
               </p>
             </div>
 
@@ -102,7 +102,7 @@ export default function PruebaPage() {
           <div className="flex flex-col gap-4">
             <div>
               <h2 className="text-balance text-2xl font-semibold tracking-tight text-zinc-950">
-                Te mando 3 piezas hechas para tu negocio
+                Te mando 3 piezas hechas con tu producto
               </h2>
               <p className="mt-2 text-[15px] leading-relaxed text-zinc-600">
                 En menos de 24 horas, sin costo. Las ves y tú decides.
@@ -137,23 +137,24 @@ export default function PruebaPage() {
             "¿cómo le hacen?", y esto la contesta. */}
         <section className="mt-16 border-t border-[var(--hairline)] pt-10 sm:mt-20">
           <h2 className="max-w-lg text-balance text-2xl font-semibold tracking-tight text-zinc-950">
-            ¿Cómo alcanza para 20 piezas?
+            ¿Y mi producto se va a ver falso?
           </h2>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-zinc-600">
-            Porque no las hacemos a mano. Siete agentes de IA producen el mes: uno arma el plan, uno
-            busca qué está funcionando en tu giro, uno genera los videos y otro los revisa antes de
-            que los veas. Nosotros ponemos el criterio y la cara, que es lo que sí importa.
+            No, porque tu producto no lo generamos nosotros: es tu foto. Entra con su forma y su
+            etiqueta y sale igual. Lo que generamos es el mundo alrededor — la mesa, la luz, la mano
+            que lo levanta, la cámara que le da la vuelta.
           </p>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-zinc-600">
-            Por eso te sale en una fracción de lo que cuesta contratar a alguien que lo haga a
-            mano, y por eso alcanza para veinte piezas al mes en vez de cuatro.
+            Es lo mismo que hace una marca grande cuando lleva su producto a un estudio, nada más
+            que sin agendar el estudio. Y por eso te mandamos tres piezas antes de que pagues: para
+            que lo veas tú, no para que nos creas.
           </p>
         </section>
       </main>
 
       <footer className="border-t border-[var(--hairline)] px-6 py-8">
         <p className="mx-auto max-w-5xl text-xs text-zinc-500">
-          Frames · Marketing con agentes de IA para negocios en México
+          Frames · Video y escenas de producto para marcas mexicanas
         </p>
       </footer>
     </div>

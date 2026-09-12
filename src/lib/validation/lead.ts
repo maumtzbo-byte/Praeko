@@ -1,23 +1,28 @@
 import { z } from "zod";
 
-/** Los giros que se ofrecen en el formulario de /prueba.
+/** Las categorías de producto que se ofrecen en el formulario de /prueba.
  *
- *  Es la misma lista que el cuestionario de onboarding (INDUSTRY_OPTIONS)
- *  menos las opciones que describen un rol y no un negocio con redes que
- *  atender. "Agencia de marketing" sale porque una agencia no es cliente
- *  de otra agencia, y "Dueño de negocio" sale porque no dice a qué se
- *  dedica, que es justo el dato que hace falta para generarle la muestra. */
-export const GIROS_PROSPECTO = [
-  "Restaurante o cafetería",
-  "Gimnasio o estudio boutique",
-  "Belleza y estética",
-  "Salud y bienestar",
-  "Retail o tienda",
-  "E-commerce",
-  "Asesor inmobiliario",
-  "Servicios profesionales",
-  "Educación",
-  "Otro",
+ *  Eran los diez giros del cuestionario de onboarding —restaurante,
+ *  gimnasio, inmobiliaria— y dejaron de servir cuando el cliente pasó a ser
+ *  una marca de producto empacado: un restaurante no tiene un frasco que
+ *  meter como referencia, y preguntarle "¿a qué se dedica?" no dice nada de
+ *  lo único que necesitamos saber, que es qué objeto vamos a fotografiar.
+ *
+ *  La lista es la del filtro real: forma rígida, que la foto de referencia
+ *  conserva. Ropa y calzado NO están, y su ausencia es la respuesta — la
+ *  tela cae distinto en cada toma y ahí la generación se delata. "Otro" se
+ *  queda para no rebotar a una marca que sí encaja y no se ve en la lista. */
+export const CATEGORIAS_PRODUCTO = [
+  "Skincare y cosmética",
+  "Café de especialidad",
+  "Tés e infusiones",
+  "Salsas, mieles y conservas",
+  "Suplementos y vitaminas",
+  "Velas y aromas para el hogar",
+  "Cuidado del cabello",
+  "Perfumes",
+  "Joyería y accesorios",
+  "Otro producto empacado",
 ] as const;
 
 /** Diez dígitos, que es un celular mexicano. Se acepta con espacios,
@@ -54,11 +59,15 @@ export function normalizaInstagram(valor: string): string | null {
 }
 
 /** Paso 1: lo mínimo para tener al prospecto. Se manda solo, y en cuanto
- *  llega el prospecto ya está a salvo en la base aunque abandone el resto. */
+ *  llega el prospecto ya está a salvo en la base aunque abandone el resto.
+ *
+ *  `giro` conserva el nombre de la columna aunque ahora guarde una categoría
+ *  de producto: renombrarla obligaría a una migración y a tocar el panel,
+ *  y el dato que lleva adentro es el mismo tipo de cosa. */
 export const leadSchema = z.object({
   nombre: z.string().trim().min(2, "Escribe tu nombre."),
-  negocio: z.string().trim().min(2, "Escribe el nombre de tu negocio."),
-  giro: z.enum(GIROS_PROSPECTO, { message: "Elige a qué se dedica tu negocio." }),
+  negocio: z.string().trim().min(2, "Escribe el nombre de tu marca."),
+  giro: z.enum(CATEGORIAS_PRODUCTO, { message: "Elige qué tipo de producto vendes." }),
   whatsapp,
   origen: z.string().trim().max(60).optional(),
 });
@@ -67,21 +76,28 @@ export type LeadInput = z.infer<typeof leadSchema>;
 
 /** Paso 2: el contexto que la IA de verdad necesita.
  *
- *  Con nombre, negocio y giro, el agente de estrategia puede escribir
- *  "contenido para un gimnasio" y nada más — o sea, una muestra genérica,
- *  que no vende. Estos cuatro campos son los que la hacen específica:
+ *  Con nombre, marca y categoría, el agente de estrategia puede escribir
+ *  "contenido para una marca de skincare" y nada más — o sea, una muestra
+ *  genérica, que no vende. Estos cuatro campos son los que la hacen
+ *  específica, y son distintos a los de antes porque el cliente es otro:
  *
- *    · qué vende, en sus palabras, es de dónde sale de qué escribir;
- *    · la ciudad la necesita el agente de Tendencias, que busca en
- *      internet qué funciona "en tu giro, en tu ciudad";
+ *    · qué producto quiere que usemos y dónde están sus fotos, en un solo
+ *      campo, porque de ahí sale la referencia y sin ella no hay pieza. Van
+ *      juntos a propósito: separarlos pedía una columna nueva, o sea una
+ *      migración más en la cola de cosas que todavía no se corren, y la
+ *      respuesta se lee igual de bien en un párrafo;
+ *    · la ciudad la sigue necesitando el agente de Tendencias, y en una
+ *      marca de producto además dice a qué mercado le vende;
  *    · lo que más le preguntan sus clientes es la mina de oro del
- *      contenido, porque cada pregunta repetida es una pieza;
+ *      contenido, y en producto son preguntas concretísimas —de qué está
+ *      hecho, cuánto rinde, si sirve para piel grasa— que son una pieza
+ *      cada una;
  *    · el Instagram vale más que los tres juntos: con verlo se saca su
- *      tono, sus fotos y qué tan mal está su contenido actual.
+ *      paleta, qué fotos ya tiene y qué tan mal está su contenido actual.
  *
  *  Todos opcionales, y va aparte del paso 1 a propósito: un formulario de
- *  ocho campos en una página detrás de anuncios pagados espanta
- *  prospectos, y perder el prospecto es peor que tener poca información. */
+ *  ocho campos espanta prospectos, y perder el prospecto es peor que tener
+ *  poca información. */
 export const contextoSchema = z.object({
   leadId: z.string().uuid(),
   vende: z.string().trim().max(300).optional(),

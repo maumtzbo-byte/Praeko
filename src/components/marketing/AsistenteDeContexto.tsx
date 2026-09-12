@@ -5,7 +5,7 @@ import { Check, Loader2 } from "lucide-react";
 
 import { completarContexto } from "@/app/prueba/actions";
 import { conLimite } from "@/lib/espera";
-import { estilosPara, tituloDeEstilo } from "@/lib/marketing/estilos";
+import { estilosPara, imagenDeEstilo, tituloDeEstilo } from "@/lib/marketing/estilos";
 import { SubidaDeFotos } from "@/components/marketing/SubidaDeFotos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -256,6 +256,7 @@ export function AsistenteDeContexto({
           <div className="flex flex-col gap-2">
             {opciones.map((estilo) => {
               const marcado = estilos.includes(estilo.id);
+              const foto = imagenDeEstilo(estilo);
               return (
                 <button
                   key={estilo.id}
@@ -275,14 +276,29 @@ export function AsistenteDeContexto({
                   }`}
                 >
                   {/* La muestra del estilo, que es lo que de verdad se
-                      está eligiendo. Sin ella la lista son cinco renglones
-                      de texto y el estilo es justo lo que no se explica
-                      con palabras. */}
-                  <span
-                    aria-hidden="true"
-                    className="h-14 w-14 shrink-0 rounded-xl shadow-[var(--relieve-hundido)]"
-                    style={{ backgroundImage: estilo.muestra }}
-                  />
+                      está eligiendo. Sin ella la lista son renglones de
+                      texto, y el estilo es justo lo que no se explica con
+                      palabras.
+                      
+                      Si ya existe la foto de ejemplo se usa la foto; si no,
+                      el degradado de respaldo. Soltar el archivo en
+                      public/estilos/ y agregar su id a ESTILOS_CON_FOTO es
+                      todo lo que hace falta para estrenarla. */}
+                  {foto ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={foto}
+                      alt=""
+                      aria-hidden="true"
+                      className="h-14 w-14 shrink-0 rounded-xl object-cover shadow-[var(--relieve-hundido)]"
+                    />
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className="h-14 w-14 shrink-0 rounded-xl shadow-[var(--relieve-hundido)]"
+                      style={{ backgroundImage: estilo.muestra }}
+                    />
+                  )}
                   {/* La marca va de título y el estilo debajo, no al
                       revés. "Aesop" le dice más en un segundo a quien
                       vende skincare que cualquier descripción que yo

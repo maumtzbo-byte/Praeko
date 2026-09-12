@@ -1,0 +1,28 @@
+Aquí van las fotos de ejemplo de cada estilo.
+
+QUÉ PONER
+Una foto por estilo, del MISMO producto, cambiando solo el estilo. Que se
+vea que es la misma cosa fotografiada de cinco maneras: ese es el punto.
+
+Tienen que ser TUYAS, generadas con tu producto. No pueden ser las de las
+marcas de referencia — el nombre de una marca se puede usar para describir
+un estilo, pero su fotografía es derecho de autor.
+
+CÓMO SE LLAMAN
+  limpio.webp      "De laboratorio"       (tipo The Ordinary / Blue Bottle)
+  calido.webp      "Lino y madera"        (tipo Aesop / Stumptown / Diptyque)
+  editorial.webp   "Marmol y sombra dura" (tipo Le Labo)
+  oscuro.webp      "Negro y dorado"       (tipo Tom Ford / Onyx)
+  jugueton.webp    "Fondos de color"      (tipo Glossier / Boy Smells)
+
+CUADRADAS. Se pintan en 56x56 px, asi que 512x512 sobra y pesa poco.
+
+EL PROMPT DE CADA UNA
+Ya esta escrito: es el campo `instruccion` de src/lib/marketing/estilos.ts.
+Se usa con tu foto de producto como referencia (image-to-image).
+
+PARA ENCENDERLAS
+Agrega el id a ESTILOS_CON_FOTO en src/lib/marketing/estilos.ts. Esa lista
+existe para que el navegador no pida archivos que todavia no estan y
+pinte cinco recuadros rotos. Mientras el id no este ahi, se usa el
+degradado de respaldo y nada se ve mal.

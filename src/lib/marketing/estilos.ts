@@ -47,18 +47,15 @@ export type Estilo = {
    *  elección del cliente tiene que convertirse en una instrucción, no en
    *  una etiqueta que alguien interprete después. */
   instruccion: string;
-  /** La muestra visual, en CSS.
+  /** La muestra visual de respaldo, en CSS.
    *
-   *  Una lista de cinco renglones de texto se ve plana, y el estilo es
-   *  justo lo que no se puede explicar con palabras — de eso se trata
-   *  preguntarlo señalando. Estos recuadros no son un adorno: son la
-   *  única parte de esta pantalla que enseña de qué se está hablando.
+   *  Una lista de texto se ve plana, y el estilo es justo lo que no se
+   *  puede explicar con palabras — de eso se trata preguntarlo señalando.
+   *  Estos recuadros son la única parte de la pantalla que enseña de qué
+   *  se está hablando.
    *
-   *  Van en CSS y no en imágenes porque no hay imágenes todavía. En cuanto
-   *  existan las piezas de ejemplo generadas de verdad, cada recuadro se
-   *  cambia por una foto y este campo desaparece. Mientras tanto, un
-   *  degradado con la luz y el color de cada dirección dice muchísimo más
-   *  que su nombre. */
+   *  Es el respaldo, no el destino: en cuanto exista una foto de ejemplo
+   *  se usa la foto. Ver `imagenDeEstilo`. */
   muestra: string;
 };
 
@@ -193,6 +190,33 @@ export function estilosPara(categoria: string): Estilo[] {
     const base = BASE.find((e) => e.id === id);
     return base ? [{ ...base, marca }] : [];
   });
+}
+
+/** La foto de ejemplo de un estilo, si ya existe.
+ *
+ *  Se resuelve por convención de nombre y no por una lista que haya que
+ *  mantener: el archivo va en `public/estilos/{id}.webp` y con soltarlo
+ *  ahí la interfaz lo usa. Nadie tiene que tocar código para estrenar una
+ *  imagen, que es justo lo que hace que las imágenes nunca se estrenen.
+ *
+ *  `ESTILOS_CON_FOTO` es la única lista que hay que tocar, y tiene una
+ *  razón de ser: sin ella el navegador pediría cinco archivos que no
+ *  existen y pintaría cinco recuadros rotos. Cuando generes las fotos,
+ *  agregas el id aquí y listo.
+ *
+ *  Las fotos son TUYAS, generadas con tu producto. No pueden ser las de
+ *  las marcas de referencia: el nombre de una marca es marca registrada y
+ *  nombrarlo para describir un estilo es uso referencial permitido, pero
+ *  su fotografía es derecho de autor y para eso no hay doctrina que
+ *  salve. Copiarla sería infracción directa, y es lo que las marcas sí
+ *  tumban con un aviso al hosting.
+ *
+ *  El prompt de cada una ya está escrito: es el campo `instruccion` de
+ *  este mismo archivo. */
+const ESTILOS_CON_FOTO: string[] = [];
+
+export function imagenDeEstilo(estilo: Estilo): string | null {
+  return ESTILOS_CON_FOTO.includes(estilo.id) ? `/estilos/${estilo.id}.webp` : null;
 }
 
 /** El título de una opción: la marca si la hay, y si no el nombre del

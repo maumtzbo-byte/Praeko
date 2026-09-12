@@ -61,21 +61,20 @@ export default function Hero() {
             Tu producto merece un buen marketing.
           </h1>
 
-          {/* Visible en celular también. Iba con `hidden sm:block` desde
-              que el titular decía por sí solo de qué iba esto; ahora el
-              titular es de marca y este renglón es el único lugar de la
-              primera pantalla donde dice "video", "producto" y "tus fotos".
-              Cabe porque el titular nuevo es más corto que el anterior.
+          {/* Aquí iba la bajada: "Video y escenas de tu producto todo el
+              mes, con las fotos que ya tienes". Fuera por decisión del
+              dueño, junto con el renglón chico que estaba debajo.
 
-              Y va en dos renglones, no tres: medido en un iPhone de 390×844,
-              con el personaje ocupando 44svh, la tercera línea empujaba el
-              renglón de confianza contra el borde inferior y lo cortaba. El
-              botón bajó a una sola línea por lo mismo. */}
-          <p className="mt-4 max-w-md text-balance text-[15px] leading-relaxed text-zinc-600 sm:mt-5 sm:text-lg">
-            Video y escenas de tu producto todo el mes, con las fotos que ya
-            tienes.
-          </p>
+              Queda anotado lo que eso cuesta, porque no es gratis: el
+              titular es de marca y no dice qué se vende, así que la primera
+              pantalla ya no menciona video, ni producto, ni que trabajamos
+              con las fotos del cliente. Quien llega de un anuncio ve un
+              muñeco, una frase bonita y un botón.
 
+              Lo primero que aparece al hacer scroll es VideoShowcase, que sí
+              lo dice ("Lo que le haríamos a tu producto"). Si algún día la
+              conversión de la portada se ve floja contra la de /prueba,
+              este es el primer lugar donde hay que buscar. */}
           {/* Un solo botón. El "Cómo funciona" que lo acompañaba mandaba a
               una sección que está a un scroll de distancia y le quitaba
               peso al único clic que importa aquí. */}

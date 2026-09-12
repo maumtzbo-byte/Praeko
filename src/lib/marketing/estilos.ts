@@ -24,10 +24,25 @@ import { CATEGORIAS_PRODUCTO } from "@/lib/validation/lead";
 export type Estilo = {
   id: string;
   nombre: string;
-  /** La referencia, en texto. Opcional: hay categorías donde no hay una
-   *  marca lo bastante conocida como para que sirva de atajo, y ahí el
-   *  nombre del estilo tiene que sostenerse solo. */
-  referencia?: string;
+  /** La marca de referencia, sola y sin formatear.
+   *
+   *  Guarda "Aesop" y no "Aesop" porque quien pinta decide cómo se
+   *  lee: hoy va de título, con el nombre del estilo debajo, porque el
+   *  nombre de la marca es el atajo más corto que existe para alguien que
+   *  la conoce. Si mañana se quiere al revés, no hay que tocar los datos.
+   *
+   *  Opcional. Hay categorías sin marca de referencia y ahí el nombre del
+   *  estilo pasa a ser el título. */
+  marca?: string;
+  /** Una línea que dice A QUIÉN le queda, no cómo se ve.
+   *
+   *  La primera versión describía la imagen —"mármol y sombra de sol
+   *  directo"— y en las categorías sin marca quedaba repitiendo el título
+   *  casi palabra por palabra. Peor: no ayudaba a decidir.
+   *
+   *  Lo que sí ayuda es decirle a quién le queda, porque esa ES la
+   *  decisión que está tomando. Y sirve igual con marca y sin ella. */
+  descripcion: string;
   /** Lo que se le pasa al generador. Es la razón de ser de todo esto: la
    *  elección del cliente tiene que convertirse en una instrucción, no en
    *  una etiqueta que alguien interprete después. */
@@ -60,6 +75,7 @@ const BASE: Estilo[] = [
   {
     id: "limpio",
     nombre: "De laboratorio",
+    descripcion: "Para producto con ingrediente estrella",
     // Blanco parejo, sin sombra dura: la luz de caja difusora.
     muestra: "radial-gradient(120% 100% at 50% 0%, #ffffff 0%, #f4f6f8 70%, #e8ecf0 100%)",
     instruccion:
@@ -68,6 +84,7 @@ const BASE: Estilo[] = [
   {
     id: "calido",
     nombre: "Lino y madera",
+    descripcion: "Para marca artesanal o botánica",
     // Luz lateral de mañana cayendo sobre tierra y ámbar.
     muestra: "linear-gradient(115deg, #f7ecdd 0%, #e3c9a8 45%, #b98f63 100%)",
     instruccion:
@@ -76,6 +93,7 @@ const BASE: Estilo[] = [
   {
     id: "editorial",
     nombre: "Mármol y sombra dura",
+    descripcion: "Para marca que quiere verse cara",
     // El corte recto es la sombra de sol directo, que es todo el estilo.
     muestra:
       "linear-gradient(105deg, #f2f2f0 0%, #f2f2f0 46%, #9a9a97 46.5%, #7e7e7b 72%, #efefed 72.5%, #efefed 100%)",
@@ -85,6 +103,7 @@ const BASE: Estilo[] = [
   {
     id: "oscuro",
     nombre: "Negro y dorado",
+    descripcion: "Para producto de regalo o de lujo",
     // Negro con la luz de borde dorada recortando por un lado.
     muestra:
       "linear-gradient(100deg, #0c0c0d 0%, #17171a 55%, #7a5c22 82%, #d9b24c 93%, #1a1a1d 100%)",
@@ -94,6 +113,7 @@ const BASE: Estilo[] = [
   {
     id: "jugueton",
     nombre: "Fondos de color",
+    descripcion: "Para marca joven que vive en redes",
     // Dos bloques planos que chocan, sin textura. Eso es el estilo.
     muestra: "linear-gradient(135deg, #ffd9e0 0%, #ffd9e0 50%, #b9e3f0 50%, #b9e3f0 100%)",
     instruccion:
@@ -123,37 +143,45 @@ const BASE: Estilo[] = [
  *  acentos dorados; Boy Smells es rosa y descarado. */
 const REFERENCIAS: Partial<Record<(typeof CATEGORIAS_PRODUCTO)[number], Record<string, string>>> = {
   "Skincare y cosmética": {
-    limpio: "tipo The Ordinary",
-    calido: "tipo Aesop",
-    jugueton: "tipo Glossier",
-    editorial: "tipo Le Labo",
+    limpio: "The Ordinary",
+    calido: "Aesop",
+    jugueton: "Glossier",
+    editorial: "Le Labo",
   },
   "Cuidado del cabello": {
-    limpio: "tipo The Ordinary",
-    calido: "tipo Aesop",
-    jugueton: "tipo Glossier",
+    limpio: "The Ordinary",
+    calido: "Aesop",
+    jugueton: "Glossier",
   },
   "Café de especialidad": {
-    limpio: "tipo Blue Bottle",
-    calido: "tipo Stumptown",
-    oscuro: "tipo Onyx Coffee Lab",
+    limpio: "Blue Bottle",
+    calido: "Stumptown",
+    oscuro: "Onyx Coffee Lab",
   },
   Perfumes: {
-    editorial: "tipo Le Labo",
-    calido: "tipo Aesop",
-    oscuro: "tipo Tom Ford",
+    editorial: "Le Labo",
+    calido: "Aesop",
+    oscuro: "Tom Ford",
   },
   "Velas y aromas para el hogar": {
-    editorial: "tipo Le Labo",
-    calido: "tipo Diptyque",
-    jugueton: "tipo Boy Smells",
+    editorial: "Le Labo",
+    calido: "Diptyque",
+    jugueton: "Boy Smells",
   },
 };
 
 /** Los estilos que le tocan a una categoría, con su referencia puesta. */
 export function estilosPara(categoria: string): Estilo[] {
   const refs = REFERENCIAS[categoria as (typeof CATEGORIAS_PRODUCTO)[number]] ?? {};
-  return BASE.map((estilo) => ({ ...estilo, referencia: refs[estilo.id] }));
+  return BASE.map((estilo) => ({ ...estilo, marca: refs[estilo.id] }));
+}
+
+/** El título de una opción: la marca si la hay, y si no el nombre del
+ *  estilo. "Aesop" le dice más en un segundo a quien vende skincare que
+ *  cualquier descripción; a quien vende salsas no le dice nada, y ahí
+ *  "Lino y madera" sigue funcionando. */
+export function tituloDeEstilo(estilo: Estilo): string {
+  return estilo.marca ? `Tipo ${estilo.marca}` : estilo.nombre;
 }
 
 /** Traduce lo que eligió el cliente a la instrucción que recibe el

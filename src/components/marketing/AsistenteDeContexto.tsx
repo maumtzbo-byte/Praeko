@@ -5,7 +5,7 @@ import { Check, Loader2 } from "lucide-react";
 
 import { completarContexto } from "@/app/prueba/actions";
 import { conLimite } from "@/lib/espera";
-import { estilosPara } from "@/lib/marketing/estilos";
+import { estilosPara, tituloDeEstilo } from "@/lib/marketing/estilos";
 import { SubidaDeFotos } from "@/components/marketing/SubidaDeFotos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -283,15 +283,20 @@ export function AsistenteDeContexto({
                     className="h-14 w-14 shrink-0 rounded-xl shadow-[var(--relieve-hundido)]"
                     style={{ backgroundImage: estilo.muestra }}
                   />
+                  {/* La marca va de título y el estilo debajo, no al
+                      revés. "Aesop" le dice más en un segundo a quien
+                      vende skincare que cualquier descripción que yo
+                      escriba. Donde no hay marca —tés, salsas,
+                      suplementos, joyería— sube el nombre del estilo, y
+                      la tarjeta conserva su forma porque la descripción
+                      siempre está. */}
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-medium leading-tight text-zinc-950">
-                      {estilo.nombre}
+                    <span className="block text-[15px] font-semibold leading-tight tracking-tight text-zinc-950">
+                      {tituloDeEstilo(estilo)}
                     </span>
-                    {estilo.referencia && (
-                      <span className="mt-0.5 block text-[13px] text-zinc-500">
-                        {estilo.referencia}
-                      </span>
-                    )}
+                    <span className="mt-0.5 block text-[13px] leading-snug text-zinc-500">
+                      {estilo.descripcion}
+                    </span>
                   </span>
                   <span
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md ${

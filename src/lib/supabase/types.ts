@@ -508,6 +508,7 @@ export type Database = {
           ciudad: string | null
           created_at: string
           estado: string
+          estilos: string[]
           fotos: string[]
           giro: string
           id: string
@@ -525,6 +526,7 @@ export type Database = {
           ciudad?: string | null
           created_at?: string
           estado?: string
+          estilos?: string[]
           fotos?: string[]
           giro: string
           id?: string
@@ -542,6 +544,7 @@ export type Database = {
           ciudad?: string | null
           created_at?: string
           estado?: string
+          estilos?: string[]
           fotos?: string[]
           giro?: string
           id?: string

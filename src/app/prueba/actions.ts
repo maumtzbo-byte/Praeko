@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { randomUUID } from "node:crypto";
 
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import type { TablesUpdate } from "@/lib/supabase/types";
 import {
   contextoSchema,
   leadSchema,
@@ -149,20 +150,35 @@ export async function completarContexto(datos: unknown): Promise<ActionResult> {
     return { success: false, error: revisado.error.issues[0]?.message ?? "Revisa los datos." };
   }
 
-  const { leadId, vende, ciudad, preguntan, instagram, sitioWeb } = revisado.data;
+  const { leadId, vende, ciudad, preguntan, instagram, sitioWeb, estilos } = revisado.data;
 
   try {
+    // El parche lleva SOLO lo que vino en esta llamada.
+    //
+    // Antes se escribían las cinco columnas siempre, poniendo null en las
+    // que no venían. Eso funcionaba cuando el paso 2 era un formulario
+    // único que se mandaba completo. Con el asistente por secciones se
+    // vuelve un borrador: la sección de fotos llamaría sin sitio web y
+    // dejaría en null el que la sección anterior acababa de guardar.
+    //
+    // Se distingue "no me mandaron este campo" de "me lo mandaron vacío":
+    // lo primero no se toca, lo segundo sí se limpia.
+    // Tipado contra el Update de la tabla y no como Record<string,
+    // unknown>: el cliente de Supabase rechaza índices abiertos, y de paso
+    // así un nombre de columna mal escrito se cae al compilar y no en
+    // silencio contra la base.
+    const parche: TablesUpdate<"leads"> = {};
+    if (vende !== undefined) parche.vende = vende || null;
+    if (ciudad !== undefined) parche.ciudad = ciudad || null;
+    if (preguntan !== undefined) parche.preguntan = preguntan || null;
+    if (instagram !== undefined) parche.instagram = instagram ? normalizaInstagram(instagram) : null;
+    if (sitioWeb !== undefined) parche.sitio_web = sitioWeb ? normalizaSitio(sitioWeb) : null;
+    if (estilos !== undefined) parche.estilos = estilos;
+
+    if (Object.keys(parche).length === 0) return { success: true };
+
     const serviceRole = createServiceRoleClient();
-    const { error } = await serviceRole
-      .from("leads")
-      .update({
-        vende: vende || null,
-        ciudad: ciudad || null,
-        preguntan: preguntan || null,
-        instagram: instagram ? normalizaInstagram(instagram) : null,
-        sitio_web: sitioWeb ? normalizaSitio(sitioWeb) : null,
-      })
-      .eq("id", leadId);
+    const { error } = await serviceRole.from("leads").update(parche).eq("id", leadId);
 
     if (error) {
       console.error("completarContexto update failed", error);

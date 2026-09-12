@@ -105,6 +105,7 @@ export const contextoSchema = z.object({
   preguntan: z.string().trim().max(300).optional(),
   instagram: z.string().trim().max(120).optional(),
   sitioWeb: z.string().trim().max(200).optional(),
+  estilos: z.array(z.string().max(40)).max(5).optional(),
 });
 
 /** Deja el sitio como una URL que se pueda abrir.

@@ -508,6 +508,7 @@ export type Database = {
           ciudad: string | null
           created_at: string
           estado: string
+          fotos: string[]
           giro: string
           id: string
           instagram: string | null
@@ -515,6 +516,7 @@ export type Database = {
           nombre: string
           notas: string | null
           origen: string | null
+          sitio_web: string | null
           preguntan: string | null
           vende: string | null
           whatsapp: string
@@ -523,6 +525,7 @@ export type Database = {
           ciudad?: string | null
           created_at?: string
           estado?: string
+          fotos?: string[]
           giro: string
           id?: string
           instagram?: string | null
@@ -530,6 +533,7 @@ export type Database = {
           nombre: string
           notas?: string | null
           origen?: string | null
+          sitio_web?: string | null
           preguntan?: string | null
           vende?: string | null
           whatsapp: string
@@ -538,6 +542,7 @@ export type Database = {
           ciudad?: string | null
           created_at?: string
           estado?: string
+          fotos?: string[]
           giro?: string
           id?: string
           instagram?: string | null
@@ -545,6 +550,7 @@ export type Database = {
           nombre?: string
           notas?: string | null
           origen?: string | null
+          sitio_web?: string | null
           preguntan?: string | null
           vende?: string | null
           whatsapp?: string

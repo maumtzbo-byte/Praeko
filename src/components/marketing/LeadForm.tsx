@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { SubidaDeFotos } from "@/components/marketing/SubidaDeFotos";
 
 /**
  * El formulario de /prueba, en dos pasos.
@@ -75,6 +76,7 @@ export function LeadForm() {
       ciudad: formulario.get("ciudad") || undefined,
       preguntan: formulario.get("preguntan") || undefined,
       instagram: formulario.get("instagram") || undefined,
+      sitioWeb: formulario.get("sitioWeb") || undefined,
     });
     setEnviando(false);
     // Aunque falle se pasa a "listo": el prospecto ya está capturado desde
@@ -123,32 +125,36 @@ export function LeadForm() {
                 Ya quedaste. ¿Le damos contexto?
               </h3>
               <p className="mt-1 text-sm leading-relaxed text-zinc-600">
-                Con esto la muestra sale con tu producto, no con uno genérico. Son 30 segundos y
-                puedes saltártelo.
+                Súbenos una foto de tu producto y la muestra sale con él. Son 30 segundos y puedes
+                saltártelo.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="vende">¿Qué producto usamos, y dónde están sus fotos?</Label>
-            <Textarea
-              id="vende"
-              name="vende"
-              rows={3}
-              className="min-h-[80px]"
-              placeholder="El serum de niacinamida. Las fotos están en mi Instagram y en la tienda: botanicanorte.com"
-            />
-            <p className="text-xs leading-snug text-zinc-500">
-              Sirven las que ya tengas, aunque sean de fondo blanco o de celular.
-            </p>
+          {/* Las fotos van primero y no al final. Son el insumo del que
+              depende todo lo demás: sin una foto del producto no hay pieza
+              que hacer, y los otros campos nada más la afinan. */}
+          <div className="flex flex-col gap-2">
+            <Label>Fotos de tu producto</Label>
+            <SubidaDeFotos leadId={leadId!} />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ciudad">¿De qué ciudad es tu marca?</Label>
-            <Input id="ciudad" name="ciudad" placeholder="Monterrey" />
-            <p className="text-xs leading-snug text-zinc-500">
-              Sirve para buscar qué está funcionando en tu mercado.
-            </p>
+            <Label htmlFor="vende">¿Cuál producto usamos?</Label>
+            <Input id="vende" name="vende" placeholder="El serum de niacinamida" />
+          </div>
+
+          {/* Salió "¿de qué ciudad?" y entró el sitio. La ciudad servía
+              cuando el cliente era un negocio local y el agente de
+              Tendencias buscaba qué funciona "en tu zona"; una marca que
+              vende en línea le vende a todo el país. El sitio, en cambio,
+              es de donde se saca su tono, su catálogo y cómo se describe a
+              sí misma. La columna `ciudad` se queda en la base por si
+              vuelve. */}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="sitioWeb">Tu tienda en línea</Label>
+            <Input id="sitioWeb" name="sitioWeb" placeholder="botanicanorte.com" />
+            <p className="text-xs leading-snug text-zinc-500">Si no tienes, sáltatelo.</p>
           </div>
 
           <div className="flex flex-col gap-1.5">

@@ -13,6 +13,7 @@ import { Check, CheckCircle2, MessageSquare, RotateCcw, Undo2, X } from "lucide-
 
 import { cerrarRevision, marcarAbierta, responderPieza } from "@/app/aprobar/[token]/actions";
 import { diaCorto } from "@/lib/aprobacion/liga";
+import { conLimite, mensajeDeEspera } from "@/lib/espera";
 import { primerCuadro } from "@/lib/content/media";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -74,34 +75,6 @@ const UMBRAL_VELOCIDAD = 600;
  *  un error, corto para no estorbar. */
 const DESHACER_MS = 6000;
 
-/** Le pone techo a una espera.
- *
- *  Le piqué al botón con la base de datos inalcanzable esperando ver un
- *  error, y lo que vi fue un botón girando a los seis segundos sin decir
- *  nada. supabase-js no trae tiempo límite en su fetch, así que una base
- *  lenta deja la promesa pendiente para siempre. Un try/catch no alcanza
- *  para eso: no hay nada que atrapar.
- *
- *  El mensaje al vencerse dice que PUEDE no haberse guardado, no que
- *  falló: el servidor pudo escribir y perder la respuesta de regreso.
- *  Prometer que no se guardó sería adivinar, y da igual para quien lo lee
- *  porque volver a mandar el mismo veredicto deja la pieza igual. */
-const LIMITE_MS = 20_000;
-
-class SeVencio extends Error {}
-
-function conLimite<T>(promesa: Promise<T>): Promise<T> {
-  return Promise.race([
-    promesa,
-    new Promise<never>((_, rechazar) => setTimeout(() => rechazar(new SeVencio()), LIMITE_MS)),
-  ]);
-}
-
-function mensajeDeError(err: unknown): string {
-  return err instanceof SeVencio
-    ? "Está tardando más de lo normal. Puede que sí se haya guardado: recarga para ver."
-    : "No se pudo guardar. Revisa tu señal y vuelve a intentar.";
-}
 
 function Medio({ pieza, className = "" }: { pieza: PiezaParaRevisar; className?: string }) {
   if (!pieza.medio) {
@@ -459,7 +432,7 @@ export function RevisionDelMes({
       setUltima({ id, antes });
       limpiarTarjeta();
     } catch (err) {
-      setError(mensajeDeError(err));
+      setError(mensajeDeEspera(err, "Está tardando más de lo normal. Puede que sí se haya guardado: recarga para ver."));
     } finally {
       setGuardando(false);
     }
@@ -510,7 +483,7 @@ export function RevisionDelMes({
       if (res.success) setCerrada(true);
       else setErrorAlCerrar(res.error);
     } catch (err) {
-      setErrorAlCerrar(mensajeDeError(err));
+      setErrorAlCerrar(mensajeDeEspera(err, "Está tardando más de lo normal. Puede que sí se haya guardado: recarga para ver."));
     } finally {
       setCerrando(false);
     }

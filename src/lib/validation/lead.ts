@@ -104,6 +104,31 @@ export const contextoSchema = z.object({
   ciudad: z.string().trim().max(80).optional(),
   preguntan: z.string().trim().max(300).optional(),
   instagram: z.string().trim().max(120).optional(),
+  sitioWeb: z.string().trim().max(200).optional(),
 });
+
+/** Deja el sitio como una URL que se pueda abrir.
+ *
+ *  La gente escribe "botanicanorte.com", "www.botanicanorte.com" y
+ *  "https://botanicanorte.com/tienda" por igual, y guardar las tres formas
+ *  distintas vuelve imposible abrirlas de un clic desde el panel. Devuelve
+ *  null si no queda nada que parezca un dominio, para no guardar basura. */
+export function normalizaSitio(valor: string): string | null {
+  const limpio = valor.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+  if (limpio.length === 0) return null;
+  // Un dominio necesita al menos un punto con algo de los dos lados.
+  if (!/^[^\s.]+\.[^\s.]{2,}/.test(limpio)) return null;
+  return `https://${limpio}`;
+}
+
+/** Cuántas fotos se aceptan por prospecto.
+ *
+ *  Cuatro alcanzan de sobra para tres piezas de muestra: una de frente,
+ *  una de lado, una de la etiqueta. Más que eso no mejora la muestra y sí
+ *  abre la puerta a que alguien use la cubeta de almacenamiento como
+ *  disco duro gratis. */
+export const TOPE_FOTOS = 4;
+
+export const TIPOS_DE_FOTO = ["image/jpeg", "image/png", "image/webp"] as const;
 
 export type ContextoInput = z.infer<typeof contextoSchema>;

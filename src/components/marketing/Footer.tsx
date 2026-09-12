@@ -25,7 +25,7 @@ export default function Footer() {
             FRAMES
           </span>
           <p className="max-w-xs text-sm text-zinc-500">
-            Video y escenas de tu producto, cada mes, para marcas mexicanas que venden en línea.
+            Video y escenas de tu producto, cada mes, con las fotos que ya tienes.
           </p>
         </div>
 

@@ -17,16 +17,16 @@
  */
 const NO_HACEMOS = [
   {
-    titulo: "No inventamos tu producto",
-    detalle: "Tu frasco, tu bolsa y tu etiqueta son tu foto. Si no nos la das, no hay pieza.",
+    titulo: "Sin tus fotos no arrancamos",
+    detalle: "Si no nos mandas nada, no hay pieza. Nos sirven las que ya tengas, aunque sean de celular.",
   },
   {
     titulo: "No vamos a grabar contigo",
-    detalle: "Si necesitas a tu gente, tu taller o tus clientes en cámara, eso es otra cosa y te conviene un fotógrafo.",
+    detalle: "¿Quieres a tu gente y tu taller en cámara? Búscate un fotógrafo. Eso lo hace mejor una persona con una cámara.",
   },
   {
-    titulo: "No hacemos ropa ni calzado",
-    detalle: "La tela se dobla y cae distinto en cada toma, y ahí sí se nota. Preferimos decírtelo antes.",
+    titulo: "Ropa y calzado, no",
+    detalle: "La tela cae distinto en cada toma y ahí sí se nota el truco. Todavía no sabemos resolverlo.",
   },
 ];
 
@@ -34,18 +34,18 @@ export default function ProductoReal() {
   return (
     <section className="relative py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
-        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">LO QUE SÍ ES TUYO</p>
+        <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">LA PREGUNTA DE SIEMPRE</p>
         <h2 className="max-w-xl text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-          Tu producto no lo generamos nosotros: es tu foto
+          Tu etiqueta no la toca nadie
         </h2>
         <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-zinc-600 sm:text-base">
-          Lo que generamos es el mundo alrededor. La mesa de mármol, la luz de la mañana, la mano que
-          lo levanta, la cámara que le da la vuelta. Tu producto entra como la foto que ya tienes y
-          sale igual, con su forma y su etiqueta intactas.
+          Tu frasco entra como la foto que ya tienes y sale con la misma forma, el mismo color y el
+          mismo nombre al frente. Lo que armamos alrededor es la mesa de mármol, la luz de las seis de
+          la tarde, la mano que lo levanta, la cámara dándole la vuelta.
         </p>
         <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-zinc-600 sm:text-base">
-          Es lo mismo que hace una marca grande cuando lleva su producto a un estudio, nada más que
-          sin agendar el estudio.
+          Es lo que pasa cuando una marca grande lleva su producto a un estudio. Aquí no hay estudio
+          que agendar.
         </p>
 
         {/* TODO: aquí va la comparación lado a lado —foto de catálogo contra

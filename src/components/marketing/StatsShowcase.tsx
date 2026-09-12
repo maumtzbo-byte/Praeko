@@ -33,17 +33,17 @@ export default function StatsShowcase() {
             año; lo que sigue puliéndose es la herramienta, y eso es
             asunto nuestro, no suyo. */}
         <h2 className="text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-          Antes de decidir, mira una muestra tuya
+          Veinte piezas al mes y cero sesiones de fotos
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-sm text-zinc-600 sm:text-base">
-          Mándanos las fotos de un producto y te hacemos tres piezas con él —dos escenas y un
-          video— por WhatsApp. Si no te laten, ahí queda.
+          Todo sale de las fotos que ya tienes. Siete agentes de IA arman el mes y una persona
+          revisa cada pieza antes de que tú la veas.
         </p>
         <Link
           href="/prueba"
           className="mt-6 inline-flex rounded-full bg-zinc-950 px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
         >
-          Ver mis 3 piezas
+          Quiero ver una muestra
         </Link>
       </div>
 

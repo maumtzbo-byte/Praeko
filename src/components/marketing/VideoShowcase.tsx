@@ -83,11 +83,11 @@ export default function VideoShowcase() {
             giro; el video de verdad se enseña en la muestra, que es a
             donde manda el botón. */}
         <h2 className="max-w-lg text-balance text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-          De esto habla tu mes, según lo que vendes
+          Lo que le haríamos a tu producto
         </h2>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-zinc-400">
-          Ideas de las que armamos cada mes. Los videos ya hechos te los mandamos en tu muestra,
-          hechos con las fotos de tu propio producto.
+          Ideas de las que sale un mes. Los videos ya hechos van en tu muestra, con tu propio
+          producto adentro.
         </p>
       </div>
 

@@ -20,47 +20,47 @@ const FAQS = [
   {
     question: "¿Qué necesitan de mí para empezar?",
     answer:
-      "Las fotos de tu producto que ya tengas, aunque sean de fondo blanco o tomadas con celular. Con eso nos basta: de ahí sale la escena y el video. Si tienes catálogo, mejor, pero con tres o cuatro fotos buenas de cada producto arrancamos.",
+      "Las fotos de tu producto que ya tengas. Sirven las de fondo blanco y sirven las de celular. Con tres o cuatro buenas de cada producto arrancamos; si tienes catálogo completo, mejor.",
   },
   {
     question: "¿Van a inventar mi producto? ¿Se va a ver falso?",
     answer:
-      "Tu producto es tu foto y no se toca: entra con su forma y su etiqueta y sale igual. Lo que generamos es lo de alrededor — la mesa, la luz, la mano, el movimiento de cámara. Es lo mismo que hace una marca grande cuando lleva su producto a un estudio, nada más que sin agendar el estudio. Y antes de que pagues te mandamos tres piezas con tu producto para que lo veas tú, no para que nos creas.",
+      "Tu foto entra y sale con la misma forma, el mismo color y el mismo nombre al frente. Lo que armamos alrededor es la mesa, la luz, la mano que lo levanta. Antes de que pagues te mandamos tres piezas con tu producto, así que esto no hay que creérnoslo: se ve.",
   },
   {
     question: "¿Hacen ropa o calzado?",
     answer:
-      "No, y es a propósito. La tela se dobla y cae distinto en cada toma, y ahí la diferencia se nota. Trabajamos con producto de forma rígida: frascos, bolsas, latas, cajas, piezas de joyería. Si vendes ropa, preferimos decírtelo ahora que cobrarte y quedarte mal.",
+      "No. La tela cae distinto en cada toma y ahí sí se nota el truco. Trabajamos con producto que mantiene su forma: frascos, bolsas, latas, cajas, joyería. Si vendes ropa te conviene alguien más, y preferimos decírtelo hoy.",
   },
   {
     question: "¿Necesito saber de diseño o edición?",
     answer:
-      "No, y tampoco tienes que aprender ninguna herramienta. Nos mandas tus fotos una vez, nosotros armamos el mes, hacemos los videos y las escenas y los subimos. Lo único que haces tú es avisarnos si algo no te late.",
+      "No, y tampoco vas a aprender ninguna herramienta nueva. Mandas tus fotos una vez y de ahí en adelante lo único que haces es contestar si va o no va.",
   },
   {
     question: "¿Qué pasa si no me gusta una pieza?",
     answer:
-      "Nos dices cuál y la rehacemos. Van tres cambios incluidos el primer mes, mientras agarramos tu estilo, y dos cada mes después — que en la práctica alcanzan de sobra. Rehacer una pieza es cuestión de minutos, no de volver a citar a un equipo de grabación.",
+      "Nos dices cuál y la rehacemos. Van tres cambios el primer mes, mientras le agarramos el tono a tu marca, y dos cada mes después. En la práctica sobran. Rehacer una pieza nos toma minutos, no volver a citar a un equipo de grabación.",
   },
   {
     question: "¿Es seguro darles acceso a mis redes?",
     answer:
-      "Tú decides cómo. Puedes conectarnos con el inicio de sesión oficial de Instagram, Facebook o TikTok —tu contraseña nunca pasa por nosotros y nos quitas el permiso cuando quieras— o te mandamos las piezas listas por WhatsApp y las subes tú. Las dos formas funcionan igual.",
+      "Tú decides cómo. O nos conectas con el inicio de sesión oficial de Instagram, Facebook o TikTok, donde tu contraseña nunca pasa por nosotros y nos quitas el permiso cuando quieras. O te mandamos las piezas por WhatsApp y las subes tú. A nosotros nos da igual.",
   },
   {
     question: "¿Puedo cancelar cuando quiera?",
     answer:
-      "Sí. Se paga mes con mes, sin contrato forzoso y sin penalización. Nos avisas antes de que termine tu mes y ahí queda. Las piezas que ya te entregamos son tuyas y te las quedas.",
+      "Sí. Mes con mes, sin contrato y sin penalización. Nos avisas antes de que termine tu mes y ahí queda. Las piezas que ya te entregamos te las quedas.",
   },
   {
     question: "¿Cuánto tarda en estar listo?",
     answer:
-      "Las tres piezas de muestra te llegan en menos de 24 horas. Si decides seguir, primero platicamos un rato para entender tu marca y de ahí te mandamos el mes completo, para que lo revises antes de que salga publicado nada.",
+      "Las tres de muestra, menos de 24 horas. Si decides seguir, primero platicamos un rato para entender tu marca y de ahí te mandamos el mes completo para que lo revises antes de que salga nada.",
   },
   {
     question: "¿En qué redes publican?",
     answer:
-      "Instagram, Facebook y TikTok, en los tres paquetes. Publicamos a la hora en que tu público suele estar despierto, no a la hora en que nos acordamos.",
+      "Instagram, Facebook y TikTok, en los tres paquetes. Publicamos a la hora en que tu gente está despierta y comprando.",
   },
 ];
 
@@ -145,7 +145,7 @@ export default function FaqSection() {
             PREGUNTAS FRECUENTES
           </p>
           <h2 className="text-balance text-2xl font-semibold tracking-tight text-zinc-950 sm:text-3xl">
-            Antes de que te decidas
+            Lo que siempre nos preguntan
           </h2>
         </div>
 

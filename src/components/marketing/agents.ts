@@ -65,8 +65,8 @@ export const AGENTS: Agent[] = [
     image: "/agentes/creativo.webp",
     messages: [
       "Yo lo produzco.",
-      "Tomo el guion y genero el video o la imagen de verdad. No un borrador, ni una plantilla que tengas que rellenar tú.",
-      "Tu producto no lo invento: uso la foto que subiste como referencia, y genero la escena alrededor. Sale con su forma y su etiqueta, no un parecido.",
+      "Tomo el guion y saco el video o la imagen terminada. Nada que tengas que rellenar tú después.",
+      "Uso la foto que subiste. Tu frasco sale con su forma y su etiqueta tal cual, y yo armo la mesa donde está parado y la luz que le cae.",
     ],
   },
   {
@@ -78,7 +78,7 @@ export const AGENTS: Agent[] = [
     image: "/agentes/revisor.webp",
     messages: [
       "Yo reviso antes que tú.",
-      "Cada pieza pasa por mí: que suene a tu marca, que no diga algo que no debería, que el gancho no sea genérico.",
+      "Cada pieza pasa por mí antes de que llegue a ti. Reviso que suene a tu marca y que no prometa cosas que tu producto no hace.",
       "Si algo no pasa, lo marco y no llega a publicarse sin que tú lo veas primero.",
     ],
   },
@@ -91,7 +91,7 @@ export const AGENTS: Agent[] = [
     image: "/agentes/publicacion.webp",
     messages: [
       "Yo la subo.",
-      "Publico en Instagram, Facebook o TikTok a la hora en que tu gente está despierta y comprando, no a la hora en que se acordó alguien.",
+      "Publico en Instagram, Facebook o TikTok a la hora en que tu gente anda despierta y comprando. Para skincare eso casi siempre es de noche.",
       "Tú apruebas una vez; de ahí en adelante me encargo yo.",
     ],
   },

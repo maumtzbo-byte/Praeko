@@ -92,11 +92,11 @@ export default function IndustryScrollGallery() {
             especializarse: al que vende cremas no lo tranquiliza saber que
             también le hacemos las redes a una inmobiliaria. */}
         <h2 className="max-w-md text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-          Marcas de producto, no negocios en general
+          Frascos, bolsas, latas y cajas
         </h2>
         <p className="mt-4 max-w-lg text-sm leading-relaxed text-zinc-600 sm:text-base">
-          Funcionamos con producto de forma rígida —un frasco, una bolsa, una lata—, porque es lo que
-          tu foto de referencia conserva tal cual. Por eso no verás ropa ni calzado en esta lista.
+          Lo que mantiene su forma sale bien. Por eso en esta lista no hay ropa ni zapatos: la tela
+          cae distinto en cada toma y ahí se nota.
         </p>
 
         {/* Alto fijo y fichas en posición absoluta: es lo que permite que no

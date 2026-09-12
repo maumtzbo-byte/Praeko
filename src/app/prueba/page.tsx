@@ -37,10 +37,13 @@ const RECIBES = [
   { icono: Clapperboard, texto: "8 videos de tu producto al mes, con audio" },
   { icono: ImageIcon, texto: "12 escenas o carruseles" },
   { icono: Send, texto: "Publicado en Instagram, Facebook y TikTok" },
-  { icono: MessageCircle, texto: "Con tus propias fotos como referencia" },
+  { icono: MessageCircle, texto: "Hechas con las fotos que ya tienes" },
 ];
 
-const NO_HACES = ["No agendas sesión", "No editas", "No escribes", "No programas"];
+// Dos y no cuatro. "No agendas · No editas · No escribes · No programas" es
+// un triplete en staccato: se lee como plantilla, y de los cuatro solo dos
+// le quitan un pendiente real a una marca de producto.
+const NO_HACES = ["Sin agendar sesión", "Sin aprender nada"];
 
 export default function PruebaPage() {
   return (
@@ -61,11 +64,11 @@ export default function PruebaPage() {
                 PARA MARCAS MEXICANAS
               </p>
               <h1 className="mt-4 text-balance text-4xl font-semibold leading-[1.02] tracking-tight text-zinc-950 sm:text-5xl">
-                20 piezas al mes de tu producto
+                Mándame una foto. Mañana tienes tres piezas.
               </h1>
               <p className="mt-4 max-w-md text-[17px] leading-relaxed text-zinc-600">
-                Nos mandas las fotos que ya tienes. Nosotros generamos la escena y el video
-                alrededor de tu producto, y lo publicamos. Tú nada más lo revisas.
+                Con la foto que ya tienes armamos la escena y el video alrededor de tu producto.
+                Sin costo, para que veas cómo queda antes de decidir nada.
               </p>
             </div>
 
@@ -102,10 +105,10 @@ export default function PruebaPage() {
           <div className="flex flex-col gap-4">
             <div>
               <h2 className="text-balance text-2xl font-semibold tracking-tight text-zinc-950">
-                Te mando 3 piezas hechas con tu producto
+                Dime dónde te las mando
               </h2>
               <p className="mt-2 text-[15px] leading-relaxed text-zinc-600">
-                En menos de 24 horas, sin costo. Las ves y tú decides.
+                Llegan a tu WhatsApp en menos de 24 horas.
               </p>
             </div>
             {/* useSearchParams necesita un límite de Suspense para que la
@@ -137,17 +140,17 @@ export default function PruebaPage() {
             "¿cómo le hacen?", y esto la contesta. */}
         <section className="mt-16 border-t border-[var(--hairline)] pt-10 sm:mt-20">
           <h2 className="max-w-lg text-balance text-2xl font-semibold tracking-tight text-zinc-950">
-            ¿Y mi producto se va a ver falso?
+            ¿Y mi etiqueta?
           </h2>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-zinc-600">
-            No, porque tu producto no lo generamos nosotros: es tu foto. Entra con su forma y su
-            etiqueta y sale igual. Lo que generamos es el mundo alrededor — la mesa, la luz, la mano
-            que lo levanta, la cámara que le da la vuelta.
+            Sale igual. Tu foto entra con su forma, su color y su nombre al frente, y así se queda.
+            Lo que armamos alrededor es la mesa, la luz de las seis de la tarde, la mano que lo
+            levanta.
           </p>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-zinc-600">
-            Es lo mismo que hace una marca grande cuando lleva su producto a un estudio, nada más
-            que sin agendar el estudio. Y por eso te mandamos tres piezas antes de que pagues: para
-            que lo veas tú, no para que nos creas.
+            Es lo que pasa cuando una marca grande lleva su producto a un estudio. Aquí no hay
+            estudio que agendar. Y por eso te mandamos tres antes de que pagues: esto se ve, no se
+            explica.
           </p>
         </section>
       </main>

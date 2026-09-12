@@ -51,10 +51,10 @@ export default function HowItWorks() {
       <div className="mx-auto max-w-6xl px-6">
         <p className="mb-3 text-xs font-semibold tracking-[0.3em] text-zinc-500">CÓMO FUNCIONA</p>
         <h2 className="max-w-lg text-balance text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-          De una foto en fondo blanco a tu mes publicado
+          Cuatro pasos, y en tres no haces nada
         </h2>
         <p className="mt-4 max-w-lg text-sm leading-relaxed text-zinc-600 sm:text-base">
-          Lo configuras una vez. De ahí en adelante lo único que haces es decir que sí.
+          El primero te toma diez minutos. Después nada más contestas si va o no va.
         </p>
 
         {/* Zigzag a dos columnas desde tablet, y columna recta en celular

@@ -85,7 +85,7 @@ const plans: PricingPlan[] = [
   {
     name: "Entrada",
     price: 2490,
-    tagline: "Para dejar de publicar puro fondo blanco",
+    tagline: "Para que el perfil deje de verse abandonado",
     featured: false,
     trialBadge: "Primer mes a mitad",
     features: [
@@ -98,7 +98,7 @@ const plans: PricingPlan[] = [
   {
     name: "Crecimiento",
     price: 4490,
-    tagline: "Algo nuevo de tu producto cuatro veces por semana",
+    tagline: "Algo nuevo cuatro veces por semana",
     featured: true,
     features: [
       "8 videos de tu producto al mes",
@@ -111,7 +111,7 @@ const plans: PricingPlan[] = [
   {
     name: "Completo",
     price: 7900,
-    tagline: "Para cuando el video es lo que te está vendiendo",
+    tagline: "Para cuando el video ya es lo que vende",
     featured: false,
     features: [
       "16 videos de tu producto al mes, de mayor duración",
@@ -278,9 +278,8 @@ export default function PricingSection() {
             Elige cuánto video quieres al mes
           </h2>
           <p className="mt-4 text-zinc-600">
-            Las tres redes vienen en los tres paquetes. Lo único que cambia es
-            cuánto video de tu producto producimos, porque es lo que de verdad
-            cuesta hacer.
+            Las tres redes vienen en los tres paquetes. Lo que cambia es cuánto
+            video sale al mes, que es la parte cara.
           </p>
         </div>
 
@@ -313,7 +312,7 @@ export default function PricingSection() {
             de una de las tres, volvería a parecer que es lo que separa un
             paquete de otro. */}
         <p className="mx-auto mt-6 max-w-lg text-center text-sm text-zinc-600">
-          ¿Quieres que también contestemos comentarios y mensajes? Se agrega a cualquier paquete.
+          ¿Quieres que también contestemos comentarios y mensajes? Eso se agrega aparte.
         </p>
 
         {/* La salida de WhatsApp, debajo de los planes y no arriba. Quien
@@ -322,7 +321,7 @@ export default function PricingSection() {
             plática se cierra en un chat, no llenando un formulario. */}
         <div className="mt-10 flex flex-col items-center gap-3">
           <p className="text-center text-sm text-zinc-600">
-            ¿No sabes cuál te conviene? Te armo una cotización con lo que sí necesitas.
+            ¿No sabes cuál? Dime qué vendes y te armo una cotización.
           </p>
           <a
             href={ligaWhatsapp(MENSAJE_COTIZACION)}

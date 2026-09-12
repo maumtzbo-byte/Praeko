@@ -39,7 +39,7 @@ export default function Hero() {
               repite — ya vive en la barra de arriba. */}
           <p className="hidden items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500 sm:flex sm:text-[11px]">
             <span aria-hidden="true" className="h-px w-8 bg-accent" />
-            Para marcas mexicanas que venden en línea
+            Para marcas mexicanas que venden por Instagram
           </p>
 
           {/* Antes: "Tu negocio publica solo." Servía cuando le hablábamos a
@@ -49,7 +49,7 @@ export default function Hero() {
               admira. "Publicar solo" describe el mecanismo; esto describe el
               resultado, que es lo que se compra. */}
           <h1 className="text-balance text-[2.7rem] font-semibold leading-[1.0] tracking-tight text-zinc-950 sm:mt-5 sm:text-6xl lg:text-7xl">
-            Tu producto, como en las marcas grandes.
+            Tu producto merece algo mejor que un fondo blanco.
           </h1>
 
           {/* Verbos concretos en vez de "lo hacen": arman, hacen, suben.
@@ -59,8 +59,8 @@ export default function Hero() {
               sí" también es lo que de verdad diría el dueño de un
               changarro; "apruebas" es lenguaje de oficina corporativa. */}
           <p className="mt-5 hidden max-w-md text-balance text-base leading-relaxed text-zinc-600 sm:block sm:text-lg">
-            Nos mandas las fotos que ya tienes. Nosotros le generamos la
-            escena, la luz y el movimiento, y publicamos tu mes completo.
+            Con las fotos que ya tienes armamos video y escenas nuevas todo el
+            mes, y las subimos a tus redes.
           </p>
 
           {/* Un solo botón. El "Cómo funciona" que lo acompañaba mandaba a

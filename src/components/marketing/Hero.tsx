@@ -92,21 +92,21 @@ export default function Hero() {
             <ArrowRight className="h-4 w-4" strokeWidth={2} />
           </Link>
 
-          {/* Las dos objeciones que frenan a alguien en la orilla, juntas
-              en un renglón, y las dos ciertas hoy: el registro solo pide
-              correo y contraseña, y el mismo día queda armado el primer
-              calendario — es lo que ya promete la sección de cierre.
+          {/* Aquí iba un renglón chico con "Con tus propias fotos · Te las
+              mando en menos de 24 horas". Fuera por decisión del dueño: la
+              primera pantalla se estaba llenando de letra chica y el botón
+              perdía peso.
 
-              Fuera "onboarding": una palabra en inglés metida en una frase
-              en español es de las que delatan una plantilla traducida, y
-              además la mitad de los dueños de negocio no sabe qué es. */}
-          <p className="mt-4 text-xs text-zinc-500">
-            Con tus propias fotos · Te las mando en menos de 24 horas
-          </p>
+              Las dos promesas que cargaba siguen dichas en otro lado — las
+              24 horas en el cierre y en /prueba, y lo de las fotos propias
+              en la bajada de aquí arriba. Si algún día vuelve, que vuelva
+              sola y no acompañada. */}
         </div>
       </div>
 
-      {/* Arriba en celular y a la derecha desde tablet.
+      {/* Arriba hasta 1023 px y a la derecha desde ahí. El corte está en lg
+          y no en sm porque entre 640 y 1023 el muñeco le caía encima al
+          titular — 450 px de ancho contra 458 px libres.
 
           Arriba porque abajo se lo comía el pliegue: quedaba a media
           pantalla de distancia del titular y había que hacer scroll para

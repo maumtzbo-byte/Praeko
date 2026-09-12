@@ -16,7 +16,7 @@ export default function Hero() {
     // que lo que de verdad se ve. `svh` mide la ventana chica —con la barra
     // puesta, que es como se abre la página— y así el hero llena la
     // pantalla exacta sin dejar asomar la sección de abajo.
-    <section className="relative flex min-h-svh flex-col justify-center overflow-hidden bg-[var(--background)] pb-6 pt-20 sm:block sm:min-h-[100vh] sm:justify-start sm:pb-0 sm:pt-0">
+    <section className="relative flex min-h-svh flex-col justify-center overflow-hidden bg-[var(--background)] pb-6 pt-20 lg:block lg:min-h-[100vh] lg:justify-start lg:pb-0 lg:pt-0">
       {/* El personaje, enorme y cortado por el borde. Cortarlo es lo que
           lo hace grande de verdad: un cuerpo entero centrado siempre se
           lee pequeño porque tiene que caber, y la mitad del espacio se le
@@ -31,15 +31,15 @@ export default function Hero() {
           fondo de la pantalla y quedaba un hueco muerto en medio. Desde
           tablet sí crece, porque ahí el texto y el personaje están uno al
           lado del otro y el centrado vertical es lo correcto. */}
-      <div className="relative order-2 mx-auto mt-6 flex w-full max-w-6xl shrink-0 items-center px-6 sm:order-none sm:mt-0 sm:min-h-screen sm:flex-1">
-        <div className="flex w-full max-w-xl flex-col items-center text-center sm:items-start sm:text-left">
+      <div className="relative order-2 mx-auto mt-6 flex w-full max-w-6xl shrink-0 items-center px-6 lg:order-none lg:mt-0 lg:min-h-screen lg:flex-1">
+        <div className="flex w-full max-w-2xl flex-col items-center text-center lg:items-start lg:text-left">
           {/* Sin "agentes de IA" aquí: la frase de abajo ya los nombra, y
               decirlo dos veces en tres renglones es de las cosas que hacen
               que una portada suene a plantilla. El "BETA" tampoco se
               repite — ya vive en la barra de arriba. */}
-          <p className="hidden items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500 sm:flex sm:text-[11px]">
+          <p className="hidden items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500 sm:flex sm:text-[11px] lg:justify-start">
             <span aria-hidden="true" className="h-px w-8 bg-accent" />
-            Para marcas mexicanas que venden por Instagram
+            Para marcas mexicanas de producto
           </p>
 
           {/* Titular de marca, no de respuesta directa, y es una decisión
@@ -57,7 +57,7 @@ export default function Hero() {
               La contraparte de respuesta directa vive en /prueba, que sí
               abre con una promesa comprobable: "Mándame una foto. Mañana
               tienes tres piezas." Dos páginas, dos trabajos. */}
-          <h1 className="text-balance text-[2.7rem] font-semibold leading-[1.0] tracking-tight text-zinc-950 sm:mt-5 sm:text-6xl lg:text-7xl">
+          <h1 className="text-balance text-[2.25rem] font-semibold leading-[1.04] tracking-tight text-zinc-950 sm:mt-5 sm:text-5xl xl:text-6xl 2xl:text-7xl">
             Tu producto merece un buen marketing.
           </h1>
 
@@ -116,7 +116,7 @@ export default function Hero() {
           En escritorio se va al borde derecho, cortado a propósito: un
           cuerpo entero centrado siempre se lee pequeño, porque tiene que
           caber y la mitad del espacio se le va en aire alrededor. */}
-      <HeroProtagonista className="pointer-events-none order-1 mx-auto aspect-[613/850] h-[44svh] max-h-[400px] shrink-0 sm:absolute sm:bottom-0 sm:-right-8 sm:order-none sm:mx-0 sm:h-[78%] sm:max-h-none lg:right-0 lg:h-[94%]" />
+      <HeroProtagonista className="pointer-events-none order-1 mx-auto aspect-[613/850] h-[44svh] max-h-[400px] shrink-0 sm:max-h-[460px] lg:absolute lg:bottom-0 lg:right-0 lg:order-none lg:mx-0 lg:h-[94%] lg:max-h-none" />
     </section>
   );
 }

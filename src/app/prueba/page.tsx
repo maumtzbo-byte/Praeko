@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Clapperboard, ImageIcon, MessageCircle, Send } from "lucide-react";
 
 import { FramesMark } from "@/components/brand/FramesMark";
 import { LeadForm } from "@/components/marketing/LeadForm";
@@ -33,17 +32,29 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/**
+ * Lo que recibes al mes, en números y no en íconos.
+ *
+ * Antes eran cuatro renglones con un icono de línea de lucide cada uno:
+ * una claqueta, un cuadrito de imagen, un avioncito de papel, una
+ * burbujita. Son los mismos íconos que trae cualquier plantilla, y por eso
+ * la página se leía a plantilla — el problema no era el dibujo, era que no
+ * era nuestro.
+ *
+ * Lo que sí es nuestro son dos cosas: la tipografía y el plástico mate del
+ * resto del sitio. Así que el renglón lo encabeza el número, grande, en
+ * una pastilla del mismo material. No hace falta encargar ilustraciones ni
+ * generar nada: un 8 bien puesto dice más que una claqueta genérica, y de
+ * paso baja de cuatro renglones a tres.
+ *
+ * El cuarto —"hechas con las fotos que ya tienes"— se subió al párrafo de
+ * arriba, que es donde de verdad contesta la duda.
+ */
 const RECIBES = [
-  { icono: Clapperboard, texto: "8 videos de tu producto al mes, con audio" },
-  { icono: ImageIcon, texto: "12 escenas o carruseles" },
-  { icono: Send, texto: "Publicado en Instagram, Facebook y TikTok" },
-  { icono: MessageCircle, texto: "Hechas con las fotos que ya tienes" },
+  { cifra: "8", texto: "videos de tu producto al mes, con audio" },
+  { cifra: "12", texto: "escenas o carruseles" },
+  { cifra: "3", texto: "redes: Instagram, Facebook y TikTok" },
 ];
-
-// Dos y no cuatro. "No agendas · No editas · No escribes · No programas" es
-// un triplete en staccato: se lee como plantilla, y de los cuatro solo dos
-// le quitan un pendiente real a una marca de producto.
-const NO_HACES = ["Sin agendar sesión", "Sin aprender nada"];
 
 export default function PruebaPage() {
   return (
@@ -66,39 +77,32 @@ export default function PruebaPage() {
               <h1 className="mt-4 text-balance text-4xl font-semibold leading-[1.02] tracking-tight text-zinc-950 sm:text-5xl">
                 Mándame una foto. Mañana tienes tres piezas.
               </h1>
-              <p className="mt-4 max-w-md text-[17px] leading-relaxed text-zinc-600">
-                Con la foto que ya tienes armamos la escena y el video alrededor de tu producto.
-                Sin costo, para que veas cómo queda antes de decidir nada.
+              <p className="mt-4 max-w-sm text-[17px] leading-relaxed text-zinc-600">
+                Con la foto que ya tienes. Sin costo.
               </p>
             </div>
 
-            <ul className="flex flex-col gap-2.5">
-              {RECIBES.map(({ icono: Icono, texto }) => (
-                <li key={texto} className="flex items-center gap-3 text-[15px] text-zinc-800">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-accent shadow-[var(--relieve-pieza)]">
-                    <Icono className="h-4 w-4" strokeWidth={1.75} />
+            <ul className="flex flex-col gap-3">
+              {RECIBES.map(({ cifra, texto }) => (
+                <li key={cifra} className="flex items-center gap-3.5">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[image:var(--plastico)] text-lg font-semibold tabular-nums tracking-tight text-zinc-950 shadow-[var(--relieve-pieza)]">
+                    {cifra}
                   </span>
-                  {texto}
+                  <span className="text-[15px] leading-snug text-zinc-800">{texto}</span>
                 </li>
               ))}
             </ul>
 
-            <div className="flex flex-wrap items-center gap-2">
-              {NO_HACES.map((no) => (
-                <span
-                  key={no}
-                  className="rounded-full bg-zinc-100 px-3 py-1.5 text-[13px] font-medium text-zinc-600 shadow-[var(--relieve-hundido)]"
-                >
-                  {no}
-                </span>
-              ))}
-            </div>
-
+            {/* Se fueron las dos pastillas de "Sin agendar sesión · Sin
+                aprender nada" y la letra chica del presupuesto de anuncios.
+                Un aterrizaje de anuncio no se gana agregando argumentos: se
+                gana quitando todo lo que retrasa el momento de llenar el
+                formulario. Lo de la pauta se platica cuando ya contestó. */}
             <p className="text-[15px] text-zinc-600">
               <span className="text-xl font-semibold tracking-tight text-zinc-950">
                 Desde $2,490 al mes.
               </span>{" "}
-              Sin contratos forzosos. El presupuesto de anuncios, si quieres pautar, va aparte.
+              Sin contratos.
             </p>
           </div>
 
@@ -108,7 +112,7 @@ export default function PruebaPage() {
                 Dime dónde te las mando
               </h2>
               <p className="mt-2 text-[15px] leading-relaxed text-zinc-600">
-                Llegan a tu WhatsApp en menos de 24 horas.
+                Llegan a tu WhatsApp mañana.
               </p>
             </div>
             {/* useSearchParams necesita un límite de Suspense para que la
@@ -142,15 +146,12 @@ export default function PruebaPage() {
           <h2 className="max-w-lg text-balance text-2xl font-semibold tracking-tight text-zinc-950">
             ¿Y mi etiqueta?
           </h2>
-          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-zinc-600">
+          {/* Un párrafo, no dos. La duda de la etiqueta se contesta en una
+              frase; el segundo párrafo explicaba lo mismo con otra metáfora
+              y en un aterrizaje de anuncio eso es texto que se salta. */}
+          <p className="mt-3 max-w-md text-[15px] leading-relaxed text-zinc-600">
             Sale igual. Tu foto entra con su forma, su color y su nombre al frente, y así se queda.
-            Lo que armamos alrededor es la mesa, la luz de las seis de la tarde, la mano que lo
-            levanta.
-          </p>
-          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-zinc-600">
-            Es lo que pasa cuando una marca grande lleva su producto a un estudio. Aquí no hay
-            estudio que agendar. Y por eso te mandamos tres antes de que pagues: esto se ve, no se
-            explica.
+            Lo que armamos alrededor es la mesa, la luz y la mano que lo levanta.
           </p>
         </section>
       </main>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 // Real numbers only, nothing invented to look like traction Frames
@@ -22,6 +23,44 @@ const SUPPORTING_STATS = [
 ];
 
 export default function StatsShowcase() {
+  /** El globo no se baja hasta que se acerca a la pantalla.
+   *
+   *  Medido: la portada se traía 1,463 KB antes de que nadie hiciera
+   *  scroll, y 636 de esos eran este video — el 43% del peso de la página
+   *  gastado en algo que vive cuatro pantallas abajo. La culpa era de
+   *  `preload="auto"` junto a `autoPlay`, que le dice al navegador que lo
+   *  descargue completo de inmediato.
+   *
+   *  Los `<source>` no se pintan hasta entonces, porque quitar el preload
+   *  no basta: con el src puesto, el navegador igual se adelanta.
+   *
+   *  300 px de margen para que empiece a bajar antes de entrar, y que
+   *  cuando llegue ya esté rodando en vez de aparecer en negro. */
+  const referencia = useRef<HTMLVideoElement>(null);
+  const [cerca, setCerca] = useState(false);
+
+  useEffect(() => {
+    const nodo = referencia.current;
+    if (!nodo || cerca) return;
+    const observador = new IntersectionObserver(
+      ([entrada]) => {
+        if (entrada.isIntersecting) {
+          setCerca(true);
+          observador.disconnect();
+        }
+      },
+      { rootMargin: "300px" },
+    );
+    observador.observe(nodo);
+    return () => observador.disconnect();
+  }, [cerca]);
+
+  // Los <source> aparecen después del primer pintado, y un <video> que ya
+  // existía no los mira solo: hay que pedirle que vuelva a buscar.
+  useEffect(() => {
+    if (cerca) referencia.current?.load();
+  }, [cerca]);
+
   return (
     <section className="relative overflow-hidden py-16 sm:py-24">
       <div className="mx-auto max-w-3xl px-6 text-center">
@@ -62,6 +101,7 @@ export default function StatsShowcase() {
           letterboxed or cut off, on phone or desktop alike. */}
       <div className="mx-auto mt-14 max-w-md px-6 sm:max-w-lg md:max-w-2xl">
         <video
+          ref={referencia}
           className="block w-full mix-blend-multiply"
           style={{
             aspectRatio: "650 / 368",
@@ -76,13 +116,21 @@ export default function StatsShowcase() {
           loop
           muted
           playsInline
-          preload="auto"
+          preload="none"
         >
           {/* webm first: smaller, and it's the one format guaranteed
               present in every Chromium build without a licensed H.264
-              decoder. mp4 covers Safari, which never plays webm. */}
-          <source src="/videos/earth-globe.webm" type="video/webm" />
-          <source src="/videos/earth-globe.mp4" type="video/mp4" />
+              decoder. mp4 covers Safari, which never plays webm.
+
+              Envueltos en la condición: sin src no hay nada que bajar, que
+              es el punto. El hueco no se mueve mientras tanto porque el
+              `aspectRatio` de arriba ya reservó su espacio. */}
+          {cerca && (
+            <>
+              <source src="/videos/earth-globe.webm" type="video/webm" />
+              <source src="/videos/earth-globe.mp4" type="video/mp4" />
+            </>
+          )}
         </video>
       </div>
 

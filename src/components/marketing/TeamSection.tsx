@@ -156,6 +156,7 @@ export default function TeamSection() {
                     // lo que hace desaparecer el fondo — ver la nota larga
                     // abajo, en el render grande.
                     <img
+                      loading="lazy"
                       src={agent.image}
                       alt=""
                       onError={() => markMissing(agent.id)}

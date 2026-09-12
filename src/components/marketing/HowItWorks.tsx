@@ -94,6 +94,7 @@ export default function HowItWorks() {
                 }`}
               >
                 <img
+                  loading="lazy"
                   src={step.simbolo}
                   alt=""
                   aria-hidden="true"

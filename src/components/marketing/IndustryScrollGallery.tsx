@@ -102,7 +102,17 @@ export default function IndustryScrollGallery() {
         {/* Alto fijo y fichas en posición absoluta: es lo que permite que no
             guarden fila ni columna. Con `flex-wrap` volverían a alinearse
             solas en cuanto cambiara el ancho. */}
-        <div className="relative mt-10 h-[300px] sm:mt-14 sm:h-[340px]">
+        {/* La lona lleva ancho máximo, y eso es nuevo: con los símbolos 3D
+            las fichas medían 130×160 y llenaban los 1152 px del contenedor,
+            pero unas pastillas de 44 px de alto en esa misma lona se
+            quedaban sueltas —tres columnas separadas por 300 px de aire, y
+            el tercio derecho vacío—. Se ve en una captura y no en el
+            código, que es justo por lo que hay que mirarla.
+
+            Fijar el ancho también vuelve predecibles los porcentajes: hasta
+            ahora las posiciones de celular se calcularon contra 342 px y en
+            un teléfono más ancho se estiraban solas. */}
+        <div className="relative mt-10 h-[300px] w-full max-w-[21.5rem] sm:mt-14 sm:max-w-2xl">
           {GIROS.map((g, i) => (
             <motion.div
               key={g.label}

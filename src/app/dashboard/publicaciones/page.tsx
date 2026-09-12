@@ -4,6 +4,7 @@ import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { createClient } from "@/lib/supabase/server";
 import { isPublishablePlatform } from "@/lib/social";
 import { fetchMediaUrlsByItemId } from "@/lib/content/media";
+import { EnvioDeAprobacion, type ResumenDeLiga } from "@/components/dashboard/envio-de-aprobacion";
 
 // publishContentNow (called from this page) polls Meta's Instagram container
 // status inline before it can return — see waitForInstagramContainerReady in
@@ -18,7 +19,12 @@ export default async function PublicacionesPage() {
   const { business } = await getCurrentBusiness();
   const supabase = await createClient();
 
-  const [{ data: calendarItems }, { data: inFlightGenerations }, { data: connections }] = await Promise.all([
+  const [
+    { data: calendarItems },
+    { data: inFlightGenerations },
+    { data: connections },
+    { data: ligaMasReciente },
+  ] = await Promise.all([
     supabase
       .from("content_calendar")
       .select("*")
@@ -36,6 +42,17 @@ export default async function PublicacionesPage() {
       .select("id, platform, external_account_name")
       .eq("business_id", business.id)
       .eq("status", "active"),
+    // La última liga de aprobación que se le mandó al cliente. Solo la
+    // más reciente: crear una nueva reemplaza a la anterior en la práctica
+    // —es la que se acaba de pegar en el chat— y enseñar el historial
+    // completo aquí sería ruido para una pantalla que ya está llena.
+    supabase
+      .from("approval_links")
+      .select("token, desde, hasta, opened_at, completed_at")
+      .eq("business_id", business.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const inFlightByItemId = new Map(
@@ -63,9 +80,38 @@ export default async function PublicacionesPage() {
     (calendarItems ?? []).map((item) => item.id),
   );
 
+  // El resumen de lo que el cliente contestó, calculado sobre el rango de
+  // la liga y no sobre todo el calendario: una pieza de otro mes con
+  // cambios pedidos no pertenece a esta revisión.
+  //
+  // Se calcula aquí, con las piezas que ya se trajeron, en vez de con
+  // consultas de conteo aparte — son tres números sobre una lista que ya
+  // está en memoria.
+  const resumenDeLiga: ResumenDeLiga | null = ligaMasReciente
+    ? (() => {
+        const delMes = (calendarItems ?? []).filter(
+          (item) =>
+            item.scheduled_date >= ligaMasReciente.desde && item.scheduled_date <= ligaMasReciente.hasta,
+        );
+        return {
+          token: ligaMasReciente.token,
+          desde: ligaMasReciente.desde,
+          abierta: Boolean(ligaMasReciente.opened_at),
+          cerrada: Boolean(ligaMasReciente.completed_at),
+          total: delMes.length,
+          aprobadas: delMes.filter((i) => i.client_verdict === "aprobado").length,
+          conCambios: delMes.filter((i) => i.client_verdict === "cambios").length,
+          cambiosPedidos: delMes
+            .filter((i) => i.client_verdict === "cambios" && i.client_feedback)
+            .map((i) => ({ titulo: i.topic, comentario: i.client_feedback! })),
+        };
+      })()
+    : null;
+
   return (
     <div>
       <PageHeader title="Publicaciones" description="Genera, revisa y publica tu contenido — en lista o por fecha." />
+      <EnvioDeAprobacion resumen={resumenDeLiga} />
       <PublicationsView
         businessId={business.id}
         initialItems={calendarItems ?? []}

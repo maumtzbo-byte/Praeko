@@ -48,8 +48,8 @@ export default function Hero() {
               publicar, es que su frasco se vea como los de las marcas que
               admira. "Publicar solo" describe el mecanismo; esto describe el
               resultado, que es lo que se compra. */}
-          <h1 className="text-balance text-[3.4rem] font-semibold leading-[0.98] tracking-tight text-zinc-950 sm:mt-5 sm:text-6xl lg:text-7xl">
-            Tu producto, como se ve en las marcas grandes.
+          <h1 className="text-balance text-[2.7rem] font-semibold leading-[1.0] tracking-tight text-zinc-950 sm:mt-5 sm:text-6xl lg:text-7xl">
+            Tu producto, como en las marcas grandes.
           </h1>
 
           {/* Verbos concretos en vez de "lo hacen": arman, hacen, suben.

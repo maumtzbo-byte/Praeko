@@ -18,6 +18,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      approval_links: {
+        Row: {
+          business_id: string
+          completed_at: string | null
+          created_at: string
+          desde: string
+          expires_at: string
+          hasta: string
+          id: string
+          opened_at: string | null
+          token: string
+        }
+        Insert: {
+          business_id: string
+          completed_at?: string | null
+          created_at?: string
+          desde: string
+          expires_at?: string
+          hasta: string
+          id?: string
+          opened_at?: string | null
+          token: string
+        }
+        Update: {
+          business_id?: string
+          completed_at?: string | null
+          created_at?: string
+          desde?: string
+          expires_at?: string
+          hasta?: string
+          id?: string
+          opened_at?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "approval_links_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brand_assets: {
         Row: {
           asset_type: Database["public"]["Enums"]["brand_asset_type"]
@@ -306,6 +350,9 @@ export type Database = {
         Row: {
           business_id: string
           campaign_id: string | null
+          client_feedback: string | null
+          client_reviewed_at: string | null
+          client_verdict: Database["public"]["Enums"]["client_verdict"] | null
           content_kind: Database["public"]["Enums"]["content_kind"]
           created_at: string
           external_post_id: string | null
@@ -329,6 +376,9 @@ export type Database = {
         Insert: {
           business_id: string
           campaign_id?: string | null
+          client_feedback?: string | null
+          client_reviewed_at?: string | null
+          client_verdict?: Database["public"]["Enums"]["client_verdict"] | null
           content_kind: Database["public"]["Enums"]["content_kind"]
           created_at?: string
           external_post_id?: string | null
@@ -352,6 +402,9 @@ export type Database = {
         Update: {
           business_id?: string
           campaign_id?: string | null
+          client_feedback?: string | null
+          client_reviewed_at?: string | null
+          client_verdict?: Database["public"]["Enums"]["client_verdict"] | null
           content_kind?: Database["public"]["Enums"]["content_kind"]
           created_at?: string
           external_post_id?: string | null
@@ -1006,6 +1059,7 @@ export type Database = {
       campaign_status: "activa" | "completada" | "cancelada"
       content_format: "reel" | "carrusel" | "imagen_unica" | "promocion"
       content_kind: "imagen" | "video"
+      client_verdict: "aprobado" | "cambios"
       content_status:
         | "pendiente"
         | "generada"
@@ -1152,6 +1206,7 @@ export const Constants = {
       brand_asset_type: ["logo", "photo", "video", "template_reference"],
       business_role: ["owner", "editor"],
       campaign_status: ["activa", "completada", "cancelada"],
+      client_verdict: ["aprobado", "cambios"],
       content_format: ["reel", "carrusel", "imagen_unica", "promocion"],
       content_kind: ["imagen", "video"],
       content_status: [

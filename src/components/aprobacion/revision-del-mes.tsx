@@ -7,6 +7,7 @@ import {
   useMotionValue,
   useReducedMotion,
   useTransform,
+  type MotionValue,
 } from "framer-motion";
 import { Check, CheckCircle2, MessageSquare, RotateCcw, Undo2, X } from "lucide-react";
 
@@ -140,65 +141,92 @@ function Medio({ pieza, className = "" }: { pieza: PiezaParaRevisar; className?:
   );
 }
 
-/** Los sellos de APROBADA / CAMBIO que aparecen al arrastrar. Son la única
- *  forma de saber qué va a pasar ANTES de soltar; sin ellos, el gesto se
- *  aprende soltando, o sea equivocándose una vez. */
-function Sello({
-  texto,
-  tono,
+/** El símbolo de sí o no, flanqueando la tarjeta.
+ *
+ *  Sustituye a los sellos de "APROBADA / CÁMBIALA" que iban encima de la
+ *  foto y a los botones con texto que iban debajo. Las dos cosas
+ *  ensuciaban lo único que el cliente vino a ver, que es su producto: una
+ *  tarjeta con título, guion, dos etiquetas, dos botones y un enlace se
+ *  lee como un formulario, no como una pieza de contenido.
+ *
+ *  Van medio encimados al canto (`-left-4`) y no a un lado con su propia
+ *  columna: en 390 px de ancho, dos botones flanqueando de verdad le
+ *  quitarían 120 px a la foto. Así flanquean sin robar ancho.
+ *
+ *  Son botones de verdad, no adorno: el gesto es el atajo y esto es el
+ *  camino para quien no descubre que la tarjeta se arrastra.
+ *
+ *  Y crecen conforme se arrastra hacia su lado. Ese es el único aviso de
+ *  qué va a pasar antes de soltar; sin él, el gesto se aprende soltando,
+ *  o sea equivocándose una vez. */
+function SimboloDeLado({
   lado,
-  opacidad,
+  x,
+  onClick,
+  etiqueta,
 }: {
-  texto: string;
-  tono: "si" | "no";
-  lado: "izquierda" | "derecha";
-  opacidad: ReturnType<typeof useTransform<number, number>>;
+  lado: "si" | "no";
+  x: MotionValue<number>;
+  onClick: () => void;
+  etiqueta: string;
 }) {
+  const esSi = lado === "si";
+  const rango: [number, number] = esSi ? [20, 130] : [-130, -20];
+  // Tope de 1.25 y no 1.35: a 1.35, con el voladizo anterior, el círculo
+  // de "sí" se salía por el canto derecho de la pantalla y quedaba
+  // rebanado justo en el momento en que más importa verlo. Medido en un
+  // viewport de 390 px, que es el chico de verdad.
+  const escala = useTransform(x, rango, esSi ? [1, 1.25] : [1.25, 1]);
+  const brillo = useTransform(x, rango, esSi ? [0, 1] : [1, 0]);
+
   return (
-    <motion.span
-      aria-hidden="true"
-      style={{ opacity: opacidad }}
-      className={`pointer-events-none absolute top-6 z-10 rounded-xl border-[3px] px-3 py-1.5 text-sm font-bold uppercase tracking-wider ${
-        lado === "derecha" ? "left-5 -rotate-12" : "right-5 rotate-12"
-      } ${
-        tono === "si"
-          ? "border-emerald-600 bg-emerald-50/90 text-emerald-700"
-          : "border-amber-600 bg-amber-50/90 text-amber-700"
+    <motion.button
+      type="button"
+      onClick={onClick}
+      aria-label={etiqueta}
+      style={{ scale: escala }}
+      className={`absolute top-1/2 z-20 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full bg-[image:var(--plastico)] shadow-[var(--relieve-pieza)] active:translate-y-[calc(-50%+1px)] ${
+        esSi ? "-right-3" : "-left-3"
       }`}
     >
-      {texto}
-    </motion.span>
+      {/* El relleno de color vive en una capa aparte que aparece con el
+          arrastre, para que el símbolo en reposo se vea del mismo plástico
+          que todo el sitio y no como un semáforo encendido siempre. */}
+      <motion.span
+        aria-hidden="true"
+        style={{ opacity: brillo }}
+        className={`absolute inset-0 rounded-full ${esSi ? "bg-emerald-500/15" : "bg-amber-500/15"}`}
+      />
+      {esSi ? (
+        <Check className="relative h-6 w-6 text-emerald-700" strokeWidth={2.75} />
+      ) : (
+        <X className="relative h-6 w-6 text-amber-700" strokeWidth={2.75} />
+      )}
+    </motion.button>
   );
 }
 
+/** La tarjeta: la foto y nada más.
+ *
+ *  El texto de la pieza —fecha, formato, título, guion— se fue ABAJO de la
+ *  baraja, fuera de la tarjeta. No desapareció, y no debe: quien aprueba
+ *  sin leer el texto que se va a publicar está aprobando a ciegas. Pero
+ *  vive afuera, chico y apagado, para que la foto sea lo que manda. */
 function TarjetaDeBaraja({
   pieza,
-  guardando,
-  error,
+  x,
+  arrastrable,
   onAprobar,
-  onMandarCambio,
-  onDespues,
+  onPedirCambio,
 }: {
   pieza: PiezaParaRevisar;
-  guardando: boolean;
-  error: string | null;
+  x: MotionValue<number>;
+  arrastrable: boolean;
   onAprobar: () => void;
-  onMandarCambio: (texto: string) => void;
-  onDespues: () => void;
+  onPedirCambio: () => void;
 }) {
-  const [escribiendo, setEscribiendo] = useState(false);
-  const [texto, setTexto] = useState(pieza.comentario ?? "");
-  const reducirMovimiento = useReducedMotion();
-
-  const x = useMotionValue(0);
   const rotate = useTransform(x, [-260, 0, 260], [-9, 0, 9]);
-  const selloSi = useTransform(x, [40, 130], [0, 1]);
-  const selloNo = useTransform(x, [-130, -40], [1, 0]);
-
-  // Mientras escribe el cambio, el arrastre se apaga: la tarjeta tiene un
-  // campo de texto adentro y arrastrarla al intentar seleccionar una
-  // palabra sería exasperante.
-  const arrastrable = !escribiendo && !guardando;
+  const reducirMovimiento = useReducedMotion();
 
   return (
     <motion.article
@@ -210,99 +238,21 @@ function TarjetaDeBaraja({
         const fuerza = info.offset.x + info.velocity.x / 8;
         if (info.offset.x > UMBRAL_PX || info.velocity.x > UMBRAL_VELOCIDAD || fuerza > 320) {
           onAprobar();
-        } else if (info.offset.x < -UMBRAL_PX || info.velocity.x < -UMBRAL_VELOCIDAD || fuerza < -320) {
-          setEscribiendo(true);
+        } else if (
+          info.offset.x < -UMBRAL_PX ||
+          info.velocity.x < -UMBRAL_VELOCIDAD ||
+          fuerza < -320
+        ) {
+          onPedirCambio();
         }
       }}
       initial={reducirMovimiento ? false : { scale: 0.94, y: 18, opacity: 0 }}
       animate={{ scale: 1, y: 0, opacity: 1 }}
       exit={reducirMovimiento ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
       transition={{ type: "spring", stiffness: 320, damping: 30 }}
-      className="relative cursor-grab touch-pan-y rounded-3xl bg-[image:var(--plastico)] p-4 shadow-[var(--relieve-panel)] active:cursor-grabbing sm:p-5"
+      className="relative cursor-grab touch-pan-y overflow-hidden rounded-[1.75rem] bg-[image:var(--plastico)] p-2 shadow-[var(--relieve-panel)] active:cursor-grabbing"
     >
-      <Sello texto="Aprobada" tono="si" lado="derecha" opacidad={selloSi} />
-      <Sello texto="Cámbiala" tono="no" lado="izquierda" opacidad={selloNo} />
-
       <Medio pieza={pieza} className="aspect-[4/5] w-full" />
-
-      <div className="mt-4 flex items-center gap-2">
-        <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-medium text-zinc-600 shadow-[var(--relieve-hundido)]">
-          {diaCorto(pieza.fecha)}
-        </span>
-        <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-medium text-zinc-600 shadow-[var(--relieve-hundido)]">
-          {FORMATOS[pieza.formato] ?? pieza.formato}
-        </span>
-      </div>
-
-      <h2 className="mt-3 text-[17px] font-semibold leading-snug tracking-tight text-zinc-950">
-        {pieza.titulo}
-      </h2>
-      {pieza.guion && (
-        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-600">{pieza.guion}</p>
-      )}
-
-      {error && (
-        <p role="alert" className="mt-3 text-sm font-medium text-red-700">
-          {error}
-        </p>
-      )}
-
-      {escribiendo ? (
-        <div className="mt-4 flex flex-col gap-2">
-          <Textarea
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            rows={3}
-            maxLength={1000}
-            autoFocus
-            placeholder="El frasco se ve muy chico, y el texto de arriba mejor que diga el precio."
-            aria-label="Qué le cambiamos"
-          />
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              onClick={() => onMandarCambio(texto)}
-              loading={guardando}
-              disabled={texto.trim().length === 0}
-              className="flex-1"
-            >
-              Mandar el cambio
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => setEscribiendo(false)}>
-              Cancelar
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Los botones se quedan aunque haya gesto. No todo el mundo
-              descubre que la tarjeta se arrastra, y quien lo descubre a la
-              tercera pieza ya se cansó. El gesto es el atajo; esto es el
-              camino. */}
-          <div className="mt-4 flex gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setEscribiendo(true)}
-              className="flex-1"
-            >
-              <X className="h-4 w-4" strokeWidth={2} />
-              Pedir un cambio
-            </Button>
-            <Button size="sm" onClick={onAprobar} loading={guardando} className="flex-1">
-              <Check className="h-4 w-4" strokeWidth={2} />
-              Aprobar
-            </Button>
-          </div>
-          <button
-            type="button"
-            onClick={onDespues}
-            className="mx-auto mt-3 block text-xs font-medium text-zinc-500 underline underline-offset-2 hover:text-zinc-700"
-          >
-            No estoy seguro, déjala para el final
-          </button>
-        </>
-      )}
     </motion.article>
   );
 }
@@ -442,6 +392,8 @@ export function RevisionDelMes({
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ultima, setUltima] = useState<{ id: string; antes: Veredictos[string] } | null>(null);
+  const [escribiendo, setEscribiendo] = useState(false);
+  const [texto, setTexto] = useState("");
   const [cerrada, setCerrada] = useState(yaCerrada);
   const [cerrando, setCerrando] = useState(false);
   const [errorAlCerrar, setErrorAlCerrar] = useState<string | null>(null);
@@ -450,6 +402,29 @@ export function RevisionDelMes({
   const actual = fila.length > 0 ? porId.get(fila[0]) : undefined;
   const siguientes = fila.slice(1, 3);
   const revisadas = piezas.length - piezas.filter((p) => !veredictos[p.id]?.veredicto).length;
+
+  /** El desplazamiento del arrastre. Vive en el padre porque los símbolos
+   *  de los lados tienen que crecer con él y NO se van volando con la
+   *  tarjeta; si `x` viviera adentro, se irían con ella. */
+  const x = useMotionValue(0);
+
+  /** Devuelve la tarjeta a su estado de reposo.
+   *
+   *  Se llama en los cuatro lugares donde cambia la pieza de enfrente, y
+   *  NO desde un efecto que vigile el id: reaccionar a un cambio de estado
+   *  con más cambios de estado es justo lo que provoca renders en cascada,
+   *  y el compilador de React lo marca como error. El cambio de tarjeta es
+   *  un evento —despachar, posponer, deshacer, volver desde el resumen—,
+   *  así que se limpia ahí.
+   *
+   *  Sin esto, la tarjeta nueva entra ya desplazada y arrastrando el
+   *  comentario a medio escribir de la anterior. */
+  function limpiarTarjeta() {
+    x.set(0);
+    setEscribiendo(false);
+    setTexto("");
+    setError(null);
+  }
 
   useEffect(() => {
     // Fuego y olvido, pero con el catch puesto: una promesa rechazada sin
@@ -480,8 +455,9 @@ export function RevisionDelMes({
         ...previo,
         [id]: { veredicto, comentario: comentario?.trim() || null },
       }));
-      setFila((previo) => previo.filter((x) => x !== id));
+      setFila((previo) => previo.filter((otro) => otro !== id));
       setUltima({ id, antes });
+      limpiarTarjeta();
     } catch (err) {
       setError(mensajeDeError(err));
     } finally {
@@ -500,8 +476,9 @@ export function RevisionDelMes({
     if (!ultima) return;
     const { id, antes } = ultima;
     setUltima(null);
-    setFila((previo) => [id, ...previo.filter((x) => x !== id)]);
+    setFila((previo) => [id, ...previo.filter((otro) => otro !== id)]);
     setVeredictos((previo) => ({ ...previo, [id]: antes }));
+    limpiarTarjeta();
 
     // Si antes no tenía veredicto no hay nada que reescribir: el servidor
     // se queda con el último, y la pieza vuelve al frente para contestarla
@@ -569,54 +546,141 @@ export function RevisionDelMes({
             cambiamos algo. Nada se publica hasta que lo apruebes.
           </p>
 
-          {/* La baraja: la de enfrente se arrastra, las de atrás solo dan
-              profundidad. Se pintan con el mismo plástico y relieve del
-              resto del sitio, escaladas y empujadas hacia abajo, para que
-              se lea como un montón de piezas físicas y no como una sola
-              tarjeta suelta en la pantalla. */}
-          <div className="relative mt-6">
+          {/* La baraja. `x` vive AQUÍ y no dentro de la tarjeta porque los
+              símbolos de los lados tienen que reaccionar al arrastre y no
+              se mueven con ella: si vivieran adentro, se irían volando
+              junto con la foto. */}
+          <div className="relative mt-7 px-4">
             {/* El naipe de atrás se desplaza con `top`/`left`/`right` y no
                 con `scale`: escalado desde el centro, un naipe 3.5% más
                 chico se mete ENTERO debajo del de enfrente y no asoma por
                 ningún lado — lo vi en la captura, donde la baraja parecía
-                una sola tarjeta suelta. Con un desplazamiento hacia abajo
-                mayor que cero, asoma por el canto, que es lo que hace que
-                se lea como un montón.
+                una tarjeta suelta.
 
                 Y sin z-index negativo: eso los mandaba detrás del fondo de
-                la página y desaparecían. El orden lo da el DOM — estos van
-                antes, la tarjeta de enfrente va después y es `relative`,
-                así que queda encima sin necesidad de números. */}
+                la página y desaparecían. El orden lo da el DOM. */}
             {siguientes.map((id, i) => (
               <div
                 key={id}
                 aria-hidden="true"
-                className="absolute h-full rounded-3xl bg-[image:var(--plastico)] shadow-[var(--relieve-pieza)]"
+                className="absolute h-full rounded-[1.75rem] bg-[image:var(--plastico)] shadow-[var(--relieve-pieza)]"
                 style={{
                   top: (i + 1) * 15,
-                  left: (i + 1) * 9,
-                  right: (i + 1) * 9,
+                  left: (i + 1) * 9 + 16,
+                  right: (i + 1) * 9 + 16,
                 }}
               />
             ))}
+
             <AnimatePresence mode="popLayout">
               <TarjetaDeBaraja
                 key={actual.id}
                 pieza={actual}
-                guardando={guardando}
-                error={error}
+                x={x}
+                arrastrable={!escribiendo && !guardando}
                 onAprobar={() => void responder(actual.id, "aprobado")}
-                onMandarCambio={(texto) => void responder(actual.id, "cambios", texto)}
-                onDespues={() => setFila((previo) => [...previo.slice(1), previo[0]])}
+                onPedirCambio={() => setEscribiendo(true)}
               />
             </AnimatePresence>
+
+            {/* Se esconden mientras escribe el cambio: ya decidió, y un
+                "sí" a un toque de distancia del teclado es un accidente
+                esperando. */}
+            {!escribiendo && (
+              <>
+                <SimboloDeLado
+                  lado="no"
+                  x={x}
+                  etiqueta="Pedir un cambio"
+                  onClick={() => setEscribiendo(true)}
+                />
+                <SimboloDeLado
+                  lado="si"
+                  x={x}
+                  etiqueta="Aprobar"
+                  onClick={() => void responder(actual.id, "aprobado")}
+                />
+              </>
+            )}
           </div>
+
+          {/* mt-9 y no mt-6: el naipe de atrás asoma 15 px por debajo del
+              de enfrente, así que con la separación anterior el canto de
+              la baraja quedaba a 9 px del texto y se leía como si lo
+              estuviera pisando.
+
+              El texto de la pieza, FUERA de la tarjeta. La foto es lo que
+              el cliente vino a ver y encimarle título, guion y etiquetas la
+              convierte en un formulario. Pero el guion es el texto que se
+              va a publicar: esconderlo del todo sería pedirle que apruebe
+              a ciegas. Así que vive aquí, chico y apagado. */}
+          <div className="mt-9">
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">
+              {diaCorto(actual.fecha)} · {FORMATOS[actual.formato] ?? actual.formato}
+            </p>
+            <p className="mt-1.5 text-[15px] font-semibold leading-snug tracking-tight text-zinc-950">
+              {actual.titulo}
+            </p>
+            {actual.guion && (
+              <p className="mt-1.5 whitespace-pre-line text-[13px] leading-relaxed text-zinc-500">
+                {actual.guion}
+              </p>
+            )}
+          </div>
+
+          {error && (
+            <p role="alert" className="mt-4 text-sm font-medium text-red-700">
+              {error}
+            </p>
+          )}
+
+          {escribiendo ? (
+            <div className="mt-4 flex flex-col gap-2">
+              <Textarea
+                value={texto}
+                onChange={(e) => setTexto(e.target.value)}
+                rows={3}
+                maxLength={1000}
+                autoFocus
+                placeholder="El frasco se ve muy chico, y el texto de arriba mejor que diga el precio."
+                aria-label="Qué le cambiamos"
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => void responder(actual.id, "cambios", texto)}
+                  loading={guardando}
+                  disabled={texto.trim().length === 0}
+                  className="flex-1"
+                >
+                  Mandar el cambio
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => setEscribiendo(false)}>
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setFila((previo) => [...previo.slice(1), previo[0]]);
+                limpiarTarjeta();
+              }}
+              className="mx-auto mt-5 block text-xs font-medium text-zinc-500 underline underline-offset-2 hover:text-zinc-700"
+            >
+              No estoy seguro, déjala para el final
+            </button>
+          )}
         </main>
       ) : (
         <Resumen
           piezas={piezas}
           veredictos={veredictos}
-          onRevisarDeNuevo={(id) => setFila([id])}
+          onRevisarDeNuevo={(id) => {
+            setFila([id]);
+            limpiarTarjeta();
+          }}
           onCerrar={() => void cerrar()}
           cerrando={cerrando}
           errorAlCerrar={errorAlCerrar}

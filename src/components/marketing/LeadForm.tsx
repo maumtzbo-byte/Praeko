@@ -79,10 +79,10 @@ export function LeadForm() {
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
           <CheckCircle2 className="h-7 w-7" strokeWidth={1.75} />
         </span>
-        <h2 className="mt-5 text-3xl font-semibold tracking-tight text-zinc-950">Quedó.</h2>
+        <h2 className="mt-5 text-3xl font-semibold tracking-tight text-zinc-950">Listo.</h2>
         <p className="mt-3 max-w-sm text-[16px] leading-relaxed text-zinc-600">
           En menos de 24 horas te escribo por WhatsApp con tres piezas hechas con tu producto. Si no
-          te laten, ahí queda y no me debes nada.
+          te convencen, no hay compromiso ni costo.
         </p>
         <a
           href={ligaWhatsapp(MENSAJE_MUESTRA)}

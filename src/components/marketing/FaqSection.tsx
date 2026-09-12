@@ -30,7 +30,7 @@ const FAQS = [
   {
     question: "¿Hacen ropa o calzado?",
     answer:
-      "No. La tela cae distinto en cada toma y ahí sí se nota el truco. Trabajamos con producto que mantiene su forma: frascos, bolsas, latas, cajas, joyería. Si vendes ropa te conviene alguien más, y preferimos decírtelo hoy.",
+      "No. La tela cae distinto en cada toma y ahí sí se nota la diferencia. Trabajamos con producto que mantiene su forma: frascos, bolsas, latas, cajas, joyería. Si vendes ropa te conviene alguien más, y preferimos decírtelo hoy.",
   },
   {
     question: "¿Necesito saber de diseño o edición?",
@@ -40,7 +40,7 @@ const FAQS = [
   {
     question: "¿Qué pasa si no me gusta una pieza?",
     answer:
-      "Nos dices cuál y la rehacemos. Van tres cambios el primer mes, mientras le agarramos el tono a tu marca, y dos cada mes después. En la práctica sobran. Rehacer una pieza nos toma minutos, no volver a citar a un equipo de grabación.",
+      "Nos dices cuál y la rehacemos. Van tres cambios el primer mes, mientras afinamos el tono de tu marca, y dos cada mes después. En la práctica sobran. Rehacer una pieza nos toma minutos, no volver a citar a un equipo de grabación.",
   },
   {
     question: "¿Es seguro darles acceso a mis redes?",
@@ -50,12 +50,12 @@ const FAQS = [
   {
     question: "¿Puedo cancelar cuando quiera?",
     answer:
-      "Sí. Mes con mes, sin contrato y sin penalización. Nos avisas antes de que termine tu mes y ahí queda. Las piezas que ya te entregamos te las quedas.",
+      "Sí. Mes con mes, sin contrato y sin penalización. Nos avisas antes de que termine tu mes y se cancela. Las piezas que ya te entregamos te las quedas.",
   },
   {
     question: "¿Cuánto tarda en estar listo?",
     answer:
-      "Las tres de muestra, menos de 24 horas. Si decides seguir, primero platicamos un rato para entender tu marca y de ahí te mandamos el mes completo para que lo revises antes de que salga nada.",
+      "Las tres de muestra, menos de 24 horas. Si decides seguir, primero hablamos para entender tu marca y de ahí te mandamos el mes completo, para que lo revises antes de que salga publicado nada.",
   },
   {
     question: "¿En qué redes publican?",

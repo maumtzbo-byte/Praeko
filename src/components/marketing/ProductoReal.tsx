@@ -22,11 +22,11 @@ const NO_HACEMOS = [
   },
   {
     titulo: "No vamos a grabar contigo",
-    detalle: "¿Quieres a tu gente y tu taller en cámara? Búscate un fotógrafo. Eso lo hace mejor una persona con una cámara.",
+    detalle: "Si necesitas a tu gente o tu taller en cámara, eso lo hace mejor un fotógrafo. Te conviene contratar a uno.",
   },
   {
     titulo: "Ropa y calzado, no",
-    detalle: "La tela cae distinto en cada toma y ahí sí se nota el truco. Todavía no sabemos resolverlo.",
+    detalle: "La tela cae distinto en cada toma y ahí sí se nota la diferencia. Todavía no sabemos resolverlo.",
   },
 ];
 

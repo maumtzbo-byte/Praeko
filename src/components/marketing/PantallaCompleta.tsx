@@ -19,7 +19,7 @@ import { FramesMark } from "@/components/brand/FramesMark";
  * Sin botón de cerrar, y es deliberado. No hay a dónde volver que le
  * sirva: sus datos ya están guardados y regresar a la página de venta
  * sería mandarlo a que le vuelvan a vender algo que ya aceptó. La salida
- * de cada sección es "Mejor luego", que avanza en vez de retroceder.
+ * de cada sección es "Omitir por ahora", que avanza en vez de retroceder.
  */
 export function PantallaCompleta({
   children,

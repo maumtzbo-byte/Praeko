@@ -261,14 +261,14 @@ function Resumen({
         Tu mes completo
       </h1>
       <p className="mt-2 text-[15px] leading-relaxed text-zinc-600">
-        Ahora sí, todo junto. Pícale a cualquiera para cambiar lo que dijiste.
+        Ahora sí, todo junto. Toca cualquiera para cambiar lo que respondiste.
       </p>
 
       {cerrada && (
         <div className="mt-6 rounded-2xl bg-emerald-50 px-5 py-4">
           <p className="text-sm font-semibold text-emerald-900">Ya cerraste esta revisión.</p>
           <p className="mt-1 text-sm leading-relaxed text-emerald-800">
-            Nos pusimos a trabajar en lo que pediste. Si se te ocurre algo más, cámbialo aquí mismo y
+            Ya estamos trabajando en lo que pediste. Si se te ocurre algo más, cámbialo aquí mismo y
             nos llega.
           </p>
         </div>
@@ -515,7 +515,7 @@ export function RevisionDelMes({
             Tu mes de {mes}
           </h1>
           <p className="mt-1.5 text-sm leading-relaxed text-zinc-600">
-            {piezas.length} piezas para {marca}. Avienta a la derecha si va, a la izquierda si le
+            {piezas.length} piezas para {marca}. Desliza a la derecha si va, a la izquierda si le
             cambiamos algo. Nada se publica hasta que lo apruebes.
           </p>
 
@@ -642,7 +642,7 @@ export function RevisionDelMes({
               }}
               className="mx-auto mt-5 block text-xs font-medium text-zinc-500 underline underline-offset-2 hover:text-zinc-700"
             >
-              No estoy seguro, déjala para el final
+              No estoy seguro, la dejo para el final
             </button>
           )}
         </main>

@@ -91,9 +91,9 @@ export function AsistenteDeContexto({
     setError(null);
     try {
       const res = await conLimite(completarContexto({ leadId, ...datos }));
-      if (!res.success) setError("Eso último no se guardó. No te preocupes, te lo pregunto por WhatsApp.");
+      if (!res.success) setError("Eso último no se guardó. Te lo pregunto por WhatsApp.");
     } catch {
-      setError("Eso último no se guardó. No te preocupes, te lo pregunto por WhatsApp.");
+      setError("Eso último no se guardó. Te lo pregunto por WhatsApp.");
     } finally {
       setGuardando(false);
       if (siguiente === "fin") onListo();
@@ -237,10 +237,10 @@ export function AsistenteDeContexto({
         <div className="flex flex-col gap-4">
           <div>
             <h3 className="text-[17px] font-semibold tracking-tight text-zinc-950">
-              Sube tu producto
+              Sube fotos de tu producto
             </h3>
             <p className="mt-1 text-sm leading-relaxed text-zinc-600">
-              Es lo único que de verdad necesito. Sin una foto no hay pieza que hacer.
+              Es lo único indispensable. Sin una foto no hay pieza que hacer.
             </p>
           </div>
           {/* Las fotos se suben y se anotan solas, así que esta sección no
@@ -265,7 +265,7 @@ export function AsistenteDeContexto({
               ¿Cómo te gustaría verte?
             </h3>
             <p className="mt-1 text-sm leading-relaxed text-zinc-600">
-              Escoge los que te laten. Puedes marcar más de uno.
+              Elige los que se parezcan a tu marca. Puedes marcar más de uno.
             </p>
           </div>
 
@@ -360,10 +360,10 @@ export function AsistenteDeContexto({
               }`}
             >
               <span className="text-[13px] font-semibold tracking-tight text-zinc-950">
-                Ninguna me late
+                Ninguna de estas
               </span>
               <span className="text-[11px] leading-snug text-zinc-500">
-                Lo platicamos por WhatsApp y te lo armo a tu gusto
+                Lo definimos por WhatsApp
               </span>
             </button>
           </div>
@@ -381,7 +381,7 @@ export function AsistenteDeContexto({
               sin rodeos. */}
           <p className="text-xs leading-snug text-zinc-500">
             Estas marcas no trabajan con nosotros ni tienen relación con Frames. Las nombramos nada
-            más para que nos digas qué estilo te late.
+            más para que nos digas qué estilo prefieres.
           </p>
 
           <Button
@@ -395,7 +395,7 @@ export function AsistenteDeContexto({
                 habría prometido "así" señalando a nada. */}
             {estilos.some((id) => id !== NINGUNA)
               ? "Quiero ver mi producto así"
-              : "A ver cómo queda"}
+              : "Mándame la muestra"}
           </Button>
         </div>
       )}
@@ -405,7 +405,7 @@ export function AsistenteDeContexto({
         onClick={onListo}
         className="mx-auto mt-4 block text-xs font-medium text-zinc-500 underline underline-offset-2 hover:text-zinc-700"
       >
-        Mejor luego
+        Omitir por ahora
       </button>
     </PantallaCompleta>
   );

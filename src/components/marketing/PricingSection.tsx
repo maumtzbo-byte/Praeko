@@ -105,7 +105,7 @@ const plans: PricingPlan[] = [
       "12 escenas o carruseles al mes",
       "Instagram, Facebook y TikTok",
       "Publicamos a la hora que le sirve a tu marca",
-      "Variantes del mismo producto para probar cuál jala",
+      "Variantes del mismo producto para probar cuál funciona mejor",
     ],
   },
   {

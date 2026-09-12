@@ -296,13 +296,18 @@ export function AsistenteDeContexto({
             })}
           </div>
 
+          {/* El texto cambia según si eligió estilo, y no por adorno:
+              "Listo, mándame la muestra" anunciaba que él terminó de
+              llenar algo. Lo que importa no es que terminó, es lo que va a
+              recibir — y si acaba de señalar un estilo, nombrarlo es la
+              forma más corta de decirle que se le va a hacer caso. */}
           <Button
             size="lg"
             loading={guardando}
             onClick={() => void guardarYSeguir({ estilos }, "fin")}
           >
             {guardando && <Loader2 className="h-4 w-4 animate-spin" />}
-            Listo, mándame la muestra
+            {estilos.length > 0 ? "Quiero ver mi producto así" : "A ver cómo queda"}
           </Button>
         </div>
       )}
@@ -312,7 +317,7 @@ export function AsistenteDeContexto({
         onClick={onListo}
         className="mx-auto mt-4 block text-xs font-medium text-zinc-500 underline underline-offset-2 hover:text-zinc-700"
       >
-        Saltar, ya luego platicamos
+        Mejor luego
       </button>
     </div>
   );

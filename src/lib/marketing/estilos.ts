@@ -35,65 +35,93 @@ export type Estilo = {
 };
 
 /** Los cinco que sirven para cualquier producto empacado. Cambian las
- *  referencias, no las direcciones. */
+ *  referencias, no las direcciones.
+ *
+ *  Los nombres son cosas que se ven —lino, mármol, dorado— y no pares de
+ *  adjetivos. "Cálido y natural" y "Oscuro y premium" describían un humor,
+ *  no una imagen: dos personas leen eso y se imaginan cosas distintas, y
+ *  además es el mismo relleno que hace que un texto suene a máquina.
+ *  "Lino y madera" nombra dos materiales que cualquiera ve en su cabeza
+ *  antes de acabar de leer. */
 const BASE: Estilo[] = [
   {
     id: "limpio",
-    nombre: "Limpio y clínico",
+    nombre: "De laboratorio",
     instruccion:
-      "fondo liso y claro, luz pareja y sin drama, composición centrada, mucho aire alrededor del producto, paleta fría y neutra",
+      "fondo liso y claro, luz pareja y sin drama, composición centrada, mucho aire alrededor del producto, paleta fría y neutra, cero adornos",
   },
   {
     id: "calido",
-    nombre: "Cálido y natural",
+    nombre: "Lino y madera",
     instruccion:
-      "superficies de madera, lino o piedra, luz lateral de mañana, sombras suaves y largas, paleta de tierra y ámbar, algo de vegetación seca",
+      "superficies de madera, lino o barro, luz lateral de mañana, sombras suaves y largas, paleta de tierra y ámbar, ramas secas o piedra acompañando",
   },
   {
     id: "editorial",
-    nombre: "Editorial",
+    nombre: "Mármol y sombra dura",
     instruccion:
-      "mármol o cemento pulido, sombras duras y recortadas, encuadre de revista, un solo elemento acompañando, contraste alto",
+      "mármol o cemento pulido, sombras duras y recortadas por sol directo, simetría arquitectónica, encuadre de revista, un solo elemento acompañando, contraste alto",
   },
   {
     id: "oscuro",
-    nombre: "Oscuro y premium",
+    nombre: "Negro y dorado",
     instruccion:
-      "fondo negro o muy oscuro, luz de borde que recorta la silueta, reflejos metálicos o dorados, humo o vapor tenue, aire de lujo",
+      "fondo negro o muy oscuro, luz de borde que recorta la silueta, reflejos metálicos y dorados, humo o vapor tenue, aire de lujo y misterio",
   },
   {
-    id: "juguetón",
-    nombre: "Fresco y juguetón",
+    id: "jugueton",
+    nombre: "Fondos de color",
     instruccion:
-      "colores saturados y planos, pasteles, props geométricos, luz frontal alegre, composición asimétrica y desenfadada",
+      "fondo de un solo color saturado o pastel que contrasta con el envase, luz frontal suave, composición asimétrica, sin texturas ni props que distraigan",
   },
 ];
 
-/** Las referencias por categoría. Solo se nombran marcas cuyo estilo es
- *  reconocible de verdad; inventar una referencia floja es peor que no
- *  poner ninguna, porque manda al prospecto a imaginar otra cosa. */
+/** Las referencias por categoría.
+ *
+ *  Solo se nombra una marca cuando su estilo visual está documentado y es
+ *  reconocible de verdad, no cuando la marca es famosa. Una referencia
+ *  floja es peor que ninguna: manda al prospecto a imaginarse otra cosa y
+ *  después reclama que la muestra no se parece.
+ *
+ *  Por eso hay categorías sin referencia —tés, salsas, suplementos,
+ *  joyería—: no encontré una marca cuyo estilo fotográfico fuera lo
+ *  bastante distintivo y conocido como para servir de atajo, y prefiero
+ *  dejarlo vacío que inventarlo. Ahí el nombre del estilo se sostiene
+ *  solo, que para eso se renombraron.
+ *
+ *  Perfiles confirmados: The Ordinary es clínico y centrado en el
+ *  ingrediente; Aesop es minimalismo brutalista, simetría arquitectónica y
+ *  tonos apagados; Glossier son bloques de color contrastantes con luz
+ *  suave; Le Labo es blanco y negro con tipografía de máquina de escribir;
+ *  Blue Bottle es minimalismo limpio en azul claro; Stumptown es papel
+ *  kraft, textura sucia y blanco y negro; Onyx Coffee Lab es oscuro con
+ *  acentos dorados; Boy Smells es rosa y descarado. */
 const REFERENCIAS: Partial<Record<(typeof CATEGORIAS_PRODUCTO)[number], Record<string, string>>> = {
   "Skincare y cosmética": {
     limpio: "tipo The Ordinary",
     calido: "tipo Aesop",
-    juguetón: "tipo Glossier",
-  },
-  "Café de especialidad": {
-    limpio: "tipo Blue Bottle",
-    calido: "tipo tostador de barrio",
-    oscuro: "tipo Starbucks Reserve",
+    jugueton: "tipo Glossier",
+    editorial: "tipo Le Labo",
   },
   "Cuidado del cabello": {
     limpio: "tipo The Ordinary",
     calido: "tipo Aesop",
+    jugueton: "tipo Glossier",
+  },
+  "Café de especialidad": {
+    limpio: "tipo Blue Bottle",
+    calido: "tipo Stumptown",
+    oscuro: "tipo Onyx Coffee Lab",
   },
   Perfumes: {
-    oscuro: "tipo Tom Ford",
     editorial: "tipo Le Labo",
+    calido: "tipo Aesop",
+    oscuro: "tipo Tom Ford",
   },
   "Velas y aromas para el hogar": {
-    calido: "tipo Diptyque",
     editorial: "tipo Le Labo",
+    calido: "tipo Diptyque",
+    jugueton: "tipo Boy Smells",
   },
 };
 

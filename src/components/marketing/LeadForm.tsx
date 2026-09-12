@@ -153,7 +153,7 @@ export function LeadForm() {
 
         <Button type="submit" size="lg" disabled={enviando} className="mt-1 w-full">
           {enviando && <Loader2 className="h-4 w-4 animate-spin" />}
-          Quiero ver mis 3 piezas
+          Mándame mis 3 piezas
         </Button>
 
         <p className="text-center text-xs leading-snug text-zinc-500">

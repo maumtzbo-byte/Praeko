@@ -6,6 +6,7 @@ import { ligaAlProspecto, esEstado, type Estado } from "@/lib/operacion/prospect
 import { estilosPara, tituloDeEstilo } from "@/lib/marketing/estilos";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { ListaDeProspectos, type Prospecto } from "@/components/operacion/lista-de-prospectos";
+import { ImportarConversacion } from "@/components/operacion/importar-conversacion";
 
 /** Es una pantalla interna. Que no la indexe nadie ni salga en un
  *  buscador, aunque el acceso ya esté cerrado: una URL interna que aparece
@@ -30,6 +31,10 @@ export const metadata: Metadata = {
  * aplica y hay que pedirla.
  */
 export const dynamic = "force-dynamic";
+
+/** El tope de Vercel en el plan Hobby. Lo pide `importarConversacion`, que
+ *  espera a un modelo; con los 10 s de omisión se cortaría a medio camino. */
+export const maxDuration = 60;
 
 /** Tope de filas. Con el volumen de hoy no se alcanza nunca, y existe para
  *  que el día que sí haya mil prospectos la pantalla no intente firmar mil
@@ -140,6 +145,10 @@ export default async function ProspectosPage() {
       </p>
 
       <div className="mt-8">
+        <ImportarConversacion />
+      </div>
+
+      <div className="mt-6">
         <ListaDeProspectos prospectos={prospectos} />
       </div>
     </main>

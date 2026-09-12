@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Check, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
-import { ligaWhatsapp, MENSAJE_COTIZACION, WHATSAPP_VISIBLE } from "@/lib/contacto";
+import { MENSAJE_COTIZACION, WHATSAPP_VISIBLE } from "@/lib/contacto";
+import { SalidaWhatsapp } from "./SalidaWhatsapp";
 
 // Feature copy leads with what each line means for the owner reading it —
 // not the AI provider/model behind it (nobody running a cafetería cares
@@ -323,15 +324,14 @@ export default function PricingSection() {
           <p className="text-center text-sm text-zinc-600">
             ¿No sabes cuál? Dime qué vendes y te armo una cotización.
           </p>
-          <a
-            href={ligaWhatsapp(MENSAJE_COTIZACION)}
-            target="_blank"
-            rel="noopener noreferrer"
+          <SalidaWhatsapp
+            mensaje={MENSAJE_COTIZACION}
+            boton="cotizacion"
             className="inline-flex items-center gap-2 rounded-full bg-[image:var(--plastico)] px-6 py-3 text-sm font-medium text-zinc-900 shadow-[var(--relieve-pieza)] transition-all hover:brightness-[1.02] active:translate-y-px"
           >
             <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
             Pedir cotización por WhatsApp
-          </a>
+          </SalidaWhatsapp>
           <p className="text-xs text-zinc-500">{WHATSAPP_VISIBLE}</p>
         </div>
 

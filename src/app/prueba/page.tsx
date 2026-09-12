@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 
 import { FramesMark } from "@/components/brand/FramesMark";
 import { LeadForm } from "@/components/marketing/LeadForm";
-import { ligaWhatsapp, MENSAJE_COTIZACION } from "@/lib/contacto";
+import { MENSAJE_COTIZACION } from "@/lib/contacto";
+import { SalidaWhatsapp } from "@/components/marketing/SalidaWhatsapp";
 
 /**
  * Aterrizaje de los anuncios de Meta.
@@ -127,14 +128,13 @@ export default function PruebaPage() {
                 real de los prospectos en México prefiere escribir directo
                 a WhatsApp, y perderlos por no ofrecerles el canal sería
                 tirar el clic que ya pagaste. */}
-            <a
-              href={ligaWhatsapp(MENSAJE_COTIZACION)}
-              target="_blank"
-              rel="noopener noreferrer"
+            <SalidaWhatsapp
+              mensaje={MENSAJE_COTIZACION}
+              boton="cotizacion"
               className="rounded-full bg-[image:var(--plastico)] px-5 py-3 text-center text-sm font-medium text-zinc-800 shadow-[var(--relieve-pieza)] transition-all hover:brightness-[1.02] active:translate-y-px"
             >
               O pide tu cotización por WhatsApp
-            </a>
+            </SalidaWhatsapp>
           </div>
         </div>
 

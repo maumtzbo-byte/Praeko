@@ -6,7 +6,8 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 
 import { registrarProspecto } from "@/app/prueba/actions";
 import { CATEGORIAS_PRODUCTO } from "@/lib/validation/lead";
-import { ligaWhatsapp, MENSAJE_MUESTRA, WHATSAPP_VISIBLE } from "@/lib/contacto";
+import { MENSAJE_MUESTRA, WHATSAPP_VISIBLE } from "@/lib/contacto";
+import { SalidaWhatsapp } from "./SalidaWhatsapp";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -84,14 +85,13 @@ export function LeadForm() {
           En menos de 24 horas te escribo por WhatsApp con tres piezas hechas con tu producto. Si no
           te convencen, no hay compromiso ni costo.
         </p>
-        <a
-          href={ligaWhatsapp(MENSAJE_MUESTRA)}
-          target="_blank"
-          rel="noopener noreferrer"
+        <SalidaWhatsapp
+          mensaje={MENSAJE_MUESTRA}
+          boton="muestra"
           className="mt-7 inline-flex rounded-full bg-[image:var(--plastico)] px-5 py-3 text-sm font-medium text-zinc-800 shadow-[var(--relieve-pieza)] transition-all hover:brightness-[1.02] active:translate-y-px"
         >
           Escríbeme tú primero
-        </a>
+        </SalidaWhatsapp>
       </PantallaCompleta>
     );
   }

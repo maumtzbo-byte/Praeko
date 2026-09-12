@@ -7,6 +7,10 @@ import { estilosPara, tituloDeEstilo } from "@/lib/marketing/estilos";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { ListaDeProspectos, type Prospecto } from "@/components/operacion/lista-de-prospectos";
 import { ImportarConversacion } from "@/components/operacion/importar-conversacion";
+import {
+  SalidasAWhatsapp,
+  type ResumenDeSalidas,
+} from "@/components/operacion/salidas-a-whatsapp";
 
 /** Es una pantalla interna. Que no la indexe nadie ni salga en un
  *  buscador, aunque el acceso ya esté cerrado: una URL interna que aparece
@@ -53,6 +57,46 @@ function diasDesde(iso: string): number {
   return Math.max(0, Math.floor(ms / 86_400_000));
 }
 
+/** El día local en Monterrey, como "2026-09-12".
+ *
+ *  Se compara la fecha YA FORMATEADA en vez de hacer aritmética con el
+ *  desfase horario. México no cambia de horario desde 2022, así que restar
+ *  seis horas funcionaría hoy — y sería una bomba de tiempo escrita a
+ *  mano el día que eso cambie o que se agregue otra zona. */
+const DIA_LOCAL = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Monterrey" });
+
+const SALIDAS_DIAS = 7;
+
+/** El inicio de la ventana de salidas. En función y no en línea porque
+ *  `Date.now()` en el cuerpo de un render es impuro y el compilador de
+ *  React lo marca — el mismo motivo que `diasDesde`. */
+function inicioDeVentana(): string {
+  return new Date(Date.now() - SALIDAS_DIAS * 86_400_000).toISOString();
+}
+
+/** Cuenta las salidas al WhatsApp de los últimos 7 días. */
+function resumirSalidas(filas: { origen: string | null; created_at: string }[]): ResumenDeSalidas {
+  const hoyLocal = DIA_LOCAL.format(new Date());
+
+  let hoy = 0;
+  const porOrigen = new Map<string, number>();
+
+  for (const fila of filas) {
+    if (DIA_LOCAL.format(new Date(fila.created_at)) === hoyLocal) hoy += 1;
+    // Sin `origen` es tráfico directo, y contarlo como un origen llamado
+    // "directo" lo mezclaría con un anuncio que de verdad se llamara así.
+    if (fila.origen) porOrigen.set(fila.origen, (porOrigen.get(fila.origen) ?? 0) + 1);
+  }
+
+  return {
+    hoy,
+    semana: filas.length,
+    porOrigen: [...porOrigen.entries()]
+      .map(([origen, cuantos]) => ({ origen, cuantos }))
+      .sort((a, b) => b.cuantos - a.cuantos),
+  };
+}
+
 const FECHA = new Intl.DateTimeFormat("es-MX", {
   day: "numeric",
   month: "long",
@@ -67,11 +111,15 @@ export default async function ProspectosPage() {
 
   const supabase = createServiceRoleClient();
 
-  const { data: filas, error } = await supabase
-    .from("leads")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(TOPE);
+  const desde = inicioDeVentana();
+
+  const [{ data: filas, error }, { data: salidas }] = await Promise.all([
+    supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(TOPE),
+    // Las salidas no bloquean la pantalla: si la tabla todavía no existe
+    // —la migración 0031 se corre aparte— esto devuelve error y el resumen
+    // sale en cero, en vez de tumbar la lista de prospectos.
+    supabase.from("whatsapp_exits").select("origen, created_at").gte("created_at", desde),
+  ]);
 
   if (error) {
     console.error("No se pudieron leer los prospectos", error);
@@ -144,7 +192,11 @@ export default async function ProspectosPage() {
         {prospectos.length === 1 ? "registro" : "registros"}.
       </p>
 
-      <div className="mt-8">
+      <div className="mt-6">
+        <SalidasAWhatsapp resumen={resumirSalidas(salidas ?? [])} />
+      </div>
+
+      <div className="mt-6">
         <ImportarConversacion />
       </div>
 

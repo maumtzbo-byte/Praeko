@@ -980,6 +980,30 @@ export type Database = {
           },
         ]
       }
+      whatsapp_exits: {
+        Row: {
+          boton: string
+          created_at: string
+          id: string
+          origen: string | null
+          ruta: string | null
+        }
+        Insert: {
+          boton: string
+          created_at?: string
+          id?: string
+          origen?: string | null
+          ruta?: string | null
+        }
+        Update: {
+          boton?: string
+          created_at?: string
+          id?: string
+          origen?: string | null
+          ruta?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

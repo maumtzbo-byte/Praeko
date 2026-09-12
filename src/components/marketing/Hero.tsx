@@ -42,25 +42,38 @@ export default function Hero() {
             Para marcas mexicanas que venden por Instagram
           </p>
 
-          {/* Antes: "Tu negocio publica solo." Servía cuando le hablábamos a
-              cualquier negocio, y dejó de servir en cuanto el cliente pasó a
-              ser una marca de producto: lo que esa persona quiere no es
-              publicar, es que su frasco se vea como los de las marcas que
-              admira. "Publicar solo" describe el mecanismo; esto describe el
-              resultado, que es lo que se compra. */}
+          {/* Titular de marca, no de respuesta directa, y es una decisión
+              del dueño tomada con la objeción sobre la mesa: "un buen
+              marketing" no dice si vendemos video, fotos o anuncios, y
+              "merece" no se puede comprobar.
+
+              Esa estructura funciona con UNA condición, que es la que hace
+              Photoroom con "Sell at first sight": el titular abre y la
+              bajada carga todo lo concreto. Por eso la bajada de abajo dejó
+              de esconderse en celular — cuando el titular no dice qué
+              vendes, esconder el único renglón que sí lo dice deja la
+              portada muda justo donde cae el tráfico de anuncios.
+
+              La contraparte de respuesta directa vive en /prueba, que sí
+              abre con una promesa comprobable: "Mándame una foto. Mañana
+              tienes tres piezas." Dos páginas, dos trabajos. */}
           <h1 className="text-balance text-[2.7rem] font-semibold leading-[1.0] tracking-tight text-zinc-950 sm:mt-5 sm:text-6xl lg:text-7xl">
-            Tu producto merece algo mejor que un fondo blanco.
+            Tu producto merece un buen marketing.
           </h1>
 
-          {/* Verbos concretos en vez de "lo hacen": arman, hacen, suben.
-              Y el remate se sale de la simetría — "Siete agentes de IA lo
-              hacen. Tú solo apruebas." eran dos mitades calcadas, que es
-              como escribe una máquina y no como habla alguien. "Dices que
-              sí" también es lo que de verdad diría el dueño de un
-              changarro; "apruebas" es lenguaje de oficina corporativa. */}
-          <p className="mt-5 hidden max-w-md text-balance text-base leading-relaxed text-zinc-600 sm:block sm:text-lg">
-            Con las fotos que ya tienes armamos video y escenas nuevas todo el
-            mes, y las subimos a tus redes.
+          {/* Visible en celular también. Iba con `hidden sm:block` desde
+              que el titular decía por sí solo de qué iba esto; ahora el
+              titular es de marca y este renglón es el único lugar de la
+              primera pantalla donde dice "video", "producto" y "tus fotos".
+              Cabe porque el titular nuevo es más corto que el anterior.
+
+              Y va en dos renglones, no tres: medido en un iPhone de 390×844,
+              con el personaje ocupando 44svh, la tercera línea empujaba el
+              renglón de confianza contra el borde inferior y lo cortaba. El
+              botón bajó a una sola línea por lo mismo. */}
+          <p className="mt-4 max-w-md text-balance text-[15px] leading-relaxed text-zinc-600 sm:mt-5 sm:text-lg">
+            Video y escenas de tu producto todo el mes, con las fotos que ya
+            tienes.
           </p>
 
           {/* Un solo botón. El "Cómo funciona" que lo acompañaba mandaba a
@@ -75,7 +88,7 @@ export default function Hero() {
             href="/prueba"
             className="mt-7 inline-flex items-center gap-2.5 rounded-full bg-accent-cta px-8 py-4 text-base font-semibold text-white transition-opacity hover:opacity-90 sm:mt-8 sm:px-7 sm:py-3.5 sm:text-[15px] sm:font-medium"
           >
-            Quiero ver 3 piezas de mi producto
+            Quiero mis 3 piezas
             <ArrowRight className="h-4 w-4" strokeWidth={2} />
           </Link>
 

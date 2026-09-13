@@ -18,6 +18,7 @@ import { primerCuadro } from "@/lib/content/media";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { FramesMark } from "@/components/brand/FramesMark";
+import { ComoNosFueEnElMes, type ComoNosFue } from "./como-nos-fue";
 
 /**
  * La revisión del mes, como baraja: una pieza a la vez, y se avienta.
@@ -345,12 +346,17 @@ export function RevisionDelMes({
   mes,
   piezas,
   yaCerrada,
+  comoNosFue,
 }: {
   token: string;
   marca: string;
   mes: string;
   piezas: PiezaParaRevisar[];
   yaCerrada: boolean;
+  /** Cómo le fue al mes anterior. null cuando todavía no hay nada medido:
+   *  un panel de resultados en ceros, justo en la pantalla donde el cliente
+   *  decide si esto vale lo que paga, hace daño en vez de bien. */
+  comoNosFue: ComoNosFue | null;
 }) {
   const [veredictos, setVeredictos] = useState<Veredictos>(() =>
     Object.fromEntries(piezas.map((p) => [p.id, { veredicto: p.veredicto, comentario: p.comentario }])),
@@ -518,6 +524,16 @@ export function RevisionDelMes({
             {piezas.length} piezas para {marca}. Desliza a la derecha si va, a la izquierda si le
             cambiamos algo. Nada se publica hasta que lo apruebes.
           </p>
+
+          {/* Los resultados del mes anterior van ARRIBA de las piezas, no
+              al final. Es el momento exacto en que está decidiendo si esto
+              vale lo que paga, y es la única pantalla que de verdad abre
+              — un reporte por correo no lo lee nadie. */}
+          {comoNosFue && (
+            <div className="mt-5">
+              <ComoNosFueEnElMes datos={comoNosFue} />
+            </div>
+          )}
 
           {/* La baraja. `x` vive AQUÍ y no dentro de la tarjeta porque los
               símbolos de los lados tienen que reaccionar al arrastre y no

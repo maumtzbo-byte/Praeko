@@ -44,6 +44,25 @@ export interface StrategyAgentInput {
     goals: string[];
   };
   plan: PlanLimits;
+  /** Si esta marca tiene portavoz aprobado.
+   *
+   *  El agente solo puede pedir el formato "portavoz" cuando esto es true.
+   *  Sin portavoz definido y aceptado por el dueño, una pieza de ese
+   *  formato saldría con una persona distinta cada vez — y el dueño se
+   *  enteraría de que hay gente generada representando su marca cuando ya
+   *  estuviera publicado. */
+  tienePortavoz?: boolean;
+  /** Lo que este negocio aprendió de sus propias publicaciones, ya
+   *  redactado para el prompt (ver lib/desempeno/resumen.ts).
+   *
+   *  Es la diferencia entre un generador de contenido y un sistema de
+   *  marketing: hasta que esto existió, cada mes se planeaba como si fuera
+   *  el primero, con los resultados del anterior guardados en una tabla que
+   *  nadie le enseñaba a quien decide qué publicar.
+   *
+   *  null cuando no hay suficiente historial, y el prompt ya sabe operar
+   *  así — es como funcionó siempre. */
+  desempeno?: string | null;
   /** ISO date (YYYY-MM-DD) of the first day to plan. */
   startDate: string;
   /** How many days of content to generate in this call. */
@@ -51,7 +70,7 @@ export interface StrategyAgentInput {
 }
 
 const CONTENT_KINDS: ContentKind[] = ["imagen", "video"];
-const CONTENT_FORMATS: ContentFormat[] = ["reel", "carrusel", "imagen_unica", "promocion"];
+const CONTENT_FORMATS: ContentFormat[] = ["reel", "carrusel", "imagen_unica", "promocion", "portavoz"];
 
 const PLAN_TOOL_NAME = "submit_content_plan";
 
@@ -73,7 +92,7 @@ function buildSystemPrompt(isUs: boolean): string {
     "- Varía los formatos y temas a lo largo de los días; no repitas el mismo tema dos días seguidos.",
     "- Respeta el proveedor de video asignado al plan del negocio al proponer el nivel de producción esperado.",
     "- Si se te dan fechas clave dentro del rango, úsalas cuando tengan sentido real para este negocio (no fuerces una fecha genérica en un negocio al que no le aplica).",
-    "- Para recommendedPublishTime: este negocio todavía no tiene historial de datos propios de a qué hora responde mejor su audiencia (eso llega después, con más publicaciones). Mientras tanto, razona con lo que sí es verificable: patrones generales conocidos por plataforma y formato (ej. Reels de Instagram funcionan mejor en la tarde/noche, contenido B2B entre semana en horario laboral) y el giro específico del negocio (ej. un restaurante conviene publicar antes de horas de comida, un gimnasio antes del horario en que la gente suele entrenar). No es un dato medido de este negocio — es la mejor recomendación razonada disponible hasta que haya datos reales.",
+    "- Para recommendedPublishTime: si el mensaje trae una sección de DESEMPEÑO REAL con una hora medida, ÚSALA — es un dato de este negocio y le gana a cualquier patrón general. Si no la trae, razona con lo que sí es verificable: patrones generales conocidos por plataforma y formato (ej. Reels de Instagram funcionan mejor en la tarde/noche, contenido B2B entre semana en horario laboral) y el giro específico del negocio (ej. un restaurante conviene publicar antes de horas de comida, un gimnasio antes del horario en que la gente suele entrenar). No es un dato medido de este negocio — es la mejor recomendación razonada disponible hasta que haya datos reales.",
     "Responde únicamente llamando a la herramienta proporcionada — no escribas texto fuera de la llamada.",
   ].join("\n");
 }
@@ -128,8 +147,20 @@ function buildUserPrompt(input: StrategyAgentInput, researchSummary: string | nu
     "",
     researchSection,
     researchSection ? "" : null,
+    // El formato de portavoz solo existe si la marca ya tiene uno definido
+    // y aceptado. Decírselo aquí y no en el prompt del sistema es a
+    // propósito: el sistema se cachea entre llamadas y esto cambia por
+    // negocio.
+    input.tienePortavoz
+      ? 'Esta marca TIENE portavoz aprobado: puedes usar el formato "portavoz" (una persona sosteniendo el producto y hablando de él a cámara) para una o dos piezas de video al mes. Es el formato que más convierte, pero pierde efecto si se abusa — el resto sigue siendo producto solo.'
+      : 'Esta marca NO tiene portavoz definido: NO uses el formato "portavoz" en ninguna pieza.',
+    "",
     keyDatesSection,
     keyDatesSection ? "" : null,
+    // Va al final y justo antes de la instrucción de generar: es lo más
+    // específico que tiene el prompt y lo último que se lee.
+    input.desempeno,
+    input.desempeno ? "" : null,
     `Genera ${input.days} días de contenido empezando el ${input.startDate} (fechas consecutivas, formato YYYY-MM-DD).`,
     "Distribuye una mezcla razonable de imagen y video según los límites del plan.",
   ].filter((line): line is string => line !== null);
@@ -244,6 +275,10 @@ export interface CampaignAgentInput {
   business: StrategyAgentInput["business"];
   brand: StrategyAgentInput["brand"];
   plan: PlanLimits;
+  /** Igual que en StrategyAgentInput: lo que este negocio aprendió de sus
+   *  propias publicaciones. Una campaña se beneficia de esto todavía más
+   *  que un mes normal, porque hay menos piezas y cada una pesa más. */
+  desempeno?: string | null;
   campaign: {
     name: string;
     /** Free text from the owner describing what the campaign is for — "Hot Sale, 20% en toda la tienda", "Navidad, promocionar canastas navideñas", etc. */
@@ -270,7 +305,7 @@ function buildCampaignSystemPrompt(isUs: boolean): string {
     "- Varía los formatos a lo largo de la campaña; no repitas el mismo formato dos días seguidos si se puede evitar.",
     "- Respeta el proveedor de video asignado al plan del negocio al proponer el nivel de producción esperado.",
     "- Si se te da la fecha clave que da origen a la campaña, ancla el arco de la campaña hacia esa fecha; si hay otras fechas clave dentro del rango, úsalas solo si tienen sentido real para este negocio.",
-    "- Para recommendedPublishTime: este negocio todavía no tiene historial de datos propios de a qué hora responde mejor su audiencia. Razona con patrones generales conocidos por plataforma y formato, y el giro específico del negocio — no es un dato medido, es la mejor recomendación razonada disponible.",
+    "- Para recommendedPublishTime: si el mensaje trae una hora medida en la sección de DESEMPEÑO REAL, úsala. Si no, razona con patrones generales conocidos por plataforma y formato, y el giro específico del negocio — y entonces no es un dato medido, es la mejor recomendación razonada disponible.",
     "Responde únicamente llamando a la herramienta proporcionada — no escribas texto fuera de la llamada.",
   ].join("\n");
 }
@@ -305,6 +340,8 @@ function buildCampaignUserPrompt(input: CampaignAgentInput, researchSummary: str
     `CAMPAÑA: ${campaign.name}`,
     `Lo que el dueño del negocio pidió para esta campaña: ${campaign.brief}`,
     `Duración: del ${campaign.startDate} al ${campaign.endDate} (${days} días, fechas consecutivas, formato YYYY-MM-DD).`,
+    input.desempeno,
+    input.desempeno ? "" : null,
     `Genera exactamente ${days} días de contenido, uno por cada fecha del rango, construyendo el arco de la campaña hacia el último día.`,
   ].filter((line): line is string => line !== null);
 

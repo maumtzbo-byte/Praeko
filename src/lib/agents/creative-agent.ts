@@ -18,6 +18,10 @@ export interface CreativeAgentInput {
   topic: string;
   script: string;
   targetDurationSeconds: number | null;
+  /** El formato de la pieza y, si es de portavoz, quién lo protagoniza.
+   *  Viajan juntos porque uno sin el otro no sirve de nada. */
+  formato?: string;
+  portavoz?: string | null;
   /** Short business + brand-tone summary, prepended to the prompt so
    * generated media reads as "this business", not generic stock content. */
   brandContext: string;
@@ -44,6 +48,8 @@ export async function requestMediaGeneration(input: CreativeAgentInput): Promise
     script: input.script,
     targetDurationSeconds: input.targetDurationSeconds,
     brandContext: input.brandContext,
+    formato: input.formato,
+    portavoz: input.portavoz,
   });
 
   if (input.contentKind === "video") {

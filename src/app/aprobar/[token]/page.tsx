@@ -5,6 +5,7 @@ import { RevisionDelMes, type PiezaParaRevisar } from "@/components/aprobacion/r
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { fetchMediaUrlsByItemId } from "@/lib/content/media";
 import { estadoDeLiga, mesEnPalabras } from "@/lib/aprobacion/liga";
+import { comoNosFue } from "@/lib/desempeno/resumen";
 
 /**
  * La página donde el cliente aprueba su mes, sin cuenta y sin contraseña.
@@ -111,6 +112,16 @@ export default async function AprobarPage({ params }: Params) {
     lista.map((p) => p.id),
   );
 
+  // Cómo le fue al mes ANTERIOR al de esta liga. Nunca tumba la pantalla:
+  // si la lectura falla, se aprueba el mes como se aprobaba antes.
+  let resultados = null;
+  try {
+    const medido = await comoNosFue(liga.business_id, liga.desde, liga.hasta);
+    if (medido.publicadas > 0) resultados = medido;
+  } catch (err) {
+    console.error("comoNosFue falló", err);
+  }
+
   const paraRevisar: PiezaParaRevisar[] = lista.map((p) => ({
     id: p.id,
     fecha: p.scheduled_date,
@@ -130,6 +141,7 @@ export default async function AprobarPage({ params }: Params) {
       mes={mesEnPalabras(liga.desde)}
       piezas={paraRevisar}
       yaCerrada={Boolean(liga.completed_at)}
+      comoNosFue={resultados}
     />
   );
 }

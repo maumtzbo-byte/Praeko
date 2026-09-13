@@ -7,6 +7,7 @@ export const FORMAT_LABELS: Record<ContentCalendarRow["format"], string> = {
   carrusel: "Carrusel",
   imagen_unica: "Imagen única",
   promocion: "Promoción",
+  portavoz: "Portavoz",
 };
 
 export const STATUS_VARIANTS: Record<ContentCalendarRow["status"], "neutral" | "success" | "warning" | "danger"> = {

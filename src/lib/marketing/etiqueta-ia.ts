@@ -34,3 +34,18 @@ export const AVISO_ETIQUETA_PUBLICO =
  *  contrató y solo necesita el recordatorio operativo. */
 export const AVISO_ETIQUETA_PANEL =
   "Meta puede marcar estas piezas con su etiqueta de «Información de IA». En publicaciones normales no baja el alcance. Si el cliente las va a pautar, hay que declararlo en el anuncio.";
+
+/**
+ * Lo que hay que decirle al cliente antes de producirle contenido con una
+ * persona en cámara.
+ *
+ * Va aparte del aviso de la etiqueta de IA porque es otra cosa. Aquella
+ * dice que la FOTO de su producto se generó; esta dice que hay una PERSONA
+ * que no existe recomendando lo que él vende. La segunda es más fuerte, la
+ * van a notar sus seguidores, y le van a preguntar a él y no a nosotros.
+ *
+ * Se enseña antes del visto bueno, una sola vez, y sin ese visto bueno no
+ * se produce nada con portavoz (ver brand_profiles.portavoz_aceptado_at).
+ */
+export const AVISO_DE_PORTAVOZ =
+  "El portavoz es una persona generada: no existe, no probó tu producto y no es una clienta real. Es un recurso de producción, como un actor en un comercial — pero conviene que lo sepas de nuestra boca y no de la de un seguidor. Instagram y Facebook van a etiquetar estas piezas con «Información de IA» igual que las demás. Si alguien pregunta, la respuesta corta que funciona es la verdad: «es una presentadora generada, el producto y lo que dice de él sí son reales». Lo que nunca vamos a hacer es ponerle palabras de clienta satisfecha ni afirmaciones sobre resultados que tú no nos hayas dado.";

@@ -25,16 +25,45 @@ export interface VisualPromptInput {
   script: string;
   targetDurationSeconds: number | null;
   brandContext: string;
+  /** El formato de la pieza. Solo "portavoz" cambia algo aquí, y cambia
+   *  bastante: es el único donde aparece una persona en cámara. */
+  formato?: string;
+  /** Cómo es la persona que representa a esta marca, palabra por palabra
+   *  igual en cada pieza.
+   *
+   *  Es lo que separa un portavoz de un extra. Sin esto, cada video sale
+   *  con una persona distinta — y doce videos al mes con doce caras
+   *  diferentes se ven PEOR que cero videos con personas, porque delatan
+   *  que no hay nadie atrás. Repetir la misma descripción es lo que
+   *  convierte un recurso en un personaje de marca. */
+  portavoz?: string | null;
 }
 
 const VISUAL_PROMPT_TOOL_NAME = "submit_visual_prompt";
 
-function buildSystemPrompt(contentKind: ContentKind): string {
+function buildSystemPrompt(contentKind: ContentKind, formato?: string): string {
   const shared = [
     "Eres el Agente Creativo de Frames, una plataforma de marketing con IA para negocios pequeños en México.",
     "Recibes un guion escrito para que el dueño del negocio lo grabe o diseñe él mismo (con gancho, desarrollo y cierre) — tu trabajo es traducirlo a un prompt de generación visual que un modelo de IA (no una persona) pueda producir directamente.",
     "No inventes elementos de marca, productos, personas o textos en pantalla que no se desprendan directamente del tema y el guion dados.",
   ];
+
+  const esPortavoz = formato === "portavoz";
+
+  if (esPortavoz) {
+    return [
+      ...shared,
+      "Esta pieza es de PORTAVOZ: una persona sosteniendo el producto y hablando de él a cámara, como una recomendación de alguien real. Es el formato que más convierte en producto empacado.",
+      "Reglas de este formato, todas obligatorias:",
+      "- La persona se describe EXACTAMENTE como te la den en el contexto de marca. No la cambies, no la mejores, no la adornes: tiene que ser la misma persona que en las piezas anteriores o el formato se rompe.",
+      "- El producto tiene que verse igual al de la foto de referencia: misma forma, misma etiqueta, mismos colores. Es el producto real de un cliente real.",
+      "- Encuadre de plano medio o close-up, sostenido en la mano, luz natural. Nada de escenografía de estudio: lo que hace que este formato funcione es que parezca grabado por una persona, no producido.",
+      "- El diálogo va en español de México, natural y corto. Nada de lenguaje publicitario ni superlativos.",
+      "- Ninguna afirmación sobre resultados, salud o beneficios que no esté literalmente en el guion.",
+      "Estructura el prompt en dos partes: primero la descripción visual de la persona y la escena, después el diálogo exacto.",
+      "Responde únicamente llamando a la herramienta proporcionada — no escribas texto fuera de la llamada.",
+    ].join("\n");
+  }
 
   const kindSpecific =
     contentKind === "video"
@@ -52,6 +81,12 @@ function buildSystemPrompt(contentKind: ContentKind): string {
 function buildUserPrompt(input: VisualPromptInput): string {
   const lines = [
     `Contexto de marca: ${input.brandContext}`,
+    // La descripción del portavoz va COMPLETA y literal. Resumirla o
+    // parafrasearla entre piezas es exactamente lo que hace que la persona
+    // cambie de un video a otro.
+    input.formato === "portavoz" && input.portavoz
+      ? `Portavoz de esta marca (descríbela tal cual, sin cambiar nada): ${input.portavoz}`
+      : null,
     `Tema: ${input.topic}`,
     `Guion original (escrito para un presentador humano): ${input.script}`,
     input.contentKind === "video" && input.targetDurationSeconds
@@ -89,7 +124,7 @@ export async function craftVisualPrompt(input: VisualPromptInput): Promise<strin
     const message = await client.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 1024,
-      system: buildSystemPrompt(input.contentKind),
+      system: buildSystemPrompt(input.contentKind, input.formato),
       messages: [{ role: "user", content: buildUserPrompt(input) }],
       tools: [
         {

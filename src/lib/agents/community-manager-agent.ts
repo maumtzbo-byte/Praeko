@@ -5,6 +5,7 @@ import { replyToComment, sendDirectMessage } from "@/lib/social/meta";
 import { replyToGoogleReview, refreshGoogleAccessToken, type GoogleReview } from "@/lib/social/google-business";
 import type { ParsedMetaEvent } from "@/lib/social/meta-webhook";
 import type { Database } from "@/lib/supabase/types";
+import { tieneAgregadoDeComentarios } from "@/lib/social/agregados";
 
 // The full DB enum, not just Meta's two values — this agent now drafts
 // replies for Google reviews too (see respondToGoogleReview below), so its
@@ -225,7 +226,22 @@ export async function respondToInboundInteraction(event: ParsedMetaEvent): Promi
     // business without auto-reply on vanished instead of showing up in
     // Redes sociales for the dueño to answer by hand — same class of bug
     // already fixed for Google reviews in respondToGoogleReview below.
-    if (!business.auto_reply_enabled) {
+    // Dos condiciones, no una, y las dos tienen que cumplirse para que el
+    // agente conteste solo:
+    //
+    //   · `auto_reply_enabled` — el dueño lo prendió. Es su decisión.
+    //   · el agregado pagado — lo compró. Es la nuestra.
+    //
+    // Hasta ahora solo existía la primera, así que el agregado que la
+    // página vende aparte se regalaba a cualquiera que prendiera el
+    // interruptor. Se apoya en el mismo comportamiento que ya estaba bien
+    // resuelto: cuando NO se puede contestar, la interacción se guarda de
+    // todos modos para que el dueño la conteste a mano. Quitarle el
+    // agregado a alguien no le borra su bandeja.
+    const puedeResponderSolo =
+      business.auto_reply_enabled && (await tieneAgregadoDeComentarios(business.id));
+
+    if (!puedeResponderSolo) {
       await supabase.from("social_interactions").insert({
         business_id: business.id,
         connection_id: connection.id,
@@ -440,7 +456,22 @@ export async function respondToGoogleReview(
       rating: review.starRating,
     };
 
-    if (!business.auto_reply_enabled) {
+    // Dos condiciones, no una, y las dos tienen que cumplirse para que el
+    // agente conteste solo:
+    //
+    //   · `auto_reply_enabled` — el dueño lo prendió. Es su decisión.
+    //   · el agregado pagado — lo compró. Es la nuestra.
+    //
+    // Hasta ahora solo existía la primera, así que el agregado que la
+    // página vende aparte se regalaba a cualquiera que prendiera el
+    // interruptor. Se apoya en el mismo comportamiento que ya estaba bien
+    // resuelto: cuando NO se puede contestar, la interacción se guarda de
+    // todos modos para que el dueño la conteste a mano. Quitarle el
+    // agregado a alguien no le borra su bandeja.
+    const puedeResponderSolo =
+      business.auto_reply_enabled && (await tieneAgregadoDeComentarios(business.id));
+
+    if (!puedeResponderSolo) {
       await supabase.from("social_interactions").insert({ ...baseRow, reply_status: "necesita_revision" });
       return;
     }

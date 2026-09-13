@@ -168,6 +168,12 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
         script: item.script ?? item.topic,
         targetDurationSeconds: isVideo ? requestedSeconds : null,
         brandContext,
+        formato: item.format,
+        // Sin visto bueno del dueño no se produce con portavoz, aunque el
+        // agente lo haya pedido. Es lo único que evita que un cliente vea
+        // por primera vez a una persona generada representando su marca en
+        // su propio Instagram, sin que nadie se lo dijera.
+        portavoz: brand?.portavoz_aceptado_at ? brand.portavoz : null,
         referenceAssetUrls,
         videoProvider: plan.videoProvider,
       });
@@ -428,6 +434,12 @@ export async function publishContentNow(itemId: string, connectionId: string): P
         status: "publicada",
         published_platform: connection.platform,
         external_post_id: result.externalPostId,
+        // La hora REAL de publicación, que es distinta de la programada.
+        // Es lo único con lo que después se puede calcular a qué hora
+        // responde mejor esta audiencia — `scheduled_date` es una fecha
+        // sin hora, y `recommended_publish_time` es la hora que se sugirió,
+        // no a la que se publicó.
+        published_at: new Date().toISOString(),
       })
       .eq("id", itemId);
 

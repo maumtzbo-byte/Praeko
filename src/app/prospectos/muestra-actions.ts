@@ -272,3 +272,71 @@ export async function revisarMuestra(datos: {
     };
   }
 }
+
+/**
+ * Prende o apaga el agregado de comentarios de un cliente.
+ *
+ * Lo mueve el operador y no el cliente, a propósito: es una venta, y una
+ * venta se cierra hablando. El interruptor solo refleja lo que ya se
+ * acordó.
+ *
+ * `primer_agregado_at` se escribe una sola vez, la primera. Es el dato con
+ * el que después se ve quién lleva meses con un solo producto — el 62% de
+ * los clientes a los que no se les vendió nada en los primeros tres meses
+ * se fue antes de dos años.
+ */
+export async function moverAgregadoDeComentarios(datos: {
+  businessId: unknown;
+  activo: unknown;
+  precio: unknown;
+}): Promise<Resultado> {
+  if (!(await esOperador())) return { success: false, error: "Sin acceso." };
+
+  const { businessId, activo, precio } = datos;
+  if (typeof businessId !== "string" || !ES_UUID.test(businessId)) {
+    return { success: false, error: "Negocio no válido." };
+  }
+  if (typeof activo !== "boolean") return { success: false, error: "Valor no válido." };
+
+  const monto =
+    typeof precio === "number" && Number.isFinite(precio) && precio > 0
+      ? Math.round(precio)
+      : null;
+
+  const serviceRole = createServiceRoleClient();
+
+  const { data: actual } = await serviceRole
+    .from("subscriptions")
+    .select("primer_agregado_at")
+    .eq("business_id", businessId)
+    .maybeSingle();
+
+  if (!actual) return { success: false, error: "Ese negocio no tiene suscripción." };
+
+  const parche: {
+    agregado_comentarios: boolean;
+    agregado_comentarios_precio: number | null;
+    primer_agregado_at?: string;
+  } = {
+    agregado_comentarios: activo,
+    agregado_comentarios_precio: activo ? monto : null,
+  };
+  // Solo la primera vez. Si se apaga y se vuelve a prender, la fecha que
+  // importa sigue siendo la de la primera venta.
+  if (activo && !actual.primer_agregado_at) {
+    parche.primer_agregado_at = new Date().toISOString();
+  }
+
+  const { error } = await serviceRole
+    .from("subscriptions")
+    .update(parche)
+    .eq("business_id", businessId);
+
+  if (error) {
+    console.error("moverAgregadoDeComentarios falló", error);
+    return { success: false, error: "No se pudo guardar." };
+  }
+
+  revalidatePath("/clientes");
+  return { success: true };
+}

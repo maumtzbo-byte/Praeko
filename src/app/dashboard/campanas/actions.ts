@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { generateCampaignPlan, type StrategyAgentInput } from "@/lib/agents/strategy-script-agent";
 import { reviewContentBatch } from "@/lib/agents/brand-reviewer-agent";
 import { PLAN_LIMITS, type PlanKey } from "@/lib/plans/limits";
+import { instruccionDeDesempeno } from "@/lib/desempeno/resumen";
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -100,6 +101,7 @@ export async function createCampaign(
         business: businessInput,
         brand: brandInput,
         plan,
+        desempeno: await instruccionDeDesempeno(business.id),
         campaign: { name, brief, startDate: input.startDate, endDate: input.endDate },
       });
     } catch (err) {

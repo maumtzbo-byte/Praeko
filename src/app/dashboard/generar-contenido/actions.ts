@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { generateMonthlyStrategy, type StrategyAgentInput } from "@/lib/agents/strategy-script-agent";
 import { reviewContentBatch } from "@/lib/agents/brand-reviewer-agent";
 import { PLAN_LIMITS, type PlanKey } from "@/lib/plans/limits";
+import { instruccionDeDesempeno } from "@/lib/desempeno/resumen";
 
 type ActionResult<T = undefined> =
   | { success: true; data: T }
@@ -98,6 +99,10 @@ export async function generateContentPlan(
         business: businessInput,
         brand: brandInput,
         plan,
+        // Lo que funcionó de verdad en los meses anteriores. Nunca tumba la
+        // generación: si falla la lectura, se planea como siempre se planeó.
+        tienePortavoz: Boolean(brand?.portavoz && brand?.portavoz_aceptado_at),
+        desempeno: await instruccionDeDesempeno(business.id),
         startDate: startDate.toISOString().slice(0, 10),
         days,
       });

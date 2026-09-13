@@ -113,6 +113,8 @@ export type Database = {
           brand_values: string[]
           business_hours: Json
           business_id: string
+          portavoz: string | null
+          portavoz_aceptado_at: string | null
           color_palette: string[] | null
           created_at: string
           faqs: Json
@@ -147,6 +149,8 @@ export type Database = {
           brand_values?: string[]
           business_hours?: Json
           business_id: string
+          portavoz?: string | null
+          portavoz_aceptado_at?: string | null
           color_palette?: string[] | null
           created_at?: string
           faqs?: Json
@@ -181,6 +185,8 @@ export type Database = {
           brand_values?: string[]
           business_hours?: Json
           business_id?: string
+          portavoz?: string | null
+          portavoz_aceptado_at?: string | null
           color_palette?: string[] | null
           created_at?: string
           faqs?: Json
@@ -358,6 +364,7 @@ export type Database = {
           external_post_id: string | null
           format: Database["public"]["Enums"]["content_format"]
           id: string
+          published_at: string | null
           published_platform:
             | Database["public"]["Enums"]["social_platform"]
             | null
@@ -384,6 +391,7 @@ export type Database = {
           external_post_id?: string | null
           format: Database["public"]["Enums"]["content_format"]
           id?: string
+          published_at?: string | null
           published_platform?:
             | Database["public"]["Enums"]["social_platform"]
             | null
@@ -410,6 +418,7 @@ export type Database = {
           external_post_id?: string | null
           format?: Database["public"]["Enums"]["content_format"]
           id?: string
+          published_at?: string | null
           published_platform?:
             | Database["public"]["Enums"]["social_platform"]
             | null
@@ -634,6 +643,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      post_insights: {
+        Row: {
+          business_id: string
+          comments: number | null
+          content_calendar_id: string
+          horas_publicada: number
+          id: string
+          impressions: number | null
+          likes: number | null
+          medido_at: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          shares: number | null
+        }
+        Insert: {
+          business_id: string
+          comments?: number | null
+          content_calendar_id: string
+          horas_publicada: number
+          id?: string
+          impressions?: number | null
+          likes?: number | null
+          medido_at?: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          shares?: number | null
+        }
+        Update: {
+          business_id?: string
+          comments?: number | null
+          content_calendar_id?: string
+          horas_publicada?: number
+          id?: string
+          impressions?: number | null
+          likes?: number | null
+          medido_at?: string
+          platform?: Database["public"]["Enums"]["social_platform"]
+          shares?: number | null
+        }
+        Relationships: []
       }
       plans: {
         Row: {
@@ -869,8 +917,11 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          agregado_comentarios: boolean
+          agregado_comentarios_precio: number | null
           business_id: string
           created_at: string
+          primer_agregado_at: string | null
           current_period_end: string | null
           custom_carousels_per_month: number | null
           custom_images_per_month: number | null
@@ -886,10 +937,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          agregado_comentarios?: boolean
+          agregado_comentarios_precio?: number | null
           business_id: string
           created_at?: string
           current_period_end?: string | null
           custom_carousels_per_month?: number | null
+          primer_agregado_at?: string | null
           custom_images_per_month?: number | null
           custom_price_usd_cents?: number | null
           custom_video_max_seconds?: number | null
@@ -903,12 +957,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          agregado_comentarios?: boolean
+          agregado_comentarios_precio?: number | null
           business_id?: string
           created_at?: string
           current_period_end?: string | null
           id?: string
           is_beta_trial?: boolean
           plan_key?: Database["public"]["Enums"]["plan_key"]
+          primer_agregado_at?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -1025,6 +1082,42 @@ export type Database = {
           tipo?: string
           wa_id?: string
           wam_id?: string
+        }
+        Relationships: []
+      }
+      metas: {
+        Row: {
+          business_id: string
+          created_at: string
+          cumplida_at: string | null
+          id: string
+          metrica: string | null
+          para_fecha: string | null
+          texto: string
+          valor_inicial: number | null
+          valor_objetivo: number | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          cumplida_at?: string | null
+          id?: string
+          metrica?: string | null
+          para_fecha?: string | null
+          texto: string
+          valor_inicial?: number | null
+          valor_objetivo?: number | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          cumplida_at?: string | null
+          id?: string
+          metrica?: string | null
+          para_fecha?: string | null
+          texto?: string
+          valor_inicial?: number | null
+          valor_objetivo?: number | null
         }
         Relationships: []
       }
@@ -1188,7 +1281,12 @@ export type Database = {
       brand_asset_type: "logo" | "photo" | "video" | "template_reference"
       business_role: "owner" | "editor"
       campaign_status: "activa" | "completada" | "cancelada"
-      content_format: "reel" | "carrusel" | "imagen_unica" | "promocion"
+      content_format:
+        | "reel"
+        | "carrusel"
+        | "imagen_unica"
+        | "promocion"
+        | "portavoz"
       content_kind: "imagen" | "video"
       client_verdict: "aprobado" | "cambios"
       content_status:
@@ -1338,7 +1436,7 @@ export const Constants = {
       business_role: ["owner", "editor"],
       campaign_status: ["activa", "completada", "cancelada"],
       client_verdict: ["aprobado", "cambios"],
-      content_format: ["reel", "carrusel", "imagen_unica", "promocion"],
+      content_format: ["reel", "carrusel", "imagen_unica", "promocion", "portavoz"],
       content_kind: ["imagen", "video"],
       content_status: [
         "pendiente",

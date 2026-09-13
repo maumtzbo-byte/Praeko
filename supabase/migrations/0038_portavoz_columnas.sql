@@ -1,14 +1,10 @@
--- El formato de portavoz: alguien sosteniendo el producto y hablando de él.
+-- Las columnas del portavoz.
 --
--- Es el formato que más convierte en producto empacado, y el modelo que
--- hace falta ya se paga: Seedance 2.0 hace sincronía de labios a nivel de
--- fonema en más de ocho idiomas, y Kling también genera diálogo en español.
--- Lo que faltaba no era capacidad, era poder pedirlo.
---
--- Nota sobre el enum: en Postgres, un valor agregado con ALTER TYPE no se
--- puede USAR en la misma transacción que lo agrega. Aquí solo se agrega;
--- las filas que lo usen vienen después, en otra corrida.
-alter type content_format add value if not exists 'portavoz';
+-- Van en su propia migración y no junto al ALTER TYPE de 0037 por una
+-- regla de Postgres: un valor de enum agregado con ALTER TYPE no se puede
+-- USAR en la misma transacción que lo agrega. Aquí no se usa, así que
+-- juntas probablemente funcionarían — pero "probablemente" no es una buena
+-- propiedad para una migración, y separarlas cuesta nada.
 
 alter table brand_profiles
   -- Cómo es la persona que representa a esta marca.

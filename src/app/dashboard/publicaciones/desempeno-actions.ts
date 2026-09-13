@@ -136,11 +136,16 @@ export async function medirDesempeno(): Promise<Resultado> {
     }
 
     if (filas.length > 0) {
-      // `ignoreDuplicates` contra el índice de una-por-día: volver a
+      // `ignoreDuplicates` contra la restricción de una-por-día: volver a
       // apretar el botón el mismo día no duplica ni pisa lo medido.
+      //
+      // El conflicto se nombra sobre `medido_dia`, que es una columna
+      // generada y no una expresión en el índice: un upsert por lista de
+      // columnas no puede apuntar a una expresión, y con el índice de
+      // expresión esto fallaba en tiempo de ejecución.
       const { error } = await serviceRole
         .from("post_insights")
-        .upsert(filas, { onConflict: "content_calendar_id,medido_at", ignoreDuplicates: true });
+        .upsert(filas, { onConflict: "content_calendar_id,medido_dia", ignoreDuplicates: true });
 
       if (error) {
         console.error("medirDesempeno: no se pudo guardar", error);

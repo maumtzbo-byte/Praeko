@@ -42,13 +42,25 @@ create table post_insights (
   -- esto, el agente aprendería a preferir las piezas viejas.
   horas_publicada integer not null,
 
-  medido_at timestamptz not null default now()
+  medido_at timestamptz not null default now(),
+
+  -- El día de la medición, como columna real y no como expresión en el
+  -- índice. Dos razones, las dos descubiertas al correr esto de verdad:
+  --
+  --   · Postgres rechaza `medido_at::date` dentro de un índice porque el
+  --     cast de timestamptz a date depende de la zona horaria de la
+  --     sesión, o sea que no es IMMUTABLE. Anclarlo a UTC sí lo es.
+  --   · Una restricción única sobre una EXPRESIÓN no se puede nombrar
+  --     desde un upsert por lista de columnas, que es justo como la usa
+  --     el código que mide. Con la columna de verdad, el upsert funciona
+  --     como se lee.
+  medido_dia date generated always as ((medido_at at time zone 'UTC')::date) stored
 );
 
 -- Una medición por pieza por día. Medir dos veces el mismo día no agrega
 -- información y sí ensucia los promedios.
-create unique index post_insights_una_por_dia
-  on post_insights (content_calendar_id, (medido_at::date));
+alter table post_insights
+  add constraint post_insights_una_por_dia unique (content_calendar_id, medido_dia);
 
 create index post_insights_negocio_idx on post_insights (business_id, medido_at desc);
 

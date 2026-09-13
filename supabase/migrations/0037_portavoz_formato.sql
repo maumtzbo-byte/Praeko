@@ -1,0 +1,11 @@
+-- El formato de portavoz: alguien sosteniendo el producto y hablando de él.
+--
+-- Es el formato que más convierte en producto empacado, y el modelo que
+-- hace falta ya se paga: Seedance 2.0 hace sincronía de labios a nivel de
+-- fonema en más de ocho idiomas, y Kling también genera diálogo en español.
+-- Lo que faltaba no era capacidad, era poder pedirlo.
+--
+-- Nota sobre el enum: en Postgres, un valor agregado con ALTER TYPE no se
+-- puede USAR en la misma transacción que lo agrega. Aquí solo se agrega;
+-- las filas que lo usen vienen después, en otra corrida.
+alter type content_format add value if not exists 'portavoz';

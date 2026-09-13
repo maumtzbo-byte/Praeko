@@ -32,6 +32,15 @@ export interface GenerationJobHandle {
 export interface GenerationResult {
   status: "completed" | "failed";
   outputUrl?: string;
+  /** El primer cuadro del video, cuando el proveedor lo manda.
+   *
+   *  Existe para la revisión visual: Claude ve imágenes, no video, y sacar
+   *  cuadros de un archivo pide ffmpeg, que no corre en una función de
+   *  Vercel. La miniatura ya trae la mayoría de los defectos que importan
+   *  —un producto que no es el del cliente, una etiqueta con letras
+   *  inventadas, una mano deforme— porque el producto está en cuadro desde
+   *  el principio. No es todo, y es muchísimo mejor que nada. */
+  thumbnailUrl?: string;
   errorMessage?: string;
   costUsd: number;
 }

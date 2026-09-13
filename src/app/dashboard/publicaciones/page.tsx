@@ -23,6 +23,7 @@ export default async function PublicacionesPage() {
   const [
     { data: calendarItems },
     { data: inFlightGenerations },
+    { data: revisionesVisuales },
     { data: connections },
     { data: ligaMasReciente },
   ] = await Promise.all([
@@ -38,6 +39,15 @@ export default async function PublicacionesPage() {
       .select("id, content_calendar_id")
       .eq("business_id", business.id)
       .in("job_status", ["queued", "processing"]),
+    // Los veredictos del revisor visual de las piezas ya terminadas. Va
+    // como consulta aparte de la de arriba porque aquella filtra por
+    // trabajos EN CURSO y esta necesita justo los contrarios.
+    supabase
+      .from("generations")
+      .select("content_calendar_id, quality_review_result, revision_problemas, mismo_producto, revisada_at")
+      .eq("business_id", business.id)
+      .eq("job_status", "completed")
+      .not("revisada_at", "is", null),
     supabase
       .from("social_connections")
       .select("id, platform, external_account_name")
@@ -113,14 +123,30 @@ export default async function PublicacionesPage() {
   // la única condición dura: sin archivo no hay nada que publicar. El
   // veredicto del cliente viaja aparte para que el componente decida qué
   // ofrecer marcado, qué apagado y qué ni enseñar.
+  const revisionPorPieza = new Map(
+    (revisionesVisuales ?? [])
+      .filter((r) => r.content_calendar_id)
+      .map((r) => [r.content_calendar_id!, r]),
+  );
+
   const publicables: PiezaPublicable[] = (calendarItems ?? [])
     .filter((item) => item.status === "generada")
-    .map((item) => ({
-      id: item.id,
-      titulo: item.topic,
-      fecha: item.scheduled_date,
-      veredicto: item.client_verdict,
-    }));
+    .map((item) => {
+      const revision = revisionPorPieza.get(item.id);
+      return {
+        id: item.id,
+        titulo: item.topic,
+        fecha: item.scheduled_date,
+        veredicto: item.client_verdict,
+        revisionVisual: revision
+          ? {
+              veredicto: revision.quality_review_result,
+              problemas: revision.revision_problemas,
+              mismoProducto: revision.mismo_producto,
+            }
+          : null,
+      };
+    });
 
   return (
     <div>

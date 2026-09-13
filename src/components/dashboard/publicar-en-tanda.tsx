@@ -30,11 +30,20 @@ import { PlasticPanel } from "@/components/dashboard/plastic-panel";
  * publicadas de verdad en vez de doce a medias.
  */
 
+export type RevisionVisualDePieza = {
+  veredicto: "aprobado" | "necesita_revision_humana" | "rechazado" | null;
+  problemas: string[];
+  mismoProducto: boolean | null;
+};
+
 export type PiezaPublicable = {
   id: string;
   titulo: string;
   fecha: string;
   veredicto: "aprobado" | "cambios" | null;
+  /** Lo que vio el revisor visual. null = nadie la ha mirado todavía
+   *  (un video sin miniatura, o una pieza anterior a que esto existiera). */
+  revisionVisual: RevisionVisualDePieza | null;
 };
 
 export type CuentaConectada = {
@@ -58,15 +67,42 @@ export function PublicarEnTanda({
   piezas: PiezaPublicable[];
   cuentas: CuentaConectada[];
 }) {
-  const aprobadas = useMemo(() => piezas.filter((p) => p.veredicto === "aprobado"), [piezas]);
-  const sinRevisar = useMemo(() => piezas.filter((p) => p.veredicto === null), [piezas]);
+  /** Las que el revisor visual rechazó. Salen de la lista igual que las
+   *  que el cliente mandó cambiar, y por el mismo motivo: una pieza con un
+   *  defecto de generación —un producto que no es el suyo, una etiqueta
+   *  con letras inventadas— publicada bajo la marca del cliente hace más
+   *  daño que no publicar nada ese día.
+   *
+   *  Se filtran ANTES que todo lo demás, así que una pieza rechazada no
+   *  aparece ni siquiera si el cliente la aprobó: el cliente vio el guion
+   *  y el concepto, no necesariamente los seis dedos. */
+  const defectuosas = useMemo(
+    () => piezas.filter((p) => p.revisionVisual?.veredicto === "rechazado"),
+    [piezas],
+  );
+  const publicables = useMemo(
+    () => piezas.filter((p) => p.revisionVisual?.veredicto !== "rechazado"),
+    [piezas],
+  );
+
+  const aprobadas = useMemo(
+    () => publicables.filter((p) => p.veredicto === "aprobado"),
+    [publicables],
+  );
+  const sinRevisar = useMemo(
+    () => publicables.filter((p) => p.veredicto === null),
+    [publicables],
+  );
   /** Las que el cliente mandó cambiar NO se ofrecen, ni apagadas.
    *
    *  Publicar una pieza que el cliente pidió rehacer es el peor error
    *  posible de este panel: rompe exactamente la promesa que la liga de
    *  aprobación acaba de hacerle. Que ni siquiera aparezcan como casilla
    *  es más seguro que dejarlas apagadas esperando un clic distraído. */
-  const conCambios = useMemo(() => piezas.filter((p) => p.veredicto === "cambios"), [piezas]);
+  const conCambios = useMemo(
+    () => publicables.filter((p) => p.veredicto === "cambios"),
+    [publicables],
+  );
 
   // Arrancan marcadas las aprobadas y apagadas las que el cliente no ha
   // visto: publicar sin su visto bueno es justo lo que la liga existe para
@@ -116,7 +152,10 @@ export function PublicarEnTanda({
     setCorriendo(false);
   }
 
-  if (piezas.length === 0 && conCambios.length === 0) return null;
+  // `defectuosas` cuenta aquí: un mes donde el revisor rechazó todo
+  // dejaría la tarjeta sin pintar, y el aviso de por qué no hay nada que
+  // publicar es justo lo que hay que ver ese día.
+  if (piezas.length === 0 && conCambios.length === 0 && defectuosas.length === 0) return null;
 
   const sinCuentas = cuentas.length === 0;
 
@@ -143,6 +182,31 @@ export function PublicarEnTanda({
           </p>
         </div>
       </div>
+
+      {defectuosas.length > 0 && (
+        <div className="mt-3 rounded-xl bg-red-50 px-3 py-2.5 text-[13px] leading-snug text-red-900">
+          <p className="flex items-start gap-2 font-medium">
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
+            <span>
+              {defectuosas.length === 1
+                ? "1 pieza tiene un defecto de generación y no aparece aquí:"
+                : `${defectuosas.length} piezas tienen defectos de generación y no aparecen aquí:`}
+            </span>
+          </p>
+          <ul className="mt-1.5 space-y-1 pl-5">
+            {defectuosas.map((pieza) => (
+              <li key={pieza.id}>
+                <span className="font-medium">{pieza.titulo}</span>
+                {pieza.revisionVisual?.mismoProducto === false && " — no es el producto del cliente"}
+                {pieza.revisionVisual?.problemas.length ? (
+                  <span className="text-red-800">: {pieza.revisionVisual.problemas.join("; ")}</span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1.5 text-red-800">Vuelve a generarlas antes de publicar.</p>
+        </div>
+      )}
 
       {conCambios.length > 0 && (
         <p className="mt-3 flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2 text-[13px] leading-snug text-amber-900">
@@ -202,8 +266,18 @@ export function PublicarEnTanda({
                     >
                       {marcada && <Check className="h-3 w-3" strokeWidth={3} />}
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-[13px] text-zinc-800">
-                      {pieza.titulo}
+                    <span className="min-w-0 flex-1 text-[13px] text-zinc-800">
+                      <span className="block truncate">{pieza.titulo}</span>
+                      {/* Las dudosas sí se ofrecen —el revisor no está
+                          seguro, no las condenó— pero con el motivo a la
+                          vista, que es lo que convierte "revísala" en algo
+                          accionable. */}
+                      {pieza.revisionVisual?.veredicto === "necesita_revision_humana" &&
+                        pieza.revisionVisual.problemas.length > 0 && (
+                          <span className="block truncate text-[11px] text-amber-700">
+                            Revísala: {pieza.revisionVisual.problemas.join("; ")}
+                          </span>
+                        )}
                     </span>
                     <span className="shrink-0 text-[11px] text-zinc-500">
                       {diaCorto(pieza.fecha)}

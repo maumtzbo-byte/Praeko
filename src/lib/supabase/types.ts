@@ -520,7 +520,7 @@ export type Database = {
           sitio_web: string | null
           preguntan: string | null
           vende: string | null
-          whatsapp: string
+          whatsapp: string | null
         }
         Insert: {
           ciudad?: string | null
@@ -538,7 +538,7 @@ export type Database = {
           sitio_web?: string | null
           preguntan?: string | null
           vende?: string | null
-          whatsapp: string
+          whatsapp?: string | null
         }
         Update: {
           ciudad?: string | null
@@ -570,8 +570,11 @@ export type Database = {
           duration_seconds: number
           id: string
           job_status: string
+          mismo_producto: boolean | null
           provider: string
           provider_job_id: string | null
+          revisada_at: string | null
+          revision_problemas: string[]
           quality_review_result:
             | Database["public"]["Enums"]["quality_review_result"]
             | null
@@ -586,8 +589,11 @@ export type Database = {
           duration_seconds?: number
           id?: string
           job_status?: string
+          mismo_producto?: boolean | null
           provider: string
           provider_job_id?: string | null
+          revisada_at?: string | null
+          revision_problemas?: string[]
           quality_review_result?:
             | Database["public"]["Enums"]["quality_review_result"]
             | null
@@ -602,8 +608,11 @@ export type Database = {
           duration_seconds?: number
           id?: string
           job_status?: string
+          mismo_producto?: boolean | null
           provider?: string
           provider_job_id?: string | null
+          revisada_at?: string | null
+          revision_problemas?: string[]
           quality_review_result?:
             | Database["public"]["Enums"]["quality_review_result"]
             | null
@@ -1018,6 +1027,56 @@ export type Database = {
           wam_id?: string
         }
         Relationships: []
+      }
+      muestras: {
+        Row: {
+          costo_usd: number
+          created_at: string
+          estilo: string | null
+          id: string
+          job_status: string
+          lead_id: string
+          prompt: string
+          proveedor: string
+          provider_job_id: string | null
+          segundos: number | null
+          url: string | null
+        }
+        Insert: {
+          costo_usd?: number
+          created_at?: string
+          estilo?: string | null
+          id?: string
+          job_status?: string
+          lead_id: string
+          prompt: string
+          proveedor: string
+          provider_job_id?: string | null
+          segundos?: number | null
+          url?: string | null
+        }
+        Update: {
+          costo_usd?: number
+          created_at?: string
+          estilo?: string | null
+          id?: string
+          job_status?: string
+          lead_id?: string
+          prompt?: string
+          proveedor?: string
+          provider_job_id?: string | null
+          segundos?: number | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muestras_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       whatsapp_exits: {
         Row: {

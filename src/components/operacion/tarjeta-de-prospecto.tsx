@@ -13,6 +13,7 @@ import {
   TONO_DE_ESTADO,
   type Estado,
 } from "@/lib/operacion/prospectos";
+import { PanelDeMuestra, type MuestraDelProspecto } from "./muestra-del-prospecto";
 import { cn } from "@/lib/utils";
 
 export type Prospecto = {
@@ -20,7 +21,7 @@ export type Prospecto = {
   nombre: string;
   negocio: string;
   giro: string;
-  whatsapp: string;
+  whatsapp: string | null;
   ligaWhatsapp: string | null;
   instagram: string | null;
   sitioWeb: string | null;
@@ -34,6 +35,8 @@ export type Prospecto = {
   origen: string | null;
   cuando: string;
   dias: number;
+  /** Las muestras que ya se le produjeron, más nueva primero. */
+  muestras: MuestraDelProspecto[];
 };
 
 /** Un dato del prospecto. Los que no llegaron no se pintan: una lista de
@@ -142,9 +145,13 @@ export function TarjetaDeProspecto({ prospecto }: { prospecto: Prospecto }) {
               WhatsApp
             </Button>
           </a>
-        ) : (
+        ) : prospecto.whatsapp ? (
           <span className="text-sm text-zinc-500">
             WhatsApp inválido: {prospecto.whatsapp}
+          </span>
+        ) : (
+          <span className="text-sm text-zinc-500">
+            Sin teléfono todavía — escríbele por Instagram.
           </span>
         )}
         {prospecto.instagram && (
@@ -182,27 +189,11 @@ export function TarjetaDeProspecto({ prospecto }: { prospecto: Prospecto }) {
         </dl>
       )}
 
-      {prospecto.fotos.length > 0 && (
-        <div className="mt-5">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
-            Fotos que subió
-          </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {prospecto.fotos.map((url) => (
-              <a
-                key={url}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-20 w-20 overflow-hidden rounded-xl bg-zinc-100 shadow-[var(--relieve-hundido)]"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="" className="h-full w-full object-cover" />
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+      <PanelDeMuestra
+        leadId={prospecto.id}
+        fotos={prospecto.fotos}
+        muestras={prospecto.muestras}
+      />
 
       <div className="mt-5 border-t border-zinc-100 pt-5">
         <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">Mover a</p>

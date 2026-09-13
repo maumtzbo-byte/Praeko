@@ -13,6 +13,8 @@ import { isPublishablePlatform } from "@/lib/social";
 import { getValidAccessToken } from "@/lib/social/tokens";
 import { resolveEffectiveLimits, usageKindFor } from "@/lib/plans/custom-plan";
 import type { Database } from "@/lib/supabase/types";
+import { revisarPieza } from "@/lib/agents/revisor-visual";
+import { conLimite } from "@/lib/espera";
 
 // publishContentNow polls Meta's Instagram container status inline (see
 // waitForInstagramContainerReady in src/lib/social/meta.ts) before it can
@@ -78,6 +80,20 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
     const periodMonthStr = periodMonth.toISOString().slice(0, 10);
     const usageKind = usageKindFor(item.format, item.content_kind, limits);
     const isVideo = usageKind === "video";
+    // Los segundos que de verdad se van a pedir y a pagar. Es UNA sola
+    // cifra y tiene que usarse en los tres lugares: la reserva del plan, la
+    // petición a fal.ai y el renglón de `generations`. Antes la reserva
+    // usaba esta y las otras dos usaban `item.target_duration_seconds` en
+    // crudo, con dos consecuencias que costaban dinero:
+    //
+    //   · El calendario se planea con los límites del plan de ESE momento.
+    //     Si el cliente baja de paquete después, las piezas conservan los
+    //     segundos viejos: se le cobraban 10 al plan y se le pedían 20 a
+    //     fal.ai, o sea el doble de costo del que quedaba registrado.
+    //   · Con `target_duration_seconds` en null, la reserva cobraba
+    //     `videoAvgSeconds` pero el renglón guardaba 0 — y el reembolso de
+    //     un video fallido lee esa columna, así que devolvía cero. El
+    //     presupuesto de segundos se fugaba en cada falla.
     const requestedSeconds = isVideo
       ? Math.min(item.target_duration_seconds ?? plan.videoAvgSeconds, limits.videoMaxSeconds)
       : 0;
@@ -150,7 +166,7 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
         contentKind: item.content_kind,
         topic: item.topic,
         script: item.script ?? item.topic,
-        targetDurationSeconds: item.target_duration_seconds,
+        targetDurationSeconds: isVideo ? requestedSeconds : null,
         brandContext,
         referenceAssetUrls,
         videoProvider: plan.videoProvider,
@@ -170,7 +186,7 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
         business_id: item.business_id,
         content_calendar_id: item.id,
         content_kind: item.content_kind,
-        duration_seconds: item.target_duration_seconds ?? 0,
+        duration_seconds: requestedSeconds,
         provider: item.content_kind === "video" ? plan.videoProvider : "fal.ai",
         provider_job_id: handle.providerJobId,
         job_status: "queued",
@@ -194,6 +210,12 @@ export async function generateMediaForContent(itemId: string): Promise<ActionRes
     return { success: false, error: "No se pudo generar el contenido. Intenta de nuevo." };
   }
 }
+
+/** Cuánto se espera al revisor visual. Más largo que LIMITE_MS porque del
+ *  otro lado hay un modelo mirando una imagen, y más corto que el
+ *  maxDuration de la página para que un revisor lento no tumbe la
+ *  actualización de estado que ya se hizo bien. */
+const LIMITE_REVISION_MS = 30_000;
 
 /** Polls fal.ai for one generation job and, if it just finished, writes the
  * result back — storage_path on `generations`, status "generada"/"fallida"
@@ -316,6 +338,19 @@ export async function refreshMediaGenerationStatus(
         ? serviceRole.from("content_calendar").update({ status: "generada" }).eq("id", generation.content_calendar_id)
         : Promise.resolve(),
     ]);
+
+    // Mirar la pieza. Va DESPUÉS de marcarla completada y en su propio
+    // try/catch a propósito: la pieza ya existe y ya se pagó, así que un
+    // fallo del revisor —la API caída, un formato que no puede leer— no
+    // puede dejarla en el limbo. Sin revisión, se queda como estaba antes
+    // de que esto existiera.
+    await revisarGeneracion(serviceRole, {
+      generationId,
+      businessId: generation.business_id,
+      contentKind: generation.content_kind,
+      outputUrl: result.outputUrl,
+      thumbnailUrl: result.thumbnailUrl,
+    });
 
     return { success: true, data: { jobStatus: "completed" } };
   } catch (err) {
@@ -549,5 +584,85 @@ export async function getContentDetail(itemId: string): Promise<ActionResult<Con
   } catch (err) {
     console.error("getContentDetail failed", err);
     return { success: false, error: "No se pudo cargar el detalle. Intenta de nuevo." };
+  }
+}
+
+
+/**
+ * Corre el revisor visual sobre una pieza recién terminada y guarda el
+ * veredicto.
+ *
+ * Nunca lanza. Ver la llamada para el porqué.
+ *
+ * Un video sin miniatura se queda sin revisar y es correcto: Claude ve
+ * imágenes, no video, y sacar cuadros pide ffmpeg. Se marca con
+ * `revisada_at` en null, que es distinto de "aprobada" — así la pantalla
+ * puede decir "sin revisar" en vez de dar por buena una pieza que nadie
+ * miró.
+ */
+async function revisarGeneracion(
+  serviceRole: ReturnType<typeof createServiceRoleClient>,
+  {
+    generationId,
+    businessId,
+    contentKind,
+    outputUrl,
+    thumbnailUrl,
+  }: {
+    generationId: string;
+    businessId: string;
+    contentKind: "imagen" | "video";
+    outputUrl?: string;
+    thumbnailUrl?: string;
+  },
+): Promise<void> {
+  // De una imagen se mira la imagen; de un video, la miniatura.
+  const urlPieza = contentKind === "video" ? thumbnailUrl : outputUrl;
+  if (!urlPieza) return;
+
+  try {
+    const [{ data: business }, { data: referencia }] = await Promise.all([
+      serviceRole.from("businesses").select("name").eq("id", businessId).maybeSingle(),
+      // La foto real del producto, que es contra lo que se compara. Sin
+      // ella la revisión sigue sirviendo para defectos de generación; con
+      // ella además detecta el error más caro, que es un producto que se
+      // parece al del cliente pero no es el suyo.
+      serviceRole
+        .from("brand_assets")
+        .select("storage_path")
+        .eq("business_id", businessId)
+        .eq("asset_type", "photo")
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    let urlReferencia: string | undefined;
+    if (referencia) {
+      const { data: firmada } = await serviceRole.storage
+        .from("brand-assets")
+        .createSignedUrl(referencia.storage_path, 600);
+      urlReferencia = firmada?.signedUrl;
+    }
+
+    const revision = await conLimite(
+      revisarPieza({
+        urlPieza,
+        urlReferencia,
+        marca: business?.name ?? "la marca",
+      }),
+      LIMITE_REVISION_MS,
+    );
+
+    await serviceRole
+      .from("generations")
+      .update({
+        quality_review_result: revision.veredicto,
+        revision_problemas: revision.problemas,
+        mismo_producto: revision.mismoProducto,
+        revisada_at: new Date().toISOString(),
+      })
+      .eq("id", generationId);
+  } catch (err) {
+    console.error("revisarGeneracion falló", err);
   }
 }

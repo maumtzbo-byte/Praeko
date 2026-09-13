@@ -56,7 +56,15 @@ export function esEstado(valor: string): valor is Estado {
  * cómo abrir la conversación, y trae el nombre de la marca porque es lo
  * que hace que no se lea como un mensaje masivo.
  */
-export function ligaAlProspecto(whatsapp: string, nombre: string, negocio: string): string | null {
+export function ligaAlProspecto(
+  whatsapp: string | null,
+  nombre: string,
+  negocio: string,
+): string | null {
+  // Una marca que se agregó a mano desde Instagram todavía no tiene
+  // teléfono: el número llega cuando contesta. Ahí se le escribe por DM,
+  // no por WhatsApp.
+  if (!whatsapp) return null;
   const digitos = normalizaWhatsapp(whatsapp);
   if (digitos.length !== 10) return null;
 

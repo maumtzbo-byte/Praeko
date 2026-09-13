@@ -8,14 +8,34 @@ import { Coffee, Droplet, Flame, Gem, Leaf, Pill, type LucideIcon } from "lucide
 // Eran seis giros (gimnasio, restaurante, estética...) y ahora son seis
 // categorías de producto, las mismas del filtro: forma rígida, referencia
 // que se respeta.
-const EXAMPLE_VIDEOS: { industry: string; caption: string; icon: LucideIcon }[] = [
-  { industry: "Skincare", caption: "El serum cayendo en cámara lenta", icon: Droplet },
-  { industry: "Café de especialidad", caption: "La bolsa y la taza, luz de mañana", icon: Coffee },
-  { industry: "Tés e infusiones", caption: "El agua tiñéndose, de cerca", icon: Leaf },
-  { industry: "Velas y aromas", caption: "La mecha prendiendo en penumbra", icon: Flame },
-  { industry: "Suplementos", caption: "El frasco girando sobre mármol", icon: Pill },
-  { industry: "Joyería", caption: "La pieza en la mano, contraluz", icon: Gem },
+const EXAMPLE_VIDEOS: { industry: string; caption: string; icon: LucideIcon; archivo: string }[] = [
+  { industry: "Skincare", caption: "El serum cayendo en cámara lenta", icon: Droplet, archivo: "skincare" },
+  { industry: "Café de especialidad", caption: "La bolsa y la taza, luz de mañana", icon: Coffee, archivo: "cafe" },
+  { industry: "Tés e infusiones", caption: "El agua tiñéndose, de cerca", icon: Leaf, archivo: "te" },
+  { industry: "Velas y aromas", caption: "La mecha prendiendo en penumbra", icon: Flame, archivo: "velas" },
+  { industry: "Suplementos", caption: "El frasco girando sobre mármol", icon: Pill, archivo: "suplementos" },
+  { industry: "Joyería", caption: "La pieza en la mano, contraluz", icon: Gem, archivo: "joyeria" },
 ];
+
+/**
+ * Qué tarjetas ya tienen video de verdad.
+ *
+ * Este es el hueco más grande de la portada y ninguna redacción lo tapa:
+ * la página vende un producto VISUAL y no enseña ni un segundo de video.
+ * Quien llega tiene que creernos de palabra, y en un servicio donde la
+ * única pregunta real es "¿se ve bien?", eso cuesta prospectos.
+ *
+ * Se resuelve soltando archivos, no tocando código: pones
+ * `public/videos/muestra-{archivo}.mp4` —y opcionalmente `.webm`, que pesa
+ * menos— agregas su nombre aquí, y esa tarjeta deja de ser un degradado.
+ * Las que no tengan video siguen como están, así que la fila se puede
+ * llenar de una en una en vez de esperar a tener las seis.
+ *
+ * La lista existe por lo mismo que `ESTILOS_CON_FOTO` en estilos.ts: sin
+ * ella el navegador pediría seis archivos que no existen y cada tarjeta
+ * pintaría un hueco roto.
+ */
+const MUESTRAS_CON_VIDEO: string[] = [];
 
 // Same sky-blue family as the Hero, a two-tone diagonal per card instead of
 // a flat fill or a stock photo — enough depth for the row to read as
@@ -35,25 +55,51 @@ function VideoCard({
   caption,
   gradient,
   Icon,
+  archivo,
 }: {
   industry: string;
   caption: string;
   gradient: string;
   Icon: LucideIcon;
+  archivo: string;
 }) {
+  const conVideo = MUESTRAS_CON_VIDEO.includes(archivo);
+
   return (
     <div
       className="relative aspect-[9/16] w-48 shrink-0 overflow-hidden rounded-2xl md:w-56 md:rounded-3xl"
       style={{ backgroundImage: gradient }}
     >
+      {/* Con video de verdad, el degradado queda de fondo mientras carga.
+          `muted` + `playsInline` son obligatorios para que iOS lo deje
+          reproducir solo; sin ellos la tarjeta se queda en el primer
+          cuadro justo en el dispositivo donde más gente lo va a ver. */}
+      {conVideo && (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="none"
+          aria-label={`Ejemplo de ${industry}`}
+          className="absolute inset-0 h-full w-full object-cover"
+        >
+          <source src={`/videos/muestra-${archivo}.webm`} type="video/webm" />
+          <source src={`/videos/muestra-${archivo}.mp4`} type="video/mp4" />
+        </video>
+      )}
       {/* The industry's own icon, oversized and barely-there — gives each
           card a reason to look different from the others beyond just its
           color, without pretending it's a real screenshot. */}
-      <Icon
-        aria-hidden="true"
-        strokeWidth={1.25}
-        className="pointer-events-none absolute -bottom-6 -right-6 h-32 w-32 rotate-[-8deg] text-white/[0.14] md:h-36 md:w-36"
-      />
+      {/* El ícono gigante es el relleno de una tarjeta sin video. Con
+          video encima estorba, así que desaparece. */}
+      {!conVideo && (
+        <Icon
+          aria-hidden="true"
+          strokeWidth={1.25}
+          className="pointer-events-none absolute -bottom-6 -right-6 h-32 w-32 rotate-[-8deg] text-white/[0.14] md:h-36 md:w-36"
+        />
+      )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/5 to-black/20" />
       <p className="absolute left-3 top-3 text-[10px] font-medium text-white/80 md:left-4 md:top-4">{industry}</p>
       {/* Aquí había un botón de play encima de cada tarjeta. No reproducía
@@ -103,6 +149,7 @@ export default function VideoShowcase() {
               caption={video.caption}
               gradient={CARD_GRADIENTS[i % CARD_GRADIENTS.length]}
               Icon={video.icon}
+              archivo={video.archivo}
             />
           ))}
         </div>

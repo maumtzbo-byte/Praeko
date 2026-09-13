@@ -7,6 +7,7 @@ import { estilosPara, tituloDeEstilo } from "@/lib/marketing/estilos";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { ListaDeProspectos, type Prospecto } from "@/components/operacion/lista-de-prospectos";
 import { ImportarConversacion } from "@/components/operacion/importar-conversacion";
+import { AgregarMarca } from "@/components/operacion/agregar-marca";
 import {
   SalidasAWhatsapp,
   type ResumenDeSalidas,
@@ -177,7 +178,12 @@ export default async function ProspectosPage() {
 
   const desde = inicioDeVentana();
 
-  const [{ data: filas, error }, { data: salidas }, { data: mensajes }] = await Promise.all([
+  const [
+    { data: filas, error },
+    { data: salidas },
+    { data: mensajes },
+    { data: todasLasMuestras },
+  ] = await Promise.all([
     supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(TOPE),
     // Las salidas no bloquean la pantalla: si la tabla todavía no existe
     // —la migración 0031 se corre aparte— esto devuelve error y el resumen
@@ -188,6 +194,10 @@ export default async function ProspectosPage() {
       .select("telefono, nombre_perfil, texto, tipo, entrante, enviado_at")
       .order("enviado_at", { ascending: false })
       .limit(TOPE_MENSAJES),
+    supabase
+      .from("muestras")
+      .select("id, lead_id, job_status, url, costo_usd")
+      .order("created_at", { ascending: false }),
   ]);
 
   if (error) {
@@ -229,9 +239,19 @@ export default async function ProspectosPage() {
       .from("leads")
       .select("whatsapp")
       .in("whatsapp", telefonosDeMensajes);
-    conProspecto = new Set((yaSon ?? []).map((l) => l.whatsapp));
+    // `flatMap` y no `map`: desde que una marca se puede agregar a mano
+    // desde Instagram, `whatsapp` puede venir en null, y un null dentro
+    // del Set no casa con nada pero sí ensucia el tipo.
+    conProspecto = new Set((yaSon ?? []).flatMap((l) => (l.whatsapp ? [l.whatsapp] : [])));
   }
   const bandeja = armarBandeja(mensajes ?? [], conProspecto);
+
+  const muestrasPorLead = new Map<string, NonNullable<typeof todasLasMuestras>>();
+  for (const muestra of todasLasMuestras ?? []) {
+    const previas = muestrasPorLead.get(muestra.lead_id);
+    if (previas) previas.push(muestra);
+    else muestrasPorLead.set(muestra.lead_id, [muestra]);
+  }
 
   const prospectos: Prospecto[] = leads.map((lead) => {
     const catalogo = estilosPara(lead.giro);
@@ -263,6 +283,12 @@ export default async function ProspectosPage() {
       origen: lead.origen,
       cuando: FECHA.format(new Date(lead.created_at)),
       dias: diasDesde(lead.created_at),
+      muestras: (muestrasPorLead.get(lead.id) ?? []).map((m) => ({
+        id: m.id,
+        estado: m.job_status,
+        url: m.url,
+        costoUsd: Number(m.costo_usd),
+      })),
     };
   });
 
@@ -284,7 +310,8 @@ export default async function ProspectosPage() {
         <ConversacionesSinProspecto hilos={bandeja} />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <AgregarMarca />
         <ImportarConversacion />
       </div>
 

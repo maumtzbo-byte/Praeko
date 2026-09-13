@@ -1,3 +1,4 @@
+import { TARIFA_IMAGEN, TARIFA_VIDEO_POR_SEGUNDO, segundosQueAcepta } from "./tarifas";
 import type {
   GenerationJobHandle,
   GenerationJobStatus,
@@ -52,41 +53,9 @@ const VIDEO_MODEL_SLUGS: Record<VideoGenerationRequest["provider"], { textToVide
 const IMAGE_MODEL_SLUG = "fal-ai/flux/dev";
 const IMAGE_EDIT_MODEL_SLUG = "fal-ai/flux/dev/image-to-image";
 
-/**
- * Lo que fal.ai cobra por cada generación, en dólares.
- *
- * `fetchResult` devolvía `costUsd: 0` en sus tres salidas, así que la
- * columna `cost_usd` de `generations` se llenaba de ceros: el costo de
- * producción —el único número que dice si un plan deja dinero— no existía
- * en ningún lado. Y no es un dato que haga falta estimar: fal.ai cobra por
- * segundo de video a una tarifa publicada, y los segundos los pedimos
- * nosotros.
- *
- * Tarifas verificadas el 2026-09-11 contra las páginas de cada modelo en
- * fal.ai. Si fal.ai las mueve, esto queda viejo en silencio; por eso están
- * juntas y fechadas, y no repartidas por el archivo.
- *
- * Kling v3 Pro cobra $0.112/s sin audio y $0.168/s con audio. Va con la de
- * audio porque los paquetes prometen video con audio.
- *
- * Seedance 2.0 a 720p con audio cuesta $0.3034/s: casi el doble que Kling.
- * Eso importa porque el plan Max es el único que lo usa (ver
- * src/lib/plans/limits.ts) y es también el que más segundos otorga —22
- * videos × 20 s = 440 s, o sea ~$133 USD de generación contra $399 USD de
- * precio. El plan más caro es el de peor margen, y hasta ahora eso no se
- * veía porque el costo se guardaba en cero.
- */
-const TARIFA_VIDEO_POR_SEGUNDO: Record<string, number> = {
-  "fal-ai/kling-video/v3/pro/text-to-video": 0.168,
-  "fal-ai/kling-video/v3/pro/image-to-video": 0.168,
-  "bytedance/seedance-2.0/text-to-video": 0.3034,
-  "bytedance/seedance-2.0/image-to-video": 0.3034,
-};
-
-/** Flux dev cobra $0.025 por megapixel, redondeando hacia arriba. No le
- *  mandamos `image_size`, así que sale el tamaño por defecto del endpoint,
- *  que queda por debajo de un megapixel y se cobra como uno. */
-const TARIFA_IMAGEN = 0.025;
+// Las tarifas viven en ./tarifas.ts: se necesitan para calcular márgenes
+// y estimar muestras, y este archivo lee la llave de API, así que no puede
+// importarse desde donde sea. Ver el porqué completo allá.
 
 interface FalQueueSubmitResponse {
   request_id: string;
@@ -223,12 +192,19 @@ export class FalGenerationProvider implements GenerationProvider {
     // trusting a default that fal.ai could change later.
     const isSeedance = request.provider === "seedance-2.0-standard-720p";
 
+    // Kling no acepta más de 15 segundos: pedirle 20 no da un video corto,
+    // da un error de fal.ai con el cupo del plan ya reservado. Se acota
+    // aquí y no en quien llama, para que ningún camino nuevo se salte el
+    // tope. El costo se calcula con los segundos ACOTADOS, que son los que
+    // se van a cobrar.
+    const segundos = segundosQueAcepta(request.provider, request.durationSeconds);
+
     return this.submitToQueue(modelSlug, {
       prompt: `${request.brandContext}\n\n${request.prompt}`,
-      duration: request.durationSeconds,
+      duration: segundos,
       ...(isSeedance ? { resolution: "720p" } : {}),
       ...(hasReference ? { image_url: request.referenceAssetUrls[0] } : {}),
-    }, request.durationSeconds);
+    }, segundos);
   }
 
   async submitImage(request: ImageGenerationRequest): Promise<GenerationJobHandle> {
@@ -274,6 +250,17 @@ export class FalGenerationProvider implements GenerationProvider {
     if (!outputUrl) {
       return { status: "failed", errorMessage: "fal.ai response had no recognizable output URL.", costUsd: 0 };
     }
-    return { status: "completed", outputUrl, costUsd: costoUsd(modelSlug, segundos) };
+
+    // La miniatura llega con distintos nombres según el modelo y a veces
+    // no llega. Se buscan las tres formas conocidas y si no hay ninguna se
+    // sigue sin ella: la revisión visual se salta el video, que es
+    // exactamente como estaba antes, no un error.
+    const thumbnailUrl =
+      (data.thumbnail_url as string | undefined) ??
+      ((data.thumbnail as { url?: string } | undefined)?.url) ??
+      ((data.image as { url?: string } | undefined)?.url) ??
+      (video?.url ? undefined : outputUrl);
+
+    return { status: "completed", outputUrl, thumbnailUrl, costUsd: costoUsd(modelSlug, segundos) };
   }
 }

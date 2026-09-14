@@ -2,7 +2,9 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
-import { isSocialPlatform, SOCIAL_PLATFORM_LABELS, type ConnectableAccount } from "@/lib/social";
+import { isSocialPlatform, SOCIAL_PLATFORM_LABELS } from "@/lib/social";
+import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
+import { resolverPendiente } from "../pendiente";
 import { confirmSocialAccount } from "./actions";
 
 const PENDING_COOKIE = "social_oauth_pending";
@@ -12,17 +14,12 @@ export default async function ChooseAccountPage({ params }: { params: Promise<{ 
   if (!isSocialPlatform(platformParam)) redirect("/dashboard/redes-sociales?error=unknown_platform");
   const platform = platformParam;
 
+  // La cookie ya solo trae un id; las cuentas (con sus tokens) viven del
+  // lado del servidor. El negocio sale de la sesión, no de la cookie.
+  const { business } = await getCurrentBusiness();
   const cookieStore = await cookies();
-  const pendingCookie = cookieStore.get(PENDING_COOKIE)?.value;
-  if (!pendingCookie) redirect("/dashboard/redes-sociales?error=oauth_failed");
-
-  let pending: { businessId: string; platform: string; accounts: ConnectableAccount[] };
-  try {
-    pending = JSON.parse(pendingCookie);
-  } catch {
-    redirect("/dashboard/redes-sociales?error=oauth_failed");
-  }
-  if (pending.platform !== platform) redirect("/dashboard/redes-sociales?error=oauth_failed");
+  const pendiente = await resolverPendiente(cookieStore.get(PENDING_COOKIE)?.value, business.id);
+  if (!pendiente || pendiente.platform !== platform) redirect("/dashboard/redes-sociales?error=oauth_failed");
 
   return (
     <div className="mx-auto max-w-lg px-6 py-16">
@@ -31,7 +28,7 @@ export default async function ChooseAccountPage({ params }: { params: Promise<{ 
         description="Elige qué cuenta quieres conectar a Frames."
       />
       <form action={confirmSocialAccount} className="flex flex-col gap-3">
-        {pending.accounts.map((account, index) => (
+        {pendiente.accounts.map((account, index) => (
           <label
             key={account.externalAccountId}
             className="flex cursor-pointer items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-400 has-[:checked]:border-zinc-950"

@@ -763,6 +763,41 @@ export type Database = {
           },
         ]
       }
+      social_oauth_pending: {
+        Row: {
+          accounts: Json
+          business_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          platform: string
+        }
+        Insert: {
+          accounts: Json
+          business_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          platform: string
+        }
+        Update: {
+          accounts?: Json
+          business_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          platform?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_oauth_pending_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       social_connections: {
         Row: {
           business_id: string

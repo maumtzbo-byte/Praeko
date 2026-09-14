@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getCurrentBusiness } from "@/lib/dashboard/get-current-business";
 import { getAdapter, isSocialPlatform } from "@/lib/social";
+import { createServiceRoleClient } from "@/lib/supabase/server";
+import type { Json } from "@/lib/supabase/types";
 
 const STATE_COOKIE = "social_oauth_state";
 const PENDING_COOKIE = "social_oauth_pending";
@@ -69,18 +71,30 @@ export async function GET(request: Request, { params }: { params: Promise<{ plat
     return NextResponse.redirect(`${origin}/dashboard/redes-sociales?error=no_accounts`);
   }
 
+  // Las cuentas traen tokens de larga vida (páginas de Meta, refresh de
+  // Google): se guardan del lado del servidor y la cookie se queda solo con
+  // este id aleatorio. Antes el arreglo completo, tokens incluidos, viajaba
+  // dentro de la propia cookie hasta el navegador. Ver 0040_oauth_pendiente.
+  const serviceRole = createServiceRoleClient();
+  const { data: pendiente, error: errorPendiente } = await serviceRole
+    .from("social_oauth_pending")
+    .insert({ business_id: business.id, platform, accounts: accounts as unknown as Json })
+    .select("id")
+    .single();
+
+  if (errorPendiente || !pendiente) {
+    console.error(`no se pudo guardar el pendiente de OAuth para platform=${platform}`, errorPendiente);
+    return NextResponse.redirect(`${origin}/dashboard/redes-sociales?error=oauth_failed`);
+  }
+
   const response = NextResponse.redirect(`${origin}/social/${platform}/choose`);
   response.cookies.set(STATE_COOKIE, "", { maxAge: 0, path: "/social" });
-  response.cookies.set(
-    PENDING_COOKIE,
-    JSON.stringify({ businessId: business.id, platform, accounts }),
-    {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 600,
-      path: "/social",
-    },
-  );
+  response.cookies.set(PENDING_COOKIE, pendiente.id, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 600,
+    path: "/social",
+  });
   return response;
 }

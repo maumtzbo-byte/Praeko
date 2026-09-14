@@ -29,12 +29,22 @@ function isPublicPath(pathname: string) {
   if (CRAWLER_PATHS.includes(pathname)) return true;
   // Static assets and Next internals never require a session.
   if (pathname.startsWith("/_next") || pathname.startsWith("/favicon")) return true;
-  // Meta calls these directly (webhook verification + delivery) with no
-  // browser session at all — without this they'd 307 to /login instead of
-  // ever reaching the route handler, same failure mode the crawler paths
-  // above already hit once. Signature verification inside the route itself
-  // (not a session) is what actually authenticates these calls.
+  // La liga de aprobación (/aprobar/<token>). Quien la abre es un cliente
+  // que NO tiene cuenta en Frames y nunca la va a tener: la URL llega por
+  // WhatsApp y el token ES la credencial (ver lib/aprobacion/liga.ts). Sin
+  // esto, cada cliente que le pica a su liga rebota a /login —o sea, la
+  // función entera estaba muerta en producción— y de paso el 307 delata la
+  // ruta a cualquiera. La autorización la hace el token dentro de la
+  // página, no una sesión.
+  if (pathname.startsWith("/aprobar/")) return true;
+  // Meta llama estas rutas directo (verificación + entrega de webhooks) sin
+  // ninguna sesión de navegador — sin esto se irían con 307 a /login en vez
+  // de llegar al route handler. Son DOS webhooks distintos con dos apps de
+  // Meta: /api/webhooks/meta (comentarios y DMs) y /api/whatsapp/webhook
+  // (Coexistence). La firma dentro de cada ruta (no una sesión) es lo que
+  // de verdad autentica estas llamadas.
   if (pathname.startsWith("/api/webhooks/")) return true;
+  if (pathname.startsWith("/api/whatsapp/")) return true;
   return false;
 }
 

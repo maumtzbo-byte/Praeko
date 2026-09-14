@@ -1,5 +1,5 @@
-import type Anthropic from "@anthropic-ai/sdk";
 import { getClaudeClient } from "./claude-client";
+import { bloqueDeHerramienta } from "./respuesta-estructurada";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { replyToComment, sendDirectMessage } from "@/lib/social/meta";
 import { replyToGoogleReview, refreshGoogleAccessToken, type GoogleReview } from "@/lib/social/google-business";
@@ -118,7 +118,17 @@ function replySchema() {
     type: "object" as const,
     properties: {
       should_reply: { type: "boolean" },
-      reply_text: { type: ["string", "null"], description: "Solo si should_reply es true" },
+      // `anyOf` y no `type: ["string", "null"]`: el arreglo de tipos no
+      // está en el subconjunto de JSON Schema que acepta `strict: true`, y
+      // la API lo rechaza con 400 ANTES de generar nada. Con este agente
+      // eso no se veía como un error — se veía como que cada comentario y
+      // cada reseña caían en "fallido" sin explicación, porque el
+      // `catch` de arriba guarda la interacción igual. Mismo arreglo que
+      // ya lleva prospecto-agent.ts.
+      reply_text: {
+        anyOf: [{ type: "string" as const }, { type: "null" as const }],
+        description: "El texto de la respuesta si should_reply es true, null si es false.",
+      },
       reason: { type: "string", description: "1 frase en español explicando la decisión" },
     },
     required: ["should_reply", "reply_text", "reason"],
@@ -145,12 +155,7 @@ export async function draftReply(input: CommunityManagerInput): Promise<Communit
     tool_choice: { type: "tool", name: REPLY_TOOL_NAME },
   });
 
-  const toolUse = message.content.find(
-    (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
-  );
-  if (!toolUse) {
-    throw new Error("El agente de respuestas no devolvió una decisión estructurada.");
-  }
+  const toolUse = bloqueDeHerramienta(message, "El agente de respuestas");
 
   const raw = toolUse.input as { should_reply: boolean; reply_text: string | null; reason: string };
   return { shouldReply: raw.should_reply, replyText: raw.should_reply ? raw.reply_text : null, reason: raw.reason };

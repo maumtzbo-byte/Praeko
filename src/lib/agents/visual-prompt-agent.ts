@@ -1,5 +1,5 @@
-import type Anthropic from "@anthropic-ai/sdk";
 import { getClaudeClient } from "./claude-client";
+import { bloqueDeHerramienta } from "./respuesta-estructurada";
 import type { ContentKind } from "@/lib/content/types";
 
 /**
@@ -137,10 +137,12 @@ export async function craftVisualPrompt(input: VisualPromptInput): Promise<strin
       tool_choice: { type: "tool", name: VISUAL_PROMPT_TOOL_NAME },
     });
 
-    const toolUse = message.content.find(
-      (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
-    );
-    const raw = toolUse?.input as { visual_prompt?: string } | undefined;
+    // Aquí el corte por tokens importa distinto que en los demás: un
+    // prompt visual cortado a media frase se le manda igual a fal.ai y se
+    // paga el video completo. Mejor caer al respaldo, que es peor prompt
+    // pero prompt entero.
+    const toolUse = bloqueDeHerramienta(message, "El agente creativo");
+    const raw = toolUse.input as { visual_prompt?: string } | undefined;
     return raw?.visual_prompt?.trim() || fallback;
   } catch (err) {
     console.error("craftVisualPrompt failed, falling back to raw script", err);

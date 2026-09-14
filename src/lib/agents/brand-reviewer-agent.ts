@@ -1,5 +1,5 @@
-import type Anthropic from "@anthropic-ai/sdk";
 import { getClaudeClient } from "./claude-client";
+import { bloqueDeHerramienta } from "./respuesta-estructurada";
 import type { StrategyAgentInput, StrategyDayPlan } from "./strategy-script-agent";
 import type { QualityReviewResult } from "@/lib/content/types";
 
@@ -107,12 +107,7 @@ export async function reviewContentBatch(
     tool_choice: { type: "tool", name: REVIEW_TOOL_NAME },
   });
 
-  const toolUse = message.content.find(
-    (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
-  );
-  if (!toolUse) {
-    throw new Error("El revisor de marca no devolvió un resultado estructurado.");
-  }
+  const toolUse = bloqueDeHerramienta(message, "El revisor de marca");
 
   const raw = toolUse.input as { reviews: ReviewedDay[] };
   return raw.reviews ?? [];

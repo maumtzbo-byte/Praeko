@@ -4,6 +4,9 @@ import type { ContentFormat, ContentKind } from "@/lib/content/types";
 import { canGenerateVideo, type PlanLimits } from "@/lib/plans/limits";
 import { getUpcomingKeyDates, keyDatesRegionLabel, isUsBusiness } from "@/lib/content/key-dates";
 import { researchIndustryTrends } from "./trends-research-agent";
+import { bloqueDeHerramienta } from "./respuesta-estructurada";
+import { limpiarPlan } from "./plan-valido";
+import { conLimite } from "@/lib/espera";
 
 /**
  * Output contract for the combined agente de estrategia + agente de guiones
@@ -19,7 +22,9 @@ export interface StrategyDayPlan {
   script: string;
   /** Only set when contentKind is "video"; clamped against the plan's budget. */
   targetDurationSeconds?: number;
-  recommendedPublishTime: string; // "HH:MM", 24h
+  /** "HH:MM" en 24h, o null cuando el modelo no devolvió una hora que se
+   *  pueda guardar. La columna es `time` y acepta null; ver limpiarPlan. */
+  recommendedPublishTime: string | null;
 }
 
 export interface MonthlyStrategyPlan {
@@ -227,12 +232,27 @@ function enforceVideoBudget(days: StrategyDayPlan[], plan: PlanLimits): Strategy
   });
 }
 
-async function callStrategyAgent(system: string, user: string, plan: PlanLimits): Promise<MonthlyStrategyPlan> {
+/** Cuántos tokens necesita un mes completo.
+ *
+ *  Estaba en 8000 y ahí no cabe: treinta piezas con guion de verdad
+ *  (gancho, desarrollo y cierre) son unos 200 tokens cada una más el JSON,
+ *  o sea ~6500 en el mejor caso y por encima del techo en cuanto los
+ *  guiones salen un poco más largos. El síntoma no era un error sino un
+ *  plan de treinta días que llegaba con diecinueve. Se sube con holgura:
+ *  solo se paga lo que de verdad se genera. */
+const TOPE_TOKENS_PLAN = 16_000;
+
+async function callStrategyAgent(
+  system: string,
+  user: string,
+  plan: PlanLimits,
+  rango: { desde: string; dias: number },
+): Promise<MonthlyStrategyPlan> {
   const client = getClaudeClient();
 
   const message = await client.messages.create({
     model: plan.contentModel,
-    max_tokens: 8000,
+    max_tokens: TOPE_TOKENS_PLAN,
     system,
     messages: [{ role: "user", content: user }],
     tools: [
@@ -246,29 +266,62 @@ async function callStrategyAgent(system: string, user: string, plan: PlanLimits)
     tool_choice: { type: "tool", name: PLAN_TOOL_NAME },
   });
 
-  const toolUse = message.content.find(
-    (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
-  );
-  if (!toolUse) {
-    throw new Error("La IA no devolvió un plan estructurado. Intenta de nuevo.");
-  }
+  const toolUse = bloqueDeHerramienta(message, "El agente de estrategia");
 
   const raw = toolUse.input as { days: StrategyDayPlan[] };
-  if (!raw.days?.length) {
+  if (!Array.isArray(raw.days) || raw.days.length === 0) {
     throw new Error("La IA no generó ningún día de contenido.");
   }
 
-  return { days: enforceVideoBudget(raw.days, plan) };
+  // Entre aquí y el insert no hay nada más: `date` se va a una columna
+  // `date` y la hora a una `time`, las dos estrictas. Ver plan-valido.ts.
+  const { dias, descartadas } = limpiarPlan(raw.days, rango.desde, rango.dias);
+  const tiradas = descartadas.fechaInvalida + descartadas.fueraDeRango + descartadas.repetida;
+  if (tiradas > 0) {
+    console.warn("limpiarPlan descartó piezas", { ...descartadas, quedaron: dias.length });
+  }
+  if (dias.length === 0) {
+    throw new Error("La IA no generó ningún día de contenido válido. Vuelve a intentar.");
+  }
+
+  return { days: enforceVideoBudget(dias, plan) };
+}
+
+/** Techo de la investigación de tendencias.
+ *
+ *  Son hasta cuatro búsquedas en internet más una posible continuación, y
+ *  corre ANTES de escribir el plan. Sin techo, un proveedor lento se lleva
+ *  entero el maxDuration de la server action y la corrida muere sin haber
+ *  generado nada — habiendo tenido todo lo necesario para generarla, porque
+ *  este paso ya sabía degradarse a null por su cuenta. Lo único que
+ *  faltaba era que "tardó demasiado" contara como una de sus fallas. */
+const LIMITE_INVESTIGACION_MS = 60_000;
+
+async function investigarSinBloquear(input: StrategyAgentInput | CampaignAgentInput): Promise<string | null> {
+  try {
+    return await conLimite(
+      researchIndustryTrends({
+        industry: input.business.industry,
+        city: input.business.city,
+        country: input.business.country,
+        sellsDescription: input.brand.sellsDescription,
+      }),
+      LIMITE_INVESTIGACION_MS,
+    );
+  } catch (err) {
+    console.error("researchIndustryTrends tardó demasiado; se genera sin ella", err);
+    return null;
+  }
 }
 
 export async function generateMonthlyStrategy(input: StrategyAgentInput): Promise<MonthlyStrategyPlan> {
-  const researchSummary = await researchIndustryTrends({
-    industry: input.business.industry,
-    city: input.business.city,
-    country: input.business.country,
-    sellsDescription: input.brand.sellsDescription,
-  });
-  return callStrategyAgent(buildSystemPrompt(isUsBusiness(input.business.country)), buildUserPrompt(input, researchSummary), input.plan);
+  const researchSummary = await investigarSinBloquear(input);
+  return callStrategyAgent(
+    buildSystemPrompt(isUsBusiness(input.business.country)),
+    buildUserPrompt(input, researchSummary),
+    input.plan,
+    { desde: input.startDate, dias: input.days },
+  );
 }
 
 export interface CampaignAgentInput {
@@ -355,15 +408,14 @@ function daysBetweenInclusive(startDate: string, endDate: string): number {
 }
 
 export async function generateCampaignPlan(input: CampaignAgentInput): Promise<MonthlyStrategyPlan> {
-  const researchSummary = await researchIndustryTrends({
-    industry: input.business.industry,
-    city: input.business.city,
-    country: input.business.country,
-    sellsDescription: input.brand.sellsDescription,
-  });
+  const researchSummary = await investigarSinBloquear(input);
   return callStrategyAgent(
     buildCampaignSystemPrompt(isUsBusiness(input.business.country)),
     buildCampaignUserPrompt(input, researchSummary),
     input.plan,
+    {
+      desde: input.campaign.startDate,
+      dias: daysBetweenInclusive(input.campaign.startDate, input.campaign.endDate),
+    },
   );
 }

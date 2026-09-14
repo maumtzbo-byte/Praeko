@@ -1,6 +1,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 
 import { getClaudeClient } from "./claude-client";
+import { bloqueDeHerramienta } from "./respuesta-estructurada";
 import { CATEGORIAS_PRODUCTO } from "@/lib/validation/lead";
 
 /**
@@ -172,12 +173,5 @@ export async function extraerProspecto(conversacion: string): Promise<ProspectoE
     tool_choice: { type: "tool", name: HERRAMIENTA },
   });
 
-  const uso = mensaje.content.find(
-    (bloque): bloque is Anthropic.ToolUseBlock => bloque.type === "tool_use",
-  );
-  if (!uso) {
-    throw new Error("El agente no devolvió un resultado estructurado.");
-  }
-
-  return uso.input as ProspectoExtraido;
+  return bloqueDeHerramienta(mensaje, "El extractor de prospectos").input as ProspectoExtraido;
 }

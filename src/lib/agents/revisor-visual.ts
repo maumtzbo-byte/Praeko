@@ -1,6 +1,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 
 import { getClaudeClient } from "./claude-client";
+import { bloqueDeHerramienta } from "./respuesta-estructurada";
 
 /**
  * Agente que MIRA la pieza generada.
@@ -152,10 +153,5 @@ export async function revisarPieza(entrada: EntradaRevision): Promise<RevisionVi
     tool_choice: { type: "tool", name: HERRAMIENTA },
   });
 
-  const uso = mensaje.content.find(
-    (bloque): bloque is Anthropic.ToolUseBlock => bloque.type === "tool_use",
-  );
-  if (!uso) throw new Error("El revisor visual no devolvió un resultado estructurado.");
-
-  return uso.input as RevisionVisual;
+  return bloqueDeHerramienta(mensaje, "El revisor visual").input as RevisionVisual;
 }

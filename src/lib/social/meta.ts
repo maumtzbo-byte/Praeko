@@ -15,10 +15,42 @@ const PAGES_URL = `https://graph.facebook.com/${GRAPH_VERSION}/me/accounts`;
 // Configuraciones) instead of a freeform scope list — passing `scope`
 // alone on this app type fails the dialog outright. One configuration
 // bundling both Pages and Instagram permissions covers both platforms
-// here, so there's no need for a separate id per platform. The
-// Configuration itself must grant: pages_show_list, pages_read_engagement,
-// pages_manage_posts, business_management, instagram_basic,
-// instagram_content_publish.
+// here, so there's no need for a separate id per platform.
+//
+// LA LISTA COMPLETA, y por qué importa que esté completa: esta app no solo
+// publica. También contesta comentarios y DMs (community-manager-agent.ts)
+// y lee métricas (lib/social/insights.ts). Cada una de esas cosas pide su
+// propio permiso, y App Review se pide UNA vez: si la Configuración sale
+// con los seis de publicar, el agente de respuestas y el de resultados
+// truenan con error de permisos DESPUÉS de aprobada, y hay que volver a
+// formarse semanas por una segunda revisión.
+//
+// Publicar:
+//   pages_show_list          — listar las páginas del dueño (/me/accounts)
+//   pages_read_engagement    — dependencia de casi todo lo demás
+//   pages_manage_posts       — publicar en la página de Facebook
+//   instagram_basic          — dependencia de todo lo de Instagram
+//   instagram_content_publish— publicar en Instagram
+//   business_management      — activos del Business Manager
+//
+// Contestar (agente de respuestas):
+//   instagram_manage_comments— responder comentarios de Instagram
+//   instagram_manage_messages— responder DMs de Instagram
+//   pages_manage_engagement  — responder comentarios de Facebook
+//   pages_read_user_content  — dependencia de pages_manage_engagement
+//   pages_messaging          — responder mensajes de la página
+//   pages_manage_metadata    — suscribir los webhooks de comentarios/DMs
+//
+// Medir (agente de resultados):
+//   instagram_manage_insights— métricas de las piezas de Instagram
+//   read_insights            — métricas de la página de Facebook
+//
+// Nota: estos son los permisos de la familia "Instagram vía Facebook
+// Login" (se llega a la cuenta de IG a través de la página, ver
+// instagram_business_account más abajo). NO son los instagram_business_*
+// que Meta introdujo en 2025, que pertenecen a "Instagram API with
+// Instagram Login" — otro camino de autenticación que esta app no usa.
+// Pedir esa familia por error es un rechazo seguro.
 const CONFIG_ID = process.env.META_CONFIG_ID;
 
 interface MetaPage {
